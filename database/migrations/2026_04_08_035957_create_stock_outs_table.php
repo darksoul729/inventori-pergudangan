@@ -1,0 +1,35 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('stock_outs', function (Blueprint $table) {
+            $table->id();
+            $table->string('stock_out_number', 50);
+            $table->foreignId('warehouse_id')->restrictOnDelete();
+            $table->foreignId('customer_id')->restrictOnDelete();
+            $table->date('out_date');
+            $table->string('purpose', 30);
+            $table->string('status', 20)->default('completed');
+            $table->text('notes')->nullable();
+            $table->foreignId('created_by')->constrained('users')->restrictOnDelete();
+            $table->timestamps();
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('stock_outs');
+    }
+};
