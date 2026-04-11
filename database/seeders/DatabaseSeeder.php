@@ -15,11 +15,23 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
+        $roles = [
+            ['name' => 'Admin Gudang', 'description' => 'Input data barang & supplier, mencatat stok masuk/keluar'],
+            ['name' => 'Manajer/Owner', 'description' => 'Meninjau dashboard dan laporan'],
+        ];
+
+        foreach ($roles as $role) {
+            \App\Models\Role::firstOrCreate(['name' => $role['name']], $role);
+        }
+
+        $adminRole = \App\Models\Role::where('name', 'Admin Gudang')->first();
 
         User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+            'role_id' => $adminRole->id,
+            'name' => 'Test Admin',
+            'email' => 'admin@example.com',
+            'phone' => '08123456789',
+            'status' => 'active',
         ]);
     }
 }
