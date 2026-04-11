@@ -15,8 +15,12 @@ use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 
+use App\Traits\HandlesStockSync;
+
 class WarehouseController extends Controller
 {
+    use HandlesStockSync;
+
     public function index(Request $request): Response
     {
         $warehouse = Warehouse::query()
@@ -251,20 +255,29 @@ class WarehouseController extends Controller
             ]
         );
 
-        $this->recordRackStockMovement(
+        $stockBefore = $rack->zone->warehouse->productStocks()
+            ->where('product_id', (int) $data['product_id'])
+            ->value('current_stock') ?? 0;
+        $delta = (int) $data['quantity'] - (int) ($existingRackStock?->quantity ?? 0);
+
+        $this->recordMovement(
             request: $request,
-            rack: $rack,
             productId: (int) $data['product_id'],
-            previousQuantity: (int) ($existingRackStock?->quantity ?? 0),
-            newQuantity: (int) $data['quantity'],
+            warehouseId: (int) $rack->zone->warehouse_id,
+            type: 'adjustment',
+            referenceType: Str::lower(str_replace(' ', '_', $rack->code)),
+            referenceId: $rack->id,
+            quantity: abs($delta),
+            stockBefore: $stockBefore,
+            stockAfter: $stockBefore + $delta,
             notes: 'Rack stock assigned to '.$rack->code,
         );
 
-        $this->syncProductStockForRack($rackStock->rack);
+        $this->syncProductStock((int) $rack->zone->warehouse_id, (int) $data['product_id']);
 
         return redirect()->route('warehouse', [
-            'zone' => $rackStock->rack->warehouse_zone_id,
-            'rack' => $rackStock->rack_id,
+            'zone' => $rack->warehouse_zone_id,
+            'rack' => $rack->id,
         ])->with('status', 'Rack stock saved.');
     }
 
@@ -289,16 +302,25 @@ class WarehouseController extends Controller
             'last_updated_at' => now(),
         ]);
 
-        $this->recordRackStockMovement(
+        $stockBefore = $rackStock->rack->zone->warehouse->productStocks()
+            ->where('product_id', (int) $rackStock->product_id)
+            ->value('current_stock') ?? 0;
+        $delta = (int) $data['quantity'] - $previousQuantity;
+
+        $this->recordMovement(
             request: $request,
-            rack: $rackStock->rack,
             productId: (int) $rackStock->product_id,
-            previousQuantity: $previousQuantity,
-            newQuantity: (int) $data['quantity'],
+            warehouseId: (int) $rackStock->rack->zone->warehouse_id,
+            type: 'adjustment',
+            referenceType: Str::lower(str_replace(' ', '_', $rackStock->rack->code)),
+            referenceId: $rackStock->rack->id,
+            quantity: abs($delta),
+            stockBefore: $stockBefore,
+            stockAfter: $stockBefore + $delta,
             notes: 'Rack stock updated on '.$rackStock->rack->code,
         );
 
-        $this->syncProductStockForRack($rackStock->rack);
+        $this->syncProductStock((int) $rackStock->rack->zone->warehouse_id, (int) $rackStock->product_id);
 
         return redirect()->route('warehouse', [
             'zone' => $rackStock->rack->warehouse_zone_id,
@@ -313,17 +335,26 @@ class WarehouseController extends Controller
         $rackId = $rack->id;
         $productId = (int) $rackStock->product_id;
         $previousQuantity = (int) $rackStock->quantity;
-
         $rackStock->delete();
-        $this->recordRackStockMovement(
+
+        $stockBefore = $rack->zone->warehouse->productStocks()
+            ->where('product_id', $productId)
+            ->value('current_stock') ?? 0;
+        $delta = 0 - $previousQuantity;
+
+        $this->recordMovement(
             request: request(),
-            rack: $rack,
             productId: $productId,
-            previousQuantity: $previousQuantity,
-            newQuantity: 0,
+            warehouseId: (int) $rack->zone->warehouse_id,
+            type: 'adjustment',
+            referenceType: Str::lower(str_replace(' ', '_', $rack->code)),
+            referenceId: $rack->id,
+            quantity: abs($delta),
+            stockBefore: $stockBefore,
+            stockAfter: $stockBefore + $delta,
             notes: 'Rack stock removed from '.$rack->code,
         );
-        $this->syncProductStockForRack($rack);
+        $this->syncProductStock((int) $rack->zone->warehouse_id, $productId);
 
         return redirect()->route('warehouse', ['zone' => $zoneId, 'rack' => $rackId])->with('status', 'Rack stock deleted.');
     }
@@ -424,92 +455,12 @@ class WarehouseController extends Controller
                     'quantity' => $stock->quantity,
                     'reserved_quantity' => $stock->reserved_quantity,
                     'batch_number' => $stock->batch_number,
-                    'expired_date' => $stock->expired_date?->toDateString(),
+                    'expired_date' => $stock->expired_date?->format('Y-m-d'),
                     'available_quantity' => $stock->quantity - $stock->reserved_quantity,
                 ]),
         ];
     }
 
-    private function syncProductStockForRack(Rack $rack): void
-    {
-        $rack->loadMissing('zone.warehouse', 'zone.warehouse.productStocks', 'zone.racks.rackStocks');
-
-        $warehouse = $rack->zone->warehouse;
-
-        $totals = $warehouse->zones
-            ->flatMap->racks
-            ->flatMap->rackStocks
-            ->groupBy('product_id')
-            ->map(function ($stocks, $productId) use ($warehouse) {
-                return [
-                    'product_id' => (int) $productId,
-                    'warehouse_id' => $warehouse->id,
-                    'current_stock' => $stocks->sum('quantity'),
-                    'reserved_stock' => $stocks->sum('reserved_quantity'),
-                    'last_updated_at' => now(),
-                ];
-            });
-
-        foreach ($totals as $row) {
-            $warehouse->productStocks()->updateOrCreate(
-                ['product_id' => $row['product_id']],
-                $row
-            );
-        }
-
-        $warehouse->productStocks()
-            ->whereNotIn('product_id', $totals->keys()->map(fn ($id) => (int) $id)->all())
-            ->delete();
-    }
-
-    private function ensureRackCapacity(Rack $rack, int $incomingQuantity, int $productId): void
-    {
-        $currentOtherQuantity = $rack->rackStocks
-            ->reject(fn ($stock) => (int) $stock->product_id === $productId)
-            ->sum('quantity');
-
-        if (($currentOtherQuantity + $incomingQuantity) > $rack->capacity) {
-            throw ValidationException::withMessages([
-                'quantity' => 'Quantity exceeds rack capacity. Reduce the amount or increase rack capacity first.',
-            ]);
-        }
-    }
-
-    private function recordRackStockMovement(
-        Request $request,
-        Rack $rack,
-        int $productId,
-        int $previousQuantity,
-        int $newQuantity,
-        string $notes,
-    ): void {
-        if ($previousQuantity === $newQuantity) {
-            return;
-        }
-
-        $rack->loadMissing('zone.warehouse');
-
-        $stockBefore = $rack->zone->warehouse->productStocks()
-            ->where('product_id', $productId)
-            ->value('current_stock') ?? 0;
-
-        $delta = $newQuantity - $previousQuantity;
-        $stockAfter = $stockBefore + $delta;
-
-        StockMovement::query()->create([
-            'product_id' => $productId,
-            'warehouse_id' => $rack->zone->warehouse->id,
-            'movement_type' => 'adjustment',
-            'reference_type' => Str::lower(str_replace(' ', '_', $rack->code)),
-            'reference_id' => $rack->id,
-            'quantity' => abs($delta),
-            'stock_before' => $stockBefore,
-            'stock_after' => $stockAfter,
-            'movement_date' => now(),
-            'notes' => $notes,
-            'created_by' => $request->user()->id,
-        ]);
-    }
 
     private function zoneAccent(string $type, int $index): array
     {

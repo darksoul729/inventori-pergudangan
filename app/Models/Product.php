@@ -19,6 +19,7 @@ class Product extends Model
         'lead_time_days',
         'is_active',
         'description',
+        'image',
     ];
 
     protected function casts(): array
@@ -48,5 +49,10 @@ class Product extends Model
     public function rackStocks()
     {
         return $this->hasMany(RackStock::class);
+    }
+
+    public function productStocks()
+    {
+        return $this->hasMany(ProductStock::class);
     }
 }

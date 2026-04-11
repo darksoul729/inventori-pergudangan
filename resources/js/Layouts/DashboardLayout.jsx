@@ -62,7 +62,7 @@ const HelpCircleIcon = ({ className }) => (
     </svg>
 );
 
-export default function DashboardLayout({ children, headerTitle, headerSearchPlaceholder }) {
+export default function DashboardLayout({ children, headerTitle, headerSearchPlaceholder, searchValue, onSearch }) {
     const { url } = usePage();
     const isActive = (path) => url.startsWith(path);
 
@@ -145,6 +145,8 @@ export default function DashboardLayout({ children, headerTitle, headerSearchPla
                                 type="text" 
                                 placeholder={headerSearchPlaceholder || "Search inventory, containers, or assets..."}
                                 className="w-full bg-[#f4f5f9] text-[13px] text-gray-700 rounded-[10px] pl-11 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#3632c0] border border-transparent transition-all font-bold placeholder-gray-400"
+                                value={searchValue || ''}
+                                onChange={(e) => onSearch && onSearch(e.target.value)}
                             />
                         </div>
                     </div>
