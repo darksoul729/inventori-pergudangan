@@ -11,6 +11,7 @@
         "laravel/framework": "^13.0",
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^3.0",
+        "smalot/pdfparser": "^2.12",
         "tightenco/ziggy": "^2.0"
     },
     "require-dev": {
