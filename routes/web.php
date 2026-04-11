@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\WarehouseController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -18,9 +19,18 @@ Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
-Route::get('/warehouse', function () {
-    return Inertia::render('Warehouse');
-})->middleware(['auth', 'verified'])->name('warehouse');
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/warehouse', [WarehouseController::class, 'index'])->name('warehouse');
+    Route::post('/warehouse/zones', [WarehouseController::class, 'storeZone'])->name('warehouse.zones.store');
+    Route::put('/warehouse/zones/{zone}', [WarehouseController::class, 'updateZone'])->name('warehouse.zones.update');
+    Route::delete('/warehouse/zones/{zone}', [WarehouseController::class, 'destroyZone'])->name('warehouse.zones.destroy');
+    Route::post('/warehouse/racks', [WarehouseController::class, 'storeRack'])->name('warehouse.racks.store');
+    Route::put('/warehouse/racks/{rack}', [WarehouseController::class, 'updateRack'])->name('warehouse.racks.update');
+    Route::delete('/warehouse/racks/{rack}', [WarehouseController::class, 'destroyRack'])->name('warehouse.racks.destroy');
+    Route::post('/warehouse/rack-stocks', [WarehouseController::class, 'storeRackStock'])->name('warehouse.rack-stocks.store');
+    Route::put('/warehouse/rack-stocks/{rackStock}', [WarehouseController::class, 'updateRackStock'])->name('warehouse.rack-stocks.update');
+    Route::delete('/warehouse/rack-stocks/{rackStock}', [WarehouseController::class, 'destroyRackStock'])->name('warehouse.rack-stocks.destroy');
+});
 
 Route::get('/inventory', function () {
     return Inertia::render('Inventory');
