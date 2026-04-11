@@ -32,9 +32,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/warehouse/rack-stocks/{rackStock}', [WarehouseController::class, 'destroyRackStock'])->name('warehouse.rack-stocks.destroy');
 });
 
-Route::get('/inventory', function () {
-    return Inertia::render('Inventory');
-})->middleware(['auth', 'verified'])->name('inventory');
+use App\Http\Controllers\InventoryController;
+
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/inventory', [InventoryController::class, 'index'])->name('inventory');
+    Route::post('/inventory/products', [InventoryController::class, 'store'])->name('inventory.store');
+    Route::post('/inventory/movements/outbound', [InventoryController::class, 'recordOutbound'])->name('inventory.outbound');
+});
 
 Route::get('/transaction', function () {
     return Inertia::render('Transaction');

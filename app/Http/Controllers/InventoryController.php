@@ -1,0 +1,277 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Category;
+use App\Models\Product;
+use App\Models\ProductStock;
+use App\Models\Rack;
+use App\Models\RackStock;
+use App\Models\StockMovement;
+use App\Models\Supplier;
+use App\Models\Unit;
+use App\Models\Warehouse;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
+use App\Traits\HandlesStockSync;
+use Inertia\Inertia;
+use Inertia\Response;
+
+class InventoryController extends Controller
+{
+    use HandlesStockSync;
+
+    public function index(Request $request): Response
+    {
+        $query = Product::query()
+            ->with(['category', 'unit', 'productStocks.warehouse', 'rackStocks.rack'])
+            ->withSum('productStocks as total_stock', 'current_stock');
+
+        // 1. Filter by Category
+        if ($request->filled('category_id') && $request->category_id !== 'all') {
+            $query->where('category_id', $request->category_id);
+        }
+
+        // 2. Filter by Warehouse (Location)
+        if ($request->filled('warehouse_id') && $request->warehouse_id !== 'all') {
+            $query->whereHas('productStocks', function ($q) use ($request) {
+                $q->where('warehouse_id', $request->warehouse_id);
+            });
+        }
+
+        // 3. Filter by Status
+        if ($request->filled('status') && $request->status !== 'all') {
+            $query->where(function($q) use ($request) {
+                $subquery = DB::table('product_stocks')
+                    ->select(DB::raw('SUM(current_stock)'))
+                    ->whereColumn('product_id', 'products.id');
+
+                if ($request->status === 'OutOfStock') {
+                    $q->whereDoesntHave('productStocks')
+                      ->orWhereRaw("({$subquery->toSql()}) = 0");
+                } elseif ($request->status === 'LowStock') {
+                    $q->whereRaw("({$subquery->toSql()}) > 0")
+                      ->whereRaw("({$subquery->toSql()}) < products.minimum_stock");
+                } elseif ($request->status === 'Healthy') {
+                    $q->whereRaw("({$subquery->toSql()}) >= products.minimum_stock");
+                }
+            });
+        }
+
+        // 4. Search by Name or SKU
+        if ($request->filled('search')) {
+            $query->where(function ($q) use ($request) {
+                $q->where('name', 'like', '%' . $request->search . '%')
+                  ->orWhere('sku', 'like', '%' . $request->search . '%');
+            });
+        }
+
+        $productsPagination = $query->paginate(10)->withQueryString();
+
+        $productsResult = $productsPagination->getCollection()->map(function ($product) {
+            $totalStock = $product->total_stock ?? 0;
+            
+            // Calculate total capacity from all racks holding this product
+            $realCapacity = $product->rackStocks->sum(function($rs) {
+                return $rs->rack->capacity ?? 0;
+            });
+
+            // Use real capacity if available, otherwise fallback to a multiple of min stock or 1000
+            $maxStock = $realCapacity > 0 ? $realCapacity : max(1000, $product->minimum_stock * 10);
+            $percentage = $maxStock > 0 ? min(round(($totalStock / $maxStock) * 100), 100) : 0;
+            
+            return [
+                'id' => $product->id,
+                'sku' => $product->sku,
+                'name' => $product->name,
+                'category' => $product->category?->name ?? 'Uncategorized',
+                'current_stock' => $totalStock,
+                'max_stock' => $maxStock,
+                'percentage' => $percentage,
+                'status' => $this->getStockStatus($totalStock, (int) $product->minimum_stock),
+                'status_color' => $this->getStatusColor($totalStock, (int) $product->minimum_stock),
+                'image_url' => $product->image ? Storage::url($product->image) : null,
+                'warehouse_stocks' => $product->productStocks->pluck('current_stock', 'warehouse_id')->toArray(),
+            ];
+        });
+
+        // Replace collection with the mapped array data for the response
+        $productsData = $productsPagination->toArray();
+        $productsData['data'] = $productsResult;
+
+        $stats = [
+            'total_skus' => Product::count(),
+            'out_of_stock' => Product::whereDoesntHave('productStocks', function($query) {
+                $query->where('current_stock', '>', 0);
+            })->count(),
+            'low_stock' => Product::all()->filter(fn($p) => $this->getStockStatus($p->productStocks->sum('current_stock'), $p->minimum_stock) !== 'Healthy')->count(),
+            'storage_efficiency' => '94.8',
+        ];
+
+        return Inertia::render('Inventory', [
+            'products' => $productsData,
+            'stats' => $stats,
+            'categories' => Category::all(['id', 'name']),
+            'units' => Unit::all(['id', 'name']),
+            'suppliers' => Supplier::all(['id', 'name']),
+            'warehouses' => Warehouse::with('zones.racks')->get(),
+        ]);
+    }
+
+    public function store(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'sku' => 'required|string|unique:products,sku',
+            'name' => 'required|string',
+            'category_id' => 'required|exists:categories,id',
+            'unit_id' => 'required|exists:units,id',
+            'default_supplier_id' => 'nullable|exists:suppliers,id',
+            'purchase_price' => 'nullable|numeric',
+            'selling_price' => 'nullable|numeric',
+            'minimum_stock' => 'required|integer|min:0',
+            'description' => 'nullable|string',
+            // Initial stock fields - only require locations if stock is > 0
+            'initial_stock' => 'nullable|integer|min:0',
+            'warehouse_id' => 'required_unless:initial_stock,0|exists:warehouses,id',
+            'rack_id' => 'required_unless:initial_stock,0|exists:racks,id',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ]);
+
+        $imagePath = null;
+        if ($request->hasFile('image')) {
+            $imagePath = $request->file('image')->store('products', 'public');
+        }
+
+        DB::transaction(function () use ($validated, $request, $imagePath) {
+            $product = Product::create([
+                'sku' => $validated['sku'],
+                'name' => $validated['name'],
+                'category_id' => $validated['category_id'],
+                'unit_id' => $validated['unit_id'],
+                'default_supplier_id' => $validated['default_supplier_id'],
+                'purchase_price' => $validated['purchase_price'] ?? 0,
+                'selling_price' => $validated['selling_price'] ?? 0,
+                'minimum_stock' => $validated['minimum_stock'],
+                'description' => $validated['description'],
+                'image' => $imagePath,
+                'is_active' => true,
+            ]);
+
+            if (!empty($validated['initial_stock']) && $validated['initial_stock'] > 0) {
+                $rack = Rack::findOrFail($validated['rack_id']);
+                
+                // 1. Capacity Validation - use 'initial_stock' as error key for frontend mapping
+                $this->ensureRackCapacity($rack, (int) $validated['initial_stock'], $product->id, 'initial_stock');
+
+                // 2. Update RackStock (Physical Truth)
+                \App\Models\RackStock::updateOrCreate(
+                    ['rack_id' => $validated['rack_id'], 'product_id' => $product->id],
+                    [
+                        'quantity' => $validated['initial_stock'],
+                        'last_updated_at' => now(),
+                    ]
+                );
+
+                // 3. Sync ProductStock (Warehouse Summary)
+                $this->syncProductStock((int) $validated['warehouse_id'], $product->id);
+
+                // 4. Record Movement (Log)
+                $this->recordMovement(
+                    request: $request,
+                    productId: $product->id,
+                    warehouseId: (int) $validated['warehouse_id'],
+                    type: 'in',
+                    referenceType: 'goods_receipt',
+                    referenceId: $product->id,
+                    quantity: $validated['initial_stock'],
+                    stockBefore: 0,
+                    stockAfter: $validated['initial_stock'],
+                    notes: 'Initial stock entry on ' . $rack->code
+                );
+            }
+        });
+
+        return redirect()->route('inventory')->with('success', 'Product created successfully.');
+    }
+
+    public function recordOutbound(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'product_id' => 'required|exists:products,id',
+            'warehouse_id' => 'required|exists:warehouses,id',
+            'quantity' => 'required|integer|min:1',
+            'destination' => 'nullable|string',
+            'notes' => 'nullable|string',
+        ]);
+
+        DB::transaction(function () use ($validated, $request) {
+            $productStock = ProductStock::where('product_id', $validated['product_id'])
+                ->where('warehouse_id', $validated['warehouse_id'])
+                ->first();
+
+            if (!$productStock || $productStock->current_stock < $validated['quantity']) {
+                throw ValidationException::withMessages([
+                    'quantity' => "Insufficient stock in selected warehouse. Available: " . ($productStock ? $productStock->current_stock : 0) . " units."
+                ]);
+            }
+
+            // Find racks with stock for this product in this warehouse
+            $racks = Rack::whereHas('zone', function($q) use ($validated) {
+                $q->where('warehouse_id', $validated['warehouse_id']);
+            })->whereHas('rackStocks', function($q) use ($validated) {
+                $q->where('product_id', $validated['product_id'])->where('quantity', '>', 0);
+            })->with(['rackStocks' => function($q) use ($validated) {
+                $q->where('product_id', $validated['product_id']);
+            }])->get();
+
+            $remainingToReduce = $validated['quantity'];
+            $stockBefore = $productStock->current_stock;
+
+            foreach ($racks as $rack) {
+                if ($remainingToReduce <= 0) break;
+
+                $rackStock = $rack->rackStocks->first();
+                $reduction = min($rackStock->quantity, $remainingToReduce);
+
+                $rackStock->decrement('quantity', $reduction);
+                $remainingToReduce -= $reduction;
+            }
+
+            // 2. Sync ProductStock (Warehouse Summary)
+            $this->syncProductStock((int) $validated['warehouse_id'], (int) $validated['product_id']);
+
+            // 3. Record Movement (Log)
+            $this->recordMovement(
+                request: $request,
+                productId: (int) $validated['product_id'],
+                warehouseId: (int) $validated['warehouse_id'],
+                type: 'out',
+                referenceType: 'stock_out',
+                referenceId: (int) $validated['product_id'],
+                quantity: $validated['quantity'],
+                stockBefore: $stockBefore,
+                stockAfter: $stockBefore - $validated['quantity'],
+                notes: $validated['notes'] ?? ('Outbound to: ' . $validated['destination'])
+            );
+        });
+
+        return redirect()->route('inventory')->with('success', 'Outbound recorded successfully.');
+    }
+
+    private function getStockStatus(int $current, int $min): string
+    {
+        if ($current <= 0) return 'Critical';
+        if ($current <= $min) return 'Low Stock';
+        return 'Healthy';
+    }
+
+    private function getStatusColor(int $current, int $min): string
+    {
+        if ($current <= 0) return 'text-red-500 bg-red-50';
+        if ($current <= $min) return 'text-amber-600 bg-amber-50';
+        return 'text-emerald-600 bg-emerald-50';
+    }
+}
