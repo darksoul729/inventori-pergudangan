@@ -118,17 +118,13 @@ export default function Inventory() {
                             <h1 className="text-[28px] font-black text-[#1a202c] tracking-tight">Inventory Management</h1>
                             
                             <div className="flex items-center space-x-4">
-                                <div className="relative group p-[2px]">
-                                    <div className="absolute inset-0 border-[2px] border-indigo-400 border-dashed rounded-[12px] opacity-40"></div>
-                                    <div className="absolute -top-[10px] left-2 bg-[#4f46e5] text-white text-[8px] font-black px-1.5 py-0.5 rounded-sm uppercase tracking-widest leading-none z-10">Select</div>
-                                    <button 
-                                        onClick={() => setView('outbound')}
-                                        className="relative flex items-center space-x-2 px-6 py-3 border border-gray-200 bg-white shadow-sm hover:bg-gray-50 text-gray-700 font-bold rounded-xl text-[14px] transition-colors z-10 w-full"
-                                    >
-                                        <RegistryIcon className="w-4 h-4 text-gray-400" />
-                                        <span>Record Outbound</span>
-                                    </button>
-                                </div>
+                                <button 
+                                    onClick={() => setView('outbound')}
+                                    className="flex items-center space-x-2 px-6 py-3 border border-gray-200 bg-white shadow-sm hover:bg-gray-50 text-gray-700 font-bold rounded-xl text-[14px] transition-colors"
+                                >
+                                    <RegistryIcon className="w-4 h-4 text-gray-400" />
+                                    <span>Record Outbound</span>
+                                </button>
                                 <button 
                                     onClick={() => setView('add_new')}
                                     className="flex items-center space-x-2 px-6 py-3 bg-[#4f46e5] shadow-[0_4px_14px_rgba(79,70,229,0.3)] hover:bg-indigo-700 text-white font-bold rounded-xl text-[14px] transition-colors"

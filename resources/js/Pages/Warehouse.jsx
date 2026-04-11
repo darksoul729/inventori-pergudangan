@@ -1,6 +1,6 @@
 import React from 'react';
 import DashboardLayout from '@/Layouts/DashboardLayout';
-import { Head } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
 
 // Icons
 const ActivityIcon = ({ className }) => (
@@ -178,14 +178,24 @@ export default function Warehouse() {
 
                     <div className="grid grid-cols-2 gap-6 flex-1">
                         {/* Box 1 */}
-                        <div className="bg-[#f8f9fb] border-2 border-transparent hover:border-[#e2e8f0] rounded-[20px] p-7 flex flex-col justify-between transition-all cursor-pointer">
+                        <div className="group bg-[#f8f9fb] border-2 border-transparent hover:border-[#e2e8f0] rounded-[20px] p-7 flex flex-col justify-between transition-all cursor-pointer relative">
+                            {/* Hover Actions */}
+                            <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity flex space-x-2">
+                                <Link href="/rack-allocation" className="p-2 bg-white shadow-sm border border-gray-100 rounded-lg text-gray-400 hover:text-indigo-600 transition-colors">
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                                </Link>
+                                <Link href="/product/detail" className="p-2 bg-white shadow-sm border border-gray-100 rounded-lg text-gray-400 hover:text-indigo-600 transition-colors">
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                                </Link>
+                            </div>
+
                             <div className="flex items-start space-x-4 mb-6">
                                 <div className="w-[42px] h-[42px] rounded-[10px] bg-[#eef2ff] flex items-center justify-center text-[#4338ca] flex-shrink-0">
                                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" /></svg>
                                 </div>
                                 <div>
                                     <h4 className="text-[14.5px] font-black text-[#1a202c] mb-1">RACK A1-A12</h4>
-                                    <span className="text-[10px] font-bold text-gray-500 tracking-wider uppercase">High-Pick Area</span>
+                                    <span className="text-[10px] font-bold text-gray-400 tracking-wider uppercase">High-Pick Area</span>
                                 </div>
                             </div>
                             <div className="flex justify-between text-center pb-5 mb-5 border-b border-[#e2e8f0]/60">
@@ -208,18 +218,24 @@ export default function Warehouse() {
                         </div>
 
                         {/* Box 2 (Selected State) */}
-                        <div className="bg-[#f8f9fb] border-[2.5px] border-[#6366f1] rounded-[20px] p-7 flex flex-col justify-between transition-all relative shadow-[0_8px_32px_rgba(99,102,241,0.12)]">
-                            <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-[#6366f1] text-white text-[10px] font-black px-4 py-1 rounded-[6px] uppercase tracking-widest shadow-sm pointer-events-none">Select</div>
-                            <button className="absolute top-6 right-6 text-[#818cf8] hover:text-[#4f46e5] bg-[#eef2ff] p-1.5 rounded-md transition-colors">
-                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
-                            </button>
+                        <div className="group bg-[#f8f9fb] border-2 border-transparent hover:border-[#e2e8f0] rounded-[20px] p-7 flex flex-col justify-between transition-all cursor-pointer relative">
+                            {/* Hover Actions */}
+                            <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity flex space-x-2">
+                                <Link href="/rack-allocation" className="p-2 bg-white shadow-sm border border-gray-100 rounded-lg text-gray-400 hover:text-indigo-600 transition-colors">
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                                </Link>
+                                <Link href="/product/detail" className="p-2 bg-white shadow-sm border border-gray-100 rounded-lg text-gray-400 hover:text-indigo-600 transition-colors">
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                                </Link>
+                            </div>
+
                             <div className="flex items-start space-x-4 mb-6">
                                 <div className="w-[42px] h-[42px] rounded-[10px] bg-[#eef2ff] flex items-center justify-center text-[#4338ca] flex-shrink-0">
                                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" /></svg>
                                 </div>
-                                <div className="pr-8">
+                                <div>
                                     <h4 className="text-[14.5px] font-black text-[#1a202c] mb-1">RACK A13-A24</h4>
-                                    <span className="text-[10px] font-bold text-gray-500 tracking-wider uppercase">High-Pick Area</span>
+                                    <span className="text-[10px] font-bold text-gray-400 tracking-wider uppercase">High-Pick Area</span>
                                 </div>
                             </div>
                             <div className="flex justify-between text-center pb-5 mb-5 border-b border-[#e2e8f0]/60">
@@ -242,14 +258,24 @@ export default function Warehouse() {
                         </div>
 
                          {/* Box 3 */}
-                        <div className="bg-[#f8f9fb] border-2 border-transparent hover:border-[#e2e8f0] rounded-[20px] p-7 flex flex-col justify-between transition-all cursor-pointer">
+                        <div className="group bg-[#f8f9fb] border-2 border-transparent hover:border-[#e2e8f0] rounded-[20px] p-7 flex flex-col justify-between transition-all cursor-pointer relative">
+                            {/* Hover Actions */}
+                            <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity flex space-x-2">
+                                <Link href="/rack-allocation" className="p-2 bg-white shadow-sm border border-gray-100 rounded-lg text-gray-400 hover:text-indigo-600 transition-colors">
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                                </Link>
+                                <Link href="/product/detail" className="p-2 bg-white shadow-sm border border-gray-100 rounded-lg text-gray-400 hover:text-indigo-600 transition-colors">
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                                </Link>
+                            </div>
+
                             <div className="flex items-start space-x-4 mb-6">
                                 <div className="w-[42px] h-[42px] rounded-[10px] bg-[#eef2ff] flex items-center justify-center text-[#4338ca] flex-shrink-0">
                                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>
                                 </div>
                                 <div>
                                     <h4 className="text-[14.5px] font-black text-[#1a202c] mb-1">ZONE B BULK</h4>
-                                    <span className="text-[10px] font-bold text-gray-500 tracking-wider uppercase">Large Pallets</span>
+                                    <span className="text-[10px] font-bold text-gray-400 tracking-wider uppercase">Large Pallets</span>
                                 </div>
                             </div>
                             <div className="flex justify-between text-center pb-5 mb-5 border-b border-[#e2e8f0]/60">
@@ -272,14 +298,24 @@ export default function Warehouse() {
                         </div>
 
                         {/* Box 4 */}
-                        <div className="bg-[#f8f9fb] border-2 border-transparent hover:border-[#e2e8f0] rounded-[20px] p-7 flex flex-col justify-between transition-all cursor-pointer">
+                        <div className="group bg-[#f8f9fb] border-2 border-transparent hover:border-[#e2e8f0] rounded-[20px] p-7 flex flex-col justify-between transition-all cursor-pointer relative">
+                            {/* Hover Actions */}
+                            <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity flex space-x-2">
+                                <Link href="/product/detail" className="p-2 bg-white shadow-sm border border-gray-100 rounded-lg text-gray-400 hover:text-indigo-600 transition-colors">
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                                </Link>
+                                <Link href="/product/detail" className="p-2 bg-white shadow-sm border border-gray-100 rounded-lg text-gray-400 hover:text-indigo-600 transition-colors">
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                                </Link>
+                            </div>
+
                             <div className="flex items-start space-x-4 mb-6">
                                 <div className="w-[42px] h-[42px] rounded-[10px] bg-[#eef2ff] flex items-center justify-center text-[#4338ca] flex-shrink-0">
                                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
                                 </div>
                                 <div>
                                     <h4 className="text-[14.5px] font-black text-[#1a202c] mb-1">ZONE C SHELVING</h4>
-                                    <span className="text-[10px] font-bold text-gray-500 tracking-wider uppercase">Electronics Bin</span>
+                                    <span className="text-[10px] font-bold text-gray-400 tracking-wider uppercase">Electronics Bin</span>
                                 </div>
                             </div>
                             <div className="flex justify-between text-center pb-5 mb-5 border-b border-[#e2e8f0]/60">
