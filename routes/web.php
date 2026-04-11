@@ -40,9 +40,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/inventory/movements/outbound', [InventoryController::class, 'recordOutbound'])->name('inventory.outbound');
 });
 
-Route::get('/transaction', function () {
-    return Inertia::render('Transaction');
-})->middleware(['auth', 'verified'])->name('transaction');
+use App\Http\Controllers\TransactionController;
+
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/transaction', [TransactionController::class, 'index'])->name('transaction');
+    Route::get('/transaction/export', [TransactionController::class, 'export'])->name('transaction.export');
+});
 
 Route::get('/supplier', function () {
     return Inertia::render('Supplier');

@@ -1,6 +1,8 @@
 import DashboardLayout from '@/Layouts/DashboardLayout';
-import { Head, Link } from '@inertiajs/react';
-import React from 'react';
+import { Head, Link, router } from '@inertiajs/react';
+import React, { useState, useEffect } from 'react';
+import ExcelJS from 'exceljs';
+import { saveAs } from 'file-saver';
 
 // Icons
 const InboundIcon = ({ className }) => (
@@ -45,11 +47,189 @@ const AIAuditIcon = ({ className }) => (
     </svg>
 );
 
+const AdjustmentIcon = ({ className }) => (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+    </svg>
+);
 
-export default function Transaction() {
+const TransferIcon = ({ className }) => (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+    </svg>
+);
+
+export default function Transaction({ movements, stats, filters }) {
+    const [searchTerm, setSearchTerm] = useState(filters.search || '');
+    const [typeFilter, setTypeFilter] = useState(filters.type || 'all');
+
+    // Debounced search
+    useEffect(() => {
+        const delayDebounceFn = setTimeout(() => {
+            if (searchTerm !== (filters.search || '')) {
+                handleFilterChange();
+            }
+        }, 500);
+        return () => clearTimeout(delayDebounceFn);
+    }, [searchTerm]);
+
+    const handleFilterChange = (newType = typeFilter) => {
+        router.get(route('transaction'), {
+            search: searchTerm,
+            type: newType
+        }, {
+            preserveState: true,
+            replace: true,
+            only: ['movements', 'stats', 'filters'],
+            preserveScroll: true
+        });
+    };
+
+    const handleExportXlsx = async () => {
+        try {
+            const response = await fetch(route('transaction.export', { ...filters, format: 'json' }));
+            const data = await response.json();
+            
+            if (!data.movements || data.movements.length === 0) {
+                alert('No data to export');
+                return;
+            }
+
+            const workbook = new ExcelJS.Workbook();
+            const worksheet = workbook.addWorksheet('Transactions');
+
+            // 1. Set Title Row
+            const titleCell = worksheet.getCell('A1');
+            titleCell.value = 'TABEL RIWAYAT TRANSAKSI PERGUDANGAN REAL-TIME';
+            titleCell.font = { name: 'Arial', family: 4, size: 16, bold: true };
+            titleCell.alignment = { vertical: 'middle', horizontal: 'center' };
+            worksheet.mergeCells('A1:I1');
+            worksheet.getRow(1).height = 40;
+
+            // 2. Define Headers
+            const headers = [
+                { header: 'NO', key: 'no', width: 8 },
+                { header: 'PRODUCT NAME', key: 'product', width: 35 },
+                { header: 'SKU', key: 'sku', width: 15 },
+                { header: 'TYPE', key: 'type', width: 15 },
+                { header: 'QUANTITY', key: 'qty', width: 15 },
+                { header: 'WAREHOUSE', key: 'warehouse', width: 25 },
+                { header: 'OPERATOR', key: 'operator', width: 20 },
+                { header: 'TIMESTAMP', key: 'timestamp', width: 25 },
+                { header: 'NOTES', key: 'notes', width: 40 }
+            ];
+
+            worksheet.columns = headers;
+
+            // 3. Style Header Row (Row 2)
+            const headerRow = worksheet.getRow(2);
+            headerRow.values = headers.map(h => h.header);
+            headerRow.eachCell((cell) => {
+                cell.fill = {
+                    type: 'pattern',
+                    pattern: 'solid',
+                    fgColor: { argb: 'FF333F50' } // Dark bluish-purple
+                };
+                cell.font = {
+                    color: { argb: 'FFFFFFFF' },
+                    bold: true,
+                    size: 11
+                };
+                cell.alignment = { vertical: 'middle', horizontal: 'center' };
+                cell.border = {
+                    top: { style: 'thin' },
+                    left: { style: 'thin' },
+                    bottom: { style: 'thin' },
+                    right: { style: 'thin' }
+                };
+            });
+            headerRow.height = 25;
+
+            // 4. Add Data Rows
+            data.movements.forEach((m, index) => {
+                const row = worksheet.addRow({
+                    no: index + 1,
+                    product: m['Product Name'],
+                    sku: m['SKU'],
+                    type: m['Type'],
+                    qty: m['Quantity'],
+                    warehouse: m['Warehouse'],
+                    operator: m['Operator'],
+                    timestamp: m['Timestamp'],
+                    notes: m['Notes']
+                });
+
+                row.eachCell((cell, colNumber) => {
+                    cell.border = {
+                        top: { style: 'thin' },
+                        left: { style: 'thin' },
+                        bottom: { style: 'thin' },
+                        right: { style: 'thin' }
+                    };
+                    cell.font = { size: 10 };
+                    
+                    // Center all except Product and Notes which might be long
+                    if ([1, 3, 4, 7, 8].includes(colNumber)) {
+                        cell.alignment = { horizontal: 'center' };
+                    }
+                    if (colNumber === 5) { // Quantity
+                        cell.alignment = { horizontal: 'right' };
+                        cell.numFmt = '#,##0';
+                    }
+                });
+            });
+
+            // 5. Add Footer Notes
+            const lastRow = worksheet.rowCount;
+            worksheet.addRow([]); // Gap
+            const noteRow1 = worksheet.addRow(['', 'Catatan : Data bersifat immutable dan terekam secara real-time dari sensor nodes.']);
+            const noteRow2 = worksheet.addRow(['', 'Sistem : Aether Warehouse Management System v1.0']);
+            
+            noteRow1.font = { italic: true, size: 9, color: { argb: 'FF555555' } };
+            noteRow2.font = { italic: true, size: 9, color: { argb: 'FF555555' } };
+
+            // 6. Write to Buffer and Save
+            const buffer = await workbook.xlsx.writeBuffer();
+            saveAs(new Blob([buffer]), `Ledger_Transaksi_${new Date().toISOString().slice(0, 10)}.xlsx`);
+
+        } catch (error) {
+            console.error('Export failed:', error);
+            alert('Gagal mengekspor data. Silakan coba lagi.');
+        }
+    };
+
+    const getMovementIcon = (type) => {
+        switch (type) {
+            case 'in': return <CheckIcon className="w-3.5 h-3.5 text-emerald-500" />;
+            case 'out': return <ArrowUpRightIcon className="w-4 h-4 text-indigo-500" />;
+            case 'transfer': return <TransferIcon className="w-4 h-4 text-blue-500" />;
+            case 'adjustment':
+            case 'opname': return <AdjustmentIcon className="w-4 h-4 text-amber-500" />;
+            default: return <CheckIcon className="w-3.5 h-3.5 text-gray-400" />;
+        }
+    };
+
+    const getStatusInfo = (movement) => {
+        if (movement.movement_type === 'adjustment' || movement.movement_type === 'opname') {
+            return { label: 'Audit Required', color: 'bg-amber-50 text-amber-600 border border-amber-100' };
+        }
+        if (movement.movement_type === 'transfer') {
+            return { label: 'Routed', color: 'bg-blue-50 text-blue-600 border border-blue-100' };
+        }
+        if (movement.movement_type === 'in') {
+            return { label: 'Stocked', color: 'bg-emerald-50 text-emerald-600 border border-emerald-100' };
+        }
+        if (movement.quantity > 1000) {
+            return { label: 'High Volume', color: 'bg-indigo-50 text-indigo-600 border border-indigo-100' };
+        }
+        return { label: 'Completed', color: 'bg-gray-50 text-gray-500 border border-gray-100' };
+    };
+
     return (
         <DashboardLayout 
-            headerSearchPlaceholder="Search transactions, assets, or logs..."
+            headerSearchPlaceholder="Search transactions, products, or operators..."
+            searchValue={searchTerm}
+            onSearch={setSearchTerm}
         >
             <Head title="Transaction Ledger" />
 
@@ -58,9 +238,19 @@ export default function Transaction() {
                 <div className="flex-1 flex flex-col space-y-8">
                     
                     {/* Header */}
-                    <div>
-                        <h1 className="text-[26px] font-black text-[#1a202c] tracking-tight mb-1">Transaction Ledger</h1>
-                        <p className="text-[14px] font-bold text-gray-400">Real-time immutable movement log across global nodes.</p>
+                    <div className="flex justify-between items-end">
+                        <div>
+                            <h1 className="text-[26px] font-black text-[#1a202c] tracking-tight mb-1">Transaction Ledger</h1>
+                            <p className="text-[14px] font-bold text-gray-400">Real-time immutable movement log across global nodes.</p>
+                        </div>
+                        <div className="flex space-x-3">
+                            <Link 
+                                href={route('inventory', { view: 'outbound' })}
+                                className="px-5 py-2.5 bg-indigo-600 text-white font-black rounded-xl text-[13px] hover:bg-indigo-700 shadow-md transition-all flex items-center space-x-2"
+                            >
+                                <span>Record Outbound</span>
+                            </Link>
+                        </div>
                     </div>
 
                     {/* 3 Metric Cards */}
@@ -72,11 +262,13 @@ export default function Transaction() {
                                 <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600">
                                     <InboundIcon className="w-5 h-5" />
                                 </div>
-                                <span className="text-[10px] font-black text-indigo-600 bg-indigo-50 px-2 py-1 rounded-md tracking-wider">+12.4%</span>
+                                <span className={`text-[10px] font-black h-fit px-2 py-1 rounded-md tracking-wider ${stats.inbound_trend >= 0 ? 'text-emerald-600 bg-emerald-50' : 'text-red-500 bg-red-50'}`}>
+                                    {stats.inbound_trend >= 0 ? '+' : ''}{stats.inbound_trend}%
+                                </span>
                             </div>
                             <div>
                                 <h3 className="text-[12px] font-extrabold text-gray-500 mb-1">Inbound Units (24h)</h3>
-                                <div className="text-[28px] font-black text-[#1a202c]">42,890</div>
+                                <div className="text-[28px] font-black text-[#1a202c]">{stats.inbound_24h.toLocaleString()}</div>
                             </div>
                         </div>
 
@@ -87,11 +279,13 @@ export default function Transaction() {
                                 <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-500">
                                     <OutboundIcon className="w-5 h-5" />
                                 </div>
-                                <span className="text-[10px] font-black text-emerald-600 bg-emerald-50 px-2 py-1 rounded-md tracking-wider">+4.1%</span>
+                                <span className={`text-[10px] font-black h-fit px-2 py-1 rounded-md tracking-wider ${stats.outbound_trend >= 0 ? 'text-emerald-600 bg-emerald-50' : 'text-red-500 bg-red-50'}`}>
+                                    {stats.outbound_trend >= 0 ? '+' : ''}{stats.outbound_trend}%
+                                </span>
                             </div>
                             <div>
                                 <h3 className="text-[12px] font-extrabold text-gray-500 mb-1">Outbound Units (24h)</h3>
-                                <div className="text-[28px] font-black text-[#1a202c]">38,122</div>
+                                <div className="text-[28px] font-black text-[#1a202c]">{stats.outbound_24h.toLocaleString()}</div>
                             </div>
                         </div>
 
@@ -103,164 +297,140 @@ export default function Transaction() {
                                     <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center text-amber-500">
                                         <ShieldCheckIcon className="w-5 h-5" />
                                     </div>
-                                    <div className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-amber-500 rounded-full border-2 border-white"></div>
+                                    {stats.pending_audits > 0 && (
+                                        <div className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-amber-500 rounded-full border-2 border-white"></div>
+                                    )}
                                 </div>
-                                <span className="text-[10px] font-black text-amber-600 tracking-wider">High Priority</span>
+                                <span className="text-[10px] font-black text-amber-600 tracking-wider">
+                                    {stats.pending_audits > 5 ? 'High Priority' : 'Routine'}
+                                </span>
                             </div>
                             <div>
                                 <h3 className="text-[12px] font-extrabold text-gray-500 mb-1">Pending Audits</h3>
-                                <div className="text-[28px] font-black text-[#1a202c]">14</div>
+                                <div className="text-[28px] font-black text-[#1a202c]">{stats.pending_audits}</div>
                             </div>
                         </div>
                     </div>
 
                     {/* Table Section */}
-                    <div className="bg-white rounded-[24px] p-8 shadow-[0_4px_24px_rgba(0,0,0,0.02)] border border-[#edf2f7] flex-1">
+                    <div className="bg-white rounded-[24px] p-8 shadow-[0_4px_24px_rgba(0,0,0,0.02)] border border-[#edf2f7] flex-1 flex flex-col">
                         
                         {/* Table Header Row */}
                         <div className="flex justify-between items-center mb-8">
                             <h2 className="text-[18px] font-black text-[#1a202c]">Recent Movements</h2>
                             <div className="flex items-center space-x-3">
-                                <button className="px-5 py-2.5 bg-white border border-gray-200 text-gray-600 font-bold rounded-xl text-[13px] hover:bg-gray-50 shadow-sm transition-colors">
-                                    Export CSV
+                                <button 
+                                    onClick={handleExportXlsx}
+                                    className="px-5 py-2.5 bg-white border border-gray-200 text-gray-600 font-bold rounded-xl text-[13px] hover:bg-gray-50 shadow-sm transition-colors flex items-center space-x-2"
+                                >
+                                    <span>Export Excel</span>
                                 </button>
-                                <button className="flex items-center space-x-2 px-5 py-2.5 bg-indigo-50 text-indigo-600 font-black rounded-xl text-[13px] hover:bg-indigo-100 transition-colors">
-                                    <FilterIcon2 className="w-4 h-4" />
-                                    <span>Filter</span>
-                                </button>
+                                <div className="relative group">
+                                    <select 
+                                        className="flex items-center space-x-2 px-8 py-2.5 bg-indigo-50 text-indigo-600 font-black rounded-xl text-[13px] hover:bg-indigo-100 transition-colors border-none appearance-none cursor-pointer"
+                                        value={typeFilter}
+                                        onChange={(e) => {
+                                            setTypeFilter(e.target.value);
+                                            handleFilterChange(e.target.value);
+                                        }}
+                                    >
+                                        <option value="all">Filer: All Types</option>
+                                        <option value="in">Inbound (Receipt)</option>
+                                        <option value="out">Outbound (Dispatch)</option>
+                                        <option value="transfer">Stock Transfer</option>
+                                        <option value="adjustment">Stock Adjustments</option>
+                                        <option value="opname">Stock Opname</option>
+                                    </select>
+                                    <FilterIcon2 className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-indigo-500" />
+                                </div>
                             </div>
                         </div>
 
                         {/* Data Table */}
-                        <div className="w-full">
+                        <div className="w-full flex-1">
                             {/* Columns */}
                             <div className="grid grid-cols-12 gap-4 pb-4 border-b border-gray-100 text-[9px] font-black text-gray-400 tracking-widest uppercase">
-                                <div className="col-span-3">Transaction ID</div>
+                                <div className="col-span-1">Log ID</div>
+                                <div className="col-span-3">Product / Operator</div>
                                 <div className="col-span-2">Type</div>
-                                <div className="col-span-3">Timestamp</div>
-                                <div className="col-span-1 text-center">Location</div>
-                                <div className="col-span-1 text-right">Qty</div>
+                                <div className="col-span-2 text-center">Timestamp</div>
+                                <div className="col-span-2 text-right">Qty</div>
                                 <div className="col-span-2 text-right">Status</div>
                             </div>
 
                             {/* Rows */}
                             <div className="divide-y divide-gray-50">
-                                
-                                {/* Row 1 */}
-                                <div className="grid grid-cols-12 gap-4 py-5 items-center hover:bg-gray-50/50 transition-colors">
-                                    <div className="col-span-3">
-                                        <span className="text-[13px] font-black text-[#4f46e5]">TX-882910-B</span>
-                                    </div>
-                                    <div className="col-span-2 flex items-center space-x-2">
-                                        <CheckIcon className="w-3.5 h-3.5 text-emerald-500" />
-                                        <span className="text-[13px] font-bold text-[#1a202c]">Inbound</span>
-                                    </div>
-                                    <div className="col-span-3 flex flex-col justify-center">
-                                        <span className="text-[12px] font-bold text-gray-500">14:22:05 - Oct 24</span>
-                                    </div>
-                                    <div className="col-span-1 flex items-center justify-center">
-                                        <span className="text-[9px] font-black text-gray-500 bg-gray-100 px-2 py-1 rounded tracking-wider uppercase">DOCK-04A</span>
-                                    </div>
-                                    <div className="col-span-1 text-right">
-                                        <span className="text-[14px] font-black text-[#1a202c]">1,250</span>
-                                    </div>
-                                    <div className="col-span-2 text-right flex justify-end">
-                                        <span className="bg-emerald-50 text-emerald-600 text-[10px] font-black px-3 py-1.5 rounded-full uppercase tracking-widest">Verified</span>
-                                    </div>
-                                </div>
+                                {movements.data.map((m) => {
+                                    const status = getStatusInfo(m);
+                                    return (
+                                        <div key={m.id} className="grid grid-cols-12 gap-4 py-5 items-center hover:bg-gray-50/50 transition-colors group">
+                                            <div className="col-span-1">
+                                                <span className="text-[12px] font-black text-[#4f46e5]">#{m.id.toString().padStart(6, '0')}</span>
+                                            </div>
+                                            <div className="col-span-3 flex flex-col">
+                                                <span className="text-[13px] font-black text-[#1a202c] leading-tight truncate">
+                                                    {m.product?.name || 'Unknown Product'}
+                                                </span>
+                                                <span className="text-[10px] font-bold text-gray-400 mt-0.5">
+                                                    By: {m.user?.name || 'System'}
+                                                </span>
+                                            </div>
+                                            <div className="col-span-2 flex items-center space-x-2">
+                                                {getMovementIcon(m.movement_type)}
+                                                <span className="text-[12px] font-bold text-[#1a202c] capitalize">{m.movement_type}</span>
+                                            </div>
+                                            <div className="col-span-2 flex flex-col justify-center text-center">
+                                                <span className="text-[11px] font-bold text-gray-500">
+                                                    {new Date(m.movement_date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                </span>
+                                                <span className="text-[10px] font-bold text-gray-400">
+                                                    {new Date(m.movement_date).toLocaleDateString([], { day: '2-digit', month: 'short' })}
+                                                </span>
+                                            </div>
+                                            <div className="col-span-2 text-right pr-4">
+                                                <span className="text-[14px] font-black text-[#1a202c]">{m.quantity.toLocaleString()}</span>
+                                            </div>
+                                            <div className="col-span-2 text-right flex justify-end">
+                                                <span className={`${status.color} text-[8px] font-black px-2 py-1 rounded-full uppercase tracking-widest text-center whitespace-nowrap`}>
+                                                    {status.label}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
 
-                                {/* Row 2 */}
-                                <div className="grid grid-cols-12 gap-4 py-5 items-center hover:bg-gray-50/50 transition-colors">
-                                    <div className="col-span-3">
-                                        <span className="text-[13px] font-black text-[#4f46e5]">TX-882911-S</span>
+                                {movements.data.length === 0 && (
+                                    <div className="py-20 text-center flex flex-col items-center">
+                                        <div className="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center mb-4">
+                                            <ShieldCheckIcon className="w-8 h-8 text-gray-300" />
+                                        </div>
+                                        <h3 className="text-[16px] font-black text-gray-400">No transactions found</h3>
+                                        <p className="text-[12px] font-bold text-gray-300">Try adjusting your filters or search query.</p>
                                     </div>
-                                    <div className="col-span-2 flex items-center space-x-2">
-                                        <ArrowUpRightIcon className="w-4 h-4 text-indigo-500" />
-                                        <span className="text-[13px] font-bold text-[#1a202c]">Outbound</span>
-                                    </div>
-                                    <div className="col-span-3 flex flex-col justify-center">
-                                        <span className="text-[12px] font-bold text-gray-500">14:18:12 - Oct 24</span>
-                                    </div>
-                                    <div className="col-span-1 flex items-center justify-center">
-                                        <span className="text-[9px] font-black text-gray-500 bg-gray-100 px-2 py-1 rounded tracking-wider uppercase">RACK-B12</span>
-                                    </div>
-                                    <div className="col-span-1 text-right">
-                                        <span className="text-[14px] font-black text-[#1a202c]">450</span>
-                                    </div>
-                                    <div className="col-span-2 text-right flex justify-end">
-                                        <span className="bg-amber-50 text-amber-600 text-[10px] font-black px-3 py-1.5 rounded-full uppercase tracking-widest">Pending</span>
-                                    </div>
-                                </div>
+                                )}
+                            </div>
+                        </div>
 
-                                {/* Row 3 */}
-                                <div className="grid grid-cols-12 gap-4 py-5 items-center hover:bg-gray-50/50 transition-colors">
-                                    <div className="col-span-3">
-                                        <span className="text-[13px] font-black text-[#4f46e5]">TX-882912-X</span>
-                                    </div>
-                                    <div className="col-span-2 flex items-center space-x-2">
-                                        <CheckIcon className="w-3.5 h-3.5 text-emerald-500" />
-                                        <span className="text-[13px] font-bold text-[#1a202c]">Inbound</span>
-                                    </div>
-                                    <div className="col-span-3 flex flex-col justify-center">
-                                        <span className="text-[12px] font-bold text-gray-500">14:05:33 - Oct 24</span>
-                                    </div>
-                                    <div className="col-span-1 flex items-center justify-center">
-                                        <span className="text-[9px] font-black text-gray-500 bg-gray-100 px-2 py-1 rounded tracking-wider uppercase">DOCK-02C</span>
-                                    </div>
-                                    <div className="col-span-1 text-right">
-                                        <span className="text-[14px] font-black text-[#1a202c]">89</span>
-                                    </div>
-                                    <div className="col-span-2 text-right flex justify-end">
-                                        <span className="bg-red-50 text-red-500 text-[10px] font-black px-3 py-1.5 rounded-full uppercase tracking-widest">Flagged</span>
-                                    </div>
-                                </div>
-
-                                {/* Row 4 */}
-                                <div className="grid grid-cols-12 gap-4 py-5 items-center hover:bg-gray-50/50 transition-colors">
-                                    <div className="col-span-3">
-                                        <span className="text-[13px] font-black text-[#4f46e5]">TX-882913-B</span>
-                                    </div>
-                                    <div className="col-span-2 flex items-center space-x-2">
-                                        <ArrowUpRightIcon className="w-4 h-4 text-indigo-500" />
-                                        <span className="text-[13px] font-bold text-[#1a202c]">Outbound</span>
-                                    </div>
-                                    <div className="col-span-3 flex flex-col justify-center">
-                                        <span className="text-[12px] font-bold text-gray-500">13:58:10 - Oct 24</span>
-                                    </div>
-                                    <div className="col-span-1 flex items-center justify-center">
-                                        <span className="text-[9px] font-black text-gray-500 bg-gray-100 px-2 py-1 rounded tracking-wider uppercase">ZONE-ALPHA</span>
-                                    </div>
-                                    <div className="col-span-1 text-right">
-                                        <span className="text-[14px] font-black text-[#1a202c]">2,100</span>
-                                    </div>
-                                    <div className="col-span-2 text-right flex justify-end">
-                                        <span className="bg-emerald-50 text-emerald-600 text-[10px] font-black px-3 py-1.5 rounded-full uppercase tracking-widest">Verified</span>
-                                    </div>
-                                </div>
-
-                                {/* Row 5 */}
-                                <div className="grid grid-cols-12 gap-4 py-5 items-center hover:bg-gray-50/50 transition-colors">
-                                    <div className="col-span-3">
-                                        <span className="text-[13px] font-black text-[#4f46e5]">TX-882914-A</span>
-                                    </div>
-                                    <div className="col-span-2 flex items-center space-x-2">
-                                        <CheckIcon className="w-3.5 h-3.5 text-emerald-500" />
-                                        <span className="text-[13px] font-bold text-[#1a202c]">Inbound</span>
-                                    </div>
-                                    <div className="col-span-3 flex flex-col justify-center">
-                                        <span className="text-[12px] font-bold text-gray-500">13:42:22 - Oct 24</span>
-                                    </div>
-                                    <div className="col-span-1 flex items-center justify-center">
-                                        <span className="text-[9px] font-black text-gray-500 bg-gray-100 px-2 py-1 rounded tracking-wider uppercase">DOCK-04A</span>
-                                    </div>
-                                    <div className="col-span-1 text-right">
-                                        <span className="text-[14px] font-black text-[#1a202c]">620</span>
-                                    </div>
-                                    <div className="col-span-2 text-right flex justify-end">
-                                        <span className="bg-emerald-50 text-emerald-600 text-[10px] font-black px-3 py-1.5 rounded-full uppercase tracking-widest">Verified</span>
-                                    </div>
-                                </div>
-
+                        {/* Pagination */}
+                        <div className="flex justify-between items-center mt-8 pt-6 border-t border-gray-100">
+                            <span className="text-[12px] font-bold text-gray-400">
+                                Showing {movements.from || 0} - {movements.to || 0} of {movements.total} logs
+                            </span>
+                            <div className="flex space-x-2">
+                                {movements.links.map((link, i) => (
+                                    <Link
+                                        key={i}
+                                        href={link.url || '#'}
+                                        className={`px-3 py-1.5 rounded-lg text-[12px] font-black transition-all ${
+                                            link.active 
+                                                ? 'bg-indigo-600 text-white shadow-md' 
+                                                : link.url 
+                                                    ? 'bg-white border border-gray-100 text-gray-500 hover:bg-gray-50' 
+                                                    : 'bg-white border border-gray-100 text-gray-200 cursor-default'
+                                        }`}
+                                        dangerouslySetInnerHTML={{ __html: link.label }}
+                                    />
+                                ))}
                             </div>
                         </div>
                     </div>
@@ -284,51 +454,41 @@ export default function Transaction() {
                         {/* List of Alerts */}
                         <div className="px-6 pb-6 space-y-4">
                             
-                            {/* Alert 1 */}
-                            <div className="bg-white rounded-xl shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-gray-100 p-4 border-l-4 border-l-red-500 relative">
-                                <div className="flex justify-between items-start mb-2">
-                                    <h4 className="text-[13px] font-bold text-[#1a202c] max-w-[70%] leading-tight">Weight Variance Detected</h4>
-                                    <span className="text-[9px] font-black text-red-500 uppercase tracking-widest">Critical</span>
+                            {stats.pending_audits > 0 && (
+                                <div className="bg-white rounded-xl shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-gray-100 p-4 border-l-4 border-l-amber-500 relative">
+                                    <div className="flex justify-between items-start mb-2">
+                                        <h4 className="text-[13px] font-bold text-[#1a202c] max-w-[70%] leading-tight">Verification Required</h4>
+                                        <span className="text-[9px] font-black text-amber-500 uppercase tracking-widest">Pending</span>
+                                    </div>
+                                    <p className="text-[11.5px] font-semibold text-gray-500 leading-relaxed mb-3">
+                                        {stats.pending_audits} recent inventory adjustments require manual verification.
+                                    </p>
+                                    <div className="flex space-x-4">
+                                        <button className="text-[11px] font-black text-indigo-600 hover:text-indigo-800 transition-colors">Start Audit</button>
+                                        <button className="text-[11px] font-bold text-gray-400 hover:text-gray-600 transition-colors">Dismiss</button>
+                                    </div>
                                 </div>
-                                <p className="text-[11.5px] font-semibold text-gray-500 leading-relaxed mb-3">
-                                    Unit ID #CN-772 at Dock 04 shows 3.2% deviation from manifest.
-                                </p>
-                                <div className="flex space-x-4">
-                                    <button className="text-[11px] font-black text-indigo-600 hover:text-indigo-800 transition-colors">Verify Weight</button>
-                                    <button className="text-[11px] font-bold text-gray-400 hover:text-gray-600 transition-colors">Ignore</button>
-                                </div>
-                            </div>
+                            )}
 
-                            {/* Alert 2 */}
-                            <div className="bg-white rounded-xl shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-gray-100 p-4 border-l-4 border-l-amber-500 relative">
-                                <div className="flex justify-between items-start mb-2">
-                                    <h4 className="text-[13px] font-bold text-[#1a202c] max-w-[70%] leading-tight">Identity Match Failed</h4>
-                                    <span className="text-[9px] font-black text-amber-500 uppercase tracking-widest">Warning</span>
+                            {stats.outbound_trend > 20 && (
+                                <div className="bg-white rounded-xl shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-gray-100 p-4 border-l-4 border-l-red-500 relative">
+                                    <div className="flex justify-between items-start mb-2">
+                                        <h4 className="text-[13px] font-bold text-[#1a202c] max-w-[70%] leading-tight">High Outbound Volume</h4>
+                                        <span className="text-[9px] font-black text-red-500 uppercase tracking-widest">Active</span>
+                                    </div>
+                                    <p className="text-[11.5px] font-semibold text-gray-500 leading-relaxed">
+                                        Outbound requests are {stats.outbound_trend}% higher than previous cycle. Monitoring bottlenecks.
+                                    </p>
                                 </div>
-                                <p className="text-[11.5px] font-semibold text-gray-500 leading-relaxed">
-                                    Carrier facial biometric mismatch at Entry Gate 2. Driver re-auth required.
-                                </p>
-                            </div>
+                            )}
 
-                            {/* Alert 3 */}
                             <div className="bg-indigo-50 rounded-xl shadow-sm border border-indigo-100 p-4 border-l-4 border-l-indigo-500 relative">
                                 <div className="flex justify-between items-start mb-2">
-                                    <h4 className="text-[13px] font-bold text-[#1a202c] max-w-[70%] leading-tight">Throughput Optimization</h4>
-                                    <span className="text-[9px] font-black text-indigo-600 uppercase tracking-widest">AI Tip</span>
+                                    <h4 className="text-[13px] font-bold text-[#1a202c] max-w-[70%] leading-tight">System Integrity</h4>
+                                    <span className="text-[9px] font-black text-indigo-600 uppercase tracking-widest">Healthy</span>
                                 </div>
                                 <p className="text-[11.5px] font-semibold text-gray-500 leading-relaxed">
-                                    Diverting TX-882 to Rack-C will reduce travel time by 14%.
-                                </p>
-                            </div>
-
-                            {/* Alert 4 */}
-                            <div className="bg-white rounded-xl shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-gray-100 p-4 border-l-4 border-l-emerald-500 relative">
-                                <div className="flex justify-between items-start mb-2">
-                                    <h4 className="text-[13px] font-bold text-[#1a202c] max-w-[70%] leading-tight">Audit Completion</h4>
-                                    <span className="text-[9px] font-black text-emerald-500 uppercase tracking-widest">Success</span>
-                                </div>
-                                <p className="text-[11.5px] font-semibold text-gray-500 leading-relaxed">
-                                    Daily immutable hash generated for Node 44-X. Ledger synchronized.
+                                    All log hashes verified against primary node. Transaction history is immutable.
                                 </p>
                             </div>
 
@@ -344,7 +504,6 @@ export default function Transaction() {
 
                     {/* Live Node Connectivity */}
                     <div className="bg-gradient-to-br from-gray-200 via-gray-100 to-gray-50 rounded-[24px] p-6 shadow-md border border-white/50 relative overflow-hidden h-[130px]">
-                        {/* Decorative dark gradient glow at the bottom */}
                         <div className="absolute inset-x-0 bottom-0 h-[60px] bg-gradient-to-t from-gray-300 to-transparent opacity-50"></div>
                         
                         <div className="relative z-10 flex items-center space-x-2 mb-4">
