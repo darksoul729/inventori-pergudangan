@@ -29,8 +29,8 @@ const FilterIcon = ({ className }) => (
     </svg>
 );
 const ChevronDownIcon = ({ className }) => (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
+    <svg className={className} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
     </svg>
 );
 const InsightIcon = ({ className }) => (
@@ -63,9 +63,9 @@ const CalendarIcon = ({ className }) => (
          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
     </svg>
 );
-const ClipboardCheckIcon = ({ className }) => (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+const RegistryIcon2 = ({ className }) => (
+    <svg className={className} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
     </svg>
 );
 const WarningIcon = ({ className }) => (
@@ -74,9 +74,17 @@ const WarningIcon = ({ className }) => (
     </svg>
 );
 const LocationPinIcon = ({ className }) => (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+    <svg className={className} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+    </svg>
+);
+const GridIcon2 = ({ className }) => (
+    <svg className={className} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <rect x="4" y="4" width="6" height="6" rx="1.5" strokeWidth={2} />
+        <rect x="14" y="4" width="6" height="6" rx="1.5" strokeWidth={2} />
+        <rect x="4" y="14" width="6" height="6" rx="1.5" strokeWidth={2} />
+        <rect x="14" y="14" width="6" height="6" rx="1.5" strokeWidth={2} />
     </svg>
 );
 const SparkleIcon = ({ className }) => (
@@ -88,6 +96,7 @@ const SparkleIcon = ({ className }) => (
 export default function Inventory() {
     const { url } = usePage();
     const [view, setView] = useState('inventory'); // 'inventory', 'outbound', or 'add_new'
+    const [outboundQty, setOutboundQty] = useState(125);
 
     useEffect(() => {
         const params = new URLSearchParams(window.location.search);
@@ -402,7 +411,7 @@ export default function Inventory() {
                         
                         <div className="flex items-start space-x-4 mb-8">
                             <div className="w-[42px] h-[42px] rounded-xl bg-[#eef2ff] flex items-center justify-center text-[#4f46e5] flex-shrink-0">
-                                <RegistryIcon className="w-6 h-6" />
+                                <RegistryIcon2 className="w-6 h-6" />
                             </div>
                             <div>
                                 <h2 className="text-[18px] font-black text-[#1a202c]">Outbound Registry</h2>
@@ -496,9 +505,15 @@ export default function Inventory() {
                                     <span className="text-[12px] font-medium text-gray-400">Units for transfer</span>
                                 </div>
                                 <div className="flex items-center space-x-6 bg-white shadow-sm border border-gray-100 rounded-[10px] px-4 py-2">
-                                    <button className="text-[#4f46e5] hover:bg-gray-50 p-1 rounded font-black text-lg leading-none transition-colors">−</button>
-                                    <span className="font-black text-[18px] text-[#1a202c]">125</span>
-                                    <button className="text-[#4f46e5] hover:bg-gray-50 p-1 rounded font-black text-lg leading-none transition-colors">+</button>
+                                    <button 
+                                        onClick={() => setOutboundQty(Math.max(0, outboundQty - 1))}
+                                        className="text-[#4f46e5] hover:bg-gray-50 p-1 rounded font-black text-lg leading-none transition-colors"
+                                    >−</button>
+                                    <span className="font-black text-[18px] text-[#1a202c] min-w-[3ch] text-center">{outboundQty}</span>
+                                    <button 
+                                        onClick={() => setOutboundQty(outboundQty + 1)}
+                                        className="text-[#4f46e5] hover:bg-gray-50 p-1 rounded font-black text-lg leading-none transition-colors"
+                                    >+</button>
                                 </div>
                             </div>
 
@@ -539,7 +554,7 @@ export default function Inventory() {
                         <div className="bg-white rounded-[24px] p-6 shadow-[0_2px_16px_rgba(0,0,0,0.02)] border border-[#edf2f7]">
                              <div className="flex justify-between items-center mb-6">
                                 <h3 className="text-[11px] font-extrabold text-gray-400 tracking-[0.15em] uppercase">Inventory Context</h3>
-                                <ClipboardCheckIcon className="w-5 h-5 text-gray-300" />
+                                <RegistryIcon2 className="w-5 h-5 text-gray-300" />
                              </div>
 
                              {/* Total Stock */}
@@ -657,7 +672,7 @@ export default function Inventory() {
                                 <div>
                                     <label className="block text-[11px] font-black text-gray-500 tracking-[0.1em] uppercase mb-2">CATEGORY</label>
                                     <div className="relative">
-                                        <select className="bg-[#f8f9fb] border border-transparent focus:border-[#4f46e5] focus:ring-1 focus:ring-[#4f46e5] block w-full px-5 py-3.5 sm:text-[14px] rounded-xl font-bold text-gray-400 shadow-[inset_0_2px_4px_rgba(0,0,0,0.01)] appearance-none cursor-pointer">
+                                        <select className="bg-[#f8f9fb] border border-transparent focus:border-[#4f46e5] focus:ring-1 focus:ring-[#4f46e5] block w-full px-5 py-3.5 sm:text-[14px] rounded-xl font-bold text-gray-400 shadow-[inset_0_2px_4px_rgba(0,0,0,0.01)] appearance-none cursor-pointer [&::-ms-expand]:hidden bg-none">
                                             <option>Select Category</option>
                                         </select>
                                         <ChevronDownIcon className="w-5 h-5 absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
@@ -670,7 +685,7 @@ export default function Inventory() {
                                 <div>
                                     <label className="block text-[11px] font-black text-gray-500 tracking-[0.1em] uppercase mb-2">UNIT</label>
                                     <div className="relative">
-                                        <select className="bg-[#f8f9fb] border border-transparent focus:border-[#4f46e5] focus:ring-1 focus:ring-[#4f46e5] block w-full px-5 py-3.5 sm:text-[14px] rounded-xl font-bold text-gray-400 shadow-[inset_0_2px_4px_rgba(0,0,0,0.01)] appearance-none cursor-pointer">
+                                        <select className="bg-[#f8f9fb] border border-transparent focus:border-[#4f46e5] focus:ring-1 focus:ring-[#4f46e5] block w-full px-5 py-3.5 sm:text-[14px] rounded-xl font-bold text-gray-400 shadow-[inset_0_2px_4px_rgba(0,0,0,0.01)] appearance-none cursor-pointer [&::-ms-expand]:hidden bg-none">
                                             <option>Select Unit</option>
                                         </select>
                                         <ChevronDownIcon className="w-5 h-5 absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
@@ -679,7 +694,7 @@ export default function Inventory() {
                                 <div>
                                     <label className="block text-[11px] font-black text-gray-500 tracking-[0.1em] uppercase mb-2">SUPPLIER</label>
                                     <div className="relative">
-                                        <select className="bg-[#f8f9fb] border border-transparent focus:border-[#4f46e5] focus:ring-1 focus:ring-[#4f46e5] block w-full px-5 py-3.5 sm:text-[14px] rounded-xl font-bold text-gray-400 shadow-[inset_0_2px_4px_rgba(0,0,0,0.01)] appearance-none cursor-pointer">
+                                        <select className="bg-[#f8f9fb] border border-transparent focus:border-[#4f46e5] focus:ring-1 focus:ring-[#4f46e5] block w-full px-5 py-3.5 sm:text-[14px] rounded-xl font-bold text-gray-400 shadow-[inset_0_2px_4px_rgba(0,0,0,0.01)] appearance-none cursor-pointer [&::-ms-expand]:hidden bg-none">
                                             <option>Select Supplier</option>
                                         </select>
                                         <ChevronDownIcon className="w-5 h-5 absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
@@ -698,7 +713,7 @@ export default function Inventory() {
                                             defaultValue="0"
                                         />
                                         <div className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
-                                            <ClipboardCheckIcon className="w-5 h-5" />
+                                            <RegistryIcon2 className="w-5 h-5" />
                                         </div>
                                     </div>
                                 </div>
@@ -735,7 +750,7 @@ export default function Inventory() {
                                 <div>
                                     <label className="block text-[11px] font-black text-gray-500 tracking-[0.1em] uppercase mb-2">WAREHOUSE LOCATION</label>
                                     <div className="relative">
-                                        <select className="bg-[#f8f9fb] border border-transparent focus:border-[#4f46e5] focus:ring-1 focus:ring-[#4f46e5] block w-full pl-5 pr-12 py-3.5 sm:text-[14px] rounded-xl font-bold text-gray-600 shadow-[inset_0_2px_4px_rgba(0,0,0,0.01)] appearance-none cursor-pointer">
+                                        <select className="bg-[#f8f9fb] border border-transparent focus:border-[#4f46e5] focus:ring-1 focus:ring-[#4f46e5] block w-full pl-5 pr-12 py-3.5 sm:text-[14px] rounded-xl font-bold text-gray-600 shadow-[inset_0_2px_4px_rgba(0,0,0,0.01)] appearance-none cursor-pointer [&::-ms-expand]:hidden bg-none">
                                             <option>Choose Warehouse</option>
                                         </select>
                                         <LocationPinIcon className="w-5 h-5 absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
@@ -744,10 +759,10 @@ export default function Inventory() {
                                 <div>
                                     <label className="block text-[11px] font-black text-gray-500 tracking-[0.1em] uppercase mb-2">RACK LOCATION</label>
                                     <div className="relative">
-                                        <select className="bg-[#f8f9fb] border border-transparent focus:border-[#4f46e5] focus:ring-1 focus:ring-[#4f46e5] block w-full pl-5 pr-12 py-3.5 sm:text-[14px] rounded-xl font-bold text-gray-600 shadow-[inset_0_2px_4px_rgba(0,0,0,0.01)] appearance-none cursor-pointer">
+                                        <select className="bg-[#f8f9fb] border border-transparent focus:border-[#4f46e5] focus:ring-1 focus:ring-[#4f46e5] block w-full pl-5 pr-12 py-3.5 sm:text-[14px] rounded-xl font-bold text-gray-600 shadow-[inset_0_2px_4px_rgba(0,0,0,0.01)] appearance-none cursor-pointer [&::-ms-expand]:hidden bg-none">
                                             <option>Select Rack</option>
                                         </select>
-                                        <svg className="w-5 h-5 absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>
+                                        <GridIcon2 className="w-5 h-5 absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
                                     </div>
                                 </div>
                             </div>

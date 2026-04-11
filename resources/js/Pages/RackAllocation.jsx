@@ -116,38 +116,33 @@ export default function RackAllocation({ rackId }) {
                             <div className="relative">
                                 <label className="block text-[10px] font-extrabold text-gray-500 tracking-wider uppercase mb-2">Quantity to Assign</label>
                                 <div className="relative">
-                                    {/* Select Badge Wireframe artifact */}
-                                    <div className="absolute -top-3 left-2 bg-[#6366f1] text-white text-[9px] font-black px-2.5 py-0.5 rounded-[4px] uppercase tracking-widest z-10 shadow-sm pointer-events-none">Select</div>
                                     <input 
                                         type="number" 
-                                        className="bg-[#f8f9fb] border-2 border-[#4f46e5] focus:ring-0 block w-full px-4 py-3 sm:text-base font-black text-right rounded-xl shadow-[0_4px_12px_rgba(79,70,229,0.1)] text-[#1a202c]" 
+                                        className="bg-[#f8f9fb] border border-transparent focus:border-[#4f46e5] focus:ring-1 focus:ring-[#4f46e5] block w-full px-4 py-3.5 sm:text-base font-bold text-left rounded-xl text-[#1a202c]" 
                                         defaultValue="150"
                                     />
-                                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                        <span className="text-gray-400 font-bold text-sm select-none">—</span>
-                                    </div>
                                 </div>
-                                <div className="mt-1.5 text-center text-[10px] text-gray-400 italic">Units (pcs)</div>
+                                <div className="mt-1.5 text-center text-[10px] text-gray-400 italic font-medium">Units (pcs)</div>
                             </div>
 
                             <div>
                                 <label className="block text-[10px] font-extrabold text-gray-500 tracking-wider uppercase mb-2">Min Threshold</label>
                                 <input 
                                     type="number" 
-                                    className="bg-[#f8f9fb] border border-transparent focus:border-gray-300 block w-full px-4 py-3.5 sm:text-base font-bold rounded-xl text-[#1a202c]" 
+                                    className="bg-[#f8f9fb] border border-transparent focus:border-[#4f46e5] focus:ring-1 focus:ring-[#4f46e5] block w-full px-4 py-3.5 sm:text-base font-bold text-left rounded-xl text-[#1a202c]" 
                                     defaultValue="20"
                                 />
-                                <div className="mt-1.5 text-center text-[10px] text-gray-400 italic">Alert level for restock</div>
+                                <div className="mt-1.5 text-center text-[10px] text-gray-400 italic font-medium">Alert level for restock</div>
                             </div>
 
                             <div>
                                 <label className="block text-[10px] font-extrabold text-gray-500 tracking-wider uppercase mb-2">Max Capacity</label>
                                 <input 
                                     type="number" 
-                                    className="bg-[#f8f9fb] border border-transparent focus:border-gray-300 block w-full px-4 py-3.5 sm:text-base font-bold rounded-xl text-[#1a202c]" 
+                                    className="bg-[#f8f9fb] border border-transparent focus:border-[#4f46e5] focus:ring-1 focus:ring-[#4f46e5] block w-full px-4 py-3.5 sm:text-base font-bold text-left rounded-xl text-[#1a202c]" 
                                     defaultValue="300"
                                 />
-                                <div className="mt-1.5 text-center text-[10px] text-gray-400 italic">Physical limit for this slot</div>
+                                <div className="mt-1.5 text-center text-[10px] text-gray-400 italic font-medium">Physical limit for this slot</div>
                             </div>
                         </div>
                     </div>
@@ -186,19 +181,13 @@ export default function RackAllocation({ rackId }) {
 
                     {/* Form Actions */}
                     <div className="flex justify-center space-x-4 mt-6 relative pt-4">
-                        <div className="relative group">
-                            <div className="absolute -top-7 left-1/2 -translate-x-1/2 bg-[#3b82f6] text-white text-[9px] font-black px-2 py-0.5 rounded-[4px] opacity-100 uppercase tracking-widest scale-90">Connected</div>
-                            <button className="px-8 py-3.5 border border-gray-300 text-gray-600 font-bold rounded-xl text-[14px] hover:bg-gray-50 transition-colors border-dashed bg-white shadow-sm">
-                                Cancel
-                            </button>
-                        </div>
-                        <div className="relative group">
-                            <div className="absolute -top-7 left-1/2 -translate-x-1/2 bg-[#3b82f6] text-white text-[9px] font-black px-2 py-0.5 rounded-[4px] opacity-100 uppercase tracking-widest scale-90">Connected</div>
-                            <button className="px-8 py-3.5 bg-[#4f46e5] text-white font-bold rounded-xl shadow-[0_4px_14px_rgba(79,70,229,0.39)] text-[14px] hover:bg-indigo-700 transition-all flex items-center space-x-2 focus:ring-4 focus:ring-indigo-500/30">
-                                <span>Confirm Assignment</span>
-                                <svg className="w-4 h-4 text-indigo-200 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
-                            </button>
-                        </div>
+                        <Link href="/warehouse" className="px-8 py-3.5 border border-gray-300 text-gray-600 font-bold rounded-xl text-[14px] hover:bg-gray-50 transition-colors border-dashed bg-white shadow-sm">
+                            Cancel
+                        </Link>
+                        <button className="px-8 py-3.5 bg-[#4f46e5] text-white font-bold rounded-xl shadow-[0_4px_14px_rgba(79,70,229,0.3)] text-[14px] hover:bg-indigo-700 transition-all flex items-center space-x-2 focus:ring-4 focus:ring-indigo-500/30">
+                            <span>Confirm Assignment</span>
+                            <svg className="w-4 h-4 text-indigo-200 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
+                        </button>
                     </div>
                 </div>
 
