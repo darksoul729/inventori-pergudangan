@@ -47,9 +47,22 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/transaction/export', [TransactionController::class, 'export'])->name('transaction.export');
 });
 
-Route::get('/supplier', function () {
-    return Inertia::render('Supplier');
-})->middleware(['auth', 'verified'])->name('supplier');
+use App\Http\Controllers\SupplierController;
+use App\Http\Controllers\PurchaseOrderController;
+
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/supplier', [SupplierController::class, 'index'])->name('supplier');
+    Route::post('/supplier', [SupplierController::class, 'store'])->name('supplier.store');
+    Route::get('/supplier/{supplier}', [SupplierController::class, 'show'])->name('supplier.show');
+    Route::post('/supplier/{supplier}/performance', [SupplierController::class, 'storePerformance'])->name('supplier.performance.store');
+
+    // Purchase Orders
+    Route::get('/purchase-orders', [PurchaseOrderController::class, 'index'])->name('purchase-orders.index');
+    Route::get('/purchase-orders/create', [PurchaseOrderController::class, 'create'])->name('purchase-orders.create');
+    Route::post('/purchase-orders', [PurchaseOrderController::class, 'store'])->name('purchase-orders.store');
+    Route::get('/purchase-orders/{purchaseOrder}', [PurchaseOrderController::class, 'show'])->name('purchase-orders.show');
+    Route::put('/purchase-orders/{purchaseOrder}/status', [PurchaseOrderController::class, 'updateStatus'])->name('purchase-orders.update-status');
+});
 
 Route::get('/product/detail', function () {
     return Inertia::render('ProductDetail');
