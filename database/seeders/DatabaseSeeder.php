@@ -39,5 +39,6 @@ class DatabaseSeeder extends Seeder
         ]);
 
         $this->call(WarehouseManagementSeeder::class);
+        $this->call(SupplierSeeder::class);
     }
 }

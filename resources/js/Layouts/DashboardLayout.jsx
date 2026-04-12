@@ -44,6 +44,11 @@ const TruckIcon = ({ className }) => (
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l2.414 2.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001-1v-4a1 1 0 011-1h4m0 0a1 1 0 011-1h2m-2 1V5" />
     </svg>
 );
+const ShoppingCartIcon = ({ className }) => (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+    </svg>
+);
 
 // Header Icons
 const SearchIcon = ({ className }) => (
@@ -102,6 +107,10 @@ export default function DashboardLayout({ children, headerTitle, headerSearchPla
                              <DocumentIcon className="w-5 h-5" />
                              <span className={isActive('/transaction') ? '' : 'text-gray-500'}>Transaction</span>
                           </Link>
+                          <Link href="/purchase-orders" className={`flex items-center space-x-3.5 px-5 py-3.5 rounded-2xl font-bold text-[13px] transition-colors ${isActive('/purchase-orders') ? 'bg-white text-[#3632c0] shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-gray-50' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'}`}>
+                             <ShoppingCartIcon className="w-5 h-5" />
+                             <span className={isActive('/purchase-orders') ? '' : 'text-gray-500'}>Purchase Orders</span>
+                          </Link>
                           <Link href="/supplier" className={`flex items-center space-x-3.5 px-5 py-3.5 rounded-2xl font-bold text-[13px] transition-colors ${isActive('/supplier') ? 'bg-white text-[#3632c0] shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-gray-50' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'}`}>
                              <UsersIcon className="w-5 h-5" />
                              <span className={isActive('/supplier') ? '' : 'text-gray-500'}>Suppliers</span>
@@ -119,6 +128,10 @@ export default function DashboardLayout({ children, headerTitle, headerSearchPla
                 
                 {/* Bottom Actions Panel */}
                 <div className="px-5 pb-8 flex flex-col space-y-4">
+                    <Link href="/purchase-orders/create" className="flex items-center justify-center space-x-2 w-full py-3.5 bg-white border border-gray-200 text-[#1a202c] font-bold rounded-xl shadow-sm hover:bg-gray-50 transition-all">
+                        <span className="text-lg leading-none font-medium text-indigo-600">+</span>
+                        <span className="text-[13px]">New Buy Order</span>
+                    </Link>
                     <Link href="/inventory?view=outbound" className="flex items-center justify-center space-x-2 w-full py-3.5 bg-[#4f46e5] text-white font-bold rounded-xl shadow-[0_4px_14px_rgba(79,70,229,0.3)] hover:bg-indigo-700 transition-all">
                         <span className="text-lg leading-none font-medium">+</span>
                         <span className="text-[13px]">New Shipment</span>
