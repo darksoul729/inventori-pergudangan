@@ -1,6 +1,6 @@
 import DashboardLayout from '@/Layouts/DashboardLayout';
-import { Head } from '@inertiajs/react';
-import React from 'react';
+import { Head, router } from '@inertiajs/react';
+import React, { useState, useMemo, useEffect } from 'react';
 
 // Icons
 const GaugeIcon = ({ className }) => (
@@ -104,7 +104,32 @@ const DownloadIcon2 = ({ className }) => (
     </svg>
 );
 
-export default function Reports() {
+export default function Reports({ data, reports }) {
+    const [selectedDataSource, setSelectedDataSource] = useState('inventory'); // 'inventory', 'fleet', 'cost'
+    const [selectedVisualization, setSelectedVisualization] = useState('bar'); // 'bar', 'kinetic', 'distribution'
+    const [isPreviewLoading, setIsPreviewLoading] = useState(false);
+
+    const handleGenerate = () => {
+        router.post(route('reports.generate'));
+    };
+
+    const handleDownload = (id) => {
+        window.location.href = route('reports.download', id);
+    };
+
+    // Simulate loading when changing selection
+    useEffect(() => {
+        setIsPreviewLoading(true);
+        const timer = setTimeout(() => setIsPreviewLoading(false), 400);
+        return () => clearTimeout(timer);
+    }, [selectedDataSource, selectedVisualization]);
+
+    // Calculate max value for throughput bars normalization
+    const throughputStats = data?.throughput || [];
+    const maxThroughput = Math.max(...throughputStats.map(d => Math.max(d.inbound, d.outbound)), 100);
+    
+    // Last 7 days for the chart display (or use all 30)
+    const recentThroughput = throughputStats.slice(-7);
     // Custom Header Right Segment for "Reports Hub"
     const headerRight = (
         <div className="flex items-center space-x-6">
@@ -138,12 +163,12 @@ export default function Reports() {
                         <p className="text-[15px] font-bold text-gray-400 mt-2.5">Real-time data visualization of warehouse kinetic efficiency</p>
                     </div>
                     <div className="flex items-center space-x-4 mt-2">
-                        <button className="px-6 py-3 bg-[#f1f3f9] text-gray-500 font-black rounded-xl text-[12px] uppercase tracking-wider hover:bg-gray-200 transition-all">
-                            Export CSV
-                        </button>
-                        <button className="px-6 py-3 bg-[#4f46e5] text-white font-black rounded-xl text-[12px] uppercase tracking-wider hover:bg-indigo-700 transition-all flex items-center shadow-xl shadow-indigo-100/50">
+                        <button 
+                            onClick={handleGenerate}
+                            className="px-6 py-3 bg-[#4f46e5] text-white font-black rounded-xl text-[12px] uppercase tracking-wider hover:bg-indigo-700 transition-all flex items-center shadow-xl shadow-indigo-100/50"
+                        >
                             <span className="mr-2 text-lg leading-none">+</span>
-                            Generate Custom Report
+                            Generate Warehouse Status Report (PDF)
                         </button>
                     </div>
                 </div>
@@ -158,14 +183,24 @@ export default function Reports() {
                         </div>
                         
                         <div className="flex-1 flex items-end justify-between h-[220px] px-2 mb-4">
-                            {[110, 150, 130, 200, 260, 180, 140].map((h, i) => (
-                                <div key={i} className="flex-1 flex flex-col items-center mx-2 group">
-                                    <div 
-                                        style={{ height: `${h}px` }} 
-                                        className={`w-full rounded-[14px] transition-all duration-700 ${i === 4 ? 'bg-gradient-to-t from-[#3b35be] to-[#5d55fa] shadow-[0_8px_20px_rgba(79,70,229,0.3)]' : 'bg-[#e1e9f4] group-hover:bg-[#d4def1]'}`}
-                                    ></div>
+                            {recentThroughput.length > 0 ? recentThroughput.map((d, i) => {
+                                const h = (Math.max(d.inbound, d.outbound) / maxThroughput) * 200;
+                                return (
+                                    <div key={i} className="flex-1 flex flex-col items-center mx-2 group">
+                                        <div 
+                                            style={{ height: `${Math.max(h, 20)}px` }} 
+                                            className={`w-full rounded-[14px] transition-all duration-700 ${i === recentThroughput.length - 1 ? 'bg-gradient-to-t from-[#3b35be] to-[#5d55fa] shadow-[0_8px_20px_rgba(79,70,229,0.3)]' : 'bg-[#e1e9f4] group-hover:bg-[#d4def1]'}`}
+                                        ></div>
+                                        <span className="text-[10px] font-bold text-gray-400 mt-3 uppercase tracking-tighter">
+                                            {new Date(d.date).toLocaleDateString('en-US', { weekday: 'short' })}
+                                        </span>
+                                    </div>
+                                );
+                            }) : (
+                                <div className="w-full h-full flex items-center justify-center text-gray-300 font-bold">
+                                    No movement data available yet
                                 </div>
-                            ))}
+                            )}
                         </div>
                     </div>
 
@@ -187,10 +222,10 @@ export default function Reports() {
                                 
                                 <div className="mt-2">
                                     <p className="text-[14px] font-bold text-indigo-100/70 tracking-tight">Overall Efficiency</p>
-                                    <h2 className="text-[56px] font-bold tracking-tighter leading-none mt-2">94.8%</h2>
+                                    <h2 className="text-[56px] font-bold tracking-tighter leading-none mt-2">{data?.efficiency || 0}%</h2>
                                     <div className="mt-10 flex items-center space-x-2 bg-white/10 w-fit px-4 py-2 rounded-2xl backdrop-blur-md border border-white/5 shadow-sm">
                                         <TrendingUpIcon className="w-4 h-4 text-emerald-300" />
-                                        <span className="text-[12px] font-bold text-indigo-50 tracking-tight">+2.4% from last week</span>
+                                        <span className="text-[12px] font-bold text-indigo-50 tracking-tight">Real-time rack occupancy</span>
                                     </div>
                                 </div>
                             </div>
@@ -201,14 +236,13 @@ export default function Reports() {
                             <div>
                                 <h3 className="text-[11px] font-black text-gray-400 tracking-[0.2em] uppercase mb-6">Active Warehouse Faults</h3>
                                 <div className="flex items-center space-x-5">
-                                    <div className="w-3.5 h-3.5 rounded-full bg-[#f43f5e] shadow-[0_0_12px_rgba(244,63,94,0.5)] animate-pulse"></div>
-                                    <span className="text-[32px] font-black text-[#1a202c]">12 Errors</span>
+                                    <div className={`w-3.5 h-3.5 rounded-full ${data?.total_stock > 0 ? 'bg-emerald-400 shadow-[0_0_12px_rgba(52,211,153,0.5)]' : 'bg-[#f43f5e] shadow-[0_0_12px_rgba(244,63,94,0.5)] animate-pulse'}`}></div>
+                                    <span className="text-[32px] font-black text-[#1a202c]">{data?.total_products || 0} Products</span>
                                 </div>
                             </div>
-                            <button className="text-[11px] font-black text-[#4f46e5] uppercase tracking-[0.2em] mt-10 flex items-center group w-fit">
-                                VIEW DIAGNOSTICS
-                                <span className="ml-2 group-hover:translate-x-1 transition-transform">→</span>
-                            </button>
+                            <div className="text-[13px] font-bold text-gray-500">
+                                Total stock units: {data?.total_stock || 0}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -243,11 +277,7 @@ export default function Reports() {
                                 <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Exit Vol / Week</span>
                             </div>
                             <div className="space-y-10">
-                                {[
-                                    { name: 'Industrial Bearings [K-902]', val: '2,450 Units', pct: 100 },
-                                    { name: 'Lithium Modules [V-Cell]', val: '1,890 Units', pct: 82 },
-                                    { name: 'Hydraulic Fluid 5L', val: '1,620 Units', pct: 68 }
-                                ].map((item, i) => (
+                                {data?.fast_moving?.length > 0 ? data.fast_moving.map((item, i) => (
                                     <div key={i}>
                                         <div className="flex justify-between text-[14px] font-black text-[#1a202c] mb-3">
                                             <span>{item.name}</span>
@@ -257,7 +287,9 @@ export default function Reports() {
                                             <div className="h-full bg-gradient-to-r from-[#4f46e5] to-[#7c3aed] rounded-full shadow-[0_2px_8px_rgba(79,70,229,0.2)] transition-all duration-1000" style={{ width: `${item.pct}%` }}></div>
                                         </div>
                                     </div>
-                                ))}
+                                )) : (
+                                    <div className="text-gray-400 font-bold italic">No fast moving items found</div>
+                                )}
                             </div>
                         </div>
 
@@ -271,11 +303,7 @@ export default function Reports() {
                                 <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Dwell Time (Days)</span>
                             </div>
                             <div className="space-y-10">
-                                {[
-                                    { name: 'Legacy Gasket Kit [T-10]', val: '248 Days', pct: 100 },
-                                    { name: 'Oversized Casing [M-4]', val: '192 Days', pct: 76 },
-                                    { name: 'Fiber-Optic Splicers', val: '145 Days', pct: 58 }
-                                ].map((item, i) => (
+                                {data?.slow_moving?.length > 0 ? data.slow_moving.map((item, i) => (
                                     <div key={i}>
                                         <div className="flex justify-between text-[14px] font-black text-[#1a202c] mb-3">
                                             <span>{item.name}</span>
@@ -285,7 +313,9 @@ export default function Reports() {
                                             <div className="h-full bg-[#a0aec0] rounded-full transition-all duration-1000" style={{ width: `${item.pct}%` }}></div>
                                         </div>
                                     </div>
-                                ))}
+                                )) : (
+                                    <div className="text-gray-400 font-bold italic">No dead stock detected</div>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -308,69 +338,183 @@ export default function Reports() {
                     <div className="grid grid-cols-12 gap-12">
                         <div className="col-span-5 flex flex-col justify-between">
                             <div className="grid grid-cols-2 gap-8">
-                                <div className="space-y-6">
-                                    <h4 className="text-[10px] font-black text-gray-400 tracking-[0.25em] uppercase ml-1">Data Sources</h4>
-                                    <div className="space-y-4">
-                                        {[
-                                            { icon: BoxIcon, label: 'Inventory Levels' },
-                                            { icon: TruckIcon, label: 'Vehicle Fleet' },
-                                            { icon: CreditCardIcon, label: 'Cost Analysis' }
-                                        ].map((item, i) => (
-                                            <div key={i} className="flex items-center space-x-4 p-4 bg-[#f8f9fb] rounded-xl border border-transparent hover:bg-white hover:border-gray-100 hover:shadow-lg hover:shadow-indigo-100/30 transition-all cursor-pointer group">
-                                                <div className="w-[42px] h-[42px] bg-white shadow-sm rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform flex-shrink-0">
-                                                    <item.icon className="w-5 h-5 text-[#4f46e5]" />
-                                                </div>
-                                                <span className="text-[14px] font-bold text-[#1a202c] tracking-tight">{item.label}</span>
+                                <div className="space-y-4">
+                                    <h4 className="text-[10px] font-black text-gray-400 tracking-[0.25em] uppercase ml-1">Data Source</h4>
+                                    {[
+                                        { id: 'inventory', icon: BoxIcon, label: 'Inventory Levels', hasData: true },
+                                        { id: 'fleet', icon: TruckIcon, label: 'Vehicle Fleet', hasData: false },
+                                        { id: 'cost', icon: CreditCardIcon, label: 'Cost Analysis', hasData: false }
+                                    ].map((item) => (
+                                        <div 
+                                            key={item.id} 
+                                            onClick={() => item.hasData && setSelectedDataSource(item.id)}
+                                            className={`flex items-center space-x-4 p-4 rounded-xl border transition-all cursor-pointer group relative ${!item.hasData ? 'opacity-40 grayscale cursor-not-allowed bg-gray-50 border-transparent' : selectedDataSource === item.id ? 'bg-white border-[#4f46e5] shadow-lg shadow-indigo-100/30 ring-2 ring-indigo-50' : 'bg-[#f8f9fb] border-transparent hover:bg-white hover:border-gray-100'}`}
+                                        >
+                                            <div className={`w-[42px] h-[42px] shadow-sm rounded-lg flex items-center justify-center transition-transform ${selectedDataSource === item.id ? 'bg-[#4f46e5] scale-110' : 'bg-white group-hover:scale-110'}`}>
+                                                <item.icon className={`w-5 h-5 ${selectedDataSource === item.id ? 'text-white' : 'text-[#4f46e5]'}`} />
                                             </div>
-                                        ))}
-                                    </div>
+                                            <div className="flex flex-col">
+                                                <span className={`text-[14px] font-bold tracking-tight ${selectedDataSource === item.id ? 'text-[#4f46e5]' : 'text-[#1a202c]'}`}>{item.label}</span>
+                                                {!item.hasData && <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest mt-0.5">No Data</span>}
+                                            </div>
+                                        </div>
+                                    ))}
                                 </div>
 
                                 <div className="space-y-6">
                                     <h4 className="text-[10px] font-black text-gray-400 tracking-[0.25em] uppercase ml-1">Visualization</h4>
                                     <div className="space-y-4">
                                         {[
-                                            { icon: BarChartIcon, label: 'Bar Chart' },
-                                            { icon: ActivityIcon, label: 'Kinetic Path', active: true },
-                                            { icon: PieChartIcon, label: 'Distribution' }
-                                        ].map((item, i) => (
-                                            <div key={i} className="flex items-center space-x-4 p-4 rounded-xl transition-all cursor-pointer border group bg-[#f8f9fb] border-transparent hover:bg-white hover:border-gray-100 hover:shadow-lg hover:shadow-indigo-100/30">
-                                                <div className="w-[42px] h-[42px] bg-white shadow-sm rounded-lg flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
-                                                    <item.icon className="w-5 h-5 text-[#4f46e5]" />
+                                            { id: 'bar', icon: BarChartIcon, label: 'Bar Chart' },
+                                            { id: 'kinetic', icon: ActivityIcon, label: 'Kinetic Path' },
+                                            { id: 'distribution', icon: PieChartIcon, label: 'Distribution' }
+                                        ].map((item) => (
+                                            <div 
+                                                key={item.id} 
+                                                onClick={() => setSelectedVisualization(item.id)}
+                                                className={`flex items-center space-x-4 p-4 rounded-xl border transition-all cursor-pointer group ${selectedVisualization === item.id ? 'bg-white border-[#4f46e5] shadow-lg shadow-indigo-100/30 ring-2 ring-indigo-50' : 'bg-[#f8f9fb] border-transparent hover:bg-white hover:border-gray-100'}`}
+                                            >
+                                                <div className={`w-[42px] h-[42px] shadow-sm rounded-lg flex items-center justify-center transition-transform ${selectedVisualization === item.id ? 'bg-[#4f46e5] scale-110' : 'bg-white group-hover:scale-110'}`}>
+                                                    <item.icon className={`w-5 h-5 ${selectedVisualization === item.id ? 'text-white' : 'text-[#4f46e5]'}`} />
                                                 </div>
-                                                <span className="text-[14px] font-bold tracking-tight text-[#1a202c]">{item.label}</span>
+                                                <span className={`text-[14px] font-bold tracking-tight ${selectedVisualization === item.id ? 'text-[#4f46e5]' : 'text-[#1a202c]'}`}>{item.label}</span>
                                             </div>
                                         ))}
                                     </div>
                                 </div>
                             </div>
+
+                            <button className="mt-12 w-full py-4 bg-gray-900 text-white font-black rounded-xl text-[12px] tracking-widest uppercase hover:bg-indigo-600 hover:scale-[1.02] transition-all shadow-xl active:scale-95">
+                                Export Current View
+                            </button>
                         </div>
 
-                        {/* Preview Area - Matching Mockup 2 Dark Preview */}
-                        <div className="col-span-7 bg-[#0f172a] rounded-[40px] p-10 flex flex-col items-center justify-center relative group min-h-[480px] shadow-2xl">
+                        {/* Preview Area - Dynamic Logic */}
+                        <div className="col-span-7 bg-[#fcfdfe] rounded-[40px] p-10 flex flex-col items-center justify-center relative min-h-[480px] border border-[#f1f5f9] shadow-[0_20px_50px_rgba(0,0,0,0.04)] overflow-hidden">
                             <div className="absolute top-10 right-10 flex space-x-2">
-                                <div className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.5)]"></div>
+                                <div className={`w-2 h-2 rounded-full ${isPreviewLoading ? 'bg-amber-400 animate-pulse' : 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.5)]'}`}></div>
                             </div>
                             
-                            <div className="w-full flex-1 flex flex-col items-center justify-center text-center p-12">
-                                <div className="w-48 h-1.5 bg-white/5 rounded-full mb-3 self-start"></div>
-                                <div className="w-72 h-3.5 bg-white/10 rounded-full mb-20 self-start"></div>
-                                
-                                <h3 className="text-[22px] font-black text-white/90 tracking-tight">Report Live Preview</h3>
-                                <p className="mt-4 text-[13px] font-bold text-white/40 max-w-[280px]">Your dynamic intelligence view is being generated...</p>
-                                
-                                <div className="mt-16 w-full h-[60px] flex items-end justify-center space-x-1.5 opacity-20">
-                                    {[1,2,3,4,5,6,7,8,9,10,11,12].map(i => (
-                                        <div key={i} className="flex-1 bg-indigo-400" style={{ height: `${Math.random() * 100}%` }}></div>
-                                    ))}
+                            <div className={`w-full flex-1 flex flex-col items-center justify-center text-center p-6 transition-all duration-500 ${isPreviewLoading ? 'opacity-20 blur-sm scale-95' : 'opacity-100 blur-0 scale-100'}`}>
+                                <div className="w-full flex justify-between items-start mb-10 px-4 text-left">
+                                    <div>
+                                        <h3 className="text-[20px] font-black text-[#1e293b] tracking-tight">
+                                            {selectedDataSource === 'inventory' ? 'Inventory Levels' : selectedDataSource === 'fleet' ? 'Fleet / Shipment Activity' : 'Cost Analysis'}
+                                        </h3>
+                                        <p className="text-[12px] font-bold text-gray-400 mt-1 uppercase tracking-[0.1em]">
+                                            {selectedVisualization === 'bar' ? 'Categorical Volume' : selectedVisualization === 'kinetic' ? 'Active Kinetic Path' : 'Structural Distribution'}
+                                        </p>
+                                    </div>
+                                    <div className="bg-white shadow-sm p-3 rounded-xl border border-gray-100">
+                                        <ClockIcon className="w-5 h-5 text-indigo-500" />
+                                    </div>
+                                </div>
+
+                                <div className="w-full h-full flex flex-col items-center justify-center min-h-[220px]">
+                                    {/* Inline styles for custom animations */}
+                                    <style dangerouslySetInnerHTML={{ __html: `
+                                        @keyframes kinetic-dash {
+                                            to { stroke-dashoffset: 0; }
+                                        }
+                                        @keyframes pulse-ring {
+                                            0% { transform: scale(0.95); opacity: 0.5; }
+                                            50% { transform: scale(1.05); opacity: 0.8; }
+                                            100% { transform: scale(0.95); opacity: 0.5; }
+                                        }
+                                    `}} />
+
+                                    {selectedVisualization === 'bar' && (
+                                        <div className="w-full flex items-end justify-between space-x-3 px-4 h-[180px]">
+                                            {(selectedDataSource === 'inventory' ? (data.distribution || []) : 
+                                              selectedDataSource === 'fleet' ? [{name: 'Transit', total_qty: data.shipment_stats?.transit || 5}, {name: 'Delivered', total_qty: data.shipment_stats?.delivered || 12}, {name: 'Total', total_qty: data.shipment_stats?.total || 17}] : 
+                                              (data.distribution || [])).map((d, i) => {
+                                                const val = selectedDataSource === 'cost' ? d.total_value : d.total_qty;
+                                                const max = selectedDataSource === 'cost' ? Math.max(...(data.distribution || []).map(x => x.total_value), 1) : Math.max(...(data.distribution || []).map(x => x.total_qty), i === 0 ? 100 : 1);
+                                                const h = (val / max) * 100;
+                                                return (
+                                                    <div key={i} className="flex-1 flex flex-col items-center group h-full justify-end">
+                                                        <div className="relative w-full h-full flex items-end">
+                                                            <div 
+                                                                style={{ 
+                                                                    height: `${Math.max(h, 8)}%`, 
+                                                                    transitionDelay: `${i * 50}ms`,
+                                                                    animation: 'pulse-ring 3s ease-in-out infinite'
+                                                                }} 
+                                                                className="w-full bg-gradient-to-t from-indigo-500 to-indigo-400 rounded-lg group-hover:from-indigo-600 group-hover:to-indigo-500 transition-all duration-700 shadow-[0_4px_12px_rgba(79,70,229,0.1)]"
+                                                            ></div>
+                                                            <div className="absolute -top-10 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-all bg-gray-900 text-white text-[10px] font-black px-2.5 py-1.5 rounded-lg shadow-xl whitespace-nowrap z-50 transform translate-y-2 group-hover:translate-y-0">
+                                                                {selectedDataSource === 'cost' ? `Rp ${Math.round(val/1000000)}M` : `${Math.round(val)} Units`}
+                                                                <div className="absolute top-full left-1/2 -translate-x-1/2 border-placeholder border-4 border-transparent border-t-gray-900 border-x-transparent border-b-transparent"></div>
+                                                            </div>
+                                                        </div>
+                                                        <span className="mt-4 text-[9px] font-black text-gray-400 uppercase tracking-tighter truncate w-full text-center group-hover:text-indigo-600 transition-colors">{d.name || d.label}</span>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    )}
+
+                                    {selectedVisualization === 'kinetic' && (
+                                        <div className="w-full h-[180px] px-4 flex items-center justify-center relative">
+                                            <svg className="w-full h-full overflow-visible" viewBox="0 0 400 100">
+                                                <defs>
+                                                    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="0%">
+                                                        <stop offset="0%" stopColor="rgba(79, 70, 229, 0)" />
+                                                        <stop offset="50%" stopColor="rgba(79, 70, 229, 1)" />
+                                                        <stop offset="100%" stopColor="rgba(124, 58, 237, 1)" />
+                                                    </linearGradient>
+                                                </defs>
+                                                <path 
+                                                    d="M0,50 Q100,20 200,80 T400,30" 
+                                                    fill="none" 
+                                                    stroke="url(#grad)" 
+                                                    strokeWidth="4" 
+                                                    strokeLinecap="round"
+                                                    style={{ strokeDasharray: '800', strokeDashoffset: '800', animation: 'kinetic-dash 3s linear infinite' }}
+                                                />
+                                                <circle cx="200" cy="80" r="4" fill="#4f46e5" className="animate-pulse shadow-[0_0_15px_#4f46e5]" />
+                                            </svg>
+                                            <div className="absolute bottom-0 text-[11px] font-black text-gray-300 tracking-[0.2em] uppercase">
+                                                Active Kinetic Movement Tracking ...
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {selectedVisualization === 'distribution' && (
+                                        <div className="w-full flex items-center justify-center space-x-12 h-[200px]">
+                                            <div className="relative w-36 h-36">
+                                                <svg className="w-full h-full -rotate-90 hover:scale-105 transition-transform" viewBox="0 0 36 36">
+                                                    <circle cx="18" cy="18" r="15.9" fill="transparent" stroke="#f1f5f9" strokeWidth="2.5" />
+                                                    <circle cx="18" cy="18" r="15.9" fill="transparent" stroke="#4f46e5" strokeWidth="3" strokeDasharray="70 100" strokeLinecap="round" />
+                                                    <circle cx="18" cy="18" r="15.9" fill="transparent" stroke="#818cf8" strokeWidth="3" strokeDasharray="20 100" strokeDashoffset="-70" strokeLinecap="round" />
+                                                </svg>
+                                                <div className="absolute inset-0 flex items-center justify-center flex-col text-center">
+                                                    <span className="text-[22px] font-black text-[#1e293b]">{data.total_stock > 1000 ? (data.total_stock/1000).toFixed(1) + 'k' : data.total_stock}</span>
+                                                    <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">Storage Cap</span>
+                                                </div>
+                                            </div>
+                                            <div className="space-y-4 text-left">
+                                                {(data.distribution || []).slice(0, 3).map((d, i) => (
+                                                    <div key={i} className="flex items-center space-x-3 group cursor-default">
+                                                        <div className={`w-2.5 h-2.5 rounded-full transition-transform group-hover:scale-125 ${i === 0 ? 'bg-indigo-500' : i === 1 ? 'bg-indigo-300' : 'bg-gray-200'}`}></div>
+                                                        <div>
+                                                            <div className="text-[12px] font-black text-[#1e293b] group-hover:text-indigo-600 transition-colors">{d.name}</div>
+                                                            <div className="text-[10px] font-bold text-gray-400 uppercase">{Math.round(d.total_qty)} Units</div>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                                 
-                                <p className="mt-12 text-[11px] font-black text-white/20 tracking-[0.3em] uppercase animate-pulse">Building Visualization...</p>
-                                
-                                <button className="mt-16 w-full py-5 bg-white text-[#0f172a] font-black rounded-2xl text-[13px] tracking-widest uppercase hover:bg-indigo-50 hover:scale-[1.02] transition-all shadow-xl">
-                                    Finalize Report Design
+                                <button className="mt-12 w-full py-4 bg-[#fcfdfe] text-[#1e293b] font-black rounded-xl text-[12px] tracking-widest uppercase border border-gray-100 hover:bg-gray-50 hover:scale-[1.02] transition-all shadow-sm active:scale-95">
+                                    Export Analysis Image
                                 </button>
                             </div>
+                            
+                            {/* Stylized background grid for light theme */}
+                            <div className="absolute inset-0 pointer-events-none opacity-[0.03]" style={{ backgroundImage: 'radial-gradient(#4f46e5 0.5px, transparent 0.5px)', backgroundSize: '24px 24px' }}></div>
                         </div>
                     </div>
                 </div>
@@ -397,11 +541,7 @@ export default function Reports() {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-50">
-                                {[
-                                    { name: 'Q3 Logistics Efficiency.pdf', by: 'Sterling, Alex', status: 'COMPLETED', date: 'Oct 24, 2023' },
-                                    { name: 'Warehouse_4_Capacity_Audit.xlsx', by: 'Vance, Marcus', status: 'PROCESSING', date: 'Oct 25, 2023' },
-                                    { name: 'Monthly Fleet Fuel Analysis.pdf', by: 'Sterling, Alex', status: 'COMPLETED', date: 'Oct 21, 2023' }
-                                ].map((report, i) => (
+                                {reports?.length > 0 ? reports.map((report, i) => (
                                     <tr key={i} className="group hover:bg-gray-50 transition-all cursor-pointer">
                                         <td className="py-8 pl-4 flex items-center space-x-5">
                                             <div className="w-11 h-11 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-500 group-hover:bg-[#4f46e5] group-hover:text-white group-hover:rotate-6 transition-all duration-300">
@@ -417,12 +557,21 @@ export default function Reports() {
                                         </td>
                                         <td className="py-8 text-[14px] font-bold text-gray-500 tracking-tight">{report.date}</td>
                                         <td className="py-8 text-right pr-12">
-                                            <button className="text-indigo-600 hover:scale-125 transition-all">
+                                            <button 
+                                                onClick={() => handleDownload(report.id)}
+                                                className="text-indigo-600 hover:scale-125 transition-all"
+                                            >
                                                 {report.status === 'COMPLETED' ? <DownloadIcon2 className="w-6 h-6" /> : <ClockIcon className="w-6 h-6 text-gray-300" />}
                                             </button>
                                         </td>
                                     </tr>
-                                ))}
+                                )) : (
+                                    <tr>
+                                        <td colSpan="5" className="py-20 text-center text-gray-400 font-bold italic">
+                                            No reports generated yet
+                                        </td>
+                                    </tr>
+                                )}
                             </tbody>
                         </table>
                     </div>
