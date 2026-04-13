@@ -81,9 +81,13 @@ Route::get('/rack-allocation', function () {
     return Inertia::render('RackAllocation');
 })->middleware(['auth', 'verified'])->name('rack.allocation');
 
-Route::get('/reports', function () {
-    return Inertia::render('Reports');
-})->middleware(['auth', 'verified'])->name('reports');
+use App\Http\Controllers\ReportController;
+
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/reports', [ReportController::class, 'index'])->name('reports');
+    Route::post('/reports/generate', [ReportController::class, 'generatePdf'])->name('reports.generate');
+    Route::get('/reports/download/{report}', [ReportController::class, 'download'])->name('reports.download');
+});
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
