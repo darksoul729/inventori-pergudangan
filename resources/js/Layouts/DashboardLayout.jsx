@@ -67,7 +67,7 @@ const HelpCircleIcon = ({ className }) => (
     </svg>
 );
 
-export default function DashboardLayout({ children, headerTitle, headerSearchPlaceholder, searchValue, onSearch }) {
+export default function DashboardLayout({ children, headerTitle, headerSearchPlaceholder, searchValue, onSearch, headerRight }) {
     const { url } = usePage();
     const isActive = (path) => url.startsWith(path);
 
@@ -115,7 +115,7 @@ export default function DashboardLayout({ children, headerTitle, headerSearchPla
                              <UsersIcon className="w-5 h-5" />
                              <span className={isActive('/supplier') ? '' : 'text-gray-500'}>Suppliers</span>
                           </Link>
-                          <a href="#" className="flex items-center space-x-3.5 px-5 py-3.5 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-2xl font-bold text-[13px] transition-colors">
+                          <Link href="/reports" className={`flex items-center space-x-3.5 px-5 py-3.5 rounded-2xl font-bold text-[13px] transition-colors ${isActive('/reports') ? 'bg-white text-[#3632c0] shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-gray-50' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'}`}>
                              <ChartIcon className="w-5 h-5" />
                              <span className="text-gray-500">Reports</span>
                           </a>
@@ -123,6 +123,12 @@ export default function DashboardLayout({ children, headerTitle, headerSearchPla
                                       <TruckIcon className="w-5 h-5" />
                                       <span className={isActive('/shipments') ? '' : 'text-gray-500'}>Shipments</span>
                                   </Link>
+                             <span className={isActive('/reports') ? '' : 'text-gray-500'}>Reports</span>
+                          </Link>
+                          <a href="#" className="flex items-center space-x-3.5 px-5 py-3.5 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-2xl font-bold text-[13px] transition-colors">
+                             <TruckIcon className="w-5 h-5" />
+                             <span className="text-gray-500">Shipments</span>
+                          </a>
                      </nav>
                 </div>
                 
@@ -156,8 +162,8 @@ export default function DashboardLayout({ children, headerTitle, headerSearchPla
                             <SearchIcon className="w-[17px] h-[17px] absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
                             <input 
                                 type="text" 
-                                placeholder={headerSearchPlaceholder || "Search inventory, containers, or assets..."}
-                                className="w-full bg-[#f4f5f9] text-[13px] text-gray-700 rounded-[10px] pl-11 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#3632c0] border border-transparent transition-all font-bold placeholder-gray-400"
+                                placeholder={headerSearchPlaceholder || "Search engine..."}
+                                className="w-full bg-[#f4f5f9] text-[13px] text-gray-700 rounded-[10px] pl-11 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#3632c0] border border-transparent transition-all font-bold placeholder-gray-400 transition-all duration-200"
                                 value={searchValue || ''}
                                 onChange={(e) => onSearch && onSearch(e.target.value)}
                             />
@@ -165,37 +171,41 @@ export default function DashboardLayout({ children, headerTitle, headerSearchPla
                     </div>
                     
                     <div className="flex items-center space-x-8">
-                        <div className="flex items-center space-x-5 text-gray-500">
-                            <button className="hover:text-gray-900 transition-colors relative">
-                                <BellIcon className="w-[22px] h-[22px]" />
-                                <span className="absolute top-0 right-0 w-2.5 h-2.5 bg-[#ef4444] rounded-full border-[2px] border-white"></span>
-                            </button>
-                            <button className="hover:text-gray-900 transition-colors">
-                                <HelpCircleIcon className="w-[22px] h-[22px]" />
-                            </button>
-                        </div>
+                        {headerRight ? headerRight : (
+                            <>
+                                <div className="flex items-center space-x-5 text-gray-500">
+                                    <button className="hover:text-gray-900 transition-colors relative">
+                                        <BellIcon className="w-[22px] h-[22px]" />
+                                        <span className="absolute top-0 right-0 w-2.5 h-2.5 bg-[#ef4444] rounded-full border-[2px] border-white"></span>
+                                    </button>
+                                    <button className="hover:text-gray-900 transition-colors">
+                                        <HelpCircleIcon className="w-[22px] h-[22px]" />
+                                    </button>
+                                </div>
 
-                        <div className="h-8 w-[1px] bg-gray-100"></div>
+                                <div className="h-8 w-[1px] bg-gray-100"></div>
 
-                        <div className="flex items-center space-x-3 pl-2 cursor-pointer group">
-                             <div className="flex flex-col text-right">
-                                 <span className="text-[13px] font-extrabold text-[#1a202c] group-hover:text-[#4f46e5] transition-colors leading-tight">Adrian Thorne</span>
-                                 <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Operations Lead</span>
-                             </div>
-                             <div className="w-[42px] h-[42px] rounded-full bg-[#f0f4f8] flex items-center justify-center flex-shrink-0 border-2 border-white shadow-sm overflow-hidden group-hover:border-indigo-100 transition-all">
-                                 <svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
-                                     <path fillRule="evenodd" clipRule="evenodd" d="M18 20.5C13.5 20.5 10 23.5 9 28C11 31.5 14 34 18 34C22 34 25 31.5 27 28C26 23.5 22.5 20.5 18 20.5Z" fill="#187296" />
-                                     <path d="M15 20.5L18 25.5L21 20.5H15Z" fill="#ffffff" />
-                                     <circle cx="18" cy="14.5" r="4.5" fill="#fbd29e" />
-                                     <path d="M13.5 14.5C13.5 10.5 15.5 9.5 18 9.5C20.5 9.5 22.5 10.5 22.5 14.5C22.5 14.5 23.5 14.5 23 12.5C22.5 10.5 21 8.5 18 8.5C15 8.5 13.5 10.5 13 12.5C12.5 14.5 13.5 14.5 13.5 14.5Z" fill="#111827" />
-                                 </svg>
-                             </div>
-                        </div>
+                                <div className="flex items-center space-x-3 pl-2 cursor-pointer group">
+                                     <div className="flex flex-col text-right">
+                                         <span className="text-[13px] font-extrabold text-[#1a202c] group-hover:text-[#4f46e5] transition-colors leading-tight">Adrian Thorne</span>
+                                         <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Operations Lead</span>
+                                     </div>
+                                     <div className="w-[42px] h-[42px] rounded-full bg-[#f0f4f8] flex items-center justify-center flex-shrink-0 border-2 border-white shadow-sm overflow-hidden group-hover:border-indigo-100 transition-all">
+                                         <svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
+                                             <path fillRule="evenodd" clipRule="evenodd" d="M18 20.5C13.5 20.5 10 23.5 9 28C11 31.5 14 34 18 34C22 34 25 31.5 27 28C26 23.5 22.5 20.5 18 20.5Z" fill="#187296" />
+                                             <path d="M15 20.5L18 25.5L21 20.5H15Z" fill="#ffffff" />
+                                             <circle cx="18" cy="14.5" r="4.5" fill="#fbd29e" />
+                                             <path d="M13.5 14.5C13.5 10.5 15.5 9.5 18 9.5C20.5 9.5 22.5 10.5 22.5 14.5C22.5 14.5 23.5 14.5 23 12.5C22.5 10.5 21 8.5 18 8.5C15 8.5 13.5 10.5 13 12.5C12.5 14.5 13.5 14.5 13.5 14.5Z" fill="#111827" />
+                                         </svg>
+                                     </div>
+                                </div>
+                            </>
+                        )}
                     </div>
                 </header>
 
                 {/* Dashboard Scrollable Area */}
-                <main className="flex-1 overflow-x-hidden overflow-y-auto px-10 pt-8 pb-32">
+                <main className="flex-1 overflow-x-hidden overflow-y-auto px-10 pt-8 pb-32 scroll-smooth">
                     <div className="max-w-[1400px] mx-auto">
                         {children}
                     </div>
