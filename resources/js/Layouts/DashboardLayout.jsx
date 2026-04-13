@@ -117,18 +117,12 @@ export default function DashboardLayout({ children, headerTitle, headerSearchPla
                           </Link>
                           <Link href="/reports" className={`flex items-center space-x-3.5 px-5 py-3.5 rounded-2xl font-bold text-[13px] transition-colors ${isActive('/reports') ? 'bg-white text-[#3632c0] shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-gray-50' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'}`}>
                              <ChartIcon className="w-5 h-5" />
-                             <span className="text-gray-500">Reports</span>
-                          </a>
-                                  <Link href="/shipments" className={`flex items-center space-x-3.5 px-5 py-3.5 rounded-2xl font-bold text-[13px] transition-colors ${isActive('/shipments') ? 'bg-white text-[#3632c0] shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-gray-50' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'}`}>
-                                      <TruckIcon className="w-5 h-5" />
-                                      <span className={isActive('/shipments') ? '' : 'text-gray-500'}>Shipments</span>
-                                  </Link>
                              <span className={isActive('/reports') ? '' : 'text-gray-500'}>Reports</span>
                           </Link>
-                          <a href="#" className="flex items-center space-x-3.5 px-5 py-3.5 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-2xl font-bold text-[13px] transition-colors">
+                          <Link href="/shipments" className={`flex items-center space-x-3.5 px-5 py-3.5 rounded-2xl font-bold text-[13px] transition-colors ${isActive('/shipments') ? 'bg-white text-[#3632c0] shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-gray-50' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'}`}>
                              <TruckIcon className="w-5 h-5" />
-                             <span className="text-gray-500">Shipments</span>
-                          </a>
+                             <span className={isActive('/shipments') ? '' : 'text-gray-500'}>Shipments</span>
+                          </Link>
                      </nav>
                 </div>
                 
