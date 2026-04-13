@@ -64,6 +64,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::put('/purchase-orders/{purchaseOrder}/status', [PurchaseOrderController::class, 'updateStatus'])->name('purchase-orders.update-status');
 });
 
+use App\Http\Controllers\ShipmentsController;
+
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/shipments', [ShipmentsController::class, 'index'])->name('shipments.index');
+    Route::post('/shipments', [ShipmentsController::class, 'store'])->name('shipments.store');
+    Route::get('/shipments/{shipment}', [ShipmentsController::class, 'show'])->name('shipments.show');
+    Route::put('/shipments/{shipment}/status', [ShipmentsController::class, 'updateStatus'])->name('shipments.update-status');
+});
+
 Route::get('/product/detail', function () {
     return Inertia::render('ProductDetail');
 })->middleware(['auth', 'verified'])->name('product.detail');
