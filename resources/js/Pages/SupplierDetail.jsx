@@ -16,7 +16,7 @@ export default function SupplierDetail({ supplier }) {
     const getMonthName = (monthNumber) => {
         const date = new Date();
         date.setMonth(monthNumber - 1);
-        return date.toLocaleString('default', { month: 'long' });
+        return date.toLocaleString('id-ID', { month: 'long' });
     };
 
     const { data, setData, post, processing, errors, reset } = useForm({
@@ -40,8 +40,8 @@ export default function SupplierDetail({ supplier }) {
     };
 
     return (
-        <DashboardLayout headerSearchPlaceholder="Search performance history...">
-            <Head title={`${supplier.name} - Performance`} />
+        <DashboardLayout headerSearchPlaceholder="Cari riwayat performa...">
+            <Head title={`${supplier.name} - Performa`} />
 
             <div className="flex flex-col space-y-6 pb-12 w-full pt-2 min-w-[1000px] overflow-x-auto">
                 <div className="flex items-center space-x-4 mb-4">
@@ -56,20 +56,20 @@ export default function SupplierDetail({ supplier }) {
 
                 <div className="bg-white rounded-[24px] p-8 shadow-[0_2px_16px_rgba(0,0,0,0.02)] border border-[#edf2f7]">
                     <div className="flex justify-between items-center mb-8">
-                        <h2 className="text-[18px] font-black text-[#1a202c]">Performance History</h2>
+                        <h2 className="text-[18px] font-black text-[#1a202c]">Riwayat Performa</h2>
                         <button onClick={() => setIsEditOpen(true)} className="flex items-center space-x-2 px-6 py-2.5 bg-indigo-600 shadow-lg shadow-indigo-200 hover:bg-indigo-700 text-white font-bold rounded-xl text-[13px] transition-colors">
-                            <span>Adjust Score</span>
+                            <span>Input Penilaian</span>
                         </button>
                     </div>
 
                     <div className="w-full">
                         <div className="grid grid-cols-12 gap-4 pb-4 border-b border-gray-100 text-[10px] font-black text-gray-400 tracking-[0.1em] uppercase">
-                            <div className="col-span-2 pl-2">Period</div>
-                            <div className="col-span-2">Score</div>
-                            <div className="col-span-2">Avg Lead Time</div>
-                            <div className="col-span-2">Total Orders</div>
-                            <div className="col-span-2">On-Time</div>
-                            <div className="col-span-2 text-right pr-4">Late</div>
+                            <div className="col-span-2 pl-2">Periode</div>
+                            <div className="col-span-2">Skor</div>
+                            <div className="col-span-2">Waktu Tunggu</div>
+                            <div className="col-span-2">Total Pesanan</div>
+                            <div className="col-span-2">Tepat Waktu</div>
+                            <div className="col-span-2 text-right pr-4">Terlambat</div>
                         </div>
 
                         <div className="divide-y divide-gray-50/80">
@@ -85,22 +85,22 @@ export default function SupplierDetail({ supplier }) {
                                             </span>
                                         </div>
                                         <div className="col-span-2 flex flex-col justify-center">
-                                            <span className="text-[14px] font-black text-[#1a202c]">{perf.avg_lead_time_days} Days</span>
+                                            <span className="text-[14px] font-black text-[#1a202c]">{perf.avg_lead_time_days} Hari</span>
                                         </div>
                                         <div className="col-span-2 flex flex-col justify-center">
-                                            <span className="text-[14px] font-black text-[#1a202c]">{perf.total_orders} Units</span>
+                                            <span className="text-[14px] font-black text-[#1a202c]">{perf.total_orders} Pesanan</span>
                                         </div>
                                         <div className="col-span-2 flex flex-col justify-center">
-                                            <span className="text-[14px] font-black text-emerald-600">{perf.on_time_deliveries} Units</span>
+                                            <span className="text-[14px] font-black text-emerald-600">{perf.on_time_deliveries} Pesanan</span>
                                         </div>
                                         <div className="col-span-2 flex justify-end pr-4">
-                                            <span className="text-[14px] font-black text-red-500">{perf.late_deliveries} Units</span>
+                                            <span className="text-[14px] font-black text-red-500">{perf.late_deliveries} Pesanan</span>
                                         </div>
                                     </div>
                                 ))
                             ) : (
                                 <div className="py-8 text-center text-[13px] font-bold text-gray-400">
-                                    No historical performance records found for this partner.
+                                    Belum ada riwayat performa untuk pemasok ini.
                                 </div>
                             )}
                         </div>
@@ -136,21 +136,21 @@ export default function SupplierDetail({ supplier }) {
                             >
                                 <Dialog.Panel className="w-full max-w-lg transform overflow-hidden rounded-2xl bg-white p-8 text-left align-middle shadow-xl transition-all">
                                     <Dialog.Title as="h3" className="text-xl font-black text-gray-900 mb-2">
-                                        Manual Performance Override
+                                        Input Performa Pemasok
                                     </Dialog.Title>
                                     <p className="text-[13px] text-gray-500 mb-6 font-semibold">
-                                        Record or overwrite performance logs purely for tracking errors or offline transactions.
+                                        Rekam atau timpa log performa murni untuk melacak kesalahan atau transaksi luring.
                                     </p>
 
                                     <form onSubmit={submitPerformance} className="space-y-4">
                                         <div className="grid grid-cols-2 gap-4">
                                             <div>
-                                                <label className="block text-[11px] font-black tracking-wider text-gray-500 uppercase mb-1">Month (1-12)</label>
+                                                <label className="block text-[11px] font-black tracking-wider text-gray-500 uppercase mb-1">Bulan (1-12)</label>
                                                 <input required type="number" min="1" max="12" value={data.period_month} onChange={e => setData('period_month', e.target.value)} className="w-full rounded-xl bg-gray-50 border-gray-200 text-[14px] font-bold focus:ring-indigo-500 focus:border-indigo-500" />
                                                 {errors.period_month && <p className="text-red-500 text-xs mt-1">{errors.period_month}</p>}
                                             </div>
                                             <div>
-                                                <label className="block text-[11px] font-black tracking-wider text-gray-500 uppercase mb-1">Year</label>
+                                                <label className="block text-[11px] font-black tracking-wider text-gray-500 uppercase mb-1">Tahun</label>
                                                 <input required type="number" min="2000" value={data.period_year} onChange={e => setData('period_year', e.target.value)} className="w-full rounded-xl bg-gray-50 border-gray-200 text-[14px] font-bold focus:ring-indigo-500 focus:border-indigo-500" />
                                                 {errors.period_year && <p className="text-red-500 text-xs mt-1">{errors.period_year}</p>}
                                             </div>
@@ -158,17 +158,17 @@ export default function SupplierDetail({ supplier }) {
 
                                         <div className="grid grid-cols-3 gap-4">
                                             <div>
-                                                <label className="block text-[11px] font-black tracking-wider text-gray-500 uppercase mb-1">Total Orders</label>
+                                                <label className="block text-[11px] font-black tracking-wider text-gray-500 uppercase mb-1">Total Pesanan</label>
                                                 <input required type="number" min="0" value={data.total_orders} onChange={e => setData('total_orders', e.target.value)} className="w-full rounded-xl bg-gray-50 border-gray-200 text-[14px] font-bold focus:ring-indigo-500 focus:border-indigo-500" />
                                                 {errors.total_orders && <p className="text-red-500 text-xs mt-1">{errors.total_orders}</p>}
                                             </div>
                                             <div>
-                                                <label className="block text-[11px] font-black tracking-wider text-gray-500 uppercase mb-1">On Time</label>
+                                                <label className="block text-[11px] font-black tracking-wider text-gray-500 uppercase mb-1">Tepat Waktu</label>
                                                 <input required type="number" min="0" value={data.on_time_deliveries} onChange={e => setData('on_time_deliveries', e.target.value)} className="w-full rounded-xl bg-gray-50 border-gray-200 text-[14px] font-bold focus:ring-emerald-500 focus:border-emerald-500" />
                                                 {errors.on_time_deliveries && <p className="text-red-500 text-xs mt-1">{errors.on_time_deliveries}</p>}
                                             </div>
                                             <div>
-                                                <label className="block text-[11px] font-black tracking-wider text-gray-500 uppercase mb-1">Late</label>
+                                                <label className="block text-[11px] font-black tracking-wider text-gray-500 uppercase mb-1">Terlambat</label>
                                                 <input required type="number" min="0" value={data.late_deliveries} onChange={e => setData('late_deliveries', e.target.value)} className="w-full rounded-xl bg-gray-50 border-gray-200 text-[14px] font-bold focus:ring-red-500 focus:border-red-500" />
                                                 {errors.late_deliveries && <p className="text-red-500 text-xs mt-1">{errors.late_deliveries}</p>}
                                             </div>
@@ -176,21 +176,21 @@ export default function SupplierDetail({ supplier }) {
 
                                         <div className="grid grid-cols-2 gap-4">
                                             <div>
-                                                <label className="block text-[11px] font-black tracking-wider text-gray-500 uppercase mb-1">Avg Lead Time (Days)</label>
+                                                <label className="block text-[11px] font-black tracking-wider text-gray-500 uppercase mb-1">Rata-rata Waktu Tunggu (Hari)</label>
                                                 <input required type="number" step="0.1" min="0" value={data.avg_lead_time_days} onChange={e => setData('avg_lead_time_days', e.target.value)} className="w-full rounded-xl bg-gray-50 border-gray-200 text-[14px] font-bold focus:ring-indigo-500 focus:border-indigo-500" />
                                                 {errors.avg_lead_time_days && <p className="text-red-500 text-xs mt-1">{errors.avg_lead_time_days}</p>}
                                             </div>
                                             <div>
-                                                <label className="block text-[11px] font-black tracking-wider text-gray-500 uppercase mb-1">Performance Score (0-100)</label>
+                                                <label className="block text-[11px] font-black tracking-wider text-gray-500 uppercase mb-1">Skor Performa (0-100)</label>
                                                 <input required type="number" step="0.1" min="0" max="100" value={data.performance_score} onChange={e => setData('performance_score', e.target.value)} className="w-full rounded-xl bg-gray-50 border-gray-200 text-[14px] font-bold focus:ring-indigo-500 focus:border-indigo-500" />
                                                 {errors.performance_score && <p className="text-red-500 text-xs mt-1">{errors.performance_score}</p>}
                                             </div>
                                         </div>
 
                                         <div className="mt-8 flex justify-end space-x-3">
-                                            <button type="button" onClick={() => setIsEditOpen(false)} className="px-5 py-2.5 rounded-xl border border-gray-200 text-gray-600 font-bold text-[13px] hover:bg-gray-50">Cancel</button>
+                                            <button type="button" onClick={() => setIsEditOpen(false)} className="px-5 py-2.5 rounded-xl border border-gray-200 text-gray-600 font-bold text-[13px] hover:bg-gray-50">Batal</button>
                                             <button type="submit" disabled={processing} className="px-5 py-2.5 rounded-xl bg-indigo-600 text-white font-bold text-[13px] hover:bg-indigo-700 disabled:opacity-50 flex items-center shadow-lg shadow-indigo-200">
-                                                {processing ? 'Saving...' : 'Save Performance'}
+                                                {processing ? 'Menyimpan...' : 'Simpan Performa'}
                                             </button>
                                         </div>
                                     </form>

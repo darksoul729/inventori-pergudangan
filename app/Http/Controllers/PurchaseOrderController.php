@@ -33,7 +33,7 @@ class PurchaseOrderController extends Controller
     public function create()
     {
         $suppliers = Supplier::where('status', 'active')->get(['id', 'name', 'code']);
-        $warehouses = Warehouse::all(['id', 'name']);
+        $operationalWarehouse = Warehouse::orderBy('id')->firstOrFail(['id', 'name', 'location']);
         $products = Product::all(['id', 'sku', 'name', 'unit_id']);
         
         // Auto generate string PO
@@ -41,18 +41,20 @@ class PurchaseOrderController extends Controller
 
         return Inertia::render('PurchaseOrders/Create', [
             'suppliers' => $suppliers,
-            'warehouses' => $warehouses,
             'products' => $products,
             'autoPoNumber' => $autoPoNumber,
+            'operationalWarehouse' => $operationalWarehouse,
         ]);
     }
 
     public function store(Request $request)
     {
+        $operationalWarehouse = Warehouse::orderBy('id')->firstOrFail();
+
         $validated = $request->validate([
             'po_number' => 'required|string|unique:purchase_orders,po_number',
             'supplier_id' => 'required|exists:suppliers,id',
-            'warehouse_id' => 'required|exists:warehouses,id',
+            'warehouse_id' => 'nullable|exists:warehouses,id',
             'order_date' => 'required|date',
             'expected_date' => 'nullable|date|after_or_equal:order_date',
             'notes' => 'nullable|string',
@@ -61,6 +63,8 @@ class PurchaseOrderController extends Controller
             'items.*.quantity' => 'required|integer|min:1',
             'items.*.unit_price' => 'required|numeric|min:0',
         ]);
+
+        $validated['warehouse_id'] = $validated['warehouse_id'] ?? $operationalWarehouse->id;
 
         DB::transaction(function () use ($validated, $request) {
             $po = PurchaseOrder::create([

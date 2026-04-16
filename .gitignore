@@ -19,6 +19,13 @@
 /storage/*.key
 /storage/pail
 /vendor
+# Android driver app artifacts
+/driver-app/.gradle/
+/driver-app/.gradle-home/
+/driver-app/.idea/
+/driver-app/build/
+/driver-app/app/build/
+/driver-app/local.properties
 _ide_helper.php
 Homestead.json
 Homestead.yaml

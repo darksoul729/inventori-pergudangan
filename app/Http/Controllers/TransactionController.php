@@ -81,6 +81,41 @@ class TransactionController extends Controller
         ]);
     }
 
+    
+    public function show(StockMovement $transaction): Response
+    {
+        $transaction->load(['product', 'warehouse', 'user']);
+        return Inertia::render('TransactionDetail', [
+            'transaction' => [
+                'id' => $transaction->id,
+                'movement_type' => $transaction->movement_type,
+                'quantity' => $transaction->quantity,
+                'stock_before' => $transaction->stock_before,
+                'stock_after' => $transaction->stock_after,
+                'reference_type' => $transaction->reference_type,
+                'reference_id' => $transaction->reference_id,
+                'movement_date' => $transaction->movement_date->format('Y-m-d H:i:s'),
+                'notes' => $transaction->notes,
+                'product' => $transaction->product ? [
+                    'id' => $transaction->product->id,
+                    'name' => $transaction->product->name,
+                    'sku' => $transaction->product->sku,
+                    'purchase_price' => $transaction->product->purchase_price,
+                ] : null,
+                'warehouse' => $transaction->warehouse ? [
+                    'id' => $transaction->warehouse->id,
+                    'name' => $transaction->warehouse->name,
+                    'location' => $transaction->warehouse->location,
+                ] : null,
+                'user' => $transaction->user ? [
+                    'id' => $transaction->user->id,
+                    'name' => $transaction->user->name,
+                    'email' => $transaction->user->email,
+                ] : null,
+            ]
+        ]);
+    }
+
     public function export(Request $request)
     {
         $query = StockMovement::query()

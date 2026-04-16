@@ -26,7 +26,10 @@
         "chart.js": "^4.5.1",
         "exceljs": "^4.4.0",
         "file-saver": "^2.0.5",
+        "leaflet": "^1.9.4",
         "lucide-react": "^1.7.0",
+        "react-is": "^19.2.5",
+        "react-leaflet": "^4.2.1",
         "recharts": "^3.8.1",
         "xlsx": "^0.18.5"
     }

@@ -32,30 +32,30 @@ export default function Index({ purchaseOrders = [] }) {
     };
 
     return (
-        <DashboardLayout headerSearchPlaceholder="Search purchase orders...">
-            <Head title="Purchase Orders" />
+        <DashboardLayout headerSearchPlaceholder="Cari pesanan pembelian...">
+            <Head title="Pesanan Pembelian" />
 
             <div className="flex flex-col space-y-6 pb-12 w-full pt-2 min-w-[1000px] overflow-x-auto">
                 <div className="flex justify-between items-start mb-4">
                     <div>
-                        <h1 className="text-[28px] font-black text-[#1a202c] tracking-tight">Purchase Orders</h1>
-                        <p className="text-[14px] font-bold text-gray-500 mt-1">Manage stock procurement from multiple suppliers.</p>
+                        <h1 className="text-[28px] font-black text-[#1a202c] tracking-tight">Pesanan Pembelian</h1>
+                        <p className="text-[14px] font-bold text-gray-500 mt-1">Kelola pemesanan stok dari pemasok untuk gudang operasional.</p>
                     </div>
                     <Link href={route('purchase-orders.create')} className="flex items-center space-x-2 px-6 py-3.5 bg-[#4f46e5] shadow-[#4f46e5]/30 shadow-lg hover:bg-indigo-700 text-white font-bold rounded-xl text-[14px] transition-colors">
                         <PlusIcon className="w-4 h-4" />
-                        <span>Create New PO</span>
+                        <span>Buat PO Baru</span>
                     </Link>
                 </div>
 
                 <div className="bg-white rounded-[24px] p-8 shadow-[0_2px_16px_rgba(0,0,0,0.02)] border border-[#edf2f7]">
                     <div className="w-full">
                         <div className="grid grid-cols-12 gap-4 pb-4 border-b border-gray-100 text-[10px] font-black text-gray-400 tracking-[0.1em] uppercase">
-                            <div className="col-span-2 pl-2">PO Number</div>
-                            <div className="col-span-3">Supplier</div>
-                            <div className="col-span-2">Date</div>
-                            <div className="col-span-2">Amount</div>
+                            <div className="col-span-2 pl-2">Nomor PO</div>
+                            <div className="col-span-3">Pemasok</div>
+                            <div className="col-span-2">Tanggal</div>
+                            <div className="col-span-2">Nilai</div>
                             <div className="col-span-2">Status</div>
-                            <div className="col-span-1 text-right pr-4">Action</div>
+                            <div className="col-span-1 text-right pr-4">Aksi</div>
                         </div>
 
                         <div className="divide-y divide-gray-50/80">
@@ -77,7 +77,7 @@ export default function Index({ purchaseOrders = [] }) {
                                         </div>
                                         <div className="col-span-2 flex items-center">
                                             <span className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider ${getStatusColor(po.status)}`}>
-                                                {po.status}
+                                                {po.status === 'pending' ? 'Menunggu' : po.status === 'approved' ? 'Disetujui' : po.status === 'received' ? 'Diterima' : po.status === 'cancelled' ? 'Dibatalkan' : po.status === 'rejected' ? 'Ditolak' : po.status}
                                             </span>
                                         </div>
                                         <div className="col-span-1 flex justify-end pr-4">
@@ -89,7 +89,7 @@ export default function Index({ purchaseOrders = [] }) {
                                 ))
                             ) : (
                                 <div className="py-12 text-center text-[14px] font-bold text-gray-400">
-                                    No purchase orders found. Start by creating the first one!
+                                    Belum ada pesanan pembelian. Mulai dengan membuat PO pertama.
                                 </div>
                             )}
                         </div>

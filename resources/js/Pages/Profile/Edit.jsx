@@ -7,11 +7,11 @@ import UpdateProfileInformationForm from './Partials/UpdateProfileInformationFor
 export default function Edit({ mustVerifyEmail, status }) {
     return (
         <DashboardLayout>
-            <Head title="Profile" />
+            <Head title="Profil" />
 
             <div>
                 <div className="mb-8">
-                    <h1 className="text-3xl font-bold text-gray-900">Profile</h1>
+                    <h1 className="text-3xl font-bold text-gray-900">Profil</h1>
                 </div>
 
                 <div className="max-w-7xl space-y-6">

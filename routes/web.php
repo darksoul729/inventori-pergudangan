@@ -36,14 +36,18 @@ use App\Http\Controllers\InventoryController;
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/inventory', [InventoryController::class, 'index'])->name('inventory');
+    Route::get('/inventory/create', [InventoryController::class, 'create'])->name('inventory.create');
     Route::post('/inventory/products', [InventoryController::class, 'store'])->name('inventory.store');
+    Route::get('/inventory/outbound', [InventoryController::class, 'outbound'])->name('inventory.outbound.view');
     Route::post('/inventory/movements/outbound', [InventoryController::class, 'recordOutbound'])->name('inventory.outbound');
+    Route::get('/inventory/{product}', [InventoryController::class, 'show'])->name('inventory.show');
 });
 
 use App\Http\Controllers\TransactionController;
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/transaction', [TransactionController::class, 'index'])->name('transaction');
+    Route::get('/transaction/{transaction}', [TransactionController::class, 'show'])->name('transaction.show');
     Route::get('/transaction/export', [TransactionController::class, 'export'])->name('transaction.export');
 });
 
@@ -68,14 +72,24 @@ use App\Http\Controllers\ShipmentsController;
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/shipments', [ShipmentsController::class, 'index'])->name('shipments.index');
+    Route::get('/shipments/create', [ShipmentsController::class, 'create'])->name('shipments.create');
     Route::post('/shipments', [ShipmentsController::class, 'store'])->name('shipments.store');
+    Route::get('/shipments/{shipment}/edit', [ShipmentsController::class, 'edit'])->name('shipments.edit');
+    Route::put('/shipments/{shipment}', [ShipmentsController::class, 'update'])->name('shipments.update');
+    Route::delete('/shipments/{shipment}', [ShipmentsController::class, 'destroy'])->name('shipments.destroy');
     Route::get('/shipments/{shipment}', [ShipmentsController::class, 'show'])->name('shipments.show');
+    Route::get('/shipments/{shipment}/proof-pdf', [ShipmentsController::class, 'downloadProofPdf'])->name('shipments.proof-pdf');
     Route::put('/shipments/{shipment}/status', [ShipmentsController::class, 'updateStatus'])->name('shipments.update-status');
+    Route::put('/shipments/{shipment}/verify-proof', [ShipmentsController::class, 'verifyProof'])->name('shipments.verify-proof');
 });
 
-Route::get('/product/detail', function () {
-    return Inertia::render('ProductDetail');
-})->middleware(['auth', 'verified'])->name('product.detail');
+use App\Http\Controllers\DriverController;
+
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/drivers', [DriverController::class, 'index'])->name('drivers.index');
+    Route::get('/api/drivers/locations', [DriverController::class, 'getLocations'])->name('drivers.locations');
+    Route::put('/drivers/{driver}/status', [DriverController::class, 'updateStatus'])->name('drivers.status.update');
+});
 
 Route::get('/rack-allocation', function () {
     return Inertia::render('RackAllocation');
@@ -93,6 +107,22 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+}
+);
+
+use App\Http\Controllers\SettingsController;
+
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/settings', [SettingsController::class, 'index'])->name('settings');
+    Route::put('/settings/warehouse/{id}', [SettingsController::class, 'updateWarehouse'])->name('settings.warehouse.update');
+    
+    Route::post('/settings/categories', [SettingsController::class, 'storeCategory'])->name('settings.categories.store');
+    Route::put('/settings/categories/{id}', [SettingsController::class, 'updateCategory'])->name('settings.categories.update');
+    Route::delete('/settings/categories/{id}', [SettingsController::class, 'destroyCategory'])->name('settings.categories.destroy');
+    
+    Route::post('/settings/units', [SettingsController::class, 'storeUnit'])->name('settings.units.store');
+    Route::put('/settings/units/{id}', [SettingsController::class, 'updateUnit'])->name('settings.units.update');
+    Route::delete('/settings/units/{id}', [SettingsController::class, 'destroyUnit'])->name('settings.units.destroy');
 });
 
 require __DIR__.'/auth.php';

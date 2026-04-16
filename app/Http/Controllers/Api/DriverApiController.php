@@ -1,0 +1,366 @@
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+
+use App\Models\Driver;
+use App\Models\Role;
+use App\Models\User;
+use App\Models\Shipment;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
+
+class DriverApiController extends Controller
+{
+    public function register(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users',
+            'password' => 'required|string|min:8',
+            'phone' => 'nullable|string',
+            'license_number' => 'required|string|unique:drivers',
+            'photo_id_card' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        $driverRole = Role::where('name', 'Driver')->first();
+
+        if (!$driverRole) {
+            return response()->json([
+                'message' => 'Role driver belum tersedia. Jalankan seeder terlebih dahulu.',
+            ], 500);
+        }
+
+        $user = User::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+            'phone' => $request->phone,
+            'role_id' => $driverRole->id,
+            'status' => 'active', // Diubah ke active agar bisa langsung login
+        ]);
+
+        $photoPath = null;
+        if ($request->hasFile('photo_id_card')) {
+            $photoPath = $request->file('photo_id_card')->store('drivers/id_cards', 'public');
+        }
+
+        $driver = Driver::create([
+            'user_id' => $user->id,
+            'license_number' => $request->license_number,
+            'phone' => $request->phone,
+            'photo_id_card' => $photoPath,
+            'status' => 'approved', // Diubah ke approved untuk mempermudah debug
+        ]);
+
+        return response()->json([
+            'message' => 'Driver registered successfully. Please wait for admin approval.',
+            'driver' => $driver
+        ], 201);
+    }
+
+    public function login(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+            'password' => 'required',
+        ]);
+
+        $user = User::where('email', $request->email)->first();
+
+        if (!$user || !Hash::check($request->password, $user->password)) {
+            return response()->json(['message' => 'Invalid credentials'], 401);
+        }
+
+        $driver = $user->driver;
+
+        if (!$driver || $driver->status !== 'approved') {
+            return response()->json(['message' => 'Your account is pending approval or suspended.'], 403);
+        }
+
+        $token = $user->createToken('driver-token')->plainTextToken;
+
+        return response()->json([
+            'token' => $token,
+            'user' => $user,
+            'driver' => $driver
+        ]);
+    }
+
+    public function profile(Request $request)
+    {
+        $user = $request->user();
+        $driver = $user->driver;
+
+        return response()->json([
+            'user' => $user,
+            'driver' => $driver,
+        ]);
+    }
+
+    public function claimShipment(Request $request)
+    {
+        $request->validate([
+            'shipment_id' => 'required|string|exists:shipments,shipment_id',
+        ]);
+
+        $driver = $request->user()->driver;
+        if ($this->hasBlockedShipment($driver->id)) {
+            return response()->json([
+                'message' => 'Selesaikan 1 pengiriman aktif Anda dulu. Pengiriman baru bisa diambil setelah bukti diverifikasi admin.',
+            ], 422);
+        }
+
+        $shipmentCode = strtoupper(trim($request->string('shipment_id')->toString()));
+        $shipment = Shipment::where('shipment_id', $shipmentCode)->first();
+
+        if ($shipment->driver_id) {
+            if ((int) $shipment->driver_id === (int) $driver->id) {
+                return response()->json(['message' => 'Shipment ini sudah diklaim oleh Anda.'], 422);
+            }
+            return response()->json(['message' => 'Shipment is already assigned to another driver.'], 422);
+        }
+
+        $shipment->update([
+            'driver_id' => $driver->id,
+            'tracking_stage' => 'ready_for_pickup',
+            'claimed_at' => now(),
+            'last_tracking_note' => 'Shipment diklaim oleh driver.',
+        ]);
+
+        return response()->json([
+            'message' => 'Shipment successfully claimed.',
+            'shipment' => $this->transformShipment($shipment->fresh())
+        ]);
+    }
+
+    public function assignedShipments(Request $request)
+    {
+        $driver = $request->user()->driver;
+
+        // Show active shipment or delivered shipment waiting for admin POD verification.
+        $shipments = Shipment::where('driver_id', $driver->id)
+            ->where(function ($query) {
+                $query->where('tracking_stage', '!=', 'delivered')
+                    ->orWhere(function ($deliveredQuery) {
+                        $deliveredQuery->where('tracking_stage', 'delivered')
+                            ->where(function ($verificationQuery) {
+                                $verificationQuery->whereNull('pod_verification_status')
+                                    ->orWhere('pod_verification_status', '!=', 'approved');
+                            });
+                    });
+            })
+            ->latest()
+            ->get()
+            ->map(fn (Shipment $shipment) => $this->transformShipment($shipment));
+
+        return response()->json([
+            'message' => 'Assigned shipments loaded.',
+            'data' => $shipments,
+        ]);
+    }
+
+    public function shipmentHistory(Request $request)
+    {
+        $driver = $request->user()->driver;
+
+        // Show only delivered shipments with approved POD verification.
+        $shipments = Shipment::where('driver_id', $driver->id)
+            ->where('tracking_stage', 'delivered')
+            ->where('pod_verification_status', 'approved')
+            ->latest()
+            ->get()
+            ->map(fn (Shipment $shipment) => $this->transformShipment($shipment));
+
+        return response()->json([
+            'message' => 'Shipment history loaded.',
+            'data' => $shipments,
+        ]);
+    }
+
+    public function updateStatus(Request $request, $id)
+    {
+        $request->validate([
+            'tracking_stage' => 'required|in:ready_for_pickup,picked_up,in_transit,arrived_at_destination,delivered',
+            'note' => 'nullable|string|max:255',
+            'delivery_recipient_name' => 'nullable|string|max:255',
+            'delivery_note' => 'nullable|string|max:1000',
+            'delivery_photo_base64' => 'nullable|string',
+        ]);
+
+        $shipment = Shipment::where('id', $id)
+            ->where('driver_id', $request->user()->driver->id)
+            ->firstOrFail();
+
+        $trackingStage = $request->string('tracking_stage')->toString();
+        $shipment->fill([
+            'tracking_stage' => $trackingStage,
+            'last_tracking_note' => $request->input('note'),
+        ]);
+
+        if ($trackingStage === 'delivered') {
+            $shipment->delivery_recipient_name = $request->input('delivery_recipient_name');
+            $shipment->delivery_note = $request->input('delivery_note');
+            if ($request->filled('delivery_photo_base64')) {
+                $shipment->delivery_photo_path = $this->storeDeliveryPhoto($request->string('delivery_photo_base64')->toString());
+            }
+            $shipment->pod_verification_status = 'pending';
+            $shipment->pod_verified_at = null;
+            $shipment->pod_verified_by = null;
+        }
+
+        $this->syncShipmentTrackingTimestamps($shipment, $trackingStage);
+        $shipment->status = $this->mapTrackingStageToShipmentStatus($trackingStage, $shipment->status);
+        $shipment->save();
+
+        return response()->json([
+            'message' => 'Shipment status updated',
+            'shipment' => $this->transformShipment($shipment->fresh()),
+        ]);
+    }
+
+    public function updateLocation(Request $request)
+    {
+        $request->validate([
+            'latitude' => 'required|numeric',
+            'longitude' => 'required|numeric',
+            'is_mock' => 'nullable|boolean',
+        ]);
+
+        $driver = $request->user()->driver;
+        $driver->update([
+            'latitude' => $request->latitude,
+            'longitude' => $request->longitude,
+            'last_location_mock' => $request->is_mock ?? false,
+            'is_active' => true
+        ]);
+
+        return response()->json(['message' => 'Location updated']);
+    }
+
+    private function transformShipment(Shipment $shipment): array
+    {
+        return [
+            'id' => $shipment->id,
+            'shipment_id' => $shipment->shipment_id,
+            'origin' => $shipment->origin,
+            'origin_name' => $shipment->origin_name,
+            'origin_lat' => $shipment->origin_lat ? (float) $shipment->origin_lat : null,
+            'origin_lng' => $shipment->origin_lng ? (float) $shipment->origin_lng : null,
+            'destination' => $shipment->destination,
+            'destination_name' => $shipment->destination_name,
+            'dest_lat' => $shipment->dest_lat ? (float) $shipment->dest_lat : null,
+            'dest_lng' => $shipment->dest_lng ? (float) $shipment->dest_lng : null,
+            'status' => $shipment->status,
+            'tracking_stage' => $shipment->tracking_stage,
+            'tracking_stage_label' => Shipment::trackingStageLabels()[$shipment->tracking_stage] ?? $shipment->tracking_stage,
+            'estimated_arrival' => $shipment->estimated_arrival?->toIso8601String(),
+            'last_tracking_note' => $shipment->last_tracking_note,
+            'claimed_at' => $shipment->claimed_at?->toIso8601String(),
+            'picked_up_at' => $shipment->picked_up_at?->toIso8601String(),
+            'in_transit_at' => $shipment->in_transit_at?->toIso8601String(),
+            'arrived_at_destination_at' => $shipment->arrived_at_destination_at?->toIso8601String(),
+            'delivered_at' => $shipment->delivered_at?->toIso8601String(),
+            'delivery_recipient_name' => $shipment->delivery_recipient_name,
+            'delivery_note' => $shipment->delivery_note,
+            'delivery_photo_url' => $shipment->delivery_photo_path ? '/storage/'.$shipment->delivery_photo_path : null,
+            'pod_verification_status' => $shipment->pod_verification_status,
+            'pod_verification_note' => $shipment->pod_verification_note,
+            'pod_verified_at' => $shipment->pod_verified_at?->toIso8601String(),
+        ];
+    }
+
+    private function hasBlockedShipment(int $driverId): bool
+    {
+        return Shipment::where('driver_id', $driverId)
+            ->where(function ($query) {
+                $query->where('tracking_stage', '!=', 'delivered')
+                    ->orWhere(function ($deliveredQuery) {
+                        $deliveredQuery->where('tracking_stage', 'delivered')
+                            ->where(function ($verificationQuery) {
+                                $verificationQuery->whereNull('pod_verification_status')
+                                    ->orWhere('pod_verification_status', '!=', 'approved');
+                            });
+                    });
+            })
+            ->exists();
+    }
+
+    private function syncShipmentTrackingTimestamps(Shipment $shipment, string $trackingStage): void
+    {
+        $now = Carbon::now();
+
+        if (!$shipment->claimed_at) {
+            $shipment->claimed_at = $now;
+        }
+
+        if (in_array($trackingStage, ['picked_up', 'in_transit', 'arrived_at_destination', 'delivered'], true) && !$shipment->picked_up_at) {
+            $shipment->picked_up_at = $now;
+        }
+
+        if (in_array($trackingStage, ['in_transit', 'arrived_at_destination', 'delivered'], true) && !$shipment->in_transit_at) {
+            $shipment->in_transit_at = $now;
+        }
+
+        if (in_array($trackingStage, ['arrived_at_destination', 'delivered'], true) && !$shipment->arrived_at_destination_at) {
+            $shipment->arrived_at_destination_at = $now;
+        }
+
+        if ($trackingStage === 'delivered' && !$shipment->delivered_at) {
+            $shipment->delivered_at = $now;
+        }
+    }
+
+    private function mapTrackingStageToShipmentStatus(string $trackingStage, string $currentStatus): string
+    {
+        return match ($trackingStage) {
+            'delivered' => 'delivered',
+            'picked_up', 'in_transit', 'arrived_at_destination' => 'in-transit',
+            default => $currentStatus,
+        };
+    }
+
+    private function storeDeliveryPhoto(string $base64Payload): string
+    {
+        if (!preg_match('/^data:image\/(\w+);base64,/', $base64Payload, $matches)) {
+            throw ValidationException::withMessages([
+                'delivery_photo_base64' => 'Format foto POD tidak valid.',
+            ]);
+        }
+
+        $extension = strtolower($matches[1]);
+        if (!in_array($extension, ['jpg', 'jpeg', 'png', 'webp'], true)) {
+            throw ValidationException::withMessages([
+                'delivery_photo_base64' => 'Tipe foto POD tidak didukung.',
+            ]);
+        }
+
+        $binary = base64_decode(substr($base64Payload, strpos($base64Payload, ',') + 1), true);
+        if ($binary === false) {
+            throw ValidationException::withMessages([
+                'delivery_photo_base64' => 'Isi foto POD tidak valid.',
+            ]);
+        }
+
+        if (strlen($binary) > 5 * 1024 * 1024) {
+            throw ValidationException::withMessages([
+                'delivery_photo_base64' => 'Ukuran foto POD maksimal 5 MB.',
+            ]);
+        }
+
+        $path = 'shipments/pod/'.Str::uuid().'.'.$extension;
+        Storage::disk('public')->put($path, $binary);
+
+        return $path;
+    }
+}

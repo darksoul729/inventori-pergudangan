@@ -55,6 +55,14 @@ const Content = ({
 
     if (width === '48') {
         widthClasses = 'w-48';
+    } else if (width === '56') {
+        widthClasses = 'w-56';
+    } else if (width === '64') {
+        widthClasses = 'w-64';
+    } else if (width === '80') {
+        widthClasses = 'w-80';
+    } else if (width === '96') {
+        widthClasses = 'w-96';
     }
 
     return (
@@ -69,7 +77,7 @@ const Content = ({
                 leaveTo="opacity-0 scale-95"
             >
                 <div
-                    className={`absolute z-50 mt-2 rounded-md shadow-lg ${alignmentClasses} ${widthClasses}`}
+                    className={`absolute z-50 mt-2 rounded-xl shadow-2xl ${alignmentClasses} ${widthClasses}`}
                     onClick={() => setOpen(false)}
                 >
                     <div

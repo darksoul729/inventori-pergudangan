@@ -31,16 +31,16 @@ const WifiIcon = ({ className }) => (
 export default function RackAllocation({ rackId }) {
     return (
         <DashboardLayout>
-            <Head title={`Rack Allocation - ${rackId}`} />
+            <Head title={`Alokasi Rack - ${rackId}`} />
 
             <div className="flex justify-between items-start mb-6">
                 <div>
                      <div className="flex items-center space-x-2 text-sm mb-2">
-                         <Link href="/warehouse" className="text-gray-400 hover:text-indigo-600 font-bold transition-colors">Warehouse</Link>
+                         <Link href="/warehouse" className="text-gray-400 hover:text-indigo-600 font-bold transition-colors">Gudang</Link>
                          <span className="text-gray-300">/</span>
-                         <span className="text-gray-600 font-bold">Rack Configuration</span>
+                         <span className="text-gray-600 font-bold">Konfigurasi Rak</span>
                      </div>
-                     <h1 className="text-[26px] font-black text-[#1a202c] tracking-tight">{rackId || 'RACK A13-A24'} Setup</h1>
+                     <h1 className="text-[26px] font-black text-[#1a202c] tracking-tight">{rackId || 'RAK A13-A24'} Setup</h1>
                 </div>
             </div>
 
@@ -53,16 +53,16 @@ export default function RackAllocation({ rackId }) {
                         <div className="flex justify-between items-center mb-6">
                             <div className="flex items-center space-x-4">
                                 <div className="w-8 h-8 rounded-full bg-[#f3f4f6] text-[#4f46e5] flex items-center justify-center font-black text-sm">1</div>
-                                <h2 className="text-[18px] font-black text-[#1a202c]">SKU Selection</h2>
+                                <h2 className="text-[18px] font-black text-[#1a202c]">Pilih Produk</h2>
                             </div>
                             <button className="flex items-center space-x-2 text-[#4f46e5] text-[13px] font-bold hover:text-indigo-700 transition-colors">
                                 <ScanIcon className="w-4 h-4" />
-                                <span>Quick Scan</span>
+                                <span>Pindai Cepat</span>
                             </button>
                         </div>
                         
                         <div className="mb-4">
-                            <label className="block text-[10px] font-extrabold text-gray-500 tracking-wider uppercase mb-2">Search Inventory</label>
+                            <label className="block text-[10px] font-extrabold text-gray-500 tracking-wider uppercase mb-2">Cari Inventaris</label>
                             <div className="relative">
                                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                                     <SearchIcon className="h-5 w-5 text-gray-400" />
@@ -86,19 +86,19 @@ export default function RackAllocation({ rackId }) {
                             
                             <div className="flex-1">
                                 <div className="flex items-center space-x-3 mb-1">
-                                    <span className="bg-[#e0e7ff] text-[#4f46e5] text-[9px] font-black px-2 py-0.5 rounded-md uppercase tracking-wider">SELECTED SKU</span>
+                                    <span className="bg-[#e0e7ff] text-[#4f46e5] text-[9px] font-black px-2 py-0.5 rounded-md uppercase tracking-wider">SKU TERPILIH</span>
                                     <span className="text-[12px] font-bold text-gray-500">AET-992-BX</span>
                                 </div>
                                 <h3 className="text-[18px] font-black text-[#1a202c] mb-3">Quantum Pulse Hub V2</h3>
                                 
                                 <div className="flex space-x-8">
                                     <div>
-                                        <div className="text-[9px] font-extrabold text-gray-400 tracking-widest uppercase mb-0.5">Global Stock</div>
-                                        <div className="text-[14px] font-black text-[#1a202c]">1,248 Units</div>
+                                        <div className="text-[9px] font-extrabold text-gray-400 tracking-widest uppercase mb-0.5">Total Stok</div>
+                                        <div className="text-[14px] font-black text-[#1a202c]">1.248 Unit</div>
                                     </div>
                                     <div>
-                                        <div className="text-[9px] font-extrabold text-gray-400 tracking-widest uppercase mb-0.5">Category</div>
-                                        <div className="text-[14px] font-black text-[#1a202c]">Electronics</div>
+                                        <div className="text-[9px] font-extrabold text-gray-400 tracking-widest uppercase mb-0.5">Kategori</div>
+                                        <div className="text-[14px] font-black text-[#1a202c]">Elektronik</div>
                                     </div>
                                 </div>
                             </div>
@@ -109,12 +109,12 @@ export default function RackAllocation({ rackId }) {
                     <div className="bg-white rounded-[24px] p-8 shadow-[0_2px_16px_rgba(0,0,0,0.02)] border border-[#edf2f7]">
                         <div className="flex items-center space-x-4 mb-6">
                             <div className="w-8 h-8 rounded-full bg-[#f3f4f6] text-[#4f46e5] flex items-center justify-center font-black text-sm">2</div>
-                            <h2 className="text-[18px] font-black text-[#1a202c]">Allocation Details</h2>
+                            <h2 className="text-[18px] font-black text-[#1a202c]">Detail Alokasi</h2>
                         </div>
                         
                         <div className="grid grid-cols-3 gap-6">
                             <div className="relative">
-                                <label className="block text-[10px] font-extrabold text-gray-500 tracking-wider uppercase mb-2">Quantity to Assign</label>
+                                <label className="block text-[10px] font-extrabold text-gray-500 tracking-wider uppercase mb-2">Kuantitas Alokasi</label>
                                 <div className="relative">
                                     <input 
                                         type="number" 
@@ -122,27 +122,27 @@ export default function RackAllocation({ rackId }) {
                                         defaultValue="150"
                                     />
                                 </div>
-                                <div className="mt-1.5 text-center text-[10px] text-gray-400 italic font-medium">Units (pcs)</div>
+                                <div className="mt-1.5 text-center text-[10px] text-gray-400 italic font-medium">Unit (pcs)</div>
                             </div>
 
                             <div>
-                                <label className="block text-[10px] font-extrabold text-gray-500 tracking-wider uppercase mb-2">Min Threshold</label>
+                                <label className="block text-[10px] font-extrabold text-gray-500 tracking-wider uppercase mb-2">Batas Minimum</label>
                                 <input 
                                     type="number" 
                                     className="bg-[#f8f9fb] border border-transparent focus:border-[#4f46e5] focus:ring-1 focus:ring-[#4f46e5] block w-full px-4 py-3.5 sm:text-base font-bold text-left rounded-xl text-[#1a202c]" 
                                     defaultValue="20"
                                 />
-                                <div className="mt-1.5 text-center text-[10px] text-gray-400 italic font-medium">Alert level for restock</div>
+                                <div className="mt-1.5 text-center text-[10px] text-gray-400 italic font-medium">Tingkat peringatan untuk isi ulang</div>
                             </div>
 
                             <div>
-                                <label className="block text-[10px] font-extrabold text-gray-500 tracking-wider uppercase mb-2">Max Capacity</label>
+                                <label className="block text-[10px] font-extrabold text-gray-500 tracking-wider uppercase mb-2">Kapasitas Maksimal</label>
                                 <input 
                                     type="number" 
                                     className="bg-[#f8f9fb] border border-transparent focus:border-[#4f46e5] focus:ring-1 focus:ring-[#4f46e5] block w-full px-4 py-3.5 sm:text-base font-bold text-left rounded-xl text-[#1a202c]" 
                                     defaultValue="300"
                                 />
-                                <div className="mt-1.5 text-center text-[10px] text-gray-400 italic font-medium">Physical limit for this slot</div>
+                                <div className="mt-1.5 text-center text-[10px] text-gray-400 italic font-medium">Batas fisik untuk ruang ini</div>
                             </div>
                         </div>
                     </div>
@@ -151,30 +151,30 @@ export default function RackAllocation({ rackId }) {
                     <div className="bg-white rounded-[24px] p-8 shadow-[0_2px_16px_rgba(0,0,0,0.02)] border border-[#edf2f7]">
                         <div className="flex items-center space-x-4 mb-6">
                             <div className="w-8 h-8 rounded-full bg-[#f3f4f6] text-[#4f46e5] flex items-center justify-center font-black text-sm">3</div>
-                            <h2 className="text-[18px] font-black text-[#1a202c]">Handling Instructions</h2>
+                            <h2 className="text-[18px] font-black text-[#1a202c]">Instruksi Penanganan</h2>
                         </div>
                         
                         <div className="mb-5">
-                             <label className="block text-[10px] font-extrabold text-gray-500 tracking-wider uppercase mb-2">Rack-Specific Notes</label>
+                             <label className="block text-[10px] font-extrabold text-gray-500 tracking-wider uppercase mb-2">Catatan Khusus Rak</label>
                              <textarea 
                                  rows={3} 
                                  className="bg-[#f8f9fb] border border-transparent focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 block w-full p-4 sm:text-sm font-medium text-gray-600 rounded-xl resize-none"
-                                 defaultValue="E.g. Handle with gloves, fragile sensors inside, do not stack more than 4 boxes high..."
+                                 defaultValue="Cth: Tangani dengan sarung tangan, sensor mudah pecah, jangan tumpuk lebih dari 4 kotak..."
                              ></textarea>
                         </div>
 
                         <div className="flex flex-wrap gap-3">
                             <button className="flex items-center space-x-2 bg-white border border-gray-200 px-3.5 py-1.5 rounded-full text-[11.5px] font-bold text-gray-600 hover:bg-gray-50 transition-colors">
                                 <svg className="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" /></svg>
-                                <span>Do not stack</span>
+                                <span>Jangan ditumpuk</span>
                             </button>
                             <button className="flex items-center space-x-2 bg-white border border-gray-200 px-3.5 py-1.5 rounded-full text-[11.5px] font-bold text-gray-600 hover:bg-gray-50 transition-colors">
                                 <svg className="w-3.5 h-3.5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" /></svg>
-                                <span>Keep dry</span>
+                                <span>Jaga tetap kering</span>
                             </button>
                             <button className="flex items-center space-x-2 bg-white border border-gray-200 px-3.5 py-1.5 rounded-full text-[11.5px] font-bold text-gray-600 hover:bg-gray-50 transition-colors">
                                 <svg className="w-3.5 h-3.5 text-cyan-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
-                                <span>Temperature Sensitive</span>
+                                <span>Sensitif Suhu</span>
                             </button>
                         </div>
                     </div>
@@ -182,10 +182,10 @@ export default function RackAllocation({ rackId }) {
                     {/* Form Actions */}
                     <div className="flex justify-center space-x-4 mt-6 relative pt-4">
                         <Link href="/warehouse" className="px-8 py-3.5 border border-gray-300 text-gray-600 font-bold rounded-xl text-[14px] hover:bg-gray-50 transition-colors border-dashed bg-white shadow-sm">
-                            Cancel
+                            Batal
                         </Link>
                         <button className="px-8 py-3.5 bg-[#4f46e5] text-white font-bold rounded-xl shadow-[0_4px_14px_rgba(79,70,229,0.3)] text-[14px] hover:bg-indigo-700 transition-all flex items-center space-x-2 focus:ring-4 focus:ring-indigo-500/30">
-                            <span>Confirm Assignment</span>
+                            <span>Konfirmasi Alokasi</span>
                             <svg className="w-4 h-4 text-indigo-200 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
                         </button>
                     </div>
@@ -201,8 +201,8 @@ export default function RackAllocation({ rackId }) {
 
                         <div className="flex justify-between items-start mb-6 relative z-10">
                             <div>
-                                <div className="text-[9px] font-black text-indigo-300 tracking-[0.2em] uppercase mb-1 drop-shadow-md">Current Location</div>
-                                <h3 className="text-[24px] font-black text-white leading-tight drop-shadow-lg">Rack A1-A12</h3>
+                                <div className="text-[9px] font-black text-indigo-300 tracking-[0.2em] uppercase mb-1 drop-shadow-md">Lokasi Saat Ini</div>
+                                <h3 className="text-[24px] font-black text-white leading-tight drop-shadow-lg">Rak A1-A12</h3>
                             </div>
                             <div className="w-10 h-10 rounded-[10px] bg-white/10 backdrop-blur-md border border-white/10 flex items-center justify-center text-indigo-200">
                                 <RobotIcon className="w-5 h-5" />
@@ -211,7 +211,7 @@ export default function RackAllocation({ rackId }) {
 
                         <div className="mb-6 relative z-10">
                             <div className="flex justify-between items-end mb-1.5">
-                                <span className="text-[11px] font-bold text-indigo-200">Volumetric Load</span>
+                                <span className="text-[11px] font-bold text-indigo-200">Beban Volumetrik</span>
                                 <span className="text-[14px] font-black text-white">74%</span>
                             </div>
                             <div className="w-full h-[5px] bg-[#1e1b4b] rounded-full overflow-hidden border border-white/5 shadow-inner">
@@ -221,11 +221,11 @@ export default function RackAllocation({ rackId }) {
 
                         <div className="grid grid-cols-2 gap-4 relative z-10">
                             <div className="bg-[#1e1b4b]/60 backdrop-blur-md rounded-xl p-3.5 border border-indigo-400/20 hover:bg-[#1e1b4b]/80 transition-colors">
-                                <div className="text-[8px] font-black text-indigo-300 tracking-wider uppercase mb-1">Temp</div>
+                                <div className="text-[8px] font-black text-indigo-300 tracking-wider uppercase mb-1">Suhu</div>
                                 <div className="text-[18px] font-black text-white">21.4°C</div>
                             </div>
                             <div className="bg-[#1e1b4b]/60 backdrop-blur-md rounded-xl p-3.5 border border-indigo-400/20 hover:bg-[#1e1b4b]/80 transition-colors">
-                                <div className="text-[8px] font-black text-indigo-300 tracking-wider uppercase mb-1">Humidity</div>
+                                <div className="text-[8px] font-black text-indigo-300 tracking-wider uppercase mb-1">Kelembapan</div>
                                 <div className="text-[18px] font-black text-white">42%</div>
                             </div>
                         </div>
@@ -233,7 +233,7 @@ export default function RackAllocation({ rackId }) {
 
                     {/* Occupying SKUs List */}
                     <div className="bg-white rounded-[24px] p-6 shadow-[0_2px_16px_rgba(0,0,0,0.02)] border border-[#edf2f7] flex-1">
-                        <h4 className="text-[10px] font-black text-gray-400 tracking-[0.15em] uppercase mb-4 pl-1">Occupying SKUs</h4>
+                        <h4 className="text-[10px] font-black text-gray-400 tracking-[0.15em] uppercase mb-4 pl-1">SKU yang Menempati</h4>
                         
                         <div className="space-y-4 mb-6">
                             {[
@@ -266,8 +266,8 @@ export default function RackAllocation({ rackId }) {
                                      <div className="w-full h-1.5 bg-indigo-200 rounded-sm"></div>
                                 </div>
                                 <div>
-                                    <div className="text-[12px] font-black text-indigo-700">Tier 2 of 4</div>
-                                    <div className="text-[10px] font-semibold text-indigo-500/80 tracking-wide">Secondary Picking Zone</div>
+                                    <div className="text-[12px] font-black text-indigo-700">Tingkat 2 dari 4</div>
+                                    <div className="text-[10px] font-semibold text-indigo-500/80 tracking-wide">Zona Pengambilan Sekunder</div>
                                 </div>
                             </div>
                             <div className="w-6 h-6 rounded-md bg-white border border-gray-200 flex items-center justify-center shadow-sm text-gray-400">
@@ -278,19 +278,19 @@ export default function RackAllocation({ rackId }) {
 
                     {/* Health Status */}
                     <div className="bg-[#fbfcfd] border border-[#edf2f7] rounded-[20px] p-6 shadow-sm">
-                        <h4 className="text-[10px] font-black text-gray-400 tracking-[0.15em] uppercase mb-4 pl-1">Health Status</h4>
+                        <h4 className="text-[10px] font-black text-gray-400 tracking-[0.15em] uppercase mb-4 pl-1">Status Kesehatan</h4>
                         <div className="space-y-4 pl-1">
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center space-x-3">
                                     <span className="w-2 h-2 rounded-full bg-[#d97706] shadow-[0_0_8px_rgba(217,119,6,0.6)]"></span>
-                                    <span className="text-[12px] font-bold text-gray-700">Structural integrity check due</span>
+                                    <span className="text-[12px] font-bold text-gray-700">Jadwal pemeriksaaan integritas</span>
                                 </div>
-                                <span className="text-[9px] font-black text-amber-600 bg-amber-50 px-2 py-0.5 rounded uppercase tracking-widest">2D LEFT</span>
+                                <span className="text-[9px] font-black text-amber-600 bg-amber-50 px-2 py-0.5 rounded uppercase tracking-widest">SISA 2H</span>
                             </div>
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center space-x-3">
                                     <span className="w-2 h-2 rounded-full bg-[#10b981] shadow-[0_0_8px_rgba(16,185,129,0.6)]"></span>
-                                    <span className="text-[12px] font-bold text-gray-700">IoT Sensors Online</span>
+                                    <span className="text-[12px] font-bold text-gray-700">Sensor IoT Aktif</span>
                                 </div>
                                 <WifiIcon className="w-4 h-4 text-[#10b981]" />
                             </div>

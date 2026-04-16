@@ -1,0 +1,35 @@
+# RUNDOWN FINAL SPRINT - INVENTORI PERGUDANGAN
+# Progress Saat Ini: 1.5 Minggu (Fase Integrasi)
+# Update: Rabu, 15 April 2026
+
+## 1. RUNDOWN UTAMA (KELOMPOK) - MINGGU TERAKHIR
+
+| Hari | Target Utama | Detail Kegiatan | Status |
+|:---|:---|:---|:---|
+| **Kamis** | **Mobile Sync** | Menghubungkan Driver App Android ke API Shipment & Map Tracking. | Urgent |
+| **Jumat** | **Admin Monitoring** | Implementasi Real-time Dashboard di React (Melihat lokasi driver & status pengiriman). | On Progress |
+| **Sabtu** | **Inventory Closing** | Finalisasi fitur Stock Opname & Penyesuaian stok otomatis saat barang terkirim. | Planned |
+| **Minggu** | **Buffer Day** | Dokumentasi teknis, perbaikan UI minor, dan istirahat tim. | Optional |
+| **Senin** | **System Stress Test** | Simulasi transaksi besar (Bulk Goods Receipt & Multi-Shipment). | Critical |
+| **Selasa** | **Final Debugging** | Perbaikan error pada validasi foto POD (Proof of Delivery) & Notifikasi. | Planned |
+| **Rabu** | **Final Submission** | Recording video demo project dan export laporan akhir. | Goal |
+
+---
+
+## 2. RUNDOWN PRIBADI (FULLSTACK / LEAD DEVELOPER)
+
+**Role: Integrator Sistem & Database Master**
+
+*   **Kamis:** Menyelesaikan endpoint API `POST /shipments/{id}/complete` untuk upload foto bukti pengiriman dari aplikasi driver.
+*   **Jumat:** Membuat filter laporan di Dashboard (Berdasarkan gudang, kategori, dan performa supplier).
+*   **Sabtu:** Sinkronisasi logika `RackStock` agar jumlah barang di rak berkurang otomatis saat `Shipment` berstatus 'Picked Up'.
+*   **Senin:** Audit keamanan API (Sanctum Token) dan validasi input untuk mencegah data corrupt.
+*   **Selasa:** Menyiapkan Script demo (Seeding data transaksi dari 1 minggu terakhir agar grafik terlihat bagus).
+*   **Rabu:** Final check pada deployment/hosting dan memastikan README.md menjelaskan cara instalasi dengan benar.
+
+---
+
+## 3. ANALISIS PROGRES (1.5 MINGGU TERAKHIR)
+*   **Minggu 1 (Selesai):** Perancangan DB, Migrasi (User, Warehouse, Product, Supplier), CRUD Dasar.
+*   **Minggu 1.5 (Selesai):** Modul Transaksi (PO, Goods Receipt), Migrasi Driver & Shipment, Struktur Dasar Android App.
+*   **Minggu Terakhir (Fokus):** Integrasi Android-Backend, Real-time Tracking, & Final Reporting.
