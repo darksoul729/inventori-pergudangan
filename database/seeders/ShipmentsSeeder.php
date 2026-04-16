@@ -96,10 +96,24 @@ class ShipmentsSeeder extends Seeder
             ],
         ];
 
-        foreach ($shipments as $shipment) {
-            Shipment::firstOrCreate(
-                ['shipment_id' => $shipment['shipment_id']],
-                $shipment
+        $driver = \App\Models\Driver::where('license_number', 'D-12345-BT')->first();
+        
+        foreach ($shipments as $index => $shipmentData) {
+            $data = $shipmentData;
+            // Assign every 2nd shipment to the test driver for testing
+            if ($driver && $index % 2 == 0) {
+                $data['driver_id'] = $driver->id;
+                // Ensure status is compatible with driver visibility if needed
+                if ($data['status'] === 'delivered') {
+                    // keep it delivered
+                } else {
+                    $data['status'] = 'in-transit';
+                }
+            }
+            
+            Shipment::updateOrCreate(
+                ['shipment_id' => $data['shipment_id']],
+                $data
             );
         }
     }

@@ -19,6 +19,7 @@ class DatabaseSeeder extends Seeder
         $roles = [
             ['name' => 'Admin Gudang', 'description' => 'Input data barang & supplier, mencatat stok masuk/keluar'],
             ['name' => 'Manajer/Owner', 'description' => 'Meninjau dashboard dan laporan'],
+            ['name' => 'Driver', 'description' => 'Melakukan pengiriman dan update lokasi'],
         ];
 
         foreach ($roles as $role) {
@@ -36,6 +37,28 @@ class DatabaseSeeder extends Seeder
             'password' => Hash::make('password'),
             'phone' => '08123456789',
             'status' => 'active',
+        ]);
+        
+        $driverRole = \App\Models\Role::where('name', 'Driver')->first();
+        
+        $driverUser = User::query()->updateOrCreate([
+            'email' => 'driver@example.com',
+        ], [
+            'role_id' => $driverRole->id,
+            'name' => 'Test Driver',
+            'email_verified_at' => now(),
+            'password' => Hash::make('password'),
+            'phone' => '08123456788',
+            'status' => 'active',
+        ]);
+
+        \App\Models\Driver::query()->updateOrCreate([
+            'user_id' => $driverUser->id,
+        ], [
+            'license_number' => 'D-12345-BT',
+            'phone' => '08123456788',
+            'status' => 'approved',
+            'is_active' => true,
         ]);
 
         $this->call(WarehouseManagementSeeder::class);

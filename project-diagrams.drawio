@@ -1,0 +1,607 @@
+<mxfile host="65bd71144e">
+    <!-- TAB 1: COMPREHENSIVE USE CASE DIAGRAM (BAHASA INDONESIA) -->
+    <diagram id="comprehensive-uc" name="1. Diagram Use Case (Sistem Penuh)">
+        <mxGraphModel dx="1200" dy="1200" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1200" pageHeight="1400" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                
+                <!-- System Box -->
+                <mxCell id="system_box" value="Sistem Aether Logistik Cerdas" style="swimlane;whiteSpace=wrap;html=1;startSize=30;fillColor=#f5f5f5;fontColor=#333333;strokeColor=#666666;" vertex="1" parent="1">
+                    <mxGeometry x="250" y="30" width="600" height="1130" as="geometry"/>
+                </mxCell>
+
+                <!-- SECTION 1: WH & INVENTORY -->
+                <mxCell id="group_inv" value="Modul: Gudang &amp; Inventori" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontStyle=1;fontSize=14;fontColor=#1E88E5;" vertex="1" parent="system_box">
+                    <mxGeometry x="30" y="40" width="300" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="uc_inv1" value="Kelola Master Produk &amp; SKUs" style="ellipse;whiteSpace=wrap;html=1;fillColor=#e3f2fd;strokeColor=#1e88e5;" vertex="1" parent="system_box">
+                    <mxGeometry x="30" y="80" width="180" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="uc_inv2" value="Input Barang Baru&#10;(Stok Awal)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#e3f2fd;strokeColor=#1e88e5;" vertex="1" parent="system_box">
+                    <mxGeometry x="230" y="80" width="160" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="uc_inv3" value="Kelola Zona &amp; Pemetaan Rak" style="ellipse;whiteSpace=wrap;html=1;fillColor=#e3f2fd;strokeColor=#1e88e5;" vertex="1" parent="system_box">
+                    <mxGeometry x="30" y="150" width="180" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="uc_inv4" value="Pantau Utilisasi &amp; Kapasitas" style="ellipse;whiteSpace=wrap;html=1;fillColor=#e3f2fd;strokeColor=#1e88e5;" vertex="1" parent="system_box">
+                    <mxGeometry x="230" y="150" width="160" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="uc_inv5" value="Auto-Sync Stok Rak via Trait" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ede7f6;strokeColor=#5e35b1;" vertex="1" parent="system_box">
+                    <mxGeometry x="400" y="190" width="180" height="50" as="geometry"/>
+                </mxCell>
+
+                <!-- SECTION 2: TRANSACTIONS & SUPPLIERS -->
+                <mxCell id="group_trx" value="Modul: Transaksi &amp; Pemasok (Supplier)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontStyle=1;fontSize=14;fontColor=#43A047;" vertex="1" parent="system_box">
+                    <mxGeometry x="30" y="270" width="300" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="uc_trx1" value="Buat Purchase Order (PO)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#e8f5e9;strokeColor=#43a047;" vertex="1" parent="system_box">
+                    <mxGeometry x="30" y="310" width="180" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="uc_trx2" value="Validasi Terima Barang" style="ellipse;whiteSpace=wrap;html=1;fillColor=#e8f5e9;strokeColor=#43a047;" vertex="1" parent="system_box">
+                    <mxGeometry x="230" y="310" width="160" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="uc_trx3" value="Kalkulasi Rapor Kinerja Pemasok" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ede7f6;strokeColor=#5e35b1;" vertex="1" parent="system_box">
+                    <mxGeometry x="400" y="350" width="180" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="uc_trx4" value="Catat Mutasi / Opname Stok" style="ellipse;whiteSpace=wrap;html=1;fillColor=#e8f5e9;strokeColor=#43a047;" vertex="1" parent="system_box">
+                    <mxGeometry x="30" y="380" width="180" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="uc_trx5" value="Unduh Audit Laporan (Excel)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#e8f5e9;strokeColor=#43a047;" vertex="1" parent="system_box">
+                    <mxGeometry x="230" y="380" width="160" height="50" as="geometry"/>
+                </mxCell>
+
+                <!-- SECTION 3: SHIPMENTS & DRIVERS -->
+                <mxCell id="group_ship" value="Modul: Pengiriman &amp; Ekspedisi" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontStyle=1;fontSize=14;fontColor=#E53935;" vertex="1" parent="system_box">
+                    <mxGeometry x="30" y="470" width="300" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="uc_shp1" value="Verifikasi &amp; Persetujuan Driver" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffebee;strokeColor=#e53935;" vertex="1" parent="system_box">
+                    <mxGeometry x="30" y="510" width="180" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="uc_shp2" value="Buat Pengiriman &amp; Pilih Driver" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffebee;strokeColor=#e53935;" vertex="1" parent="system_box">
+                    <mxGeometry x="230" y="510" width="180" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="uc_shp3" value="Periksa Dashboard GPS Live &amp; AI" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffebee;strokeColor=#e53935;" vertex="1" parent="system_box">
+                    <mxGeometry x="30" y="580" width="180" height="50" as="geometry"/>
+                </mxCell>
+
+                <!-- DRIVER ACTIONS -->
+                <mxCell id="group_drv" value="Aksi Driver App (Kotlin)" style="text;html=1;strokeColor=none;fillColor=none;align=right;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontStyle=1;fontSize=14;fontColor=#FB8C00;" vertex="1" parent="system_box">
+                    <mxGeometry x="360" y="660" width="200" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="uc_drv1" value="Pendaftaran Akun &amp; Foto KTP" style="ellipse;whiteSpace=wrap;html=1;fillColor=#fff8e1;strokeColor=#ffb300;" vertex="1" parent="system_box">
+                    <mxGeometry x="380" y="700" width="180" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="uc_drv2" value="Masuk &amp; Terima Order" style="ellipse;whiteSpace=wrap;html=1;fillColor=#fff8e1;strokeColor=#ffb300;" vertex="1" parent="system_box">
+                    <mxGeometry x="380" y="770" width="180" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="uc_drv3" value="Perbarui Status Perjalanan" style="ellipse;whiteSpace=wrap;html=1;fillColor=#fff8e1;strokeColor=#ffb300;" vertex="1" parent="system_box">
+                    <mxGeometry x="380" y="840" width="180" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="uc_drv4" value="Kirim Ping Lokasi &amp; Deteksi Palsu" style="ellipse;whiteSpace=wrap;html=1;fillColor=#fff8e1;strokeColor=#ffb300;" vertex="1" parent="system_box">
+                    <mxGeometry x="380" y="910" width="180" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="uc_drv5" value="Unggah Foto Bukti &amp; TTD (POD)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#fff8e1;strokeColor=#ffb300;" vertex="1" parent="system_box">
+                    <mxGeometry x="380" y="980" width="180" height="50" as="geometry"/>
+                </mxCell>
+
+                <!-- System internal links -->
+                <mxCell id="e_s3" value="Mengirim Peringatan Fake GPS" style="edgeStyle=none;html=1;dashed=1;entryX=0.5;entryY=1;exitX=0;exitY=0.5;" edge="1" parent="system_box" source="uc_drv4" target="uc_shp3">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e_sys_score" value="Otomatis Saat Diterima" style="edgeStyle=none;html=1;dashed=1;entryX=0.5;entryY=1;exitX=1;exitY=0.5;" edge="1" parent="system_box" source="uc_trx2" target="uc_trx3">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+
+                <!-- ACTORS -->
+                <mxCell id="act_admin" value="Manajer Gudang&#10;(Akses Penuh)" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="80" y="240" width="40" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="act_staff" value="Staf Operasional&#10;(Akses Terbatas)" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="80" y="550" width="40" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="act_driver" value="Driver Logistik&#10;(Aplikasi Mobile)" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="940" y="860" width="40" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="act_system" value="AI Pulse &amp; Mesin&#10;Latar Belakang" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="940" y="280" width="40" height="80" as="geometry"/>
+                </mxCell>
+
+                <!-- GENERALIZATION: Admin -> Staff -->
+                <mxCell id="e_admin_staff" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=0;dashed=1;strokeWidth=2;" edge="1" parent="1" source="act_admin" target="act_staff">
+                    <mxGeometry x="0.1" relative="1" as="geometry">
+                        <Array as="points"><mxPoint x="40" y="280"/><mxPoint x="40" y="590"/></Array>
+                        <mxPoint as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+
+                <!-- CONNECTIONS TO ADMIN (HIGH LEVEL) -->
+                <mxCell id="e_a1" style="edgeStyle=none;html=1;entryX=0;entryY=0.5;" edge="1" parent="1" source="act_admin" target="uc_inv1"><mxGeometry relative="1" as="geometry"/></mxCell>
+                <mxCell id="e_a3" style="edgeStyle=none;html=1;entryX=0;entryY=0.5;" edge="1" parent="1" source="act_admin" target="uc_inv3"><mxGeometry relative="1" as="geometry"/></mxCell>
+                <mxCell id="e_a5" style="edgeStyle=none;html=1;entryX=0;entryY=0.5;" edge="1" parent="1" source="act_admin" target="uc_trx1"><mxGeometry relative="1" as="geometry"/></mxCell>
+                <mxCell id="e_a8" style="edgeStyle=none;html=1;entryX=0;entryY=0.5;" edge="1" parent="1" source="act_admin" target="uc_trx5"><mxGeometry relative="1" as="geometry"/></mxCell>
+                <mxCell id="e_a9" style="edgeStyle=none;html=1;entryX=0;entryY=0.5;" edge="1" parent="1" source="act_admin" target="uc_shp1"><mxGeometry relative="1" as="geometry"/></mxCell>
+                <mxCell id="e_a11" style="edgeStyle=none;html=1;entryX=0;entryY=0.5;" edge="1" parent="1" source="act_admin" target="uc_shp3"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+                <!-- CONNECTIONS TO STAFF (OPERATIONAL) -->
+                <mxCell id="e_st2" style="edgeStyle=none;html=1;entryX=0;entryY=0.5;" edge="1" parent="1" source="act_staff" target="uc_inv2"><mxGeometry relative="1" as="geometry"/></mxCell>
+                <mxCell id="e_st4" style="edgeStyle=none;html=1;entryX=0;entryY=0.5;" edge="1" parent="1" source="act_staff" target="uc_inv4"><mxGeometry relative="1" as="geometry"/></mxCell>
+                <mxCell id="e_st6" style="edgeStyle=none;html=1;entryX=0;entryY=0.5;" edge="1" parent="1" source="act_staff" target="uc_trx2"><mxGeometry relative="1" as="geometry"/></mxCell>
+                <mxCell id="e_st7" style="edgeStyle=none;html=1;entryX=0;entryY=0.5;" edge="1" parent="1" source="act_staff" target="uc_trx4"><mxGeometry relative="1" as="geometry"/></mxCell>
+                <!-- Dibatasi: Staf yang mengatur pengiriman, admin verifikasi pengemudi -->
+                <mxCell id="e_st10" style="edgeStyle=none;html=1;entryX=0;entryY=0.5;" edge="1" parent="1" source="act_staff" target="uc_shp2"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+                <!-- CONNECTIONS TO SYSTEM ENGINE -->
+                <mxCell id="e_s1" style="edgeStyle=none;html=1;entryX=1;entryY=0.5;" edge="1" parent="1" source="act_system" target="uc_inv5"><mxGeometry relative="1" as="geometry"/></mxCell>
+                <mxCell id="e_s2" style="edgeStyle=none;html=1;entryX=1;entryY=0.5;" edge="1" parent="1" source="act_system" target="uc_trx3"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+                <!-- CONNECTIONS TO DRIVER -->
+                <mxCell id="e_d1" style="edgeStyle=none;html=1;entryX=1;entryY=0.5;" edge="1" parent="1" source="act_driver" target="uc_drv1"><mxGeometry relative="1" as="geometry"/></mxCell>
+                <mxCell id="e_d2" style="edgeStyle=none;html=1;entryX=1;entryY=0.5;" edge="1" parent="1" source="act_driver" target="uc_drv2"><mxGeometry relative="1" as="geometry"/></mxCell>
+                <mxCell id="e_d3" style="edgeStyle=none;html=1;entryX=1;entryY=0.5;" edge="1" parent="1" source="act_driver" target="uc_drv3"><mxGeometry relative="1" as="geometry"/></mxCell>
+                <mxCell id="e_d4" style="edgeStyle=none;html=1;entryX=1;entryY=0.5;" edge="1" parent="1" source="act_driver" target="uc_drv4"><mxGeometry relative="1" as="geometry"/></mxCell>
+                <mxCell id="e_d5" style="edgeStyle=none;html=1;entryX=1;entryY=0.5;" edge="1" parent="1" source="act_driver" target="uc_drv5"><mxGeometry relative="1" as="geometry"/></mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+
+    <!-- TAB 2: MACRO INBOUND FLOWCHART -->
+    <diagram id="macro-inbound" name="2. Alur Pembelian &amp; Inbound (Masuk)">
+        <mxGraphModel dx="1000" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                
+                <mxCell id="mi1" value="Mulai Proses" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+                    <mxGeometry x="365" y="40" width="120" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="mi2" value="Manajer Memilih Pemasok&#10;&amp; Simpan Data Barang" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="340" y="130" width="170" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="mi3" value="Sistem Cetak Dokumen&#10;Pembelian (PO)" style="shape=document;whiteSpace=wrap;html=1;boundedLbl=1;" vertex="1" parent="1">
+                    <mxGeometry x="340" y="230" width="170" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="mi4" value="Barang Tiba di Gudang&#10;(Staf Merekam Penerimaan)" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="340" y="330" width="170" height="60" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="mi5a" value="AI Menilai Rapor&#10;Kinerja Pemasok&#10;(Waktu Kedatangan)" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+                    <mxGeometry x="150" y="440" width="150" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="mi5b" value="Sistem Menyimpan Ledger&#10;Transaksi (Tipe = MASUK)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+                    <mxGeometry x="340" y="450" width="170" height="60" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="mi6" value="Staf Memasukkan Barang&#10;ke Rak &amp; Zona Fisik" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="340" y="550" width="170" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="mi7" value="Data Stok Inventori&#10;Telah Sinkron" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+                    <mxGeometry x="365" y="650" width="120" height="60" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="emi1" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1" source="mi1" target="mi2"><mxGeometry relative="1" as="geometry"/></mxCell>
+                <mxCell id="emi2" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1" source="mi2" target="mi3"><mxGeometry relative="1" as="geometry"/></mxCell>
+                <mxCell id="emi3" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1" source="mi3" target="mi4"><mxGeometry relative="1" as="geometry"/></mxCell>
+                <mxCell id="emi4a" style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=0;exitY=0.5;" edge="1" parent="1" source="mi4" target="mi5a"><mxGeometry relative="1" as="geometry"/></mxCell>
+                <mxCell id="emi4b" style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=0.5;exitY=1;" edge="1" parent="1" source="mi4" target="mi5b"><mxGeometry relative="1" as="geometry"/></mxCell>
+                <mxCell id="emi5" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1" source="mi5b" target="mi6"><mxGeometry relative="1" as="geometry"/></mxCell>
+                <mxCell id="emi6" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1" source="mi6" target="mi7"><mxGeometry relative="1" as="geometry"/></mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+
+    <!-- TAB 3: MACRO OUTBOUND FLOWCHART -->
+    <diagram id="macro-outbound" name="3. Alur Pengiriman Tuntas (Keluar)">
+        <mxGraphModel dx="1000" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                
+                <mxCell id="mo1" value="Mulai Permintaan" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+                    <mxGeometry x="365" y="40" width="120" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="mo2" value="Staf Memproses Pengeluaran&#10;Barang untuk Logistik" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="340" y="130" width="170" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="mo3" value="Kurangi Stok dari Rak&#10;&amp; Tambah Ledger Outbound" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+                    <mxGeometry x="345" y="230" width="160" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="mo4" value="Staf Menyusun Jadwal&#10;Pengiriman Kendaraan" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="340" y="340" width="170" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="mo5" value="Pilih dan Tugaskan (Assign)&#10;Driver yang Aktif" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="340" y="440" width="170" height="60" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="mo_mob" value="Aktivitas di Aplikasi Driver Logistik" style="swimlane;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+                    <mxGeometry x="275" y="540" width="300" height="260" as="geometry"/>
+                </mxCell>
+                <mxCell id="mo6" value="Klaim Identitas &amp; Angkut Barang" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="mo_mob">
+                    <mxGeometry x="65" y="50" width="170" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="mo7" value="Perjalanan Aktif &amp;&#10;Sinyal GPS Otomatis Mengudara" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="mo_mob">
+                    <mxGeometry x="65" y="120" width="170" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="mo8" value="Sampai di Tujuan &amp;&#10;Unggah Bukti Selesai (POD)" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="mo_mob">
+                    <mxGeometry x="65" y="190" width="170" height="50" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="mo9" value="Status Selesai" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+                    <mxGeometry x="365" y="840" width="120" height="50" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="emo1" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1" source="mo1" target="mo2"><mxGeometry relative="1" as="geometry"/></mxCell>
+                <mxCell id="emo2" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1" source="mo2" target="mo3"><mxGeometry relative="1" as="geometry"/></mxCell>
+                <mxCell id="emo3" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1" source="mo3" target="mo4"><mxGeometry relative="1" as="geometry"/></mxCell>
+                <mxCell id="emo4" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1" source="mo4" target="mo5"><mxGeometry relative="1" as="geometry"/></mxCell>
+                <mxCell id="emo5" style="edgeStyle=orthogonalEdgeStyle;html=1;entryX=0.5;entryY=0;" edge="1" parent="1" source="mo5" target="mo6"><mxGeometry relative="1" as="geometry"/></mxCell>
+                <mxCell id="emo6" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="mo_mob" source="mo6" target="mo7"><mxGeometry relative="1" as="geometry"/></mxCell>
+                <mxCell id="emo7" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="mo_mob" source="mo7" target="mo8"><mxGeometry relative="1" as="geometry"/></mxCell>
+                <mxCell id="emo8" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1" source="mo8" target="mo9"><mxGeometry relative="1" as="geometry"/></mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+
+    <!-- TAB 4: ALUR BARU: VERIFIKASI DRIVER & GPS PALSU -->
+    <diagram id="driver-auth-flow" name="4. Registrasi &amp; Validasi GPS Driver">
+        <mxGraphModel dx="1000" dy="1000" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                
+                <mxCell id="dr1" value="Mulai Registrasi" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+                    <mxGeometry x="365" y="40" width="120" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="dr2" value="Driver Daftar Rekening via Aplikasi&#10;(Isi Formulir &amp; Unggah KTP)" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="340" y="130" width="170" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="dr3" value="Akses Ditahan Karena&#10;Sistem Set Status PENDING" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;" vertex="1" parent="1">
+                    <mxGeometry x="340" y="230" width="170" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="dr4" value="Manajer Mengecek Dokumen&#10;Kelengkapan di Web Utama" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="340" y="320" width="170" height="60" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="dr5" value="Data Lulus&#10;Pengecekan?" style="rhombus;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="365" y="420" width="120" height="100" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="dr6_no" value="Status = DIBEKUKAN (Suspended)&#10;Gagal Masuk Aplikasi" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+                    <mxGeometry x="540" y="550" width="170" height="60" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="dr6_yes" value="Status = DISETUJUI (Approved)&#10;Driver Mendapat Tugas" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+                    <mxGeometry x="140" y="550" width="170" height="60" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="dr7" value="Mulai Beroperasi... Jika Lokasi&#10;Ponsel terdeteksi Aplikasi Ketiga / Palsu." style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="125" y="660" width="200" height="60" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="dr8" value="Alarm Merah FAKE GPS Aktif&#10;di Layar Pemantauan Manajer!" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+                    <mxGeometry x="150" y="770" width="150" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="dr9" value="Berakhir" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="375" y="910" width="100" height="50" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="edr1" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1" source="dr1" target="dr2"><mxGeometry relative="1" as="geometry"/></mxCell>
+                <mxCell id="edr2" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1" source="dr2" target="dr3"><mxGeometry relative="1" as="geometry"/></mxCell>
+                <mxCell id="edr3" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1" source="dr3" target="dr4"><mxGeometry relative="1" as="geometry"/></mxCell>
+                <mxCell id="edr4" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1" source="dr4" target="dr5"><mxGeometry relative="1" as="geometry"/></mxCell>
+                <mxCell id="edr5_no" value="Tidak" style="edgeStyle=orthogonalEdgeStyle;html=1;fontStyle=1;fontColor=#FF0000;" edge="1" parent="1" source="dr5" target="dr6_no">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points"><mxPoint x="625" y="470"/></Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="edr5_yes" value="Ya" style="edgeStyle=orthogonalEdgeStyle;html=1;fontStyle=1;fontColor=#006600;" edge="1" parent="1" source="dr5" target="dr6_yes">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points"><mxPoint x="225" y="470"/></Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="edr6" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1" source="dr6_yes" target="dr7"><mxGeometry relative="1" as="geometry"/></mxCell>
+                <mxCell id="edr7" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1" source="dr7" target="dr8"><mxGeometry relative="1" as="geometry"/></mxCell>
+                <mxCell id="edr8a" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1" source="dr8" target="dr9">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points"><mxPoint x="225" y="935"/></Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="edr8b" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1" source="dr6_no" target="dr9">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points"><mxPoint x="625" y="935"/></Array>
+                    </mxGeometry>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+
+    <!-- NEW TAB 5: FLOW HEATMAP GUDANG -->
+    <diagram id="dash-heatmap-flow" name="5. Flow Visualisasi Heatmap Gudang">
+        <mxGraphModel dx="1000" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                
+                <mxCell id="dh1" value="Akses Dashboard" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+                    <mxGeometry x="365" y="40" width="120" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="dh2" value="Sistem Mengumpulkan Data Fisik&#10;Seluruh Rak (rack_stocks)" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="325" y="130" width="200" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="dh3" value="Kalkulasi Persentase Kapasitas&#10;Tiap Blok Penyimpanan" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="325" y="230" width="200" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="dh4" value="Kepadatan &gt; 90%?" style="rhombus;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="365" y="330" width="120" height="100" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="dh5_y" value="Ubah Warna Rak Jadi Merah&#10;(Peringatan Level Kritis)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+                    <mxGeometry x="150" y="460" width="170" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="dh5_n" value="Warna Biru / Abu-abu&#10;(Status Aman atau Kosong)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+                    <mxGeometry x="530" y="460" width="170" height="60" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="dh6" value="Merender Visualisasi Lantai Peta 2D&#10;Di Hadapan Layar Administrator" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+                    <mxGeometry x="325" y="560" width="200" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="dh7" value="Selesai" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="375" y="670" width="100" height="50" as="geometry"/>
+                </mxCell>
+                
+                <!-- Edges -->
+                <mxCell id="edh1" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1" source="dh1" target="dh2"><mxGeometry relative="1" as="geometry"/></mxCell>
+                <mxCell id="edh2" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1" source="dh2" target="dh3"><mxGeometry relative="1" as="geometry"/></mxCell>
+                <mxCell id="edh3" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1" source="dh3" target="dh4"><mxGeometry relative="1" as="geometry"/></mxCell>
+                
+                <mxCell id="edh4_y" value="Ya" style="edgeStyle=orthogonalEdgeStyle;html=1;fontStyle=1;fontColor=#FF0000;" edge="1" parent="1" source="dh4" target="dh5_y">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points"><mxPoint x="235" y="380"/></Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="edh4_n" value="Tidak" style="edgeStyle=orthogonalEdgeStyle;html=1;fontStyle=1;fontColor=#0000FF;" edge="1" parent="1" source="dh4" target="dh5_n">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points"><mxPoint x="615" y="380"/></Array>
+                    </mxGeometry>
+                </mxCell>
+                
+                <mxCell id="edh6_a" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1" source="dh5_y" target="dh6"><mxGeometry relative="1" as="geometry">
+                        <Array as="points"><mxPoint x="235" y="590"/></Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="edh6_b" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1" source="dh5_n" target="dh6"><mxGeometry relative="1" as="geometry">
+                        <Array as="points"><mxPoint x="615" y="590"/></Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="edh7" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1" source="dh6" target="dh7"><mxGeometry relative="1" as="geometry"/></mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+
+    <!-- NEW TAB 6: FLOW AUDIT EXCEL -->
+    <diagram id="audit-excel-flow" name="6. Flow Ekspor Laporan Transaksi (Excel)">
+         <mxGraphModel dx="1000" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                
+                <mxCell id="ex1" value="Klik Tombol Unduh" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+                    <mxGeometry x="365" y="40" width="120" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="ex2" value="Sistem Mengamankan Filter Waktu&#10;&amp; Tipe Pergerakan Tanpa Reload" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="330" y="130" width="190" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="ex3" value="Menerima Konten Kasar&#10;Berformat JSON" style="shape=document;whiteSpace=wrap;html=1;boundedLbl=1;" vertex="1" parent="1">
+                    <mxGeometry x="340" y="230" width="170" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="ex4" value="Membentuk Tabel Visual&#10;Melalui Library ExcelJS Secara Asinkron&#10;(Warna, Header, Border)" style="hexagon;perimeter=hexagonPerimeter2;whiteSpace=wrap;html=1;fixedSize=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+                    <mxGeometry x="310" y="330" width="230" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="ex5" value="Penyimpanan File '.xlsx' Siap Saji&#10;Di Komputer Lokal" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="330" y="450" width="190" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="ex6" value="Selesai" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="375" y="550" width="100" height="50" as="geometry"/>
+                </mxCell>
+
+                <mxCell id="eex1" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1" source="ex1" target="ex2"><mxGeometry relative="1" as="geometry"/></mxCell>
+                <mxCell id="eex2" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1" source="ex2" target="ex3"><mxGeometry relative="1" as="geometry"/></mxCell>
+                <mxCell id="eex3" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1" source="ex3" target="ex4"><mxGeometry relative="1" as="geometry"/></mxCell>
+                <mxCell id="eex4" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1" source="ex4" target="ex5"><mxGeometry relative="1" as="geometry"/></mxCell>
+                <mxCell id="eex5" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1" source="ex5" target="ex6"><mxGeometry relative="1" as="geometry"/></mxCell>
+            </root>
+         </mxGraphModel>
+    </diagram>
+
+    <!-- NEW TAB 7: FLOW STOCK OPNAME -->
+    <diagram id="opname-flow" name="7. Flow Penyesuaian Selisih Gudang (Opname)">
+         <mxGraphModel dx="1000" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                
+                <mxCell id="op1" value="Opname / Cek Fisik" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+                    <mxGeometry x="365" y="40" width="120" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="op2" value="Staf Menghitung Jumlah Item Aktual&#10;Di Tumpukan Rak" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="330" y="130" width="190" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="op3" value="Ada Selisih Sistem&#10;vs Fisik ?" style="rhombus;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="360" y="230" width="130" height="100" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="op4_n" value="Pekerjaan Tuntas&#10;(Tidak Perlu Mutasi Data)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+                    <mxGeometry x="150" y="370" width="170" height="60" as="geometry"/>
+                </mxCell>
+
+                <mxCell id="op4_y" value="Catat Mutasi Penyesuaian&#10;Tipe: &quot;Stock Adjustment&quot;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+                    <mxGeometry x="530" y="370" width="170" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="op5" value="Sinkronisasi Paksa Stok Global &amp; Rak&#10;Melalui Sistem Engine Internal" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+                    <mxGeometry x="540" y="470" width="150" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="op6" value="AI Pulse Memberi Alert Merah&#10;(Notifikasi Transaksi Tidak Wajar)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+                    <mxGeometry x="530" y="590" width="170" height="60" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="op7" value="Selesai" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="375" y="700" width="100" height="50" as="geometry"/>
+                </mxCell>
+
+                <mxCell id="eop1" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1" source="op1" target="op2"><mxGeometry relative="1" as="geometry"/></mxCell>
+                <mxCell id="eop2" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1" source="op2" target="op3"><mxGeometry relative="1" as="geometry"/></mxCell>
+                
+                <mxCell id="eop3_n" value="Tidak (Sama)" style="edgeStyle=orthogonalEdgeStyle;html=1;fontStyle=1;fontColor=#006600;" edge="1" parent="1" source="op3" target="op4_n">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points"><mxPoint x="235" y="280"/></Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="eop3_y" value="Ya (Beda)" style="edgeStyle=orthogonalEdgeStyle;html=1;fontStyle=1;fontColor=#FF0000;" edge="1" parent="1" source="op3" target="op4_y">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points"><mxPoint x="615" y="280"/></Array>
+                    </mxGeometry>
+                </mxCell>
+
+                <mxCell id="eop4" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1" source="op4_y" target="op5"><mxGeometry relative="1" as="geometry"/></mxCell>
+                <mxCell id="eop5" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1" source="op5" target="op6"><mxGeometry relative="1" as="geometry"/></mxCell>
+                
+                <mxCell id="eop6" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1" source="op6" target="op7">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points"><mxPoint x="615" y="725"/></Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="eop7" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1" source="op4_n" target="op7">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points"><mxPoint x="235" y="725"/></Array>
+                    </mxGeometry>
+                </mxCell>
+            </root>
+         </mxGraphModel>
+    </diagram>
+    <!-- TAB 8: ALGORITMA DEVIASI RUTE -->
+    <diagram id="algoritma-rute" name="8. Backend: Deteksi Deviasi Rute (Haversine Algo)">
+        <mxGraphModel dx="1000" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+
+                <mxCell id="ar1" value="Eksekusi via ShipmentsController" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+                    <mxGeometry x="365" y="40" width="120" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="ar2" value="Sistem Mengekstrak Koordinat (Lat, Lng)&#10;Origin, Tujuan, &amp; Posisi Terakhir Driver" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="310" y="130" width="230" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="ar3" value="Fungsi: buildRouteMetrics()&#10;Menghitung total_km Menggunakan&#10;Rumus Haversine Trigonometri Bumi" style="shape=hex;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+                    <mxGeometry x="300" y="230" width="250" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="ar4" value="Fungsi: distancePointToSegmentKm()&#10;Mencari Titik Tegak Lurus / Garis Proyeksi&#10;dari Titik Driver ke Garis (Origin - Dest)" style="shape=hex;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+                    <mxGeometry x="300" y="340" width="250" height="80" as="geometry"/>
+                </mxCell>
+
+                <mxCell id="ar5" value="Deviasi Jarak (Radius)&#10;&gt; Threshold ?&#10;[max(50km, 12% dr Total KM)]" style="rhombus;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="325" y="460" width="200" height="120" as="geometry"/>
+                </mxCell>
+
+                <mxCell id="ar6_y" value="ALARM: is_off_route = TRUE&#10;(Kirim Notifikasi Merah ke Admin)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+                    <mxGeometry x="100" y="620" width="180" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="ar6_n" value="is_off_route = FALSE&#10;(Driver Berada Pada Jalur Aman)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+                    <mxGeometry x="570" y="620" width="180" height="60" as="geometry"/>
+                </mxCell>
+
+                <mxCell id="ar7" value="Data Alerts Digabungkan&#10;Lalu Dikirim Sebagai JSON Array" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="325" y="720" width="200" height="60" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="ar8" value="Berakhir" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="375" y="820" width="100" height="50" as="geometry"/>
+                </mxCell>
+
+                <!-- Edges -->
+                <mxCell id="ear1" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1" source="ar1" target="ar2"><mxGeometry relative="1" as="geometry"/></mxCell>
+                <mxCell id="ear2" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1" source="ar2" target="ar3"><mxGeometry relative="1" as="geometry"/></mxCell>
+                <mxCell id="ear3" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1" source="ar3" target="ar4"><mxGeometry relative="1" as="geometry"/></mxCell>
+                <mxCell id="ear4" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1" source="ar4" target="ar5"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+                <mxCell id="ear5_n" value="Ya (Off-Route)" style="edgeStyle=orthogonalEdgeStyle;html=1;fontStyle=1;fontColor=#FF0000;" edge="1" parent="1" source="ar5" target="ar6_y">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points"><mxPoint x="190" y="520"/></Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="ear5_y" value="Tidak (Aman)" style="edgeStyle=orthogonalEdgeStyle;html=1;fontStyle=1;fontColor=#006600;" edge="1" parent="1" source="ar5" target="ar6_n">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points"><mxPoint x="660" y="520"/></Array>
+                    </mxGeometry>
+                </mxCell>
+
+                <mxCell id="ear6_a" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1" source="ar6_y" target="ar7">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points"><mxPoint x="190" y="750"/></Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="ear6_b" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" source="ar6_n" target="ar7">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points"><mxPoint x="660" y="750"/></Array>
+                    </mxGeometry>
+                </mxCell>
+                
+                <mxCell id="ear7" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1" source="ar7" target="ar8"><mxGeometry relative="1" as="geometry"/></mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+
+    <!-- TAB 9: ALGORITMA SYSTEM ALERTS -->
+    <diagram id="algoritma-alerts" name="9. Backend: Komputasi Dashboard Alerts">
+        <mxGraphModel dx="1000" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+
+                <mxCell id="dsa1" value="Akses Dashboard" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+                    <mxGeometry x="365" y="40" width="120" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="dsa2" value="DashboardController::index()&#10;Berjalan di Latar Belakang" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="325" y="130" width="200" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="dsa3" value="Mencari Peringatan Stok Minimum:&#10;LEFT JOIN `products` dengan `rack_stocks`" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+                    <mxGeometry x="150" y="230" width="230" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="dsa4" value="Mencari Anomali Transaksi (Audit/Opname):&#10;Filter `stock_movements` selama 48 Jam" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+                    <mxGeometry x="470" y="230" width="230" height="70" as="geometry"/>
+                </mxCell>
+
+                <mxCell id="dsa5" value="Kalkulasi:&#10;$systemAlerts = (Penyimpangan Stok) +&#10;(Jumlah Audit Terbaru)" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="310" y="350" width="230" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="dsa6" value="Merender ke State Inertia ReactJS:&#10;Tampil Sebagai &quot;Badge Merah&quot;&#10;Pada Menu Dashboard Klien" style="hexagon;perimeter=hexagonPerimeter2;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+                    <mxGeometry x="310" y="470" width="230" height="80" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="dsa7" value="Berakhir" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="375" y="590" width="100" height="50" as="geometry"/>
+                </mxCell>
+
+                <mxCell id="edsa1" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1" source="dsa1" target="dsa2"><mxGeometry relative="1" as="geometry"/></mxCell>
+                <mxCell id="edsa2_a" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1" source="dsa2" target="dsa3"><mxGeometry relative="1" as="geometry">
+                        <Array as="points"><mxPoint x="425" y="210"/><mxPoint x="265" y="210"/></Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="edsa2_b" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1" source="dsa2" target="dsa4"><mxGeometry relative="1" as="geometry">
+                        <Array as="points"><mxPoint x="425" y="210"/><mxPoint x="585" y="210"/></Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="edsa34_a" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1" source="dsa3" target="dsa5"><mxGeometry relative="1" as="geometry">
+                        <Array as="points"><mxPoint x="265" y="320"/><mxPoint x="425" y="320"/></Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="edsa34_b" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1" source="dsa4" target="dsa5"><mxGeometry relative="1" as="geometry">
+                        <Array as="points"><mxPoint x="585" y="320"/><mxPoint x="425" y="320"/></Array>
+                    </mxGeometry>
+                </mxCell>
+                
+                <mxCell id="edsa5" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1" source="dsa5" target="dsa6"><mxGeometry relative="1" as="geometry"/></mxCell>
+                <mxCell id="edsa6" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1" source="dsa6" target="dsa7"><mxGeometry relative="1" as="geometry"/></mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>

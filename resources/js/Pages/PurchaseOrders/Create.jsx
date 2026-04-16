@@ -1,6 +1,6 @@
 import DashboardLayout from '@/Layouts/DashboardLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
-import React, { useEffect } from 'react';
+import React from 'react';
 
 const ArrowLeftIcon = ({ className }) => (
     <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -14,11 +14,11 @@ const TrashIcon = ({ className }) => (
     </svg>
 );
 
-export default function Create({ suppliers, warehouses, products, autoPoNumber }) {
+export default function Create({ suppliers, products, autoPoNumber, operationalWarehouse }) {
     const { data, setData, post, processing, errors } = useForm({
         po_number: autoPoNumber,
         supplier_id: '',
-        warehouse_id: '',
+        warehouse_id: operationalWarehouse?.id ? String(operationalWarehouse.id) : '',
         order_date: new Date().toISOString().split('T')[0],
         expected_date: '',
         notes: '',
@@ -52,8 +52,8 @@ export default function Create({ suppliers, warehouses, products, autoPoNumber }
     };
 
     return (
-        <DashboardLayout headerSearchPlaceholder="Create purchase order...">
-            <Head title="Create Purchase Order" />
+        <DashboardLayout headerSearchPlaceholder="Buat pesanan pembelian...">
+            <Head title="Buat Pesanan Pembelian" />
 
             <div className="flex flex-col space-y-6 pb-12 w-full pt-2 min-w-[1000px]">
                 <div className="flex items-center space-x-4 mb-4">
@@ -61,8 +61,8 @@ export default function Create({ suppliers, warehouses, products, autoPoNumber }
                         <ArrowLeftIcon className="w-5 h-5" />
                     </Link>
                     <div>
-                        <h1 className="text-[28px] font-black text-[#1a202c] tracking-tight">Create Purchase Order</h1>
-                        <p className="text-[14px] font-bold text-gray-500 mt-1">Order stock from your trusted suppliers.</p>
+                        <h1 className="text-[28px] font-black text-[#1a202c] tracking-tight">Buat Pesanan Pembelian</h1>
+                        <p className="text-[14px] font-bold text-gray-500 mt-1">Buat pesanan stok untuk gudang operasional.</p>
                     </div>
                 </div>
 
@@ -71,7 +71,7 @@ export default function Create({ suppliers, warehouses, products, autoPoNumber }
                         <div className="grid grid-cols-3 gap-8 mb-8">
                             <div className="space-y-4">
                                 <div>
-                                    <label className="block text-[11px] font-black tracking-wider text-gray-500 uppercase mb-2">PO Number</label>
+                                    <label className="block text-[11px] font-black tracking-wider text-gray-500 uppercase mb-2">Nomor PO</label>
                                     <input 
                                         type="text" 
                                         value={data.po_number} 
@@ -81,13 +81,13 @@ export default function Create({ suppliers, warehouses, products, autoPoNumber }
                                     {errors.po_number && <p className="text-red-500 text-xs mt-1">{errors.po_number}</p>}
                                 </div>
                                 <div>
-                                    <label className="block text-[11px] font-black tracking-wider text-gray-500 uppercase mb-2">Supplier</label>
+                                    <label className="block text-[11px] font-black tracking-wider text-gray-500 uppercase mb-2">Pemasok</label>
                                     <select 
                                         value={data.supplier_id} 
                                         onChange={e => setData('supplier_id', e.target.value)}
                                         className="w-full rounded-xl bg-gray-50 border-gray-200 text-[14px] font-bold focus:ring-[#4f46e5] focus:border-[#4f46e5]"
                                     >
-                                        <option value="">Select Supplier</option>
+                                        <option value="">Pilih Pemasok</option>
                                         {suppliers.map(s => <option key={s.id} value={s.id}>{s.name} ({s.code})</option>)}
                                     </select>
                                     {errors.supplier_id && <p className="text-red-500 text-xs mt-1">{errors.supplier_id}</p>}
@@ -96,19 +96,19 @@ export default function Create({ suppliers, warehouses, products, autoPoNumber }
 
                             <div className="space-y-4">
                                 <div>
-                                    <label className="block text-[11px] font-black tracking-wider text-gray-500 uppercase mb-2">Target Warehouse</label>
-                                    <select 
-                                        value={data.warehouse_id} 
-                                        onChange={e => setData('warehouse_id', e.target.value)}
-                                        className="w-full rounded-xl bg-gray-50 border-gray-200 text-[14px] font-bold focus:ring-[#4f46e5] focus:border-[#4f46e5]"
-                                    >
-                                        <option value="">Select Warehouse</option>
-                                        {warehouses.map(w => <option key={w.id} value={w.id}>{w.name}</option>)}
-                                    </select>
+                                    <label className="block text-[11px] font-black tracking-wider text-gray-500 uppercase mb-2">Gudang Tujuan</label>
+                                    <div className="w-full rounded-xl bg-gray-50 border border-gray-200 px-4 py-3 text-[14px] font-bold text-gray-700">
+                                        {operationalWarehouse?.name || 'Warehouse Utama'}
+                                    </div>
+                                    {operationalWarehouse?.location && (
+                                        <p className="mt-2 text-[12px] font-semibold text-gray-400">
+                                            Lokasi operasional: {operationalWarehouse.location}
+                                        </p>
+                                    )}
                                     {errors.warehouse_id && <p className="text-red-500 text-xs mt-1">{errors.warehouse_id}</p>}
                                 </div>
                                 <div>
-                                    <label className="block text-[11px] font-black tracking-wider text-gray-500 uppercase mb-2">Order Date</label>
+                                    <label className="block text-[11px] font-black tracking-wider text-gray-500 uppercase mb-2">Tanggal PO</label>
                                     <input 
                                         type="date" 
                                         value={data.order_date} 
@@ -120,7 +120,7 @@ export default function Create({ suppliers, warehouses, products, autoPoNumber }
 
                             <div className="space-y-4">
                                 <div>
-                                    <label className="block text-[11px] font-black tracking-wider text-gray-500 uppercase mb-2">Expected Delivery Date</label>
+                                    <label className="block text-[11px] font-black tracking-wider text-gray-500 uppercase mb-2">Perkiraan Tiba</label>
                                     <input 
                                         type="date" 
                                         value={data.expected_date} 
@@ -130,7 +130,7 @@ export default function Create({ suppliers, warehouses, products, autoPoNumber }
                                     {errors.expected_date && <p className="text-red-500 text-xs mt-1">{errors.expected_date}</p>}
                                 </div>
                                 <div>
-                                    <label className="block text-[11px] font-black tracking-wider text-gray-500 uppercase mb-2">Notes (Optional)</label>
+                                    <label className="block text-[11px] font-black tracking-wider text-gray-500 uppercase mb-2">Catatan (Opsional)</label>
                                     <textarea 
                                         value={data.notes} 
                                         onChange={e => setData('notes', e.target.value)}
@@ -142,13 +142,13 @@ export default function Create({ suppliers, warehouses, products, autoPoNumber }
 
                         <div className="border-t border-gray-50 pt-8 mt-8">
                             <div className="flex justify-between items-center mb-6">
-                                <h3 className="text-[16px] font-black text-[#1a202c]">Order Items</h3>
+                                <h3 className="text-[16px] font-black text-[#1a202c]">Item Pesanan</h3>
                                 <button 
                                     type="button" 
                                     onClick={addItem}
                                     className="text-[12px] font-black text-[#4f46e5] hover:text-indigo-700 underline"
                                 >
-                                    + Add Item Line
+                                    + Tambah Baris Item
                                 </button>
                             </div>
 
@@ -156,18 +156,18 @@ export default function Create({ suppliers, warehouses, products, autoPoNumber }
                                 {data.items.map((item, index) => (
                                     <div key={index} className="grid grid-cols-12 gap-4 items-center bg-gray-50/50 p-4 rounded-2xl border border-gray-100">
                                         <div className="col-span-5">
-                                            <label className="block text-[9px] font-black tracking-wider text-gray-400 uppercase mb-1">Product</label>
+                                            <label className="block text-[9px] font-black tracking-wider text-gray-400 uppercase mb-1">Produk</label>
                                             <select 
                                                 value={item.product_id} 
                                                 onChange={e => updateItem(index, 'product_id', e.target.value)}
                                                 className="w-full rounded-xl bg-white border-gray-200 text-[13px] font-bold focus:ring-[#4f46e5] focus:border-[#4f46e5]"
                                             >
-                                                <option value="">Select Product</option>
+                                                <option value="">Pilih Produk</option>
                                                 {products.map(p => <option key={p.id} value={p.id}>{p.name} ({p.sku})</option>)}
                                             </select>
                                         </div>
                                         <div className="col-span-2">
-                                            <label className="block text-[9px] font-black tracking-wider text-gray-400 uppercase mb-1">Quantity</label>
+                                            <label className="block text-[9px] font-black tracking-wider text-gray-400 uppercase mb-1">Jumlah</label>
                                             <input 
                                                 type="number" 
                                                 min="1"
@@ -177,7 +177,7 @@ export default function Create({ suppliers, warehouses, products, autoPoNumber }
                                             />
                                         </div>
                                         <div className="col-span-3">
-                                            <label className="block text-[9px] font-black tracking-wider text-gray-400 uppercase mb-1">Unit Price</label>
+                                            <label className="block text-[9px] font-black tracking-wider text-gray-400 uppercase mb-1">Harga Satuan</label>
                                             <input 
                                                 type="number" 
                                                 min="0"
@@ -206,12 +206,12 @@ export default function Create({ suppliers, warehouses, products, autoPoNumber }
                                     </div>
                                 ))}
                                 {errors.items && <p className="text-red-500 text-xs mt-1">{errors.items}</p>}
-                                {errors['items.0.product_id'] && <p className="text-red-500 text-xs mt-1">Please ensure all items have a product selected.</p>}
+                                {errors['items.0.product_id'] && <p className="text-red-500 text-xs mt-1">Pastikan semua item sudah memilih produk.</p>}
                             </div>
 
                             <div className="flex justify-end mt-12 bg-gray-50 p-6 rounded-[20px]">
                                 <div className="text-right">
-                                    <div className="text-[12px] font-black text-gray-400 uppercase tracking-widest mb-1">Estimated Grand Total</div>
+                                    <div className="text-[12px] font-black text-gray-400 uppercase tracking-widest mb-1">Perkiraan Total</div>
                                     <div className="text-[32px] font-black text-[#1a202c]">
                                         Rp {calculateGrandTotal().toLocaleString('id-ID')}
                                     </div>
@@ -222,14 +222,14 @@ export default function Create({ suppliers, warehouses, products, autoPoNumber }
 
                     <div className="flex justify-end space-x-4">
                         <Link href={route('purchase-orders.index')} className="px-8 py-3.5 bg-white border border-gray-200 hover:bg-gray-50 text-gray-600 font-bold rounded-xl text-[14px] transition-colors">
-                            Discard Order
+                            Batal
                         </Link>
                         <button 
                             type="submit" 
                             disabled={processing}
                             className="px-8 py-3.5 bg-[#4f46e5] shadow-[#4f46e5]/30 shadow-lg hover:bg-indigo-700 text-white font-bold rounded-xl text-[14px] transition-colors disabled:opacity-50"
                         >
-                            {processing ? 'Saving...' : 'Finalize & Send PO'}
+                            {processing ? 'Menyimpan...' : 'Simpan & Kirim PO'}
                         </button>
                     </div>
                 </form>

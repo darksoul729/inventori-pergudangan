@@ -26,28 +26,31 @@ class InventoryController extends Controller
 
     public function index(Request $request): Response
     {
+        $operationalWarehouse = Warehouse::with('zones.racks')->orderBy('id')->firstOrFail();
+
         $query = Product::query()
-            ->with(['category', 'unit', 'productStocks.warehouse', 'rackStocks.rack'])
-            ->withSum('productStocks as total_stock', 'current_stock');
+            ->with([
+                'category',
+                'unit',
+                'productStocks' => fn ($q) => $q->where('warehouse_id', $operationalWarehouse->id)->with('warehouse'),
+                'rackStocks.rack'
+            ])
+            ->withSum([
+                'productStocks as total_stock' => fn ($q) => $q->where('warehouse_id', $operationalWarehouse->id)
+            ], 'current_stock');
 
         // 1. Filter by Category
         if ($request->filled('category_id') && $request->category_id !== 'all') {
             $query->where('category_id', $request->category_id);
         }
 
-        // 2. Filter by Warehouse (Location)
-        if ($request->filled('warehouse_id') && $request->warehouse_id !== 'all') {
-            $query->whereHas('productStocks', function ($q) use ($request) {
-                $q->where('warehouse_id', $request->warehouse_id);
-            });
-        }
-
         // 3. Filter by Status
         if ($request->filled('status') && $request->status !== 'all') {
-            $query->where(function($q) use ($request) {
+            $query->where(function($q) use ($request, $operationalWarehouse) {
                 $subquery = DB::table('product_stocks')
                     ->select(DB::raw('SUM(current_stock)'))
-                    ->whereColumn('product_id', 'products.id');
+                    ->whereColumn('product_id', 'products.id')
+                    ->where('warehouse_id', $operationalWarehouse->id);
 
                 if ($request->status === 'OutOfStock') {
                     $q->whereDoesntHave('productStocks')
@@ -104,10 +107,14 @@ class InventoryController extends Controller
 
         $stats = [
             'total_skus' => Product::count(),
-            'out_of_stock' => Product::whereDoesntHave('productStocks', function($query) {
-                $query->where('current_stock', '>', 0);
+            'out_of_stock' => Product::whereDoesntHave('productStocks', function($query) use ($operationalWarehouse) {
+                $query->where('warehouse_id', $operationalWarehouse->id)
+                    ->where('current_stock', '>', 0);
             })->count(),
-            'low_stock' => Product::all()->filter(fn($p) => $this->getStockStatus($p->productStocks->sum('current_stock'), $p->minimum_stock) !== 'Healthy')->count(),
+            'low_stock' => Product::with(['productStocks' => fn ($q) => $q->where('warehouse_id', $operationalWarehouse->id)])
+                ->get()
+                ->filter(fn($p) => $this->getStockStatus($p->productStocks->sum('current_stock'), $p->minimum_stock) !== 'Healthy')
+                ->count(),
             'storage_efficiency' => '94.8',
         ];
 
@@ -117,12 +124,64 @@ class InventoryController extends Controller
             'categories' => Category::all(['id', 'name']),
             'units' => Unit::all(['id', 'name']),
             'suppliers' => Supplier::all(['id', 'name']),
-            'warehouses' => Warehouse::with('zones.racks')->get(),
+            'warehouses' => [$operationalWarehouse],
+            'operationalWarehouse' => [
+                'id' => $operationalWarehouse->id,
+                'name' => $operationalWarehouse->name,
+                'location' => $operationalWarehouse->location,
+            ],
         ]);
     }
 
+    public function create(): Response
+    {
+        $operationalWarehouse = Warehouse::with('zones.racks')->orderBy('id')->firstOrFail();
+        
+        return Inertia::render('Inventory/Create', [
+            'categories' => Category::all(['id', 'name']),
+            'units' => Unit::all(['id', 'name']),
+            'suppliers' => Supplier::all(['id', 'name']),
+            'warehouses' => [$operationalWarehouse],
+            'operationalWarehouse' => [
+                'id' => $operationalWarehouse->id,
+                'name' => $operationalWarehouse->name,
+                'location' => $operationalWarehouse->location,
+            ],
+        ]);
+    }
+
+    public function outbound(): Response 
+    {
+        $operationalWarehouse = Warehouse::orderBy('id')->firstOrFail();
+        
+        $products = Product::whereHas('productStocks', function($q) use ($operationalWarehouse) {
+                $q->where('warehouse_id', $operationalWarehouse->id)->where('current_stock', '>', 0);
+            })
+            ->with(['productStocks' => fn ($q) => $q->where('warehouse_id', $operationalWarehouse->id)])
+            ->get(['id', 'sku', 'name', 'minimum_stock'])
+            ->map(function ($product) {
+                return [
+                    'id' => $product->id,
+                    'sku' => $product->sku,
+                    'name' => $product->name,
+                    'minimum_stock' => $product->minimum_stock,
+                    'current_stock' => $product->productStocks->sum('current_stock')
+                ];
+            });
+
+        return Inertia::render('Inventory/Outbound', [
+            'products' => $products,
+            'warehouses' => [$operationalWarehouse],
+            'operationalWarehouse' => [
+                'id' => $operationalWarehouse->id,
+                'name' => $operationalWarehouse->name,
+            ],
+        ]);
+    }
     public function store(Request $request): RedirectResponse
     {
+        $operationalWarehouse = Warehouse::orderBy('id')->firstOrFail();
+
         $validated = $request->validate([
             'sku' => 'required|string|unique:products,sku',
             'name' => 'required|string',
@@ -135,10 +194,12 @@ class InventoryController extends Controller
             'description' => 'nullable|string',
             // Initial stock fields - only require locations if stock is > 0
             'initial_stock' => 'nullable|integer|min:0',
-            'warehouse_id' => 'required_unless:initial_stock,0|exists:warehouses,id',
+            'warehouse_id' => 'nullable|exists:warehouses,id',
             'rack_id' => 'required_unless:initial_stock,0|exists:racks,id',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
+
+        $validated['warehouse_id'] = $validated['warehouse_id'] ?? $operationalWarehouse->id;
 
         $imagePath = null;
         if ($request->hasFile('image')) {
@@ -199,13 +260,17 @@ class InventoryController extends Controller
 
     public function recordOutbound(Request $request): RedirectResponse
     {
+        $operationalWarehouse = Warehouse::orderBy('id')->firstOrFail();
+
         $validated = $request->validate([
             'product_id' => 'required|exists:products,id',
-            'warehouse_id' => 'required|exists:warehouses,id',
+            'warehouse_id' => 'nullable|exists:warehouses,id',
             'quantity' => 'required|integer|min:1',
             'destination' => 'nullable|string',
             'notes' => 'nullable|string',
         ]);
+
+        $validated['warehouse_id'] = $validated['warehouse_id'] ?? $operationalWarehouse->id;
 
         DB::transaction(function () use ($validated, $request) {
             $productStock = ProductStock::where('product_id', $validated['product_id'])
@@ -273,5 +338,84 @@ class InventoryController extends Controller
         if ($current <= 0) return 'text-red-500 bg-red-50';
         if ($current <= $min) return 'text-amber-600 bg-amber-50';
         return 'text-emerald-600 bg-emerald-50';
+    }
+
+    public function show(Product $product): Response
+    {
+        $operationalWarehouse = Warehouse::orderBy('id')->firstOrFail();
+
+        $product->load([
+            'category',
+            'unit',
+            'defaultSupplier',
+            'rackStocks.rack.zone.warehouse',
+            'productStocks.warehouse'
+        ]);
+
+        $totalStock = $product->productStocks->sum('current_stock');
+        
+        // Distribution by zone/rack
+        $distribution = $product->rackStocks->map(function ($rs) {
+            return [
+                'rack_code' => $rs->rack->code,
+                'zone_name' => $rs->rack->zone->name,
+                'warehouse_name' => $rs->rack->zone->warehouse->name,
+                'quantity' => $rs->quantity,
+                'capacity' => $rs->rack->capacity,
+            ];
+        });
+
+        // Stock Movements History
+        $movements = StockMovement::where('product_id', $product->id)
+            ->with(['user', 'warehouse'])
+            ->orderBy('movement_date', 'desc')
+            ->limit(10)
+            ->get()
+            ->map(function ($m) {
+                return [
+                    'id' => $m->id,
+                    'type' => $m->movement_type === 'in' ? 'Restok Masuk' : ($m->movement_type === 'out' ? 'Barang Keluar' : 'Transfer'),
+                    'reference' => $m->reference_type . ' #' . $m->reference_id,
+                    'quantity' => $m->quantity,
+                    'quantity_formatted' => ($m->movement_type === 'in' ? '+ ' : '- ') . $m->quantity,
+                    'stock_after' => $m->stock_after,
+                    'date' => $m->movement_date->format('M d, Y'),
+                    'time' => $m->movement_date->format('H:i:s T'),
+                    'location' => $m->warehouse?->name ?? 'External',
+                    'operator' => $m->user?->name ?? 'System',
+                    'operator_initials' => collect(explode(' ', $m->user?->name ?? 'System'))
+                        ->map(fn($n) => substr($n, 0, 1))
+                        ->take(2)
+                        ->join(''),
+                ];
+            });
+
+        // Calculate max stock for progress bar (sum of capacities where product is stored or default)
+        $maxStock = $product->rackStocks->sum(fn($rs) => $rs->rack->capacity) ?: max(1000, $product->minimum_stock * 10);
+        
+        $stats = [
+            'current_stock' => $totalStock,
+            'max_stock' => $maxStock,
+            'percentage' => $maxStock > 0 ? min(round(($totalStock / $maxStock) * 100), 100) : 0,
+            'status' => $this->getStockStatus($totalStock, (int) $product->minimum_stock),
+            'status_color' => $this->getStatusColor($totalStock, (int) $product->minimum_stock),
+            'velocity' => $movements->count() > 5 ? 'Tinggi' : ($movements->count() > 0 ? 'Sedang' : 'Rendah'),
+        ];
+
+        return Inertia::render('ProductDetail', [
+            'product' => [
+                'id' => $product->id,
+                'sku' => $product->sku,
+                'name' => $product->name,
+                'category' => $product->category?->name ?? 'Uncategorized',
+                'description' => $product->description,
+                'purchase_price' => $product->purchase_price,
+                'selling_price' => $product->selling_price,
+                'image_url' => $product->image ? Storage::url($product->image) : null,
+            ],
+            'stats' => $stats,
+            'distribution' => $distribution,
+            'movements' => $movements,
+        ]);
     }
 }

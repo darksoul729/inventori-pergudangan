@@ -24,7 +24,7 @@ export default function Show({ purchaseOrder }) {
     const { processing } = useForm({});
 
     const handleStatusUpdate = (status) => {
-        if (confirm(`Are you sure you want to mark this PO as ${status}?`)) {
+        if (confirm(`Yakin ingin mengubah status PO ini menjadi ${status}?`)) {
             router.put(route('purchase-orders.update-status', purchaseOrder.id), { status });
         }
     };
@@ -45,8 +45,8 @@ export default function Show({ purchaseOrder }) {
     };
 
     return (
-        <DashboardLayout headerSearchPlaceholder="View purchase order...">
-            <Head title={`PO Details - ${purchaseOrder.po_number}`} />
+        <DashboardLayout headerSearchPlaceholder="Lihat pesanan pembelian...">
+            <Head title={`Detail PO - ${purchaseOrder.po_number}`} />
 
             <div className="flex flex-col space-y-6 pb-12 w-full pt-2 min-w-[1000px]">
                 <div className="flex justify-between items-start mb-4">
@@ -58,10 +58,10 @@ export default function Show({ purchaseOrder }) {
                             <div className="flex items-center space-x-3">
                                 <h1 className="text-[28px] font-black text-[#1a202c] tracking-tight">{purchaseOrder.po_number}</h1>
                                 <span className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider ${getStatusColor(purchaseOrder.status)}`}>
-                                    {purchaseOrder.status}
+                                    {purchaseOrder.status === 'pending' ? 'Menunggu' : purchaseOrder.status === 'approved' ? 'Disetujui' : purchaseOrder.status === 'received' ? 'Diterima' : purchaseOrder.status === 'cancelled' ? 'Dibatalkan' : purchaseOrder.status === 'rejected' ? 'Ditolak' : purchaseOrder.status}
                                 </span>
                             </div>
-                            <p className="text-[14px] font-bold text-gray-500 mt-1">Ordered on {new Date(purchaseOrder.order_date).toLocaleDateString()} by {purchaseOrder.creator?.name}</p>
+                            <p className="text-[14px] font-bold text-gray-500 mt-1">Dibuat pada {new Date(purchaseOrder.order_date).toLocaleDateString('id-ID')} oleh {purchaseOrder.creator?.name}</p>
                         </div>
                     </div>
 
@@ -74,7 +74,7 @@ export default function Show({ purchaseOrder }) {
                                     className="flex items-center space-x-2 px-6 py-3.5 bg-white border border-red-200 text-red-600 font-bold rounded-xl text-[14px] hover:bg-red-50 transition-colors shadow-sm"
                                 >
                                     <XIcon className="w-4 h-4" />
-                                    <span>Reject PO</span>
+                                    <span>Tolak PO</span>
                                 </button>
                                 <button 
                                     onClick={() => handleStatusUpdate('approved')}
@@ -82,7 +82,7 @@ export default function Show({ purchaseOrder }) {
                                     className="flex items-center space-x-2 px-6 py-3.5 bg-[#4f46e5] shadow-[#4f46e5]/30 shadow-lg hover:bg-indigo-700 text-white font-bold rounded-xl text-[14px] transition-colors"
                                 >
                                     <CheckIcon className="w-4 h-4" />
-                                    <span>Approve & Send</span>
+                                    <span>Setujui & Kirim</span>
                                 </button>
                             </>
                         )}
@@ -93,7 +93,7 @@ export default function Show({ purchaseOrder }) {
                                 className="flex items-center space-x-2 px-6 py-3.5 bg-emerald-600 shadow-emerald-200 shadow-lg hover:bg-emerald-700 text-white font-bold rounded-xl text-[14px] transition-colors"
                             >
                                 <CheckIcon className="w-4 h-4" />
-                                <span>Confirm Received</span>
+                                <span>Konfirmasi Diterima</span>
                             </button>
                         )}
                     </div>
@@ -102,12 +102,12 @@ export default function Show({ purchaseOrder }) {
                 <div className="grid grid-cols-3 gap-6">
                     <div className="col-span-2 space-y-6">
                         <div className="bg-white rounded-[24px] p-8 shadow-[0_2px_16px_rgba(0,0,0,0.02)] border border-[#edf2f7]">
-                            <h2 className="text-[18px] font-black text-[#1a202c] mb-6">Ordered Items</h2>
+                            <h2 className="text-[18px] font-black text-[#1a202c] mb-6">Daftar Item</h2>
                             <div className="w-full">
                                 <div className="grid grid-cols-12 gap-4 pb-4 border-b border-gray-100 text-[10px] font-black text-gray-400 tracking-[0.1em] uppercase">
-                                    <div className="col-span-5 pl-2">Product</div>
-                                    <div className="col-span-2">Quantity</div>
-                                    <div className="col-span-2">Unit Price</div>
+                                    <div className="col-span-5 pl-2">Produk</div>
+                                    <div className="col-span-2">Jumlah</div>
+                                    <div className="col-span-2">Harga Satuan</div>
                                     <div className="col-span-3 text-right pr-4">Subtotal</div>
                                 </div>
                                 <div className="divide-y divide-gray-50/80">
@@ -118,7 +118,7 @@ export default function Show({ purchaseOrder }) {
                                                 <span className="text-[11px] font-bold text-gray-400">SKU: {item.product?.sku}</span>
                                             </div>
                                             <div className="col-span-2">
-                                                <span className="text-[14px] font-black text-[#1a202c]">{item.quantity} Units</span>
+                                                <span className="text-[14px] font-black text-[#1a202c]">{item.quantity} Unit</span>
                                             </div>
                                             <div className="col-span-2">
                                                 <span className="text-[14px] font-bold text-gray-500">{formatCurrency(item.unit_price)}</span>
@@ -131,7 +131,7 @@ export default function Show({ purchaseOrder }) {
                                 </div>
                                 <div className="flex justify-end mt-8 pt-8 border-t border-gray-100">
                                     <div className="text-right">
-                                        <span className="text-[12px] font-black text-gray-400 uppercase tracking-widest block mb-1">Grand Total</span>
+                                        <span className="text-[12px] font-black text-gray-400 uppercase tracking-widest block mb-1">Total Keseluruhan</span>
                                         <span className="text-[28px] font-black text-[#1a202c]">{formatCurrency(purchaseOrder.total_amount)}</span>
                                     </div>
                                 </div>
@@ -140,7 +140,7 @@ export default function Show({ purchaseOrder }) {
 
                         {purchaseOrder.notes && (
                             <div className="bg-white rounded-[24px] p-8 shadow-[0_2px_16px_rgba(0,0,0,0.02)] border border-[#edf2f7]">
-                                <h2 className="text-[14px] font-black text-[#1a202c] mb-4 uppercase tracking-wider">Internal Notes</h2>
+                                <h2 className="text-[14px] font-black text-[#1a202c] mb-4 uppercase tracking-wider">Catatan Internal</h2>
                                 <p className="text-[14px] font-bold text-gray-500 leading-relaxed">{purchaseOrder.notes}</p>
                             </div>
                         )}
@@ -148,18 +148,18 @@ export default function Show({ purchaseOrder }) {
 
                     <div className="space-y-6">
                         <div className="bg-white rounded-[24px] p-8 shadow-[0_2px_16px_rgba(0,0,0,0.02)] border border-[#edf2f7]">
-                            <h2 className="text-[14px] font-black text-[#1a202c] mb-6 uppercase tracking-wider">Supplier Details</h2>
+                            <h2 className="text-[14px] font-black text-[#1a202c] mb-6 uppercase tracking-wider">Detail Pemasok</h2>
                             <div className="space-y-4">
                                 <div>
-                                    <label className="block text-[10px] font-black text-gray-400 uppercase mb-1">Company Name</label>
+                                    <label className="block text-[10px] font-black text-gray-400 uppercase mb-1">Nama Perusahaan</label>
                                     <div className="text-[14px] font-black text-[#1a202c]">{purchaseOrder.supplier?.name}</div>
                                 </div>
                                 <div>
-                                    <label className="block text-[10px] font-black text-gray-400 uppercase mb-1">Category</label>
+                                    <label className="block text-[10px] font-black text-gray-400 uppercase mb-1">Kategori</label>
                                     <div className="text-[14px] font-bold text-gray-600">{purchaseOrder.supplier?.category}</div>
                                 </div>
                                 <div>
-                                    <label className="block text-[10px] font-black text-gray-400 uppercase mb-1">Contact</label>
+                                    <label className="block text-[10px] font-black text-gray-400 uppercase mb-1">Kontak</label>
                                     <div className="text-[13px] font-bold text-gray-600">{purchaseOrder.supplier?.contact_person}</div>
                                     <div className="text-[12px] font-bold text-indigo-500">{purchaseOrder.supplier?.email}</div>
                                 </div>
@@ -167,21 +167,21 @@ export default function Show({ purchaseOrder }) {
                         </div>
 
                         <div className="bg-white rounded-[24px] p-8 shadow-[0_2px_16px_rgba(0,0,0,0.02)] border border-[#edf2f7]">
-                            <h2 className="text-[14px] font-black text-[#1a202c] mb-6 uppercase tracking-wider">Logistics Info</h2>
+                            <h2 className="text-[14px] font-black text-[#1a202c] mb-6 uppercase tracking-wider">Info Pengiriman</h2>
                             <div className="space-y-4">
                                 <div>
-                                    <label className="block text-[10px] font-black text-gray-400 uppercase mb-1">Destination</label>
+                                    <label className="block text-[10px] font-black text-gray-400 uppercase mb-1">Tujuan</label>
                                     <div className="text-[14px] font-black text-[#1a202c]">{purchaseOrder.warehouse?.name}</div>
                                 </div>
                                 <div>
-                                    <label className="block text-[10px] font-black text-gray-400 uppercase mb-1">Expected Delivery</label>
+                                    <label className="block text-[10px] font-black text-gray-400 uppercase mb-1">Perkiraan Tiba</label>
                                     <div className="text-[14px] font-black text-amber-600">
-                                        {purchaseOrder.expected_date ? new Date(purchaseOrder.expected_date).toLocaleDateString() : 'No date set'}
+                                        {purchaseOrder.expected_date ? new Date(purchaseOrder.expected_date).toLocaleDateString('id-ID') : 'Belum ditentukan'}
                                     </div>
                                 </div>
                                 {purchaseOrder.approved_by && (
                                     <div className="pt-4 border-t border-gray-50">
-                                        <label className="block text-[10px] font-black text-gray-400 uppercase mb-1">Approved By</label>
+                                        <label className="block text-[10px] font-black text-gray-400 uppercase mb-1">Disetujui Oleh</label>
                                         <div className="text-[13px] font-black text-indigo-600">{purchaseOrder.approver?.name}</div>
                                     </div>
                                 )}

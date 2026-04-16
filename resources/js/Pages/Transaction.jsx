@@ -91,16 +91,16 @@ export default function Transaction({ movements, stats, filters }) {
             const data = await response.json();
             
             if (!data.movements || data.movements.length === 0) {
-                alert('No data to export');
+                alert('Tidak ada data untuk diekspor.');
                 return;
             }
 
             const workbook = new ExcelJS.Workbook();
-            const worksheet = workbook.addWorksheet('Transactions');
+            const worksheet = workbook.addWorksheet('Riwayat Transaksi');
 
             // 1. Set Title Row
             const titleCell = worksheet.getCell('A1');
-            titleCell.value = 'TABEL RIWAYAT TRANSAKSI PERGUDANGAN REAL-TIME';
+            titleCell.value = 'LAPORAN RIWAYAT TRANSAKSI GUDANG';
             titleCell.font = { name: 'Arial', family: 4, size: 16, bold: true };
             titleCell.alignment = { vertical: 'middle', horizontal: 'center' };
             worksheet.mergeCells('A1:I1');
@@ -109,14 +109,14 @@ export default function Transaction({ movements, stats, filters }) {
             // 2. Define Headers
             const headers = [
                 { header: 'NO', key: 'no', width: 8 },
-                { header: 'PRODUCT NAME', key: 'product', width: 35 },
+                { header: 'NAMA BARANG', key: 'product', width: 35 },
                 { header: 'SKU', key: 'sku', width: 15 },
-                { header: 'TYPE', key: 'type', width: 15 },
-                { header: 'QUANTITY', key: 'qty', width: 15 },
-                { header: 'WAREHOUSE', key: 'warehouse', width: 25 },
+                { header: 'JENIS', key: 'type', width: 15 },
+                { header: 'JUMLAH', key: 'qty', width: 15 },
+                { header: 'GUDANG', key: 'warehouse', width: 25 },
                 { header: 'OPERATOR', key: 'operator', width: 20 },
-                { header: 'TIMESTAMP', key: 'timestamp', width: 25 },
-                { header: 'NOTES', key: 'notes', width: 40 }
+                { header: 'WAKTU', key: 'timestamp', width: 25 },
+                { header: 'CATATAN', key: 'notes', width: 40 }
             ];
 
             worksheet.columns = headers;
@@ -182,15 +182,15 @@ export default function Transaction({ movements, stats, filters }) {
             // 5. Add Footer Notes
             const lastRow = worksheet.rowCount;
             worksheet.addRow([]); // Gap
-            const noteRow1 = worksheet.addRow(['', 'Catatan : Data bersifat immutable dan terekam secara real-time dari sensor nodes.']);
-            const noteRow2 = worksheet.addRow(['', 'Sistem : Aether Warehouse Management System v1.0']);
+            const noteRow1 = worksheet.addRow(['', 'Catatan: Laporan ini berisi riwayat mutasi stok yang tercatat pada sistem gudang.']);
+            const noteRow2 = worksheet.addRow(['', 'Sistem: Operasional Gudang']);
             
             noteRow1.font = { italic: true, size: 9, color: { argb: 'FF555555' } };
             noteRow2.font = { italic: true, size: 9, color: { argb: 'FF555555' } };
 
             // 6. Write to Buffer and Save
             const buffer = await workbook.xlsx.writeBuffer();
-            saveAs(new Blob([buffer]), `Ledger_Transaksi_${new Date().toISOString().slice(0, 10)}.xlsx`);
+            saveAs(new Blob([buffer]), `riwayat-transaksi-${new Date().toISOString().slice(0, 10)}.xlsx`);
 
         } catch (error) {
             console.error('Export failed:', error);
@@ -211,46 +211,39 @@ export default function Transaction({ movements, stats, filters }) {
 
     const getStatusInfo = (movement) => {
         if (movement.movement_type === 'adjustment' || movement.movement_type === 'opname') {
-            return { label: 'Audit Required', color: 'bg-amber-50 text-amber-600 border border-amber-100' };
+            return { label: 'Perlu Verifikasi', color: 'bg-amber-50 text-amber-600 border border-amber-100' };
         }
         if (movement.movement_type === 'transfer') {
-            return { label: 'Routed', color: 'bg-blue-50 text-blue-600 border border-blue-100' };
+            return { label: 'Transfer', color: 'bg-blue-50 text-blue-600 border border-blue-100' };
         }
         if (movement.movement_type === 'in') {
-            return { label: 'Stocked', color: 'bg-emerald-50 text-emerald-600 border border-emerald-100' };
+            return { label: 'Barang Masuk', color: 'bg-emerald-50 text-emerald-600 border border-emerald-100' };
         }
         if (movement.quantity > 1000) {
-            return { label: 'High Volume', color: 'bg-indigo-50 text-indigo-600 border border-indigo-100' };
+            return { label: 'Volume Tinggi', color: 'bg-indigo-50 text-indigo-600 border border-indigo-100' };
         }
-        return { label: 'Completed', color: 'bg-gray-50 text-gray-500 border border-gray-100' };
+        return { label: 'Selesai', color: 'bg-gray-50 text-gray-500 border border-gray-100' };
     };
 
     return (
         <DashboardLayout 
-            headerSearchPlaceholder="Search transactions, products, or operators..."
+            headerSearchPlaceholder="Cari transaksi, barang, atau operator..."
             searchValue={searchTerm}
             onSearch={setSearchTerm}
         >
-            <Head title="Transaction Ledger" />
+            <Head title="Riwayat Transaksi" />
 
-            <div className="flex flex-row gap-8 pb-12 w-full pt-4 min-w-[1000px] overflow-x-auto">
+            <div className="flex flex-row gap-8 pb-12 w-full pt-4 min-w-[1000px] overflow-x-auto bg-[#f8fafc]">
                 {/* Left Column - Main Content */}
                 <div className="flex-1 flex flex-col space-y-8">
                     
                     {/* Header */}
                     <div className="flex justify-between items-end">
                         <div>
-                            <h1 className="text-[26px] font-black text-[#1a202c] tracking-tight mb-1">Transaction Ledger</h1>
-                            <p className="text-[14px] font-bold text-gray-400">Real-time immutable movement log across global nodes.</p>
+                            <h1 className="text-[28px] font-black text-[#0f172a] tracking-tight mb-1">Riwayat Transaksi Gudang</h1>
+                            <p className="text-[14px] font-semibold text-slate-500">Pantau mutasi barang masuk, keluar, transfer, dan penyesuaian dari gudang operasional.</p>
                         </div>
-                        <div className="flex space-x-3">
-                            <Link 
-                                href={route('inventory', { view: 'outbound' })}
-                                className="px-5 py-2.5 bg-indigo-600 text-white font-black rounded-xl text-[13px] hover:bg-indigo-700 shadow-md transition-all flex items-center space-x-2"
-                            >
-                                <span>Record Outbound</span>
-                            </Link>
-                        </div>
+                        {/* Action Buttons Removed */}
                     </div>
 
                     {/* 3 Metric Cards */}
@@ -267,7 +260,7 @@ export default function Transaction({ movements, stats, filters }) {
                                 </span>
                             </div>
                             <div>
-                                <h3 className="text-[12px] font-extrabold text-gray-500 mb-1">Inbound Units (24h)</h3>
+                                <h3 className="text-[12px] font-extrabold text-gray-500 mb-1">Barang Masuk 24 Jam</h3>
                                 <div className="text-[28px] font-black text-[#1a202c]">{stats.inbound_24h.toLocaleString()}</div>
                             </div>
                         </div>
@@ -284,7 +277,7 @@ export default function Transaction({ movements, stats, filters }) {
                                 </span>
                             </div>
                             <div>
-                                <h3 className="text-[12px] font-extrabold text-gray-500 mb-1">Outbound Units (24h)</h3>
+                                <h3 className="text-[12px] font-extrabold text-gray-500 mb-1">Barang Keluar 24 Jam</h3>
                                 <div className="text-[28px] font-black text-[#1a202c]">{stats.outbound_24h.toLocaleString()}</div>
                             </div>
                         </div>
@@ -302,11 +295,11 @@ export default function Transaction({ movements, stats, filters }) {
                                     )}
                                 </div>
                                 <span className="text-[10px] font-black text-amber-600 tracking-wider">
-                                    {stats.pending_audits > 5 ? 'High Priority' : 'Routine'}
+                                    {stats.pending_audits > 5 ? 'Prioritas Tinggi' : 'Rutin'}
                                 </span>
                             </div>
                             <div>
-                                <h3 className="text-[12px] font-extrabold text-gray-500 mb-1">Pending Audits</h3>
+                                <h3 className="text-[12px] font-extrabold text-gray-500 mb-1">Perlu Verifikasi</h3>
                                 <div className="text-[28px] font-black text-[#1a202c]">{stats.pending_audits}</div>
                             </div>
                         </div>
@@ -317,13 +310,13 @@ export default function Transaction({ movements, stats, filters }) {
                         
                         {/* Table Header Row */}
                         <div className="flex justify-between items-center mb-8">
-                            <h2 className="text-[18px] font-black text-[#1a202c]">Recent Movements</h2>
+                            <h2 className="text-[20px] font-black text-[#0f172a]">Daftar Mutasi Terbaru</h2>
                             <div className="flex items-center space-x-3">
                                 <button 
                                     onClick={handleExportXlsx}
                                     className="px-5 py-2.5 bg-white border border-gray-200 text-gray-600 font-bold rounded-xl text-[13px] hover:bg-gray-50 shadow-sm transition-colors flex items-center space-x-2"
                                 >
-                                    <span>Export Excel</span>
+                                    <span>Ekspor Excel</span>
                                 </button>
                                 <div className="relative group">
                                     <select 
@@ -334,12 +327,12 @@ export default function Transaction({ movements, stats, filters }) {
                                             handleFilterChange(e.target.value);
                                         }}
                                     >
-                                        <option value="all">Filer: All Types</option>
-                                        <option value="in">Inbound (Receipt)</option>
-                                        <option value="out">Outbound (Dispatch)</option>
-                                        <option value="transfer">Stock Transfer</option>
-                                        <option value="adjustment">Stock Adjustments</option>
-                                        <option value="opname">Stock Opname</option>
+                                        <option value="all">Filter: Semua Jenis</option>
+                                        <option value="in">Barang Masuk</option>
+                                        <option value="out">Barang Keluar</option>
+                                        <option value="transfer">Transfer Stok</option>
+                                        <option value="adjustment">Penyesuaian Stok</option>
+                                        <option value="opname">Stok Opname</option>
                                     </select>
                                     <FilterIcon2 className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-indigo-500" />
                                 </div>
@@ -350,11 +343,11 @@ export default function Transaction({ movements, stats, filters }) {
                         <div className="w-full flex-1">
                             {/* Columns */}
                             <div className="grid grid-cols-12 gap-4 pb-4 border-b border-gray-100 text-[9px] font-black text-gray-400 tracking-widest uppercase">
-                                <div className="col-span-1">Log ID</div>
-                                <div className="col-span-3">Product / Operator</div>
-                                <div className="col-span-2">Type</div>
-                                <div className="col-span-2 text-center">Timestamp</div>
-                                <div className="col-span-2 text-right">Qty</div>
+                                <div className="col-span-1">ID Log</div>
+                                <div className="col-span-3">Barang / Operator</div>
+                                <div className="col-span-2">Jenis</div>
+                                <div className="col-span-2 text-center">Waktu</div>
+                                <div className="col-span-2 text-right">Jumlah</div>
                                 <div className="col-span-2 text-right">Status</div>
                             </div>
 
@@ -363,28 +356,32 @@ export default function Transaction({ movements, stats, filters }) {
                                 {movements.data.map((m) => {
                                     const status = getStatusInfo(m);
                                     return (
-                                        <div key={m.id} className="grid grid-cols-12 gap-4 py-5 items-center hover:bg-gray-50/50 transition-colors group">
+                                        <div 
+                                            key={m.id} 
+                                            onClick={() => router.visit(route('transaction.show', m.id))}
+                                            className="grid grid-cols-12 gap-4 py-5 items-center hover:bg-indigo-50/50 transition-colors group cursor-pointer"
+                                        >
                                             <div className="col-span-1">
                                                 <span className="text-[12px] font-black text-[#4f46e5]">#{m.id.toString().padStart(6, '0')}</span>
                                             </div>
                                             <div className="col-span-3 flex flex-col">
                                                 <span className="text-[13px] font-black text-[#1a202c] leading-tight truncate">
-                                                    {m.product?.name || 'Unknown Product'}
+                                                    {m.product?.name || 'Barang Tidak Dikenal'}
                                                 </span>
                                                 <span className="text-[10px] font-bold text-gray-400 mt-0.5">
-                                                    By: {m.user?.name || 'System'}
+                                                    Operator: {m.user?.name || 'Sistem'}
                                                 </span>
                                             </div>
                                             <div className="col-span-2 flex items-center space-x-2">
                                                 {getMovementIcon(m.movement_type)}
-                                                <span className="text-[12px] font-bold text-[#1a202c] capitalize">{m.movement_type}</span>
+                                                <span className="text-[12px] font-bold text-[#1a202c] capitalize">{m.movement_type === 'in' ? 'Masuk' : m.movement_type === 'out' ? 'Keluar' : m.movement_type === 'transfer' ? 'Transfer' : m.movement_type === 'adjustment' ? 'Penyesuaian' : 'Opname'}</span>
                                             </div>
                                             <div className="col-span-2 flex flex-col justify-center text-center">
                                                 <span className="text-[11px] font-bold text-gray-500">
-                                                    {new Date(m.movement_date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                    {new Date(m.movement_date).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
                                                 </span>
                                                 <span className="text-[10px] font-bold text-gray-400">
-                                                    {new Date(m.movement_date).toLocaleDateString([], { day: '2-digit', month: 'short' })}
+                                                    {new Date(m.movement_date).toLocaleDateString('id-ID', { day: '2-digit', month: 'short' })}
                                                 </span>
                                             </div>
                                             <div className="col-span-2 text-right pr-4">
@@ -404,8 +401,8 @@ export default function Transaction({ movements, stats, filters }) {
                                         <div className="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center mb-4">
                                             <ShieldCheckIcon className="w-8 h-8 text-gray-300" />
                                         </div>
-                                        <h3 className="text-[16px] font-black text-gray-400">No transactions found</h3>
-                                        <p className="text-[12px] font-bold text-gray-300">Try adjusting your filters or search query.</p>
+                                        <h3 className="text-[16px] font-black text-gray-400">Tidak ada transaksi ditemukan</h3>
+                                        <p className="text-[12px] font-bold text-gray-300">Coba ubah filter atau kata kunci pencarian.</p>
                                     </div>
                                 )}
                             </div>
@@ -414,7 +411,7 @@ export default function Transaction({ movements, stats, filters }) {
                         {/* Pagination */}
                         <div className="flex justify-between items-center mt-8 pt-6 border-t border-gray-100">
                             <span className="text-[12px] font-bold text-gray-400">
-                                Showing {movements.from || 0} - {movements.to || 0} of {movements.total} logs
+                                Menampilkan {movements.from || 0} - {movements.to || 0} dari {movements.total} transaksi
                             </span>
                             <div className="flex space-x-2">
                                 {movements.links.map((link, i) => (
@@ -440,7 +437,7 @@ export default function Transaction({ movements, stats, filters }) {
                 {/* Right Column - Status & Context */}
                 <div className="w-[360px] flex-shrink-0 flex flex-col space-y-6">
                     
-                    {/* AI Audit Pulse Card */}
+                    {/* Ringkasan Operasional */}
                     <div className="bg-white rounded-[24px] shadow-[0_4px_24px_rgba(0,0,0,0.03)] border border-[#edf2f7] overflow-hidden flex flex-col">
                         
                         {/* Card Header */}
@@ -448,7 +445,7 @@ export default function Transaction({ movements, stats, filters }) {
                             <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-white shadow-[0_0_12px_rgba(79,70,229,0.4)]">
                                 <AIAuditIcon className="w-4 h-4" />
                             </div>
-                            <h2 className="text-[16px] font-black text-[#1a202c]">AI Audit Pulse</h2>
+                            <h2 className="text-[16px] font-black text-[#1a202c]">Ringkasan Operasional</h2>
                         </div>
 
                         {/* List of Alerts */}
@@ -457,15 +454,15 @@ export default function Transaction({ movements, stats, filters }) {
                             {stats.pending_audits > 0 && (
                                 <div className="bg-white rounded-xl shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-gray-100 p-4 border-l-4 border-l-amber-500 relative">
                                     <div className="flex justify-between items-start mb-2">
-                                        <h4 className="text-[13px] font-bold text-[#1a202c] max-w-[70%] leading-tight">Verification Required</h4>
-                                        <span className="text-[9px] font-black text-amber-500 uppercase tracking-widest">Pending</span>
+                                        <h4 className="text-[13px] font-bold text-[#1a202c] max-w-[70%] leading-tight">Verifikasi Diperlukan</h4>
+                                        <span className="text-[9px] font-black text-amber-500 uppercase tracking-widest">Tertunda</span>
                                     </div>
                                     <p className="text-[11.5px] font-semibold text-gray-500 leading-relaxed mb-3">
-                                        {stats.pending_audits} recent inventory adjustments require manual verification.
+                                        {stats.pending_audits} penyesuaian stok terbaru perlu diperiksa ulang oleh petugas.
                                     </p>
                                     <div className="flex space-x-4">
-                                        <button className="text-[11px] font-black text-indigo-600 hover:text-indigo-800 transition-colors">Start Audit</button>
-                                        <button className="text-[11px] font-bold text-gray-400 hover:text-gray-600 transition-colors">Dismiss</button>
+                                        <button className="text-[11px] font-black text-indigo-600 hover:text-indigo-800 transition-colors">Mulai Pemeriksaan</button>
+                                        <button className="text-[11px] font-bold text-gray-400 hover:text-gray-600 transition-colors">Tutup</button>
                                     </div>
                                 </div>
                             )}
@@ -473,22 +470,22 @@ export default function Transaction({ movements, stats, filters }) {
                             {stats.outbound_trend > 20 && (
                                 <div className="bg-white rounded-xl shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-gray-100 p-4 border-l-4 border-l-red-500 relative">
                                     <div className="flex justify-between items-start mb-2">
-                                        <h4 className="text-[13px] font-bold text-[#1a202c] max-w-[70%] leading-tight">High Outbound Volume</h4>
-                                        <span className="text-[9px] font-black text-red-500 uppercase tracking-widest">Active</span>
+                                        <h4 className="text-[13px] font-bold text-[#1a202c] max-w-[70%] leading-tight">Volume Keluar Meningkat</h4>
+                                        <span className="text-[9px] font-black text-red-500 uppercase tracking-widest">Aktif</span>
                                     </div>
                                     <p className="text-[11.5px] font-semibold text-gray-500 leading-relaxed">
-                                        Outbound requests are {stats.outbound_trend}% higher than previous cycle. Monitoring bottlenecks.
+                                        Aktivitas barang keluar naik {stats.outbound_trend}% dibanding periode sebelumnya. Perlu pemantauan beban kerja gudang.
                                     </p>
                                 </div>
                             )}
 
-                            <div className="bg-indigo-50 rounded-xl shadow-sm border border-indigo-100 p-4 border-l-4 border-l-indigo-500 relative">
+                            <div className="bg-slate-50 rounded-xl shadow-sm border border-slate-200 p-4 border-l-4 border-l-slate-500 relative">
                                 <div className="flex justify-between items-start mb-2">
-                                    <h4 className="text-[13px] font-bold text-[#1a202c] max-w-[70%] leading-tight">System Integrity</h4>
-                                    <span className="text-[9px] font-black text-indigo-600 uppercase tracking-widest">Healthy</span>
+                                    <h4 className="text-[13px] font-bold text-[#1a202c] max-w-[70%] leading-tight">Kondisi Pencatatan</h4>
+                                    <span className="text-[9px] font-black text-slate-600 uppercase tracking-widest">Normal</span>
                                 </div>
                                 <p className="text-[11.5px] font-semibold text-gray-500 leading-relaxed">
-                                    All log hashes verified against primary node. Transaction history is immutable.
+                                    Pencatatan mutasi berjalan normal dan seluruh riwayat transaksi tersimpan pada sistem gudang.
                                 </p>
                             </div>
 
@@ -497,23 +494,21 @@ export default function Transaction({ movements, stats, filters }) {
                         {/* Card Footer Button */}
                         <div className="px-6 pb-6 mt-auto">
                             <button className="w-full py-3.5 bg-white border border-gray-200 rounded-xl text-[13px] font-black text-gray-600 hover:bg-gray-50 hover:text-[#1a202c] shadow-sm transition-all focus:outline-none">
-                                View Full History Log
+                                Lihat Riwayat Lengkap
                             </button>
                         </div>
                     </div>
 
-                    {/* Live Node Connectivity */}
-                    <div className="bg-gradient-to-br from-gray-200 via-gray-100 to-gray-50 rounded-[24px] p-6 shadow-md border border-white/50 relative overflow-hidden h-[130px]">
-                        <div className="absolute inset-x-0 bottom-0 h-[60px] bg-gradient-to-t from-gray-300 to-transparent opacity-50"></div>
+                    <div className="bg-white rounded-[24px] p-6 shadow-[0_4px_24px_rgba(0,0,0,0.03)] border border-[#edf2f7] relative overflow-hidden h-[130px]">
                         
                         <div className="relative z-10 flex items-center space-x-2 mb-4">
                             <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]"></div>
-                            <span className="text-[13px] font-black text-gray-700">Live Node Connectivity</span>
+                            <span className="text-[13px] font-black text-gray-700">Status Perangkat Gudang</span>
                         </div>
 
-                        <div className="relative z-10 bg-white/70 backdrop-blur-md border border-white/80 rounded-xl px-5 py-3 flex justify-between items-center shadow-sm">
-                            <span className="text-[11.5px] font-black text-gray-600">Active Sensors</span>
-                            <span className="text-[16px] font-black text-indigo-500 tracking-wide">1,204 / 1,205</span>
+                        <div className="relative z-10 bg-slate-50 border border-slate-200 rounded-xl px-5 py-3 flex justify-between items-center shadow-sm">
+                            <span className="text-[11.5px] font-black text-gray-600">Perangkat Aktif</span>
+                            <span className="text-[16px] font-black text-[#2563eb] tracking-wide">1.204 / 1.205</span>
                         </div>
                     </div>
 

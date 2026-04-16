@@ -13,24 +13,41 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
+use Carbon\CarbonPeriod;
 
 class ReportController extends Controller
 {
     public function index()
     {
         $now = Carbon::now();
-        $thirtyDaysAgo = $now->copy()->subDays(30);
+        $startDate = $now->copy()->startOfDay()->subDays(29);
 
         // 1. Throughput Trend (Last 30 Days)
-        $movementTrends = StockMovement::select(
+        $movementTrendRows = StockMovement::select(
                 DB::raw('DATE(movement_date) as date'),
                 DB::raw('SUM(CASE WHEN movement_type = "in" THEN quantity ELSE 0 END) as inbound'),
                 DB::raw('SUM(CASE WHEN movement_type = "out" THEN quantity ELSE 0 END) as outbound')
             )
-            ->where('movement_date', '>=', $thirtyDaysAgo)
+            ->whereDate('movement_date', '>=', $startDate->toDateString())
             ->groupBy('date')
             ->orderBy('date')
             ->get();
+
+        $movementTrendLookup = $movementTrendRows->keyBy('date');
+        $movementTrends = collect(CarbonPeriod::create($startDate, $now->copy()->startOfDay()))
+            ->map(function (Carbon $date) use ($movementTrendLookup) {
+                $row = $movementTrendLookup->get($date->toDateString());
+                $inbound = (int) ($row->inbound ?? 0);
+                $outbound = (int) ($row->outbound ?? 0);
+
+                return [
+                    'date' => $date->toDateString(),
+                    'inbound' => $inbound,
+                    'outbound' => $outbound,
+                    'total' => $inbound + $outbound,
+                ];
+            })
+            ->values();
 
         // 2. Fast Moving Items
         $fastMoving = StockMovement::select('product_id', DB::raw('SUM(quantity) as total_out'))

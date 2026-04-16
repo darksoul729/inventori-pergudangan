@@ -187,7 +187,7 @@ export default function Supplier({ suppliers = [], stats = {}, chartData = [], a
             const buffer = await workbook.xlsx.writeBuffer();
             const dateStr = new Date().toISOString().split('T')[0];
             console.log('Initiating download...');
-            saveAs(new Blob([buffer]), `Supplier_Full_Audit_${dateStr}.xlsx`);
+            saveAs(new Blob([buffer]), `audit-supplier-${dateStr}.xlsx`);
         } catch (err) {
             console.error('Excel export error:', err);
             alert('Gagal mengekspor file: ' + err.message);
@@ -196,9 +196,9 @@ export default function Supplier({ suppliers = [], stats = {}, chartData = [], a
 
     return (
         <DashboardLayout 
-            headerSearchPlaceholder="Search supplier audit trail..."
+            headerSearchPlaceholder="Cari pemasok atau audit..."
         >
-            <Head title="Supplier Performance" />
+            <Head title="Performa Pemasok" />
 
             <div className="flex flex-row gap-6 pb-12 w-full pt-2 min-w-[1000px] overflow-x-auto">
                 <div className="flex-1 flex flex-col space-y-6">
@@ -206,19 +206,19 @@ export default function Supplier({ suppliers = [], stats = {}, chartData = [], a
                     {/* Header Row */}
                     <div className="flex justify-between items-center mb-2">
                         <div>
-                            <h1 className="text-[28px] font-black text-[#1a202c] tracking-tight">Supplier Performance</h1>
-                            <p className="text-[14px] font-bold text-gray-500 mt-1">Holistic health overview and lead time variance across global tier partners.</p>
+                            <h1 className="text-[28px] font-black text-[#1a202c] tracking-tight">Performa Pemasok</h1>
+                            <p className="text-[14px] font-bold text-gray-500 mt-1">Pantau ketepatan pengiriman, lead time, dan kualitas pemasok untuk gudang operasional.</p>
                         </div>
                         <div className="flex space-x-3">
                             <button onClick={() => setIsAddOpen(true)} className="flex items-center space-x-2 px-6 py-3.5 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 font-bold rounded-xl text-[14px] transition-colors shadow-sm">
-                                <span>+ Add Partner</span>
+                                <span>+ Tambah Pemasok</span>
                             </button>
                             <button 
                                 onClick={handleExportAudit}
                                 className="flex items-center space-x-2 px-6 py-3.5 bg-[#4f46e5] shadow-[#4f46e5]/30 shadow-lg hover:bg-indigo-700 text-white font-bold rounded-xl text-[14px] transition-colors"
                             >
                                 <DownloadIcon className="w-4 h-4" />
-                                <span>Export Audit</span>
+                                <span>Ekspor Audit</span>
                             </button>
                         </div>
                     </div>
@@ -231,8 +231,8 @@ export default function Supplier({ suppliers = [], stats = {}, chartData = [], a
                                 <ClockIcon className="w-6 h-6" />
                             </div>
                             <div>
-                                <h3 className="text-[12px] font-bold text-gray-500 tracking-wide mb-0.5">Avg Lead Time</h3>
-                                <div className="text-[22px] font-black text-[#1a202c] leading-tight mb-0.5">{stats?.avgLeadTime?.value || '0.0'} Days</div>
+                                <h3 className="text-[12px] font-bold text-gray-500 tracking-wide mb-0.5">Rata-rata Lead Time</h3>
+                                <div className="text-[22px] font-black text-[#1a202c] leading-tight mb-0.5">{stats?.avgLeadTime?.value || '0.0'} Hari</div>
                                 <div className={`flex items-center space-x-1 font-bold text-[10px] ${stats?.avgLeadTime?.direction === 'up' ? 'text-red-500' : 'text-emerald-500'}`}>
                                     {stats?.avgLeadTime?.direction === 'up' ? <TrendUpIcon className="w-3 h-3" /> : <TrendDownIcon className="w-3 h-3" />}
                                     <span>{stats?.avgLeadTime?.text || '-'}</span>
@@ -246,7 +246,7 @@ export default function Supplier({ suppliers = [], stats = {}, chartData = [], a
                                 <ShieldCheckIcon className="w-6 h-6" />
                             </div>
                             <div>
-                                <h3 className="text-[12px] font-bold text-gray-500 tracking-wide mb-0.5">On-Time Delivery</h3>
+                                <h3 className="text-[12px] font-bold text-gray-500 tracking-wide mb-0.5">Pengiriman Tepat Waktu</h3>
                                 <div className="text-[22px] font-black text-[#1a202c] leading-tight mb-0.5">{stats?.onTimeDelivery?.value || '0.0'}%</div>
                                 <div className={`flex items-center space-x-1 font-bold text-[10px] ${stats?.onTimeDelivery?.direction === 'up' ? 'text-emerald-500' : 'text-red-500'}`}>
                                     {stats?.onTimeDelivery?.direction === 'up' ? <TrendUpIcon className="w-3 h-3" /> : <TrendDownIcon className="w-3 h-3" />}
@@ -261,8 +261,8 @@ export default function Supplier({ suppliers = [], stats = {}, chartData = [], a
                                 <WarningIcon className="w-6 h-6" />
                             </div>
                             <div>
-                                <h3 className="text-[12px] font-bold text-gray-500 tracking-wide mb-0.5">Late Deliveries</h3>
-                                <div className="text-[22px] font-black text-[#1a202c] leading-tight mb-0.5">{stats?.lateDeliveries?.value || 0} Units</div>
+                                <h3 className="text-[12px] font-bold text-gray-500 tracking-wide mb-0.5">Pengiriman Terlambat</h3>
+                                <div className="text-[22px] font-black text-[#1a202c] leading-tight mb-0.5">{stats?.lateDeliveries?.value || 0} Unit</div>
                                 <div className={`flex items-center space-x-1 font-bold text-[10px] ${stats?.lateDeliveries?.direction === 'up' ? 'text-red-500' : 'text-emerald-500'}`}>
                                     {stats?.lateDeliveries?.direction === 'up' ? <TrendUpIcon className="w-3 h-3" /> : <TrendDownIcon className="w-3 h-3" />}
                                     <span>{stats?.lateDeliveries?.text || '-'}</span>
@@ -274,7 +274,7 @@ export default function Supplier({ suppliers = [], stats = {}, chartData = [], a
                     {/* Performance Correlation Chart */}
                     <div className="bg-white rounded-[24px] p-8 shadow-[0_2px_16px_rgba(0,0,0,0.02)] border border-[#edf2f7]">
                         <div className="flex justify-between items-center mb-8">
-                            <h2 className="text-[18px] font-black text-[#1a202c]">Performance Correlation</h2>
+                            <h2 className="text-[18px] font-black text-[#1a202c]">Korelasi Performa</h2>
                             <div className="flex items-center space-x-6 text-[12px] font-bold text-gray-500">
                                 
                                 {/* Year Filter Dropdown */}
@@ -330,7 +330,7 @@ export default function Supplier({ suppliers = [], stats = {}, chartData = [], a
                         
                         {/* Header Row */}
                         <div className="flex justify-between items-center mb-8">
-                            <h2 className="text-[18px] font-black text-[#1a202c]">Partner Directory</h2>
+                            <h2 className="text-[18px] font-black text-[#1a202c]">Direktori Mitra</h2>
                             <div className="flex items-center space-x-3">
                                 {/* Status Filter */}
                                 <div className="relative">
@@ -339,9 +339,9 @@ export default function Supplier({ suppliers = [], stats = {}, chartData = [], a
                                         onChange={(e) => router.get(route('supplier'), { ...filters, status: e.target.value, year: selectedYear }, { preserveState: true, preserveScroll: true })}
                                         className="appearance-none bg-gray-50 border border-gray-100 shadow-sm pl-4 pr-10 py-2 rounded-xl text-[12px] font-bold text-gray-600 hover:bg-gray-100 transition-colors cursor-pointer outline-none focus:ring-2 focus:ring-indigo-500"
                                     >
-                                        <option value="">All Tiers (Status)</option>
-                                        <option value="active">Active Only</option>
-                                        <option value="inactive">Inactive</option>
+                                        <option value="">Semua Tingkatan</option>
+                                        <option value="active">Hanya Aktif</option>
+                                        <option value="inactive">Tidak Aktif</option>
                                     </select>
                                     <ChevronDownIcon className="w-3 h-3 text-gray-500 absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none" />
                                 </div>
@@ -353,7 +353,7 @@ export default function Supplier({ suppliers = [], stats = {}, chartData = [], a
                                         onChange={(e) => router.get(route('supplier'), { ...filters, category: e.target.value, year: selectedYear }, { preserveState: true, preserveScroll: true })}
                                         className="appearance-none bg-gray-50 border border-gray-100 shadow-sm pl-4 pr-10 py-2 rounded-xl text-[12px] font-bold text-gray-600 hover:bg-gray-100 transition-colors cursor-pointer outline-none focus:ring-2 focus:ring-indigo-500"
                                     >
-                                        <option value="">All Categories</option>
+                                        <option value="">Semua Kategori</option>
                                         {categories.map(cat => (
                                             <option key={cat} value={cat}>{cat}</option>
                                         ))}
@@ -367,11 +367,11 @@ export default function Supplier({ suppliers = [], stats = {}, chartData = [], a
                         <div className="w-full">
                             {/* Columns */}
                             <div className="grid grid-cols-12 gap-4 pb-4 border-b border-gray-100 text-[10px] font-black text-gray-400 tracking-[0.1em] uppercase">
-                                <div className="col-span-4 pl-2">Supplier</div>
-                                <div className="col-span-3">Score</div>
-                                <div className="col-span-2">Lead Time</div>
-                                <div className="col-span-2">Trend</div>
-                                <div className="col-span-1 text-right pr-4">Actions</div>
+                                <div className="col-span-4 pl-2">Pemasok</div>
+                                <div className="col-span-3">Skor</div>
+                                <div className="col-span-2">Waktu Tunggu</div>
+                                <div className="col-span-2">Tren</div>
+                                <div className="col-span-1 text-right pr-4">Aksi</div>
                             </div>
 
                             {/* Rows */}
@@ -451,25 +451,25 @@ export default function Supplier({ suppliers = [], stats = {}, chartData = [], a
                             <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 shadow-sm flex-shrink-0">
                                 <IntelligenceIcon className="w-4 h-4" />
                             </div>
-                            <h2 className="text-[16px] font-black text-[#1a202c]">Intelligence Hub</h2>
+                            <h2 className="text-[16px] font-black text-[#1a202c]">Catatan Pemasok</h2>
                         </div>
 
                         {/* Red Risk Detected */}
                         <div className="mb-6">
                             <div className="flex items-center space-x-2 mb-3">
                                 <div className="w-1.5 h-1.5 rounded-full bg-red-500"></div>
-                                <h4 className="text-[10px] font-black text-red-600 tracking-widest uppercase">Risk Detected</h4>
+                                <h4 className="text-[10px] font-black text-red-600 tracking-widest uppercase">Perlu Perhatian</h4>
                             </div>
                             
                             <div className="bg-white rounded-[16px] shadow-sm border border-gray-100 p-5 relative overflow-hidden">
                                 <div className="absolute left-0 top-0 bottom-0 w-[4px] bg-red-500 rounded-l-[16px]"></div>
-                                <h5 className="text-[14px] font-black text-[#1a202c] mb-2 leading-tight">Lead Time Drift</h5>
+                                <h5 className="text-[14px] font-black text-[#1a202c] mb-2 leading-tight">Penyimpangan Waktu Tunggu</h5>
                                 <p className="text-[12px] font-semibold text-gray-500 leading-relaxed mb-4">
-                                    SwiftMv has shown a <span className="font-extrabold text-red-500">+1.2d</span> lead time deviation over 5 consecutive shipments.
+                                    SwiftMv menunjukkan <span className="font-extrabold text-red-500">+1.2 hari</span> penyimpangan waktu tunggu lebih dari 5 pengiriman berturut-turut.
                                 </p>
                                 <div className="flex items-center space-x-3">
-                                    <button className="px-4 py-2 bg-red-50 text-red-600 text-[11px] font-bold rounded-lg hover:bg-red-100 transition-colors">Raise Alert</button>
-                                    <button className="px-4 py-2 bg-white border border-gray-200 text-gray-600 text-[11px] font-bold rounded-lg hover:bg-gray-50 shadow-sm transition-colors">View Shipments</button>
+                                    <button className="px-4 py-2 bg-red-50 text-red-600 text-[11px] font-bold rounded-lg hover:bg-red-100 transition-colors">Munculkan Peringatan</button>
+                                    <button className="px-4 py-2 bg-white border border-gray-200 text-gray-600 text-[11px] font-bold rounded-lg hover:bg-gray-50 shadow-sm transition-colors">Lihat Pengiriman</button>
                                 </div>
                             </div>
                         </div>
@@ -478,17 +478,17 @@ export default function Supplier({ suppliers = [], stats = {}, chartData = [], a
                         <div className="mb-6">
                             <div className="flex items-center space-x-2 mb-3">
                                 <div className="w-1.5 h-1.5 rounded-full bg-amber-600"></div>
-                                <h4 className="text-[10px] font-black text-amber-600 tracking-widest uppercase">Optimization Hint</h4>
+                                <h4 className="text-[10px] font-black text-amber-600 tracking-widest uppercase">Saran Evaluasi</h4>
                             </div>
                             
                             <div className="bg-white rounded-[16px] shadow-sm border border-gray-100 p-5 relative overflow-hidden">
                                 <div className="absolute left-0 top-0 bottom-0 w-[4px] bg-[#92400e] rounded-l-[16px]"></div>
-                                <h5 className="text-[14px] font-black text-[#1a202c] mb-2 leading-tight">Nexus Consolidation</h5>
+                                <h5 className="text-[14px] font-black text-[#1a202c] mb-2 leading-tight">Konsolidasi Nexus</h5>
                                 <p className="text-[12px] font-semibold text-gray-500 leading-relaxed mb-4">
-                                    Merging regional Nexus orders could reduce logistics overhead by <span className="font-extrabold text-[#92400e]">14.2%</span> annually.
+                                    Menggabungkan pesanan regional Nexus dapat mengurangi biaya operasional logistik sebesar <span className="font-extrabold text-[#92400e]">14.2%</span> per tahun.
                                 </p>
                                 <button className="w-full py-2.5 bg-[#92400e] text-white text-[12px] font-bold rounded-lg hover:bg-[#78350f] transition-colors shadow-sm">
-                                    Review Opportunity
+                                    Tinjau Peluang
                                 </button>
                             </div>
                         </div>
@@ -497,19 +497,19 @@ export default function Supplier({ suppliers = [], stats = {}, chartData = [], a
                         <div className="bg-white rounded-xl py-3.5 px-4 shadow-sm border border-gray-100 flex justify-between items-center mt-2">
                              <div className="flex items-center space-x-3">
                                  <NodeSyncIcon className="w-5 h-5 text-gray-400" />
-                                 <span className="text-[12px] font-bold text-[#1a202c]">API Sync Status</span>
+                                 <span className="text-[12px] font-bold text-[#1a202c]">Status Sinkronisasi</span>
                              </div>
-                             <span className="text-[9px] font-black text-indigo-500 bg-indigo-50 px-2 py-1 rounded shadow-sm tracking-widest uppercase">Live</span>
+                             <span className="text-[9px] font-black text-indigo-500 bg-indigo-50 px-2 py-1 rounded shadow-sm tracking-widest uppercase">Aktif</span>
                         </div>
                     </div>
 
                     {/* Inventory Ribbon */}
                     <div className="bg-white rounded-[24px] p-6 border border-[#edf2f7] shadow-[0_2px_16px_rgba(0,0,0,0.02)]">
-                        <h4 className="text-[10px] font-black text-gray-400 tracking-widest uppercase mb-4">Inventory Ribbon</h4>
+                        <h4 className="text-[10px] font-black text-gray-400 tracking-widest uppercase mb-4">Ringkasan Volume</h4>
                         
                         <div className="flex space-x-3">
                             <div className="flex-1 bg-gray-50 border border-gray-100 rounded-xl py-3 flex flex-col items-center justify-center shadow-sm">
-                                <span className="text-[10px] font-bold text-gray-400 mb-1">Inbound</span>
+                                <span className="text-[10px] font-bold text-gray-400 mb-1">Masuk</span>
                                 <span className="text-[16px] font-black text-[#1a202c]">1,240</span>
                             </div>
                             <div className="flex-1 bg-gray-50 border border-gray-100 rounded-xl py-3 flex flex-col items-center justify-center shadow-sm">
@@ -551,52 +551,52 @@ export default function Supplier({ suppliers = [], stats = {}, chartData = [], a
                             >
                                 <Dialog.Panel className="w-full max-w-lg transform overflow-hidden rounded-2xl bg-white p-8 text-left align-middle shadow-xl transition-all">
                                     <Dialog.Title as="h3" className="text-xl font-black text-gray-900 mb-2">
-                                        Register New Supplier
+                                        Tambah Pemasok Baru
                                     </Dialog.Title>
                                     <p className="text-[13px] text-gray-500 mb-6 font-semibold">
-                                        Enter the partner profile carefully. Performance data will be generated automatically upon initial purchase order.
+                                        Masukkan profil mitra dengan teliti. Data performa akan dibuat secara otomatis pada pesanan pembelian awal.
                                     </p>
 
                                     <form onSubmit={submitAdd} className="space-y-4">
                                         <div className="grid grid-cols-2 gap-4">
                                             <div>
-                                                <label className="block text-[11px] font-black tracking-wider text-gray-500 uppercase mb-1">Company Code</label>
-                                                <input required type="text" value={data.code} onChange={e => setData('code', e.target.value)} className="w-full rounded-xl bg-gray-50 border-gray-200 text-[14px] font-bold focus:ring-indigo-500 focus:border-indigo-500" placeholder="e.g. AMZ" />
+                                                <label className="block text-[11px] font-black tracking-wider text-gray-500 uppercase mb-1">Kode Perusahaan</label>
+                                                <input required type="text" value={data.code} onChange={e => setData('code', e.target.value)} className="w-full rounded-xl bg-gray-50 border-gray-200 text-[14px] font-bold focus:ring-indigo-500 focus:border-indigo-500" placeholder="misal: AMZ" />
                                                 {errors.code && <p className="text-red-500 text-xs mt-1">{errors.code}</p>}
                                             </div>
                                             <div>
-                                                <label className="block text-[11px] font-black tracking-wider text-gray-500 uppercase mb-1">Category / Tier</label>
-                                                <input type="text" value={data.category} onChange={e => setData('category', e.target.value)} className="w-full rounded-xl bg-gray-50 border-gray-200 text-[14px] font-bold focus:ring-indigo-500 focus:border-indigo-500" placeholder="e.g. Tier 1 Primary" />
+                                                <label className="block text-[11px] font-black tracking-wider text-gray-500 uppercase mb-1">Kategori / Tingkat</label>
+                                                <input type="text" value={data.category} onChange={e => setData('category', e.target.value)} className="w-full rounded-xl bg-gray-50 border-gray-200 text-[14px] font-bold focus:ring-indigo-500 focus:border-indigo-500" placeholder="misal: Tingkat 1 Utama" />
                                             </div>
                                         </div>
 
                                         <div>
-                                            <label className="block text-[11px] font-black tracking-wider text-gray-500 uppercase mb-1">Company Name</label>
-                                            <input required type="text" value={data.name} onChange={e => setData('name', e.target.value)} className="w-full rounded-xl bg-gray-50 border-gray-200 text-[14px] font-bold focus:ring-indigo-500 focus:border-indigo-500" placeholder="e.g. Amazon Logistics" />
+                                            <label className="block text-[11px] font-black tracking-wider text-gray-500 uppercase mb-1">Nama Perusahaan</label>
+                                            <input required type="text" value={data.name} onChange={e => setData('name', e.target.value)} className="w-full rounded-xl bg-gray-50 border-gray-200 text-[14px] font-bold focus:ring-indigo-500 focus:border-indigo-500" placeholder="misal: Amazon Logistics" />
                                             {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
                                         </div>
 
                                         <div className="grid grid-cols-2 gap-4">
                                             <div>
-                                                <label className="block text-[11px] font-black tracking-wider text-gray-500 uppercase mb-1">Contact Person</label>
+                                                <label className="block text-[11px] font-black tracking-wider text-gray-500 uppercase mb-1">Kontak Personal</label>
                                                 <input type="text" value={data.contact_person} onChange={e => setData('contact_person', e.target.value)} className="w-full rounded-xl bg-gray-50 border-gray-200 text-[14px] font-bold focus:ring-indigo-500 focus:border-indigo-500" placeholder="John Doe" />
                                             </div>
                                             <div>
-                                                <label className="block text-[11px] font-black tracking-wider text-gray-500 uppercase mb-1">Phone Number</label>
+                                                <label className="block text-[11px] font-black tracking-wider text-gray-500 uppercase mb-1">Nomor Telepon</label>
                                                 <input type="text" value={data.phone} onChange={e => setData('phone', e.target.value)} className="w-full rounded-xl bg-gray-50 border-gray-200 text-[14px] font-bold focus:ring-indigo-500 focus:border-indigo-500" placeholder="+1 234 567 89" />
                                             </div>
                                         </div>
 
                                         <div>
-                                            <label className="block text-[11px] font-black tracking-wider text-gray-500 uppercase mb-1">Email Address</label>
+                                            <label className="block text-[11px] font-black tracking-wider text-gray-500 uppercase mb-1">Alamat Email</label>
                                             <input type="email" value={data.email} onChange={e => setData('email', e.target.value)} className="w-full rounded-xl bg-gray-50 border-gray-200 text-[14px] font-bold focus:ring-indigo-500 focus:border-indigo-500" placeholder="john.doe@example.com" />
                                             {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
                                         </div>
 
                                         <div className="mt-8 flex justify-end space-x-3">
-                                            <button type="button" onClick={() => setIsAddOpen(false)} className="px-5 py-2.5 rounded-xl border border-gray-200 text-gray-600 font-bold text-[13px] hover:bg-gray-50">Cancel</button>
+                                            <button type="button" onClick={() => setIsAddOpen(false)} className="px-5 py-2.5 rounded-xl border border-gray-200 text-gray-600 font-bold text-[13px] hover:bg-gray-50">Batal</button>
                                             <button type="submit" disabled={processing} className="px-5 py-2.5 rounded-xl bg-indigo-600 text-white font-bold text-[13px] hover:bg-indigo-700 disabled:opacity-50 flex items-center shadow-lg shadow-indigo-200">
-                                                {processing ? 'Saving...' : 'Register Partner'}
+                                                {processing ? 'Menyimpan...' : 'Simpan Pemasok'}
                                             </button>
                                         </div>
                                     </form>
