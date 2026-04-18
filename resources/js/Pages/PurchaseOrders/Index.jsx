@@ -1,5 +1,5 @@
 import DashboardLayout from '@/Layouts/DashboardLayout';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, usePage } from '@inertiajs/react';
 import React from 'react';
 
 const PlusIcon = ({ className }) => (
@@ -16,6 +16,10 @@ const EyeIcon = ({ className }) => (
 );
 
 export default function Index({ purchaseOrders = [] }) {
+    const { props } = usePage();
+    const roleName = String(props.auth?.user?.role_name || props.auth?.user?.role || '').toLowerCase();
+    const isManager = roleName.includes('manager') || roleName.includes('manajer') || roleName.includes('admin gudang');
+
     const getStatusColor = (status) => {
         switch (status) {
             case 'pending': return 'bg-amber-100 text-amber-700';
@@ -41,10 +45,12 @@ export default function Index({ purchaseOrders = [] }) {
                         <h1 className="text-[28px] font-black text-[#1a202c] tracking-tight">Pesanan Pembelian</h1>
                         <p className="text-[14px] font-bold text-gray-500 mt-1">Kelola pemesanan stok dari pemasok untuk gudang operasional.</p>
                     </div>
-                    <Link href={route('purchase-orders.create')} className="flex items-center space-x-2 px-6 py-3.5 bg-[#4f46e5] shadow-[#4f46e5]/30 shadow-lg hover:bg-indigo-700 text-white font-bold rounded-xl text-[14px] transition-colors">
-                        <PlusIcon className="w-4 h-4" />
-                        <span>Buat PO Baru</span>
-                    </Link>
+                    {isManager && (
+                        <Link href={route('purchase-orders.create')} className="flex items-center space-x-2 px-6 py-3.5 bg-[#4f46e5] shadow-[#4f46e5]/30 shadow-lg hover:bg-indigo-700 text-white font-bold rounded-xl text-[14px] transition-colors">
+                            <PlusIcon className="w-4 h-4" />
+                            <span>Buat PO Baru</span>
+                        </Link>
+                    )}
                 </div>
 
                 <div className="bg-white rounded-[24px] p-8 shadow-[0_2px_16px_rgba(0,0,0,0.02)] border border-[#edf2f7]">

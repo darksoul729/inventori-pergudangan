@@ -23,14 +23,30 @@ const EyeIcon = ({ className }) => (
     </svg>
 );
 
+const PlusIcon = ({ className }) => (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+    </svg>
+);
+
 export default function Drivers({ drivers = [] }) {
     const [selectedDriver, setSelectedDriver] = useState(null);
     const [showDetailModal, setShowDetailModal] = useState(false);
+    const [showCreateModal, setShowCreateModal] = useState(false);
     const [activeTab, setActiveTab] = useState('list'); // 'list' or 'tracking'
     const [trackingDrivers, setTrackingDrivers] = useState([]);
     const [focusedDriverId, setFocusedDriverId] = useState(null);
     
     const { put, processing } = useForm();
+    const createForm = useForm({
+        name: '',
+        email: '',
+        phone: '',
+        license_number: '',
+        password: '',
+        password_confirmation: '',
+        status: 'approved',
+    });
 
     useEffect(() => {
         if (activeTab !== 'list') return undefined;
@@ -53,6 +69,18 @@ export default function Drivers({ drivers = [] }) {
                 onSuccess: () => setShowDetailModal(false)
             });
         }
+    };
+
+    const submitCreateDriver = (event) => {
+        event.preventDefault();
+        createForm.post(route('drivers.store'), {
+            preserveScroll: true,
+            onSuccess: () => {
+                createForm.reset();
+                createForm.setData('status', 'approved');
+                setShowCreateModal(false);
+            },
+        });
     };
 
     const getStatusBadge = (status) => {
@@ -83,6 +111,15 @@ export default function Drivers({ drivers = [] }) {
                     <p className="text-[14px] font-semibold text-gray-500 mt-1">Kelola verifikasi dan status aktif driver di lapangan.</p>
                 </div>
                 <div className="flex items-center space-x-6">
+                     {activeTab === 'list' && (
+                        <button
+                            onClick={() => setShowCreateModal(true)}
+                            className="flex items-center space-x-2 rounded-xl bg-[#3632c0] px-5 py-3 text-[12px] font-black text-white shadow-lg shadow-indigo-200 transition hover:bg-indigo-700"
+                        >
+                            <PlusIcon className="h-4 w-4" />
+                            <span>Buat Driver</span>
+                        </button>
+                     )}
                      <div className="flex bg-gray-100 p-1 rounded-2xl border border-gray-200">
                         <button 
                             onClick={() => setActiveTab('list')}
@@ -255,6 +292,75 @@ export default function Drivers({ drivers = [] }) {
             )}
 
             {/* Detail Modal */}
+            {showCreateModal && (
+                <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-[200] p-6">
+                    <div className="bg-white rounded-[32px] w-full max-w-xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+                        <div className="px-8 py-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+                            <div>
+                                <h3 className="text-[18px] font-black text-[#1a202c]">Akun Driver Baru</h3>
+                                <p className="text-[12px] font-bold text-gray-400">Akun driver dibuat oleh manager, bukan lewat register publik.</p>
+                            </div>
+                            <button onClick={() => { setShowCreateModal(false); createForm.reset(); }} className="text-gray-400 hover:text-gray-600">
+                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                            </button>
+                        </div>
+                        <form onSubmit={submitCreateDriver} className="p-8 space-y-5">
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Nama Driver</label>
+                                    <input type="text" value={createForm.data.name} onChange={(e) => createForm.setData('name', e.target.value)} className="mt-2 w-full rounded-xl border-gray-200 bg-gray-50 px-4 py-3 text-[14px] font-bold" required autoFocus />
+                                    {createForm.errors.name && <p className="mt-1 text-xs font-bold text-red-500">{createForm.errors.name}</p>}
+                                </div>
+                                <div>
+                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Nomor SIM</label>
+                                    <input type="text" value={createForm.data.license_number} onChange={(e) => createForm.setData('license_number', e.target.value)} className="mt-2 w-full rounded-xl border-gray-200 bg-gray-50 px-4 py-3 text-[14px] font-bold" required />
+                                    {createForm.errors.license_number && <p className="mt-1 text-xs font-bold text-red-500">{createForm.errors.license_number}</p>}
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Email Login</label>
+                                    <input type="email" value={createForm.data.email} onChange={(e) => createForm.setData('email', e.target.value)} className="mt-2 w-full rounded-xl border-gray-200 bg-gray-50 px-4 py-3 text-[14px] font-bold" required />
+                                    {createForm.errors.email && <p className="mt-1 text-xs font-bold text-red-500">{createForm.errors.email}</p>}
+                                </div>
+                                <div>
+                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Telepon</label>
+                                    <input type="text" value={createForm.data.phone} onChange={(e) => createForm.setData('phone', e.target.value)} className="mt-2 w-full rounded-xl border-gray-200 bg-gray-50 px-4 py-3 text-[14px] font-bold" />
+                                    {createForm.errors.phone && <p className="mt-1 text-xs font-bold text-red-500">{createForm.errors.phone}</p>}
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Password</label>
+                                    <input type="password" value={createForm.data.password} onChange={(e) => createForm.setData('password', e.target.value)} className="mt-2 w-full rounded-xl border-gray-200 bg-gray-50 px-4 py-3 text-[14px] font-bold" required />
+                                    {createForm.errors.password && <p className="mt-1 text-xs font-bold text-red-500">{createForm.errors.password}</p>}
+                                </div>
+                                <div>
+                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Konfirmasi</label>
+                                    <input type="password" value={createForm.data.password_confirmation} onChange={(e) => createForm.setData('password_confirmation', e.target.value)} className="mt-2 w-full rounded-xl border-gray-200 bg-gray-50 px-4 py-3 text-[14px] font-bold" required />
+                                </div>
+                            </div>
+                            <div>
+                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Status Awal</label>
+                                <select value={createForm.data.status} onChange={(e) => createForm.setData('status', e.target.value)} className="mt-2 w-full rounded-xl border-gray-200 bg-gray-50 px-4 py-3 text-[14px] font-bold">
+                                    <option value="approved">Approved - bisa login langsung</option>
+                                    <option value="pending">Pending - belum bisa login</option>
+                                </select>
+                                {createForm.errors.status && <p className="mt-1 text-xs font-bold text-red-500">{createForm.errors.status}</p>}
+                            </div>
+                            <div className="flex gap-3 border-t border-gray-100 pt-5">
+                                <button type="button" onClick={() => { setShowCreateModal(false); createForm.reset(); }} className="flex-1 rounded-2xl border border-gray-200 py-4 text-[13px] font-black text-gray-500 hover:bg-gray-50">
+                                    Batal
+                                </button>
+                                <button type="submit" disabled={createForm.processing} className="flex-[2] rounded-2xl bg-[#3632c0] py-4 text-[13px] font-black uppercase tracking-wider text-white shadow-lg shadow-indigo-200 hover:bg-indigo-700 disabled:opacity-50">
+                                    Buat Akun Driver
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
             {showDetailModal && selectedDriver && (
                 <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-[200] p-6">
                     <div className="bg-white rounded-[32px] w-full max-w-xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">

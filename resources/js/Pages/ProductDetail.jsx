@@ -1,6 +1,6 @@
 import React from 'react';
 import DashboardLayout from '@/Layouts/DashboardLayout';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, usePage } from '@inertiajs/react';
 
 // Icons
 const TrendUpIcon = ({ className }) => (
@@ -39,12 +39,16 @@ const PhotoPlaceholder = () => (
 );
 
 export default function ProductDetail({ product, stats, distribution, movements }) {
+    const { auth } = usePage().props;
+    const roleName = String(auth?.user?.role_name || auth?.user?.role || '').toLowerCase();
+    const isManager = roleName === 'manager';
+
     return (
         <DashboardLayout>
             <Head title={`${product.name} - Detail Produk`} />
 
             <div className="pt-2 pb-12 w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
-                
+
                 {/* Header Section */}
                 <div className="flex justify-between items-start mb-8">
                     <div className="flex items-center space-x-6">
@@ -73,15 +77,17 @@ export default function ProductDetail({ product, stats, distribution, movements 
                         </div>
                     </div>
                     <div className="flex items-center space-x-3 mt-4">
-                        <Link 
+                        <Link
                             href={route('inventory')}
                             className="px-6 py-2.5 bg-white border border-[#edf2f7] hover:bg-gray-50 text-gray-600 font-bold rounded-xl text-[13px] shadow-[0_2px_10px_rgba(0,0,0,0.02)] transition-colors"
                         >
                             Kembali ke Daftar
                         </Link>
-                        <button className="px-6 py-2.5 bg-[#4f46e5] shadow-[0_4px_14px_rgba(79,70,229,0.3)] hover:bg-indigo-700 text-white font-bold rounded-xl text-[13px] transition-colors">
-                            Edit Entri
-                        </button>
+                        {isManager && (
+                            <button className="px-6 py-2.5 bg-[#4f46e5] shadow-[0_4px_14px_rgba(79,70,229,0.3)] hover:bg-indigo-700 text-white font-bold rounded-xl text-[13px] transition-colors">
+                                Edit Entri
+                            </button>
+                        )}
                     </div>
                 </div>
 
@@ -130,7 +136,7 @@ export default function ProductDetail({ product, stats, distribution, movements 
                         </div>
                         <div className="w-full bg-[#f8f9fb] h-[280px] rounded-2xl relative overflow-hidden flex flex-col p-6 border border-gray-100 space-y-4">
                             <div className="absolute inset-0 opacity-[0.03] bg-[radial-gradient(#1a202c_1px,transparent_1px)] [background-size:16px_16px]"></div>
-                            
+
                             {distribution.slice(0, 3).map((dist, idx) => (
                                 <div key={idx} className="relative z-10 bg-white/80 backdrop-blur-sm border border-gray-100 p-4 rounded-xl shadow-sm flex justify-between items-center group hover:border-indigo-300 transition-colors">
                                     <div>
@@ -163,13 +169,13 @@ export default function ProductDetail({ product, stats, distribution, movements 
                         <div className="mb-8">
                             <h3 className="text-[16px] font-black text-[#1a202c]">Efisiensi Stok & Kapasitas</h3>
                         </div>
-                        
+
                         <div className="flex-1 flex flex-col justify-center items-center px-4 pb-6">
                             <div className="relative w-48 h-48 mb-8 flex items-center justify-center">
                                 {/* SVG Circular Progress */}
                                 <svg className="w-full h-full -rotate-90">
                                     <circle cx="96" cy="96" r="88" stroke="currentColor" strokeWidth="12" fill="transparent" className="text-gray-100" />
-                                    <circle cx="96" cy="96" r="88" stroke="currentColor" strokeWidth="12" fill="transparent" 
+                                    <circle cx="96" cy="96" r="88" stroke="currentColor" strokeWidth="12" fill="transparent"
                                         strokeDasharray={552}
                                         strokeDashoffset={552 - (552 * stats.percentage) / 100}
                                         className="text-[#4f46e5] transition-all duration-1000 ease-out"
@@ -181,7 +187,7 @@ export default function ProductDetail({ product, stats, distribution, movements 
                                     <span className="text-[10px] font-bold text-gray-400 tracking-widest uppercase mt-2">Terisi</span>
                                 </div>
                             </div>
-                            
+
                             <div className="w-full grid grid-cols-2 gap-4">
                                 <div className="bg-indigo-50/50 rounded-xl p-4 border border-indigo-100/50">
                                     <div className="text-[9px] font-black text-indigo-500 uppercase tracking-widest mb-1">STOK SAAT INI</div>

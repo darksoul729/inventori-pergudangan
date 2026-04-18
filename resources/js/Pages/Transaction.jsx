@@ -1,8 +1,15 @@
 import DashboardLayout from '@/Layouts/DashboardLayout';
 import { Head, Link, router } from '@inertiajs/react';
 import React, { useState, useEffect } from 'react';
-import ExcelJS from 'exceljs/dist/exceljs.min.js';
-import { saveAs } from 'file-saver';
+
+const loadExportTools = async () => {
+    const [{ default: ExcelJS }, { saveAs }] = await Promise.all([
+        import('exceljs/dist/exceljs.min.js'),
+        import('file-saver'),
+    ]);
+
+    return { ExcelJS, saveAs };
+};
 
 // Icons
 const InboundIcon = ({ className }) => (
@@ -89,12 +96,13 @@ export default function Transaction({ movements, stats, filters }) {
         try {
             const response = await fetch(route('transaction.export', { ...filters, format: 'json' }));
             const data = await response.json();
-            
+
             if (!data.movements || data.movements.length === 0) {
                 alert('Tidak ada data untuk diekspor.');
                 return;
             }
 
+            const { ExcelJS, saveAs } = await loadExportTools();
             const workbook = new ExcelJS.Workbook();
             const worksheet = workbook.addWorksheet('Riwayat Transaksi');
 

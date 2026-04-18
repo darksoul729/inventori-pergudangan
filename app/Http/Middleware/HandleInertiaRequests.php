@@ -31,8 +31,9 @@ class HandleInertiaRequests extends Middleware
     public function share(Request $request): array
     {
         $notifications = [];
+        $user = $request->user()?->loadMissing('role');
         
-        if ($request->user()) {
+        if ($user) {
             // Low Stock alerts
             $lowStockCount = \App\Models\Product::whereHas('productStocks', function($query) {
                 $query->whereColumn('current_stock', '<=', 'products.minimum_stock');
@@ -151,7 +152,17 @@ class HandleInertiaRequests extends Middleware
         return [
             ...parent::share($request),
             'auth' => [
-                'user' => $request->user(),
+                'user' => $user ? [
+                    'id' => $user->id,
+                    'role_id' => $user->role_id,
+                    'role' => $user->role?->name,
+                    'role_name' => $user->role?->name,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'email_verified_at' => $user->email_verified_at,
+                    'phone' => $user->phone,
+                    'status' => $user->status,
+                ] : null,
             ],
             'notifications' => $notifications,
         ];

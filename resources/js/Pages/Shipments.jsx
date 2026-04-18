@@ -1,5 +1,5 @@
 import DashboardLayout from '@/Layouts/DashboardLayout';
-import { Head, useForm, Link, router } from '@inertiajs/react';
+import { Head, useForm, Link, router, usePage } from '@inertiajs/react';
 import React, { useEffect, useState } from 'react';
 import ShipmentMap from '@/Components/ShipmentMap';
 import { MapContainer, Marker, TileLayer, useMapEvents } from 'react-leaflet';
@@ -87,6 +87,10 @@ function CoordinateMapPicker({ value, onPick }) {
 }
 
 export default function Shipments({ shipments = [], stats = {}, drivers = [] }) {
+    const { props } = usePage();
+    const roleName = String(props.auth?.user?.role_name || props.auth?.user?.role || '').toLowerCase();
+    const isManager = roleName.includes('manager') || roleName.includes('manajer') || roleName.includes('admin gudang');
+
     const [searchQuery, setSearchQuery] = useState('');
     const [filterStatus, setFilterStatus] = useState('all');
     const [sortBy, setSortBy] = useState('id');
@@ -96,7 +100,7 @@ export default function Shipments({ shipments = [], stats = {}, drivers = [] }) 
     const [originSearch, setOriginSearch] = useState('');
     const [destinationSearch, setDestinationSearch] = useState('');
     const [deleteTarget, setDeleteTarget] = useState(null);
-    
+
     const { data, setData, post, processing, errors, reset } = useForm({
         shipment_id: '',
         origin: '',
@@ -318,8 +322,8 @@ export default function Shipments({ shipments = [], stats = {}, drivers = [] }) 
     // Filter and search logic
     const filteredShipments = currentShipments.filter(shipment => {
         const matchesSearch = shipment.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                            shipment.origin_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                            shipment.destination_name?.toLowerCase().includes(searchQuery.toLowerCase());
+            shipment.origin_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            shipment.destination_name?.toLowerCase().includes(searchQuery.toLowerCase());
         const matchesFilter = filterStatus === 'all' || shipment.status === filterStatus;
         return matchesSearch && matchesFilter;
     }).sort((a, b) => {
@@ -409,11 +413,10 @@ export default function Shipments({ shipments = [], stats = {}, drivers = [] }) 
                                 key={`${type}-${item.id}`}
                                 type="button"
                                 onClick={() => setMode(item.id)}
-                                className={`flex items-center justify-center gap-2 rounded-2xl border px-4 py-3 text-[12px] font-black transition-all ${
-                                    active
+                                className={`flex items-center justify-center gap-2 rounded-2xl border px-4 py-3 text-[12px] font-black transition-all ${active
                                         ? 'border-indigo-200 bg-indigo-600 text-white shadow-lg shadow-indigo-100'
                                         : 'border-gray-200 bg-white text-slate-500 hover:border-indigo-100 hover:text-indigo-600'
-                                }`}
+                                    }`}
                             >
                                 <Icon className="h-4 w-4" strokeWidth={2.1} />
                                 <span>{item.label}</span>
@@ -524,13 +527,15 @@ export default function Shipments({ shipments = [], stats = {}, drivers = [] }) 
                     <h1 className="text-[26px] font-black text-[#1a202c] tracking-tight">Pengiriman Aktif</h1>
                     <p className="text-[14px] font-semibold text-gray-500 mt-1">Pantau status pengiriman barang keluar dari gudang operasional.</p>
                 </div>
-                <Link
-                    href={route('shipments.create')}
-                    className="px-6 py-2.5 bg-[#6366f1] hover:bg-[#4f46e5] text-white font-bold rounded-lg transition-colors flex items-center space-x-2"
-                >
-                    <Plus className="w-5 h-5" strokeWidth={2.2} />
-                    <span>Tambah Pengiriman</span>
-                </Link>
+                {isManager && (
+                    <Link
+                        href={route('shipments.create')}
+                        className="px-6 py-2.5 bg-[#6366f1] hover:bg-[#4f46e5] text-white font-bold rounded-lg transition-colors flex items-center space-x-2"
+                    >
+                        <Plus className="w-5 h-5" strokeWidth={2.2} />
+                        <span>Tambah Pengiriman</span>
+                    </Link>
+                )}
             </div>
 
             {/* KPI Stats */}
@@ -600,7 +605,7 @@ export default function Shipments({ shipments = [], stats = {}, drivers = [] }) 
                         </button>
                     </div>
                 </div>
-                
+
                 {/* Map Placeholder - showing network routes */}
                 <div className="h-[420px] md:h-[520px] xl:h-[620px]">
                     <ShipmentMap shipments={currentShipments} />
@@ -723,21 +728,25 @@ export default function Shipments({ shipments = [], stats = {}, drivers = [] }) 
                                                         NO DRIVER
                                                     </span>
                                                 )}
-                                                <Link
-                                                    href={route('shipments.edit', { shipment: shipment.id, page: currentPage })}
-                                                    className="px-3 py-1.5 bg-amber-50 text-amber-600 text-[10px] font-black rounded-lg hover:bg-amber-100 transition-colors"
-                                                >
-                                                    EDIT
-                                                </Link>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => handleDeleteShipment(shipment)}
-                                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-50 text-red-600 text-[10px] font-black rounded-lg hover:bg-red-100 transition-colors"
-                                                    title="Hapus shipment"
-                                                >
-                                                    <Trash2 className="w-3.5 h-3.5" strokeWidth={2.2} />
-                                                    <span>DELETE</span>
-                                                </button>
+                                                {isManager && (
+                                                    <>
+                                                        <Link
+                                                            href={route('shipments.edit', { shipment: shipment.id, page: currentPage })}
+                                                            className="px-3 py-1.5 bg-amber-50 text-amber-600 text-[10px] font-black rounded-lg hover:bg-amber-100 transition-colors"
+                                                        >
+                                                            EDIT
+                                                        </Link>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => handleDeleteShipment(shipment)}
+                                                            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-50 text-red-600 text-[10px] font-black rounded-lg hover:bg-red-100 transition-colors"
+                                                            title="Hapus shipment"
+                                                        >
+                                                            <Trash2 className="w-3.5 h-3.5" strokeWidth={2.2} />
+                                                            <span>DELETE</span>
+                                                        </button>
+                                                    </>
+                                                )}
                                                 <Link
                                                     href={route('shipments.show', shipment.id)}
                                                     className="w-8 h-8 rounded-lg hover:bg-gray-100 transition-colors flex items-center justify-center p-1.5"
@@ -767,11 +776,10 @@ export default function Shipments({ shipments = [], stats = {}, drivers = [] }) 
                                         href={link.url}
                                         preserveScroll
                                         preserveState
-                                        className={`rounded-lg border px-3 py-1.5 text-[12px] font-bold transition-colors ${
-                                            link.active
+                                        className={`rounded-lg border px-3 py-1.5 text-[12px] font-bold transition-colors ${link.active
                                                 ? 'border-indigo-200 bg-indigo-600 text-white'
                                                 : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50'
-                                        }`}
+                                            }`}
                                     >
                                         {formatPaginationLabel(link.label)}
                                     </Link>
@@ -789,7 +797,7 @@ export default function Shipments({ shipments = [], stats = {}, drivers = [] }) 
                 </div>
             </div>
 
-            {deleteTarget && (
+            {isManager && deleteTarget && (
                 <div className="fixed inset-0 z-[10010] flex items-center justify-center bg-black/45 backdrop-blur-sm p-4">
                     <div className="w-full max-w-md rounded-[28px] border border-gray-200 bg-white p-6 shadow-2xl">
                         <div className="text-[11px] font-black uppercase tracking-[0.2em] text-red-500">Konfirmasi Hapus</div>
@@ -818,7 +826,7 @@ export default function Shipments({ shipments = [], stats = {}, drivers = [] }) 
             )}
 
             {/* Create Shipment Modal */}
-            {showCreateModal && (
+            {isManager && showCreateModal && (
                 <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-[9999] p-4 md:p-6">
                     <div className="bg-white rounded-[32px] w-full max-w-2xl shadow-2xl flex flex-col max-h-[90vh] animate-in fade-in zoom-in-95 duration-200">
                         <div className="px-8 py-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/50 flex-shrink-0">
@@ -830,13 +838,13 @@ export default function Shipments({ shipments = [], stats = {}, drivers = [] }) 
                                 <X className="w-6 h-6" strokeWidth={2.1} />
                             </button>
                         </div>
-                        
+
                         <form onSubmit={handleSubmit} className="flex flex-col overflow-hidden">
                             <div className="p-8 overflow-y-auto space-y-6">
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="col-span-2">
                                         <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-2">ID Pengiriman</label>
-                                        <input 
+                                        <input
                                             type="text"
                                             placeholder="TRK-XXXXX"
                                             className="w-full px-5 py-3 bg-gray-50 border border-gray-200 rounded-2xl text-[14px] font-bold focus:ring-[#6366f1] focus:border-[#6366f1] transition-all"
@@ -922,7 +930,7 @@ export default function Shipments({ shipments = [], stats = {}, drivers = [] }) 
                                     </div>
                                 </div>
                             </div>
-                            
+
                             <div className="p-8 bg-gray-50/50 border-t border-gray-100 flex space-x-4 flex-shrink-0">
                                 <button type="button" onClick={() => setShowCreateModal(false)} className="flex-1 px-6 py-4 border border-gray-200 rounded-2xl text-[14px] font-black text-gray-500 hover:bg-white transition-all capitalize">Batal</button>
                                 <button type="submit" disabled={processing} className="flex-[2] px-6 py-4 bg-[#6366f1] text-white rounded-2xl text-[14px] font-black shadow-lg shadow-indigo-200 hover:bg-[#5558e3] transition-all disabled:opacity-50 uppercase">Buat Pengiriman</button>

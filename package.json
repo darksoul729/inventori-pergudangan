@@ -4,7 +4,8 @@
     "type": "module",
     "scripts": {
         "build": "vite build",
-        "dev": "vite"
+        "dev": "vite",
+        "audit:roles": "node scripts/playwright-role-audit.mjs"
     },
     "devDependencies": {
         "@headlessui/react": "^2.0.0",
@@ -13,9 +14,10 @@
         "@tailwindcss/vite": "^4.0.0",
         "@vitejs/plugin-react": "^5.1.4",
         "autoprefixer": "^10.4.12",
-        "axios": ">=1.11.0 <=1.14.0",
+        "axios": "^1.15.0",
         "concurrently": "^9.0.1",
         "laravel-vite-plugin": "^3.0.0",
+        "playwright": "^1.59.1",
         "postcss": "^8.4.31",
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
@@ -30,7 +32,6 @@
         "lucide-react": "^1.7.0",
         "react-is": "^19.2.5",
         "react-leaflet": "^4.2.1",
-        "recharts": "^3.8.1",
-        "xlsx": "^0.18.5"
+        "recharts": "^3.8.1"
     }
 }

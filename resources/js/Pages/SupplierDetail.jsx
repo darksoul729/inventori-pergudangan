@@ -1,5 +1,5 @@
 import DashboardLayout from '@/Layouts/DashboardLayout';
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import React, { useState, Fragment } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 
@@ -11,7 +11,10 @@ const ArrowLeftIcon = ({ className }) => (
 
 export default function SupplierDetail({ supplier }) {
     const [isEditOpen, setIsEditOpen] = useState(false);
-    
+    const { auth } = usePage().props;
+    const roleName = String(auth?.user?.role_name || auth?.user?.role || '').toLowerCase();
+    const isManager = roleName === 'manager';
+
     // Convert 1-indexed month to string name
     const getMonthName = (monthNumber) => {
         const date = new Date();
@@ -57,9 +60,11 @@ export default function SupplierDetail({ supplier }) {
                 <div className="bg-white rounded-[24px] p-8 shadow-[0_2px_16px_rgba(0,0,0,0.02)] border border-[#edf2f7]">
                     <div className="flex justify-between items-center mb-8">
                         <h2 className="text-[18px] font-black text-[#1a202c]">Riwayat Performa</h2>
-                        <button onClick={() => setIsEditOpen(true)} className="flex items-center space-x-2 px-6 py-2.5 bg-indigo-600 shadow-lg shadow-indigo-200 hover:bg-indigo-700 text-white font-bold rounded-xl text-[13px] transition-colors">
-                            <span>Input Penilaian</span>
-                        </button>
+                        {isManager && (
+                            <button onClick={() => setIsEditOpen(true)} className="flex items-center space-x-2 px-6 py-2.5 bg-indigo-600 shadow-lg shadow-indigo-200 hover:bg-indigo-700 text-white font-bold rounded-xl text-[13px] transition-colors">
+                                <span>Input Penilaian</span>
+                            </button>
+                        )}
                     </div>
 
                     <div className="w-full">
@@ -109,7 +114,7 @@ export default function SupplierDetail({ supplier }) {
             </div>
 
             {/* Modal Edit Performance */}
-            <Transition appear show={isEditOpen} as={Fragment}>
+            <Transition appear show={isManager && isEditOpen} as={Fragment}>
                 <Dialog as="div" className="relative z-50" onClose={() => setIsEditOpen(false)}>
                     <Transition.Child
                         as={Fragment}

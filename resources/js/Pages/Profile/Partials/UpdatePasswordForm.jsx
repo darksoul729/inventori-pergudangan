@@ -46,17 +46,17 @@ export default function UpdatePasswordForm({ className = '' }) {
 
     return (
         <section className={className}>
-            <header>
-                <h2 className="text-lg font-medium text-gray-900">
+            <header className="border-b border-slate-200 pb-6">
+                <h2 className="text-xl font-semibold text-slate-900">
                     Ubah Kata Sandi
                 </h2>
 
-                <p className="mt-1 text-sm text-gray-600">
+                <p className="mt-2 text-sm leading-relaxed text-slate-600">
                     Gunakan kata sandi yang kuat agar akun tetap aman.
                 </p>
             </header>
 
-            <form onSubmit={updatePassword} className="mt-6 space-y-6">
+            <form onSubmit={updatePassword} className="mt-8 space-y-6">
                 <div>
                     <InputLabel
                         htmlFor="current_password"
@@ -71,7 +71,7 @@ export default function UpdatePasswordForm({ className = '' }) {
                             setData('current_password', e.target.value)
                         }
                         type="password"
-                        className="mt-1 block w-full"
+                        className="mt-2 block w-full rounded-xl border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-800 focus:border-indigo-600 focus:ring-indigo-600"
                         autoComplete="current-password"
                     />
 
@@ -90,7 +90,7 @@ export default function UpdatePasswordForm({ className = '' }) {
                         value={data.password}
                         onChange={(e) => setData('password', e.target.value)}
                         type="password"
-                        className="mt-1 block w-full"
+                        className="mt-2 block w-full rounded-xl border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-800 focus:border-indigo-600 focus:ring-indigo-600"
                         autoComplete="new-password"
                     />
 
@@ -110,7 +110,7 @@ export default function UpdatePasswordForm({ className = '' }) {
                             setData('password_confirmation', e.target.value)
                         }
                         type="password"
-                        className="mt-1 block w-full"
+                        className="mt-2 block w-full rounded-xl border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-800 focus:border-indigo-600 focus:ring-indigo-600"
                         autoComplete="new-password"
                     />
 
@@ -121,7 +121,12 @@ export default function UpdatePasswordForm({ className = '' }) {
                 </div>
 
                 <div className="flex items-center gap-4">
-                    <PrimaryButton disabled={processing}>Simpan</PrimaryButton>
+                    <PrimaryButton
+                        disabled={processing}
+                        className="rounded-xl bg-[#3632c0] px-5 py-2.5 text-xs font-semibold tracking-[0.14em] hover:bg-[#2f2aa8] focus:bg-[#2f2aa8]"
+                    >
+                        Perbarui Kata Sandi
+                    </PrimaryButton>
 
                     <Transition
                         show={recentlySuccessful}
@@ -130,7 +135,7 @@ export default function UpdatePasswordForm({ className = '' }) {
                         leave="transition ease-in-out"
                         leaveTo="opacity-0"
                     >
-                        <p className="text-sm text-gray-600">
+                        <p className="text-sm font-medium text-emerald-700">
                             Tersimpan.
                         </p>
                     </Transition>
