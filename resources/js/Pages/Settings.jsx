@@ -21,6 +21,12 @@ const ScaleIcon = ({ className }) => (
     </svg>
 );
 
+const UsersIcon = ({ className }) => (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a4 4 0 00-4-4h-1M9 20H4v-2a4 4 0 014-4h1m0-4a4 4 0 100-8 4 4 0 000 8zm8 0a4 4 0 100-8 4 4 0 000 8z" />
+    </svg>
+);
+
 const PlusIcon = ({ className }) => (
     <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -38,7 +44,7 @@ const EditIcon = ({ className }) => (
     </svg>
 );
 
-export default function Settings({ auth, categories, units, warehouse }) {
+export default function Settings({ auth, categories, units, warehouse, staffUsers = [] }) {
     const { flash = {} } = usePage().props;
     const queryParams = new URLSearchParams(window.location.search);
     const [activeTab, setActiveTab] = useState(queryParams.get('active') || 'warehouse');
@@ -46,6 +52,7 @@ export default function Settings({ auth, categories, units, warehouse }) {
     const [editingCategory, setEditingCategory] = useState(null);
     const [showUnitModal, setShowUnitModal] = useState(false);
     const [editingUnit, setEditingUnit] = useState(null);
+    const [showStaffModal, setShowStaffModal] = useState(false);
     
     // Warehouse Form
     const warehouseForm = useForm({
@@ -144,6 +151,32 @@ export default function Settings({ auth, categories, units, warehouse }) {
         }
     };
 
+    const staffForm = useForm({
+        name: '',
+        email: '',
+        phone: '',
+        password: '',
+        password_confirmation: '',
+    });
+
+    const submitStaff = (e) => {
+        e.preventDefault();
+        staffForm.post(route('settings.staff.store'), {
+            onSuccess: () => {
+                staffForm.reset();
+                setShowStaffModal(false);
+                setActiveTab('staff');
+            },
+        });
+    };
+
+    const updateStaffStatus = (user, status) => {
+        router.put(route('settings.staff.status', user.id), { status }, {
+            preserveScroll: true,
+            onSuccess: () => setActiveTab('staff'),
+        });
+    };
+
     return (
         <DashboardLayout headerTitle="Pengaturan Sistem">
             <Head title="Pengaturan" />
@@ -190,6 +223,19 @@ export default function Settings({ auth, categories, units, warehouse }) {
                         <div>
                             <div className="mb-0.5">Satuan Metrik</div>
                             <div className={`text-[11px] font-semibold ${activeTab === 'units' ? 'text-indigo-400' : 'text-gray-400'}`}>Unit Perhitungan Barcode</div>
+                        </div>
+                    </button>
+
+                    <button 
+                        onClick={() => setActiveTab('staff')}
+                        className={`w-full flex items-center space-x-3 px-5 py-4 rounded-2xl font-bold text-[14px] transition-all text-left ${activeTab === 'staff' ? 'bg-white text-[#4f46e5] shadow-[0_4px_15px_rgba(0,0,0,0.03)] border border-gray-100' : 'text-gray-500 hover:bg-white/60 hover:text-gray-900 border border-transparent'}`}
+                    >
+                        <div className={`p-2 rounded-xl flex-shrink-0 ${activeTab === 'staff' ? 'bg-indigo-50 text-indigo-500' : 'bg-gray-100 text-gray-400'}`}>
+                            <UsersIcon className="w-5 h-5" />
+                        </div>
+                        <div>
+                            <div className="mb-0.5">Akun Staff</div>
+                            <div className={`text-[11px] font-semibold ${activeTab === 'staff' ? 'text-indigo-400' : 'text-gray-400'}`}>Login Operasional Terbatas</div>
                         </div>
                     </button>
                 </div>
@@ -423,6 +469,81 @@ export default function Settings({ auth, categories, units, warehouse }) {
                             </div>
                         </div>
                     )}
+
+                    {activeTab === 'staff' && (
+                        <div className="bg-white rounded-[24px] p-8 shadow-[0_2px_16px_rgba(0,0,0,0.02)] border border-[#edf2f7]">
+                            <div className="flex justify-between items-center mb-8">
+                                <div>
+                                    <h2 className="text-[20px] font-black text-[#1a202c] mb-1">Manajemen Akun Staff</h2>
+                                    <p className="text-[13px] font-semibold text-gray-400">Akun staff hanya dibuat oleh manager dan memiliki akses operasional terbatas.</p>
+                                </div>
+                                <button 
+                                    onClick={() => setShowStaffModal(true)}
+                                    className="px-5 py-2.5 bg-[#1a202c] hover:bg-[#2d3748] text-white font-bold rounded-xl transition-colors flex items-center space-x-2 text-[13px]"
+                                >
+                                    <PlusIcon className="w-4 h-4" />
+                                    <span>Buat Staff</span>
+                                </button>
+                            </div>
+
+                            <div className="overflow-hidden border border-[#edf2f7] rounded-2xl relative bg-[#f8f9fb]">
+                                <table className="w-full text-left border-collapse">
+                                    <thead>
+                                        <tr className="bg-[#f8f9fb] border-b border-[#edf2f7]">
+                                            <th className="px-6 py-4 text-[10px] font-extrabold text-gray-400 uppercase tracking-widest">Nama</th>
+                                            <th className="px-6 py-4 text-[10px] font-extrabold text-gray-400 uppercase tracking-widest">Email</th>
+                                            <th className="px-6 py-4 text-[10px] font-extrabold text-gray-400 uppercase tracking-widest">Telepon</th>
+                                            <th className="px-6 py-4 text-[10px] font-extrabold text-gray-400 uppercase tracking-widest text-center">Status</th>
+                                            <th className="px-6 py-4 text-[10px] font-extrabold text-gray-400 uppercase tracking-widest text-right">Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="bg-white">
+                                        {staffUsers.length > 0 ? staffUsers.map((user) => (
+                                            <tr key={user.id} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
+                                                <td className="px-6 py-4">
+                                                    <div className="text-[14px] font-bold text-[#1a202c]">{user.name}</div>
+                                                    <div className="text-[11px] font-bold text-gray-400">Dibuat {user.created_at || '-'}</div>
+                                                </td>
+                                                <td className="px-6 py-4 text-[13px] font-semibold text-gray-500">{user.email}</td>
+                                                <td className="px-6 py-4 text-[13px] font-semibold text-gray-500">{user.phone || '-'}</td>
+                                                <td className="px-6 py-4 text-center">
+                                                    <span className={`inline-flex items-center justify-center px-3 py-1 rounded-lg text-[12px] font-bold tracking-wide ${user.status === 'active' ? 'bg-emerald-50 text-emerald-600' : 'bg-gray-100 text-gray-500'}`}>
+                                                        {user.status === 'active' ? 'Aktif' : 'Nonaktif'}
+                                                    </span>
+                                                </td>
+                                                <td className="px-6 py-4 text-right">
+                                                    {user.status === 'active' ? (
+                                                        <button
+                                                            onClick={() => updateStaffStatus(user, 'inactive')}
+                                                            className="px-4 py-2 text-[12px] font-bold rounded-xl bg-red-50 text-red-600 hover:bg-red-100 transition-colors"
+                                                        >
+                                                            Nonaktifkan
+                                                        </button>
+                                                    ) : (
+                                                        <button
+                                                            onClick={() => updateStaffStatus(user, 'active')}
+                                                            className="px-4 py-2 text-[12px] font-bold rounded-xl bg-emerald-50 text-emerald-600 hover:bg-emerald-100 transition-colors"
+                                                        >
+                                                            Aktifkan
+                                                        </button>
+                                                    )}
+                                                </td>
+                                            </tr>
+                                        )) : (
+                                            <tr>
+                                                <td colSpan="5" className="px-6 py-12 text-center">
+                                                    <div className="flex flex-col items-center justify-center">
+                                                        <UsersIcon className="w-10 h-10 text-gray-200 mb-3" />
+                                                        <span className="text-[14px] font-bold text-gray-400">Belum ada akun staff</span>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
 
@@ -537,6 +658,96 @@ export default function Settings({ auth, categories, units, warehouse }) {
                                 <button type="button" onClick={() => { setShowUnitModal(false); setEditingUnit(null); unitForm.reset(); }} className="px-5 py-3 hover:bg-gray-50 border border-gray-100 text-gray-600 font-bold rounded-xl transition-colors">Batal</button>
                                 <button type="submit" disabled={unitForm.processing} className="px-6 py-3 bg-[#4f46e5] hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg shadow-indigo-200 transition-all">
                                     {editingUnit ? 'Perbarui Satuan' : 'Simpan Satuan'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {showStaffModal && (
+                <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-gray-900/40 backdrop-blur-sm">
+                    <div className="bg-white rounded-3xl w-full max-w-lg shadow-[0_20px_60px_rgba(0,0,0,0.15)] overflow-hidden animate-in zoom-in-95 duration-200">
+                        <div className="px-8 py-6 border-b border-gray-50 flex justify-between items-center bg-[#f8f9fb]">
+                            <div className="flex items-center space-x-3">
+                                <div className="p-2 bg-indigo-100 rounded-xl">
+                                    <UsersIcon className="w-5 h-5 text-indigo-600" />
+                                </div>
+                                <h3 className="text-[18px] font-black text-[#1a202c]">Akun Staff Baru</h3>
+                            </div>
+                            <button
+                                onClick={() => {
+                                    setShowStaffModal(false);
+                                    staffForm.reset();
+                                }}
+                                className="text-gray-400 hover:text-gray-600"
+                            >
+                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+                        <form onSubmit={submitStaff} className="p-8 space-y-5">
+                            <div>
+                                <label className="block text-[10px] font-extrabold text-gray-500 tracking-wider uppercase mb-2">NAMA STAFF</label>
+                                <input
+                                    type="text"
+                                    className="bg-[#f8f9fb] border border-transparent focus:border-[#4f46e5] focus:ring-1 focus:ring-[#4f46e5] block w-full px-4 py-3 sm:text-[14px] rounded-xl font-bold text-gray-800"
+                                    value={staffForm.data.name}
+                                    onChange={e => staffForm.setData('name', e.target.value)}
+                                    required
+                                    autoFocus
+                                />
+                                {staffForm.errors.name && <div className="text-red-500 text-xs mt-1 font-bold">{staffForm.errors.name}</div>}
+                            </div>
+                            <div>
+                                <label className="block text-[10px] font-extrabold text-gray-500 tracking-wider uppercase mb-2">EMAIL LOGIN</label>
+                                <input
+                                    type="email"
+                                    className="bg-[#f8f9fb] border border-transparent focus:border-[#4f46e5] focus:ring-1 focus:ring-[#4f46e5] block w-full px-4 py-3 sm:text-[14px] rounded-xl font-bold text-gray-800"
+                                    value={staffForm.data.email}
+                                    onChange={e => staffForm.setData('email', e.target.value)}
+                                    required
+                                />
+                                {staffForm.errors.email && <div className="text-red-500 text-xs mt-1 font-bold">{staffForm.errors.email}</div>}
+                            </div>
+                            <div>
+                                <label className="block text-[10px] font-extrabold text-gray-500 tracking-wider uppercase mb-2">TELEPON</label>
+                                <input
+                                    type="text"
+                                    className="bg-[#f8f9fb] border border-transparent focus:border-[#4f46e5] focus:ring-1 focus:ring-[#4f46e5] block w-full px-4 py-3 sm:text-[14px] rounded-xl font-semibold text-gray-600"
+                                    value={staffForm.data.phone}
+                                    onChange={e => staffForm.setData('phone', e.target.value)}
+                                />
+                                {staffForm.errors.phone && <div className="text-red-500 text-xs mt-1 font-bold">{staffForm.errors.phone}</div>}
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-[10px] font-extrabold text-gray-500 tracking-wider uppercase mb-2">PASSWORD</label>
+                                    <input
+                                        type="password"
+                                        className="bg-[#f8f9fb] border border-transparent focus:border-[#4f46e5] focus:ring-1 focus:ring-[#4f46e5] block w-full px-4 py-3 sm:text-[14px] rounded-xl font-bold text-gray-800"
+                                        value={staffForm.data.password}
+                                        onChange={e => staffForm.setData('password', e.target.value)}
+                                        required
+                                    />
+                                    {staffForm.errors.password && <div className="text-red-500 text-xs mt-1 font-bold">{staffForm.errors.password}</div>}
+                                </div>
+                                <div>
+                                    <label className="block text-[10px] font-extrabold text-gray-500 tracking-wider uppercase mb-2">KONFIRMASI</label>
+                                    <input
+                                        type="password"
+                                        className="bg-[#f8f9fb] border border-transparent focus:border-[#4f46e5] focus:ring-1 focus:ring-[#4f46e5] block w-full px-4 py-3 sm:text-[14px] rounded-xl font-bold text-gray-800"
+                                        value={staffForm.data.password_confirmation}
+                                        onChange={e => staffForm.setData('password_confirmation', e.target.value)}
+                                        required
+                                    />
+                                </div>
+                            </div>
+                            <div className="pt-4 flex justify-end gap-3">
+                                <button type="button" onClick={() => { setShowStaffModal(false); staffForm.reset(); }} className="px-5 py-3 hover:bg-gray-50 border border-gray-100 text-gray-600 font-bold rounded-xl transition-colors">Batal</button>
+                                <button type="submit" disabled={staffForm.processing} className="px-6 py-3 bg-[#4f46e5] hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg shadow-indigo-200 transition-all">
+                                    Buat Akun Staff
                                 </button>
                             </div>
                         </form>

@@ -1,8 +1,15 @@
 import DashboardLayout from '@/Layouts/DashboardLayout';
 import { Head, router } from '@inertiajs/react';
 import React, { useState, useMemo, useEffect } from 'react';
-import ExcelJS from 'exceljs/dist/exceljs.min.js';
-import { saveAs } from 'file-saver';
+
+const loadExportTools = async () => {
+    const [{ default: ExcelJS }, { saveAs }] = await Promise.all([
+        import('exceljs/dist/exceljs.min.js'),
+        import('file-saver'),
+    ]);
+
+    return { ExcelJS, saveAs };
+};
 
 // Icons
 const GaugeIcon = ({ className }) => (
@@ -137,6 +144,7 @@ export default function Reports({ data, reports }) {
         }
 
         try {
+            const { ExcelJS, saveAs } = await loadExportTools();
             const workbook = new ExcelJS.Workbook();
             const worksheet = workbook.addWorksheet('Level Inventaris');
 
@@ -272,6 +280,7 @@ export default function Reports({ data, reports }) {
         }
 
         try {
+            const { saveAs } = await loadExportTools();
             const width = 1600;
             const height = 980;
             const marginLeft = 170;

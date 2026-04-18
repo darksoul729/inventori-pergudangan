@@ -3,11 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\Category;
+use App\Models\Role;
 use App\Models\Unit;
+use App\Models\User;
 use App\Models\Warehouse;
-use App\Models\Product;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Inertia\Inertia;
+use Illuminate\Validation\Rules;
 
 class SettingsController extends Controller
 {
@@ -16,12 +19,70 @@ class SettingsController extends Controller
         $categories = Category::withCount('products')->orderBy('name')->get();
         $units = Unit::withCount('products')->orderBy('name')->get();
         $warehouse = Warehouse::first();
+        $staffUsers = User::query()
+            ->with('role:id,name')
+            ->whereHas('role', fn ($query) => $query->where('name', 'Staff'))
+            ->orderBy('name')
+            ->get(['id', 'role_id', 'name', 'email', 'phone', 'status', 'created_at'])
+            ->map(fn (User $user) => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'phone' => $user->phone,
+                'status' => $user->status,
+                'role' => $user->role?->name,
+                'created_at' => $user->created_at?->format('d M Y'),
+            ]);
 
         return Inertia::render('Settings', [
             'categories' => $categories,
             'units' => $units,
-            'warehouse' => $warehouse
+            'warehouse' => $warehouse,
+            'staffUsers' => $staffUsers,
         ]);
+    }
+
+    public function storeStaff(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:100'],
+            'email' => ['required', 'string', 'lowercase', 'email', 'max:100', 'unique:users,email'],
+            'phone' => ['nullable', 'string', 'max:20'],
+            'password' => ['required', 'confirmed', Rules\Password::defaults()],
+        ]);
+
+        $staffRole = Role::where('name', 'Staff')->firstOrFail();
+
+        User::create([
+            'role_id' => $staffRole->id,
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'phone' => $validated['phone'] ?? null,
+            'password' => Hash::make($validated['password']),
+            'email_verified_at' => now(),
+            'status' => 'active',
+        ]);
+
+        return redirect()
+            ->route('settings', ['active' => 'staff'])
+            ->with('success', 'Akun staff berhasil dibuat.');
+    }
+
+    public function updateStaffStatus(Request $request, User $user)
+    {
+        abort_unless($user->role?->name === 'Staff', 404);
+
+        $validated = $request->validate([
+            'status' => ['required', 'in:active,inactive'],
+        ]);
+
+        $user->update([
+            'status' => $validated['status'],
+        ]);
+
+        return redirect()
+            ->route('settings', ['active' => 'staff'])
+            ->with('success', 'Status akun staff berhasil diperbarui.');
     }
 
     public function updateWarehouse(Request $request, $id)

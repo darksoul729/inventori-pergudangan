@@ -1,10 +1,17 @@
 import DashboardLayout from '@/Layouts/DashboardLayout';
-import { Head, router, useForm, Link } from '@inertiajs/react';
+import { Head, router, useForm, Link, usePage } from '@inertiajs/react';
 import React, { useState, Fragment } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import ExcelJS from 'exceljs/dist/exceljs.min.js';
-import { saveAs } from 'file-saver';
+
+const loadExportTools = async () => {
+    const [{ default: ExcelJS }, { saveAs }] = await Promise.all([
+        import('exceljs/dist/exceljs.min.js'),
+        import('file-saver'),
+    ]);
+
+    return { ExcelJS, saveAs };
+};
 
 // === Icons ===
 const DownloadIcon = ({ className }) => (
@@ -27,7 +34,7 @@ const ShieldCheckIcon = ({ className }) => (
 
 const WarningIcon = ({ className }) => (
     <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
     </svg>
 );
 
@@ -86,6 +93,9 @@ const supplierColors = [
 
 
 export default function Supplier({ suppliers = [], stats = {}, chartData = [], availableYears = [], selectedYear = null, categories = [], filters = {} }) {
+    const { props } = usePage();
+    const roleName = String(props.auth?.user?.role_name || props.auth?.user?.role || '').toLowerCase();
+    const isManager = roleName.includes('manager') || roleName.includes('manajer') || roleName.includes('admin gudang');
     const [isAddOpen, setIsAddOpen] = useState(false);
     const { data, setData, post, processing, errors, reset } = useForm({
         code: '',
@@ -113,6 +123,7 @@ export default function Supplier({ suppliers = [], stats = {}, chartData = [], a
     const handleExportAudit = async () => {
         console.log('Export audit button clicked');
         try {
+            const { ExcelJS, saveAs } = await loadExportTools();
             const workbook = new ExcelJS.Workbook();
             const worksheet = workbook.addWorksheet('Audit Snapshot');
 
@@ -168,7 +179,7 @@ export default function Supplier({ suppliers = [], stats = {}, chartData = [], a
                 });
 
                 row.height = 25;
-                
+
                 // Highlight Column 1 (Code) and Column 11 (Contact) with Blue Text
                 row.getCell(1).font = blueTextColor;
                 row.getCell(11).font = blueTextColor;
@@ -195,14 +206,14 @@ export default function Supplier({ suppliers = [], stats = {}, chartData = [], a
     };
 
     return (
-        <DashboardLayout 
+        <DashboardLayout
             headerSearchPlaceholder="Cari pemasok atau audit..."
         >
             <Head title="Performa Pemasok" />
 
             <div className="flex flex-row gap-6 pb-12 w-full pt-2 min-w-[1000px] overflow-x-auto">
                 <div className="flex-1 flex flex-col space-y-6">
-                    
+
                     {/* Header Row */}
                     <div className="flex justify-between items-center mb-2">
                         <div>
@@ -210,10 +221,12 @@ export default function Supplier({ suppliers = [], stats = {}, chartData = [], a
                             <p className="text-[14px] font-bold text-gray-500 mt-1">Pantau ketepatan pengiriman, lead time, dan kualitas pemasok untuk gudang operasional.</p>
                         </div>
                         <div className="flex space-x-3">
-                            <button onClick={() => setIsAddOpen(true)} className="flex items-center space-x-2 px-6 py-3.5 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 font-bold rounded-xl text-[14px] transition-colors shadow-sm">
-                                <span>+ Tambah Pemasok</span>
-                            </button>
-                            <button 
+                            {isManager && (
+                                <button onClick={() => setIsAddOpen(true)} className="flex items-center space-x-2 px-6 py-3.5 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 font-bold rounded-xl text-[14px] transition-colors shadow-sm">
+                                    <span>+ Tambah Pemasok</span>
+                                </button>
+                            )}
+                            <button
                                 onClick={handleExportAudit}
                                 className="flex items-center space-x-2 px-6 py-3.5 bg-[#4f46e5] shadow-[#4f46e5]/30 shadow-lg hover:bg-indigo-700 text-white font-bold rounded-xl text-[14px] transition-colors"
                             >
@@ -276,12 +289,12 @@ export default function Supplier({ suppliers = [], stats = {}, chartData = [], a
                         <div className="flex justify-between items-center mb-8">
                             <h2 className="text-[18px] font-black text-[#1a202c]">Korelasi Performa</h2>
                             <div className="flex items-center space-x-6 text-[12px] font-bold text-gray-500">
-                                
+
                                 {/* Year Filter Dropdown */}
                                 {availableYears.length > 0 && (
                                     <div className="relative">
-                                        <select 
-                                            value={selectedYear} 
+                                        <select
+                                            value={selectedYear}
                                             onChange={handleYearChange}
                                             className="appearance-none bg-gray-50 border border-gray-200 text-gray-700 py-1.5 pl-4 pr-8 rounded-lg outline-none cursor-pointer focus:ring-2 focus:ring-indigo-500 text-[11px] font-black"
                                         >
@@ -302,21 +315,21 @@ export default function Supplier({ suppliers = [], stats = {}, chartData = [], a
                                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
                                     <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 11, fontWeight: 'bold', fill: '#94a3b8' }} dy={10} />
                                     <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fontWeight: 'bold', fill: '#94a3b8' }} dx={-10} domain={['dataMin - 0.5', 'dataMax + 0.5']} />
-                                    <Tooltip 
+                                    <Tooltip
                                         contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 15px rgba(0,0,0,0.05)', fontWeight: 'bold', fontSize: '12px' }}
                                         labelStyle={{ color: '#64748b', marginBottom: '4px' }}
                                     />
                                     <Legend iconType="circle" wrapperStyle={{ paddingTop: '20px', fontSize: '12px', fontWeight: 'bold', color: '#64748b' }} />
                                     {suppliers.map((sup, index) => (
-                                        <Line 
+                                        <Line
                                             key={sup.id}
-                                            type="monotone" 
-                                            dataKey={sup.code} 
-                                            stroke={supplierColors[index % supplierColors.length]} 
-                                            strokeWidth={3} 
-                                            dot={{ r: 4, strokeWidth: 2 }} 
-                                            activeDot={{ r: 6 }} 
-                                            name={`${sup.name} (${sup.code})`} 
+                                            type="monotone"
+                                            dataKey={sup.code}
+                                            stroke={supplierColors[index % supplierColors.length]}
+                                            strokeWidth={3}
+                                            dot={{ r: 4, strokeWidth: 2 }}
+                                            activeDot={{ r: 6 }}
+                                            name={`${sup.name} (${sup.code})`}
                                             connectNulls={true}
                                         />
                                     ))}
@@ -327,15 +340,15 @@ export default function Supplier({ suppliers = [], stats = {}, chartData = [], a
 
                     {/* Partner Directory */}
                     <div className="bg-white rounded-[24px] p-8 shadow-[0_2px_16px_rgba(0,0,0,0.02)] border border-[#edf2f7]">
-                        
+
                         {/* Header Row */}
                         <div className="flex justify-between items-center mb-8">
                             <h2 className="text-[18px] font-black text-[#1a202c]">Direktori Mitra</h2>
                             <div className="flex items-center space-x-3">
                                 {/* Status Filter */}
                                 <div className="relative">
-                                    <select 
-                                        value={filters?.status || ''} 
+                                    <select
+                                        value={filters?.status || ''}
                                         onChange={(e) => router.get(route('supplier'), { ...filters, status: e.target.value, year: selectedYear }, { preserveState: true, preserveScroll: true })}
                                         className="appearance-none bg-gray-50 border border-gray-100 shadow-sm pl-4 pr-10 py-2 rounded-xl text-[12px] font-bold text-gray-600 hover:bg-gray-100 transition-colors cursor-pointer outline-none focus:ring-2 focus:ring-indigo-500"
                                     >
@@ -348,8 +361,8 @@ export default function Supplier({ suppliers = [], stats = {}, chartData = [], a
 
                                 {/* Category Filter */}
                                 <div className="relative">
-                                    <select 
-                                        value={filters?.category || ''} 
+                                    <select
+                                        value={filters?.category || ''}
                                         onChange={(e) => router.get(route('supplier'), { ...filters, category: e.target.value, year: selectedYear }, { preserveState: true, preserveScroll: true })}
                                         className="appearance-none bg-gray-50 border border-gray-100 shadow-sm pl-4 pr-10 py-2 rounded-xl text-[12px] font-bold text-gray-600 hover:bg-gray-100 transition-colors cursor-pointer outline-none focus:ring-2 focus:ring-indigo-500"
                                     >
@@ -376,19 +389,19 @@ export default function Supplier({ suppliers = [], stats = {}, chartData = [], a
 
                             {/* Rows */}
                             <div className="divide-y divide-gray-50/80">
-                                
+
                                 {/* Dynamic Rows */}
                                 {suppliers.map((supplier) => {
                                     const perf = supplier.latest_performance || {};
                                     const score = perf.performance_score || 0;
                                     const leadTime = perf.avg_lead_time_days || 0;
-                                    
+
                                     // Determine styling based on score
                                     let iconBg = "bg-indigo-100 text-indigo-700";
                                     let barColor = "bg-emerald-500";
                                     let TrendIcon = TrendUpIcon;
                                     let trendColor = "text-emerald-500";
-                                    
+
                                     if (score < 80 && score >= 70) {
                                         iconBg = "bg-indigo-600 text-white";
                                         barColor = "bg-amber-500";
@@ -442,10 +455,10 @@ export default function Supplier({ suppliers = [], stats = {}, chartData = [], a
 
                 {/* Right Column - Status & Context */}
                 <div className="w-[340px] flex-shrink-0 flex flex-col space-y-6">
-                    
+
                     {/* Intelligence Hub */}
                     <div className="bg-[#f8f9fb] rounded-[24px] p-6 border border-[#edf2f7]">
-                        
+
                         {/* Header */}
                         <div className="flex items-center space-x-3 mb-8">
                             <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 shadow-sm flex-shrink-0">
@@ -460,7 +473,7 @@ export default function Supplier({ suppliers = [], stats = {}, chartData = [], a
                                 <div className="w-1.5 h-1.5 rounded-full bg-red-500"></div>
                                 <h4 className="text-[10px] font-black text-red-600 tracking-widest uppercase">Perlu Perhatian</h4>
                             </div>
-                            
+
                             <div className="bg-white rounded-[16px] shadow-sm border border-gray-100 p-5 relative overflow-hidden">
                                 <div className="absolute left-0 top-0 bottom-0 w-[4px] bg-red-500 rounded-l-[16px]"></div>
                                 <h5 className="text-[14px] font-black text-[#1a202c] mb-2 leading-tight">Penyimpangan Waktu Tunggu</h5>
@@ -480,7 +493,7 @@ export default function Supplier({ suppliers = [], stats = {}, chartData = [], a
                                 <div className="w-1.5 h-1.5 rounded-full bg-amber-600"></div>
                                 <h4 className="text-[10px] font-black text-amber-600 tracking-widest uppercase">Saran Evaluasi</h4>
                             </div>
-                            
+
                             <div className="bg-white rounded-[16px] shadow-sm border border-gray-100 p-5 relative overflow-hidden">
                                 <div className="absolute left-0 top-0 bottom-0 w-[4px] bg-[#92400e] rounded-l-[16px]"></div>
                                 <h5 className="text-[14px] font-black text-[#1a202c] mb-2 leading-tight">Konsolidasi Nexus</h5>
@@ -495,18 +508,18 @@ export default function Supplier({ suppliers = [], stats = {}, chartData = [], a
 
                         {/* API Sync Status */}
                         <div className="bg-white rounded-xl py-3.5 px-4 shadow-sm border border-gray-100 flex justify-between items-center mt-2">
-                             <div className="flex items-center space-x-3">
-                                 <NodeSyncIcon className="w-5 h-5 text-gray-400" />
-                                 <span className="text-[12px] font-bold text-[#1a202c]">Status Sinkronisasi</span>
-                             </div>
-                             <span className="text-[9px] font-black text-indigo-500 bg-indigo-50 px-2 py-1 rounded shadow-sm tracking-widest uppercase">Aktif</span>
+                            <div className="flex items-center space-x-3">
+                                <NodeSyncIcon className="w-5 h-5 text-gray-400" />
+                                <span className="text-[12px] font-bold text-[#1a202c]">Status Sinkronisasi</span>
+                            </div>
+                            <span className="text-[9px] font-black text-indigo-500 bg-indigo-50 px-2 py-1 rounded shadow-sm tracking-widest uppercase">Aktif</span>
                         </div>
                     </div>
 
                     {/* Inventory Ribbon */}
                     <div className="bg-white rounded-[24px] p-6 border border-[#edf2f7] shadow-[0_2px_16px_rgba(0,0,0,0.02)]">
                         <h4 className="text-[10px] font-black text-gray-400 tracking-widest uppercase mb-4">Ringkasan Volume</h4>
-                        
+
                         <div className="flex space-x-3">
                             <div className="flex-1 bg-gray-50 border border-gray-100 rounded-xl py-3 flex flex-col items-center justify-center shadow-sm">
                                 <span className="text-[10px] font-bold text-gray-400 mb-1">Masuk</span>
@@ -524,7 +537,7 @@ export default function Supplier({ suppliers = [], stats = {}, chartData = [], a
             </div>
 
             {/* Modal Add Partner */}
-            <Transition appear show={isAddOpen} as={Fragment}>
+            <Transition appear show={isManager && isAddOpen} as={Fragment}>
                 <Dialog as="div" className="relative z-50" onClose={() => setIsAddOpen(false)}>
                     <Transition.Child
                         as={Fragment}

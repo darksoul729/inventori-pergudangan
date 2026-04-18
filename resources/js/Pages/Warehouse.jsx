@@ -3,7 +3,7 @@ import DashboardLayout from '@/Layouts/DashboardLayout';
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import TextInput from '@/Components/TextInput';
-import { Head, Link, router, useForm } from '@inertiajs/react';
+import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
 
 const ActivityIcon = ({ className }) => (
     <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -150,6 +150,9 @@ export default function Warehouse({
     productOptions = [],
     status,
 }) {
+    const { props } = usePage();
+    const roleName = String(props.auth?.user?.role_name || props.auth?.user?.role || '').toLowerCase();
+    const isManager = roleName.includes('manager') || roleName.includes('manajer') || roleName.includes('admin gudang');
     const [activeWorkspace, setActiveWorkspace] = useState('zone');
     const [showZoneModal, setShowZoneModal] = useState(false);
     const [showRackModal, setShowRackModal] = useState(false);
@@ -329,20 +332,24 @@ export default function Warehouse({
                         </p>
                     </div>
                     <div className="flex flex-wrap gap-3.5">
-                        <button
-                            type="button"
-                            onClick={() => setShowZoneModal(true)}
-                            className="rounded-[10px] border border-[#dbe4f0] bg-white px-5 py-2.5 text-[12px] font-black text-[#1a202c] shadow-[0_2px_12px_rgba(0,0,0,0.02)]"
-                        >
-                            Zona Baru
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => setShowRackModal(true)}
-                            className="rounded-[10px] border border-[#dbe4f0] bg-white px-5 py-2.5 text-[12px] font-black text-[#1a202c] shadow-[0_2px_12px_rgba(0,0,0,0.02)]"
-                        >
-                            Rak Baru
-                        </button>
+                        {isManager && (
+                            <>
+                                <button
+                                    type="button"
+                                    onClick={() => setShowZoneModal(true)}
+                                    className="rounded-[10px] border border-[#dbe4f0] bg-white px-5 py-2.5 text-[12px] font-black text-[#1a202c] shadow-[0_2px_12px_rgba(0,0,0,0.02)]"
+                                >
+                                    Zona Baru
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setShowRackModal(true)}
+                                    className="rounded-[10px] border border-[#dbe4f0] bg-white px-5 py-2.5 text-[12px] font-black text-[#1a202c] shadow-[0_2px_12px_rgba(0,0,0,0.02)]"
+                                >
+                                    Rak Baru
+                                </button>
+                            </>
+                        )}
                         <div className="rounded-[10px] border border-[#edf2f7] bg-white px-5 py-2.5 text-[12px] font-bold text-[#1a202c] shadow-[0_2px_12px_rgba(0,0,0,0.02)]">
                             {warehouse?.total_racks} rak aktif
                         </div>
@@ -359,11 +366,10 @@ export default function Warehouse({
                             key={tab.id}
                             type="button"
                             onClick={() => setActiveWorkspace(tab.id)}
-                            className={`rounded-full px-4 py-2.5 text-[12px] font-black uppercase tracking-[0.16em] transition ${
-                                activeWorkspace === tab.id
+                            className={`rounded-full px-4 py-2.5 text-[12px] font-black uppercase tracking-[0.16em] transition ${activeWorkspace === tab.id
                                     ? 'bg-[#4338ca] text-white shadow-[0_10px_20px_rgba(67,56,202,0.18)]'
                                     : 'bg-white text-gray-500 border border-[#e5e7eb]'
-                            }`}
+                                }`}
                         >
                             {tab.label}
                         </button>
@@ -397,283 +403,295 @@ export default function Warehouse({
                 </div>
 
                 {activeWorkspace === 'zone' ? (
-                <WorkspaceShell
-                    eyebrow="Langkah 1"
-                    title="Ruang Kerja Zona"
-                    description="Pilih dan edit zona aktif terlebih dahulu. Daftar rak untuk zona ini ada di panel samping."
-                    aside={
-                        <SectionCard title="Direktori Zona" subtitle="Klik zona untuk berpindah konteks kerja.">
-                            <div className="space-y-3">
-                                {zoneSummaries.map((zone) => (
-                                    <Link
-                                        key={zone.id}
-                                        href={`/warehouse?zone=${zone.id}`}
-                                        preserveScroll
-                                        preserveState
-                                        className={`block rounded-[18px] border px-4 py-4 transition ${selectedZone?.id === zone.id ? 'border-[#4338ca] bg-[#fdfdff]' : 'border-[#edf2f7] bg-[#fbfcfe]'}`}
-                                    >
-                                        <div className="flex items-center justify-between gap-3">
-                                            <div>
-                                                <div className="text-[13px] font-black text-[#1a202c]">{zone.code}</div>
-                                                <div className="mt-1 text-[10px] font-bold uppercase tracking-[0.16em] text-gray-400">{zone.name}</div>
-                                            </div>
-                                            <div className="text-right">
-                                                <div className="text-[14px] font-black text-[#1a202c]">{zone.occupancy}%</div>
-                                                <div className="text-[10px] font-semibold text-gray-400">{zone.rack_count} rak</div>
-                                            </div>
-                                        </div>
-                                    </Link>
-                                ))}
-                            </div>
-                        </SectionCard>
-                    }
-                >
-                    <SectionCard
-                        title="Zona Terpilih"
-                        subtitle="Edit zona terpilih dan lihat seluruh rak di dalamnya."
-                        action={selectedZone ? (
-                            <button
-                                type="button"
-                                onClick={() => {
-                                    if (window.confirm(`Delete ${selectedZone.name}?`)) {
-                                        router.delete(`/warehouse/zones/${selectedZone.id}`, { preserveScroll: true });
-                                    }
-                                }}
-                                className="rounded-xl bg-[#fff1f2] px-4 py-3 text-[11px] font-black uppercase tracking-[0.16em] text-[#e11d48]"
-                            >
-                                Hapus Zona
-                            </button>
-                            ) : null}
-                        >
-                        {selectedZone ? (
-                            <div className="space-y-6">
-                                <form onSubmit={(e) => { e.preventDefault(); zoneEditForm.put(`/warehouse/zones/${selectedZone.id}?zone=${selectedZone.id}`, { preserveScroll: true }); }} className="space-y-4">
-                                    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-                                        <div>
-                                            <InputLabel value="Kode" className="mb-2 text-[11px] font-black uppercase tracking-[0.18em] text-gray-400" />
-                                            <TextInput className="w-full rounded-xl border-[#dbe4f0] px-4 py-3 text-[13px] font-semibold" value={zoneEditForm.data.code} onChange={(e) => zoneEditForm.setData('code', e.target.value)} />
-                                        </div>
-                                        <div>
-                                            <InputLabel value="Nama" className="mb-2 text-[11px] font-black uppercase tracking-[0.18em] text-gray-400" />
-                                            <TextInput className="w-full rounded-xl border-[#dbe4f0] px-4 py-3 text-[13px] font-semibold" value={zoneEditForm.data.name} onChange={(e) => zoneEditForm.setData('name', e.target.value)} />
-                                        </div>
-                                        <SelectField label="Tipe" name="type" value={zoneEditForm.data.type} onChange={(e) => zoneEditForm.setData('type', e.target.value)} options={[
-                                            { value: 'storage', label: 'Penyimpanan' },
-                                            { value: 'high_pick', label: 'Pengambilan Cepat' },
-                                            { value: 'bulk_storage', label: 'Penyimpanan Massal' },
-                                            { value: 'electronics', label: 'Elektronik' },
-                                            { value: 'cross_dock', label: 'Lintas Dok' },
-                                            { value: 'hazmat', label: 'Bahan Berbahaya' },
-                                        ]} />
-                                        <div>
-                                            <InputLabel value="Kapasitas" className="mb-2 text-[11px] font-black uppercase tracking-[0.18em] text-gray-400" />
-                                            <TextInput type="number" min="1" className="w-full rounded-xl border-[#dbe4f0] px-4 py-3 text-[13px] font-semibold" value={zoneEditForm.data.capacity} onChange={(e) => zoneEditForm.setData('capacity', e.target.value)} />
-                                        </div>
-                                    </div>
-                                    <TextAreaField label="Deskripsi" name="description" value={zoneEditForm.data.description} onChange={(e) => zoneEditForm.setData('description', e.target.value)} rows={3} />
-                                    <label className="flex items-center gap-3 text-[13px] font-semibold text-gray-600">
-                                        <input type="checkbox" checked={Boolean(zoneEditForm.data.is_active)} onChange={(e) => zoneEditForm.setData('is_active', e.target.checked ? 1 : 0)} />
-                                        Zona aktif
-                                    </label>
-                                    <FormActions processing={zoneEditForm.processing} submitLabel="Perbarui Zona" />
-                                </form>
-
-                                <div className="border-t border-[#edf2f7] pt-6">
-                                    <div className="mb-4 text-[11px] font-black uppercase tracking-[0.18em] text-gray-400">Daftar Rak di Zona Ini</div>
-                                    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                                        {selectedZone.racks.map((rack) => (
-                                            <Link key={rack.id} href={`/warehouse?zone=${selectedZone.id}&rack=${rack.id}`} preserveScroll preserveState className={`rounded-[18px] border p-5 transition ${selectedRack?.id === rack.id ? 'border-[#4338ca] bg-[#fdfdff]' : 'border-[#edf2f7] bg-[#fbfcfe]'}`}>
-                                                <div className="text-[14px] font-black text-[#1a202c]">{rack.name}</div>
-                                                <div className="mt-1 text-[10px] font-black uppercase tracking-[0.18em] text-gray-400">{rack.code}</div>
-                                                <div className="mt-4 flex items-center justify-between text-[12px] font-semibold text-gray-500">
-                                                    <span>{formatNumber(rack.items)} barang</span>
-                                                    <span>{rack.occupancy}% terisi</span>
-                                                </div>
-                                            </Link>
-                                        ))}
-                                    </div>
-                                </div>
-                            </div>
-                        ) : (
-                            <div className="text-[13px] font-semibold text-gray-500">Tidak ada zona yang dipilih.</div>
-                        )}
-                    </SectionCard>
-                </WorkspaceShell>
-                ) : null}
-
-                {activeWorkspace === 'rack' ? (
-                <SectionCard
-                    title="Ruang Kerja Rak"
-                    subtitle="Setelah zona dipilih, kelola rak aktif dan isi stoknya dalam satu panel lebar penuh."
-                    action={<span className="rounded-full bg-[#eef2ff] px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-[#4338ca]">Langkah 2</span>}
-                >
-                    <div className="space-y-8">
-                        <div className="rounded-[20px] border border-[#edf2f7] bg-[#fbfcfe] p-5">
-                            <div className="mb-4 flex items-center justify-between gap-3">
-                                <div>
-                                    <div className="text-[15px] font-black text-[#1a202c]">Direktori Rak</div>
-                                    <div className="mt-1 text-[12px] font-semibold text-gray-500">Klik rak untuk berpindah tanpa kehilangan posisi scroll.</div>
-                                </div>
-                                {selectedZone ? (
-                                    <div className="text-[11px] font-black uppercase tracking-[0.16em] text-gray-400">
-                                        {selectedZone.code} • {selectedZone.racks.length} rak
-                                    </div>
-                                ) : null}
-                            </div>
-
-                            {selectedZone ? (
-                                <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-                                    {selectedZone.racks.map((rack) => (
+                    <WorkspaceShell
+                        eyebrow="Langkah 1"
+                        title="Ruang Kerja Zona"
+                        description="Pilih dan edit zona aktif terlebih dahulu. Daftar rak untuk zona ini ada di panel samping."
+                        aside={
+                            <SectionCard title="Direktori Zona" subtitle="Klik zona untuk berpindah konteks kerja.">
+                                <div className="space-y-3">
+                                    {zoneSummaries.map((zone) => (
                                         <Link
-                                            key={rack.id}
-                                            href={`/warehouse?zone=${selectedZone.id}&rack=${rack.id}`}
+                                            key={zone.id}
+                                            href={`/warehouse?zone=${zone.id}`}
                                             preserveScroll
                                             preserveState
-                                            className={`rounded-[18px] border px-4 py-4 transition ${selectedRack?.id === rack.id ? 'border-[#4338ca] bg-[#fdfdff]' : 'border-[#edf2f7] bg-white'}`}
+                                            className={`block rounded-[18px] border px-4 py-4 transition ${selectedZone?.id === zone.id ? 'border-[#4338ca] bg-[#fdfdff]' : 'border-[#edf2f7] bg-[#fbfcfe]'}`}
                                         >
-                                            <div className="text-[13px] font-black text-[#1a202c]">{rack.name}</div>
-                                            <div className="mt-1 text-[10px] font-bold uppercase tracking-[0.16em] text-gray-400">{rack.code}</div>
-                                            <div className="mt-3 flex items-center justify-between text-[12px] font-semibold text-gray-500">
-                                                <span>{formatNumber(rack.skus)} sku</span>
-                                                <span>{rack.occupancy}%</span>
+                                            <div className="flex items-center justify-between gap-3">
+                                                <div>
+                                                    <div className="text-[13px] font-black text-[#1a202c]">{zone.code}</div>
+                                                    <div className="mt-1 text-[10px] font-bold uppercase tracking-[0.16em] text-gray-400">{zone.name}</div>
+                                                </div>
+                                                <div className="text-right">
+                                                    <div className="text-[14px] font-black text-[#1a202c]">{zone.occupancy}%</div>
+                                                    <div className="text-[10px] font-semibold text-gray-400">{zone.rack_count} rak</div>
+                                                </div>
                                             </div>
                                         </Link>
                                     ))}
                                 </div>
-                            ) : (
-                                <div className="text-[13px] font-semibold text-gray-500">Pilih zone dulu.</div>
-                            )}
-                        </div>
-
+                            </SectionCard>
+                        }
+                    >
                         <SectionCard
-                            title="Rak Terpilih"
-                            subtitle="Kelola metadata rak dan isi produk di dalamnya."
-                            action={selectedRack ? (
+                            title="Zona Terpilih"
+                            subtitle="Edit zona terpilih dan lihat seluruh rak di dalamnya."
+                            action={selectedZone && isManager ? (
                                 <button
                                     type="button"
                                     onClick={() => {
-                                        if (window.confirm(`Delete ${selectedRack.name}?`)) {
-                                            router.delete(`/warehouse/racks/${selectedRack.id}?zone=${selectedZone?.id}`, { preserveScroll: true, preserveState: true });
+                                        if (window.confirm(`Delete ${selectedZone.name}?`)) {
+                                            router.delete(`/warehouse/zones/${selectedZone.id}`, { preserveScroll: true });
                                         }
                                     }}
                                     className="rounded-xl bg-[#fff1f2] px-4 py-3 text-[11px] font-black uppercase tracking-[0.16em] text-[#e11d48]"
                                 >
-                                    Hapus Rak
+                                    Hapus Zona
                                 </button>
                             ) : null}
                         >
-                            {selectedRack ? (
-                                <div className="space-y-8">
-                                    <form onSubmit={(e) => { e.preventDefault(); rackEditForm.put(`/warehouse/racks/${selectedRack.id}?zone=${selectedZone?.id}&rack=${selectedRack.id}`, { preserveScroll: true, preserveState: true }); }} className="space-y-4">
+                            {selectedZone ? (
+                                <div className="space-y-6">
+                                    {isManager && (
+                                        <form onSubmit={(e) => { e.preventDefault(); zoneEditForm.put(`/warehouse/zones/${selectedZone.id}?zone=${selectedZone.id}`, { preserveScroll: true }); }} className="space-y-4">
+                                            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+                                                <div>
+                                                    <InputLabel value="Kode" className="mb-2 text-[11px] font-black uppercase tracking-[0.18em] text-gray-400" />
+                                                    <TextInput className="w-full rounded-xl border-[#dbe4f0] px-4 py-3 text-[13px] font-semibold" value={zoneEditForm.data.code} onChange={(e) => zoneEditForm.setData('code', e.target.value)} />
+                                                </div>
+                                                <div>
+                                                    <InputLabel value="Nama" className="mb-2 text-[11px] font-black uppercase tracking-[0.18em] text-gray-400" />
+                                                    <TextInput className="w-full rounded-xl border-[#dbe4f0] px-4 py-3 text-[13px] font-semibold" value={zoneEditForm.data.name} onChange={(e) => zoneEditForm.setData('name', e.target.value)} />
+                                                </div>
+                                                <SelectField label="Tipe" name="type" value={zoneEditForm.data.type} onChange={(e) => zoneEditForm.setData('type', e.target.value)} options={[
+                                                    { value: 'storage', label: 'Penyimpanan' },
+                                                    { value: 'high_pick', label: 'Pengambilan Cepat' },
+                                                    { value: 'bulk_storage', label: 'Penyimpanan Massal' },
+                                                    { value: 'electronics', label: 'Elektronik' },
+                                                    { value: 'cross_dock', label: 'Lintas Dok' },
+                                                    { value: 'hazmat', label: 'Bahan Berbahaya' },
+                                                ]} />
+                                                <div>
+                                                    <InputLabel value="Kapasitas" className="mb-2 text-[11px] font-black uppercase tracking-[0.18em] text-gray-400" />
+                                                    <TextInput type="number" min="1" className="w-full rounded-xl border-[#dbe4f0] px-4 py-3 text-[13px] font-semibold" value={zoneEditForm.data.capacity} onChange={(e) => zoneEditForm.setData('capacity', e.target.value)} />
+                                                </div>
+                                            </div>
+                                            <TextAreaField label="Deskripsi" name="description" value={zoneEditForm.data.description} onChange={(e) => zoneEditForm.setData('description', e.target.value)} rows={3} />
+                                            <label className="flex items-center gap-3 text-[13px] font-semibold text-gray-600">
+                                                <input type="checkbox" checked={Boolean(zoneEditForm.data.is_active)} onChange={(e) => zoneEditForm.setData('is_active', e.target.checked ? 1 : 0)} />
+                                                Zona aktif
+                                            </label>
+                                            <FormActions processing={zoneEditForm.processing} submitLabel="Perbarui Zona" />
+                                        </form>
+                                    )}
+
+                                    <div className="border-t border-[#edf2f7] pt-6">
+                                        <div className="mb-4 text-[11px] font-black uppercase tracking-[0.18em] text-gray-400">Daftar Rak di Zona Ini</div>
                                         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                                            <SelectField label="Zona" name="warehouse_zone_id" value={rackEditForm.data.warehouse_zone_id} onChange={(e) => rackEditForm.setData('warehouse_zone_id', e.target.value)} options={zoneOptions} />
-                                            <div>
-                                                <InputLabel value="Kode" className="mb-2 text-[11px] font-black uppercase tracking-[0.18em] text-gray-400" />
-                                                <TextInput className="w-full rounded-xl border-[#dbe4f0] px-4 py-3 text-[13px] font-semibold" value={rackEditForm.data.code} onChange={(e) => rackEditForm.setData('code', e.target.value)} />
-                                            </div>
-                                            <div>
-                                                <InputLabel value="Nama" className="mb-2 text-[11px] font-black uppercase tracking-[0.18em] text-gray-400" />
-                                                <TextInput className="w-full rounded-xl border-[#dbe4f0] px-4 py-3 text-[13px] font-semibold" value={rackEditForm.data.name} onChange={(e) => rackEditForm.setData('name', e.target.value)} />
-                                            </div>
-                                            <div>
-                                                <InputLabel value="Tipe Rak" className="mb-2 text-[11px] font-black uppercase tracking-[0.18em] text-gray-400" />
-                                                <TextInput className="w-full rounded-xl border-[#dbe4f0] px-4 py-3 text-[13px] font-semibold" value={rackEditForm.data.rack_type} onChange={(e) => rackEditForm.setData('rack_type', e.target.value)} />
-                                            </div>
-                                            <div>
-                                                <InputLabel value="Kapasitas" className="mb-2 text-[11px] font-black uppercase tracking-[0.18em] text-gray-400" />
-                                                <TextInput type="number" min="1" className="w-full rounded-xl border-[#dbe4f0] px-4 py-3 text-[13px] font-semibold" value={rackEditForm.data.capacity} onChange={(e) => rackEditForm.setData('capacity', e.target.value)} />
-                                            </div>
-                                            <SelectField label="Status" name="status" value={rackEditForm.data.status} onChange={(e) => rackEditForm.setData('status', e.target.value)} options={[
-                                                { value: 'active', label: 'Aktif' },
-                                                { value: 'maintenance', label: 'Perawatan' },
-                                                { value: 'inactive', label: 'Tidak Aktif' },
-                                            ]} />
-                                        </div>
-                                        <TextAreaField label="Catatan" name="notes" value={rackEditForm.data.notes} onChange={(e) => rackEditForm.setData('notes', e.target.value)} rows={3} />
-                                        <FormActions processing={rackEditForm.processing} submitLabel="Perbarui Rak" />
-                                    </form>
-
-                                    <div className="rounded-[20px] border border-[#edf2f7] bg-[#fbfcfe] p-5">
-                                        <div className="grid gap-4 md:grid-cols-4">
-                                            <div><div className="text-[10px] font-black uppercase tracking-[0.18em] text-gray-400">Zona</div><div className="mt-1 text-[16px] font-black text-[#1a202c]">{selectedRack.summary.zone_code}</div></div>
-                                            <div><div className="text-[10px] font-black uppercase tracking-[0.18em] text-gray-400">Barang</div><div className="mt-1 text-[16px] font-black text-[#1a202c]">{formatNumber(selectedRack.summary.items)}</div></div>
-                                            <div><div className="text-[10px] font-black uppercase tracking-[0.18em] text-gray-400">SKU</div><div className="mt-1 text-[16px] font-black text-[#1a202c]">{formatNumber(selectedRack.summary.skus)}</div></div>
-                                            <div><div className="text-[10px] font-black uppercase tracking-[0.18em] text-gray-400">Keterisian</div><div className="mt-1 text-[16px] font-black text-[#ef4444]">{selectedRack.summary.occupancy}%</div></div>
-                                        </div>
-                                    </div>
-
-                                    <div className="rounded-[20px] border border-[#edf2f7] bg-[#fbfcfe] p-5">
-                                        <div className="mb-5 flex items-center justify-between gap-4">
-                                            <div>
-                                                <h4 className="text-[15px] font-black text-[#1a202c]">Tabel Produk Rak</h4>
-                                                <p className="mt-1 text-[12px] font-semibold text-gray-500">Isi rak ditampilkan sebagai tabel lebar penuh. Tambah atau edit via modal.</p>
-                                            </div>
-                                            <div className="flex items-center gap-3">
-                                                <div className="rounded-full bg-white px-3 py-2 text-[11px] font-black uppercase tracking-[0.14em] text-gray-500">
-                                                    Tersisa {formatNumber(rackCapacityRemaining)}
-                                                </div>
-                                                <button
-                                                    type="button"
-                                                    onClick={openRackStockCreateModal}
-                                                    className="rounded-xl bg-[#4338ca] px-4 py-3 text-[11px] font-black uppercase tracking-[0.16em] text-white"
-                                                >
-                                                    Tambah Produk
-                                                </button>
-                                            </div>
-                                        </div>
-
-                                        {selectedRack.stocks.length ? (
-                                            <div className="overflow-hidden rounded-[18px] border border-[#e5e7eb] bg-white">
-                                                <div className="grid grid-cols-[1.8fr_0.8fr_0.8fr_0.8fr_1fr_1fr] gap-4 border-b border-[#e5e7eb] bg-[#f8fafc] px-5 py-3 text-[10px] font-black uppercase tracking-[0.18em] text-gray-400">
-                                                    <div>Produk</div>
-                                                    <div>Kuantitas</div>
-                                                    <div>Dipesan</div>
-                                                    <div>Tersedia</div>
-                                                    <div>Batch</div>
-                                                    <div>Aksi</div>
-                                                </div>
-                                                {selectedRack.stocks.map((stock) => (
-                                                    <div key={stock.id} className="grid grid-cols-[1.8fr_0.8fr_0.8fr_0.8fr_1fr_1fr] gap-4 border-b border-[#f1f5f9] px-5 py-4 text-[13px] font-semibold text-gray-600 last:border-b-0">
-                                                        <div>
-                                                            <div className="font-black text-[#1a202c]">{stock.product_name}</div>
-                                                            <div className="mt-1 text-[10px] font-black uppercase tracking-[0.16em] text-gray-400">{stock.sku}</div>
-                                                        </div>
-                                                        <div>{formatNumber(stock.quantity)}</div>
-                                                        <div>{formatNumber(stock.reserved_quantity)}</div>
-                                                        <div>{formatNumber(stock.available_quantity)}</div>
-                                                        <div className="truncate">{stock.batch_number || '-'}</div>
-                                                        <div className="flex items-center gap-2">
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => openRackStockEditModal(stock)}
-                                                                className="rounded-lg bg-[#eef2ff] px-3 py-2 text-[10px] font-black uppercase tracking-[0.14em] text-[#4338ca]"
-                                                            >
-                                                                Ubah
-                                                            </button>
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => deleteRackStock(stock)}
-                                                                className="rounded-lg bg-[#fff1f2] px-3 py-2 text-[10px] font-black uppercase tracking-[0.14em] text-[#e11d48]"
-                                                            >
-                                                                Hapus
-                                                            </button>
-                                                        </div>
+                                            {selectedZone.racks.map((rack) => (
+                                                <Link key={rack.id} href={`/warehouse?zone=${selectedZone.id}&rack=${rack.id}`} preserveScroll preserveState className={`rounded-[18px] border p-5 transition ${selectedRack?.id === rack.id ? 'border-[#4338ca] bg-[#fdfdff]' : 'border-[#edf2f7] bg-[#fbfcfe]'}`}>
+                                                    <div className="text-[14px] font-black text-[#1a202c]">{rack.name}</div>
+                                                    <div className="mt-1 text-[10px] font-black uppercase tracking-[0.18em] text-gray-400">{rack.code}</div>
+                                                    <div className="mt-4 flex items-center justify-between text-[12px] font-semibold text-gray-500">
+                                                        <span>{formatNumber(rack.items)} barang</span>
+                                                        <span>{rack.occupancy}% terisi</span>
                                                     </div>
-                                                ))}
-                                            </div>
-                                        ) : (
-                                            <div className="rounded-[20px] border border-dashed border-[#dbe4f0] bg-white p-8 text-center text-[13px] font-semibold text-gray-500">
-                                                Rack ini belum punya stok. Gunakan tombol `Add Product`.
-                                            </div>
-                                        )}
+                                                </Link>
+                                            ))}
+                                        </div>
                                     </div>
                                 </div>
                             ) : (
-                                <div className="text-[13px] font-semibold text-gray-500">Pilih rak dari daftar zona atau kartu ringkasan di atas.</div>
+                                <div className="text-[13px] font-semibold text-gray-500">Tidak ada zona yang dipilih.</div>
                             )}
                         </SectionCard>
-                    </div>
-                </SectionCard>
+                    </WorkspaceShell>
+                ) : null}
+
+                {activeWorkspace === 'rack' ? (
+                    <SectionCard
+                        title="Ruang Kerja Rak"
+                        subtitle="Setelah zona dipilih, kelola rak aktif dan isi stoknya dalam satu panel lebar penuh."
+                        action={<span className="rounded-full bg-[#eef2ff] px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-[#4338ca]">Langkah 2</span>}
+                    >
+                        <div className="space-y-8">
+                            <div className="rounded-[20px] border border-[#edf2f7] bg-[#fbfcfe] p-5">
+                                <div className="mb-4 flex items-center justify-between gap-3">
+                                    <div>
+                                        <div className="text-[15px] font-black text-[#1a202c]">Direktori Rak</div>
+                                        <div className="mt-1 text-[12px] font-semibold text-gray-500">Klik rak untuk berpindah tanpa kehilangan posisi scroll.</div>
+                                    </div>
+                                    {selectedZone ? (
+                                        <div className="text-[11px] font-black uppercase tracking-[0.16em] text-gray-400">
+                                            {selectedZone.code} • {selectedZone.racks.length} rak
+                                        </div>
+                                    ) : null}
+                                </div>
+
+                                {selectedZone ? (
+                                    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+                                        {selectedZone.racks.map((rack) => (
+                                            <Link
+                                                key={rack.id}
+                                                href={`/warehouse?zone=${selectedZone.id}&rack=${rack.id}`}
+                                                preserveScroll
+                                                preserveState
+                                                className={`rounded-[18px] border px-4 py-4 transition ${selectedRack?.id === rack.id ? 'border-[#4338ca] bg-[#fdfdff]' : 'border-[#edf2f7] bg-white'}`}
+                                            >
+                                                <div className="text-[13px] font-black text-[#1a202c]">{rack.name}</div>
+                                                <div className="mt-1 text-[10px] font-bold uppercase tracking-[0.16em] text-gray-400">{rack.code}</div>
+                                                <div className="mt-3 flex items-center justify-between text-[12px] font-semibold text-gray-500">
+                                                    <span>{formatNumber(rack.skus)} sku</span>
+                                                    <span>{rack.occupancy}%</span>
+                                                </div>
+                                            </Link>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="text-[13px] font-semibold text-gray-500">Pilih zone dulu.</div>
+                                )}
+                            </div>
+
+                            <SectionCard
+                                title="Rak Terpilih"
+                                subtitle="Kelola metadata rak dan isi produk di dalamnya."
+                                action={selectedRack && isManager ? (
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            if (window.confirm(`Delete ${selectedRack.name}?`)) {
+                                                router.delete(`/warehouse/racks/${selectedRack.id}?zone=${selectedZone?.id}`, { preserveScroll: true, preserveState: true });
+                                            }
+                                        }}
+                                        className="rounded-xl bg-[#fff1f2] px-4 py-3 text-[11px] font-black uppercase tracking-[0.16em] text-[#e11d48]"
+                                    >
+                                        Hapus Rak
+                                    </button>
+                                ) : null}
+                            >
+                                {selectedRack ? (
+                                    <div className="space-y-8">
+                                        {isManager && (
+                                        <form onSubmit={(e) => { e.preventDefault(); rackEditForm.put(`/warehouse/racks/${selectedRack.id}?zone=${selectedZone?.id}&rack=${selectedRack.id}`, { preserveScroll: true, preserveState: true }); }} className="space-y-4">
+                                            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                                                <SelectField label="Zona" name="warehouse_zone_id" value={rackEditForm.data.warehouse_zone_id} onChange={(e) => rackEditForm.setData('warehouse_zone_id', e.target.value)} options={zoneOptions} />
+                                                <div>
+                                                    <InputLabel value="Kode" className="mb-2 text-[11px] font-black uppercase tracking-[0.18em] text-gray-400" />
+                                                    <TextInput className="w-full rounded-xl border-[#dbe4f0] px-4 py-3 text-[13px] font-semibold" value={rackEditForm.data.code} onChange={(e) => rackEditForm.setData('code', e.target.value)} />
+                                                </div>
+                                                <div>
+                                                    <InputLabel value="Nama" className="mb-2 text-[11px] font-black uppercase tracking-[0.18em] text-gray-400" />
+                                                    <TextInput className="w-full rounded-xl border-[#dbe4f0] px-4 py-3 text-[13px] font-semibold" value={rackEditForm.data.name} onChange={(e) => rackEditForm.setData('name', e.target.value)} />
+                                                </div>
+                                                <div>
+                                                    <InputLabel value="Tipe Rak" className="mb-2 text-[11px] font-black uppercase tracking-[0.18em] text-gray-400" />
+                                                    <TextInput className="w-full rounded-xl border-[#dbe4f0] px-4 py-3 text-[13px] font-semibold" value={rackEditForm.data.rack_type} onChange={(e) => rackEditForm.setData('rack_type', e.target.value)} />
+                                                </div>
+                                                <div>
+                                                    <InputLabel value="Kapasitas" className="mb-2 text-[11px] font-black uppercase tracking-[0.18em] text-gray-400" />
+                                                    <TextInput type="number" min="1" className="w-full rounded-xl border-[#dbe4f0] px-4 py-3 text-[13px] font-semibold" value={rackEditForm.data.capacity} onChange={(e) => rackEditForm.setData('capacity', e.target.value)} />
+                                                </div>
+                                                <SelectField label="Status" name="status" value={rackEditForm.data.status} onChange={(e) => rackEditForm.setData('status', e.target.value)} options={[
+                                                    { value: 'active', label: 'Aktif' },
+                                                    { value: 'maintenance', label: 'Perawatan' },
+                                                    { value: 'inactive', label: 'Tidak Aktif' },
+                                                ]} />
+                                            </div>
+                                            <TextAreaField label="Catatan" name="notes" value={rackEditForm.data.notes} onChange={(e) => rackEditForm.setData('notes', e.target.value)} rows={3} />
+                                            <FormActions processing={rackEditForm.processing} submitLabel="Perbarui Rak" />
+                                        </form>
+                                        )}
+
+                                        <div className="rounded-[20px] border border-[#edf2f7] bg-[#fbfcfe] p-5">
+                                            <div className="grid gap-4 md:grid-cols-4">
+                                                <div><div className="text-[10px] font-black uppercase tracking-[0.18em] text-gray-400">Zona</div><div className="mt-1 text-[16px] font-black text-[#1a202c]">{selectedRack.summary.zone_code}</div></div>
+                                                <div><div className="text-[10px] font-black uppercase tracking-[0.18em] text-gray-400">Barang</div><div className="mt-1 text-[16px] font-black text-[#1a202c]">{formatNumber(selectedRack.summary.items)}</div></div>
+                                                <div><div className="text-[10px] font-black uppercase tracking-[0.18em] text-gray-400">SKU</div><div className="mt-1 text-[16px] font-black text-[#1a202c]">{formatNumber(selectedRack.summary.skus)}</div></div>
+                                                <div><div className="text-[10px] font-black uppercase tracking-[0.18em] text-gray-400">Keterisian</div><div className="mt-1 text-[16px] font-black text-[#ef4444]">{selectedRack.summary.occupancy}%</div></div>
+                                            </div>
+                                        </div>
+
+                                        <div className="rounded-[20px] border border-[#edf2f7] bg-[#fbfcfe] p-5">
+                                            <div className="mb-5 flex items-center justify-between gap-4">
+                                                <div>
+                                                    <h4 className="text-[15px] font-black text-[#1a202c]">Tabel Produk Rak</h4>
+                                                    <p className="mt-1 text-[12px] font-semibold text-gray-500">Isi rak ditampilkan sebagai tabel lebar penuh. Tambah atau edit via modal.</p>
+                                                </div>
+                                                <div className="flex items-center gap-3">
+                                                    <div className="rounded-full bg-white px-3 py-2 text-[11px] font-black uppercase tracking-[0.14em] text-gray-500">
+                                                        Tersisa {formatNumber(rackCapacityRemaining)}
+                                                    </div>
+                                                    {isManager && (
+                                                        <button
+                                                            type="button"
+                                                            onClick={openRackStockCreateModal}
+                                                            className="rounded-xl bg-[#4338ca] px-4 py-3 text-[11px] font-black uppercase tracking-[0.16em] text-white"
+                                                        >
+                                                            Tambah Produk
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            </div>
+
+                                            {selectedRack.stocks.length ? (
+                                                <div className="overflow-hidden rounded-[18px] border border-[#e5e7eb] bg-white">
+                                                    <div className="grid grid-cols-[1.8fr_0.8fr_0.8fr_0.8fr_1fr_1fr] gap-4 border-b border-[#e5e7eb] bg-[#f8fafc] px-5 py-3 text-[10px] font-black uppercase tracking-[0.18em] text-gray-400">
+                                                        <div>Produk</div>
+                                                        <div>Kuantitas</div>
+                                                        <div>Dipesan</div>
+                                                        <div>Tersedia</div>
+                                                        <div>Batch</div>
+                                                        <div>Aksi</div>
+                                                    </div>
+                                                    {selectedRack.stocks.map((stock) => (
+                                                        <div key={stock.id} className="grid grid-cols-[1.8fr_0.8fr_0.8fr_0.8fr_1fr_1fr] gap-4 border-b border-[#f1f5f9] px-5 py-4 text-[13px] font-semibold text-gray-600 last:border-b-0">
+                                                            <div>
+                                                                <div className="font-black text-[#1a202c]">{stock.product_name}</div>
+                                                                <div className="mt-1 text-[10px] font-black uppercase tracking-[0.16em] text-gray-400">{stock.sku}</div>
+                                                            </div>
+                                                            <div>{formatNumber(stock.quantity)}</div>
+                                                            <div>{formatNumber(stock.reserved_quantity)}</div>
+                                                            <div>{formatNumber(stock.available_quantity)}</div>
+                                                            <div className="truncate">{stock.batch_number || '-'}</div>
+                                                            <div className="flex items-center gap-2">
+                                                                {isManager ? (
+                                                                    <>
+                                                                        <button
+                                                                            type="button"
+                                                                            onClick={() => openRackStockEditModal(stock)}
+                                                                            className="rounded-lg bg-[#eef2ff] px-3 py-2 text-[10px] font-black uppercase tracking-[0.14em] text-[#4338ca]"
+                                                                        >
+                                                                            Ubah
+                                                                        </button>
+                                                                        <button
+                                                                            type="button"
+                                                                            onClick={() => deleteRackStock(stock)}
+                                                                            className="rounded-lg bg-[#fff1f2] px-3 py-2 text-[10px] font-black uppercase tracking-[0.14em] text-[#e11d48]"
+                                                                        >
+                                                                            Hapus
+                                                                        </button>
+                                                                    </>
+                                                                ) : (
+                                                                    <span className="text-[12px] font-bold text-gray-400">Lihat</span>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            ) : (
+                                                <div className="rounded-[20px] border border-dashed border-[#dbe4f0] bg-white p-8 text-center text-[13px] font-semibold text-gray-500">
+                                                    Rack ini belum punya stok. Gunakan tombol `Add Product`.
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="text-[13px] font-semibold text-gray-500">Pilih rak dari daftar zona atau kartu ringkasan di atas.</div>
+                                )}
+                            </SectionCard>
+                        </div>
+                    </SectionCard>
                 ) : null}
 
                 {activeWorkspace === 'activity' ? (
@@ -735,7 +753,7 @@ export default function Warehouse({
             ) : null}
 
             <Modal
-                open={showZoneModal}
+                open={isManager && showZoneModal}
                 title="Buat Zona Baru"
                 subtitle="Tambahkan area baru tanpa memenuhi halaman utama."
                 onClose={() => setShowZoneModal(false)}
@@ -783,7 +801,7 @@ export default function Warehouse({
             </Modal>
 
             <Modal
-                open={showRackModal}
+                open={isManager && showRackModal}
                 title="Buat Rak Baru"
                 subtitle="Tambah rak baru lewat modal supaya workspace tetap bersih."
                 onClose={() => setShowRackModal(false)}
@@ -825,7 +843,7 @@ export default function Warehouse({
             </Modal>
 
             <Modal
-                open={showRackStockModal}
+                open={isManager && showRackStockModal}
                 title={editingRackStock ? 'Ubah Produk Rak' : 'Tambahkan Produk ke Rak'}
                 subtitle={editingRackStock ? 'Ubah detail stok produk di rak ini.' : 'Tambahkan produk baru ke rak aktif lewat modal.'}
                 onClose={() => setShowRackStockModal(false)}

@@ -15,10 +15,8 @@ class DriverApiTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_driver_can_register_from_mobile_app(): void
+    public function test_driver_public_registration_is_disabled(): void
     {
-        Role::create(['name' => 'Driver', 'description' => 'Driver role']);
-
         $response = $this->postJson('/api/driver/register', [
             'name' => 'Driver Mobile',
             'email' => 'driver-mobile@example.com',
@@ -27,18 +25,7 @@ class DriverApiTest extends TestCase
             'license_number' => 'SIM-998877',
         ]);
 
-        $response->assertCreated()
-            ->assertJsonPath('driver.status', 'approved');
-
-        $this->assertDatabaseHas('users', [
-            'email' => 'driver-mobile@example.com',
-            'status' => 'active',
-        ]);
-
-        $this->assertDatabaseHas('drivers', [
-            'license_number' => 'SIM-998877',
-            'status' => 'approved',
-        ]);
+        $response->assertNotFound();
     }
 
     public function test_driver_profile_endpoint_returns_user_and_driver(): void

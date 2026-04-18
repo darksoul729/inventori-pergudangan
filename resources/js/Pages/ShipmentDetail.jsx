@@ -124,9 +124,9 @@ export default function ShipmentDetail({ auth, shipment }) {
                     <div class="card">
                         <div class="label">Foto Serah Terima</div>
                         ${shipment.delivery_photo_url
-                            ? `<img src="${shipment.delivery_photo_url}" alt="Proof of delivery ${shipment.id}" />`
-                            : '<div style="font-size:14px;color:#6b7280;font-weight:600;">Foto serah terima belum tersedia.</div>'
-                        }
+                ? `<img src="${shipment.delivery_photo_url}" alt="Proof of delivery ${shipment.id}" />`
+                : '<div style="font-size:14px;color:#6b7280;font-weight:600;">Foto serah terima belum tersedia.</div>'
+            }
                     </div>
                 </body>
             </html>
@@ -168,7 +168,7 @@ export default function ShipmentDetail({ auth, shipment }) {
                 {/* Header Section */}
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-[24px] border border-gray-100 shadow-sm">
                     <div className="flex items-center space-x-4">
-                        <Link 
+                        <Link
                             href={route('shipments.index')}
                             className="w-10 h-10 flex items-center justify-center rounded-xl bg-gray-50 border border-gray-100 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 hover:border-indigo-100 transition-all"
                         >
@@ -216,7 +216,7 @@ export default function ShipmentDetail({ auth, shipment }) {
                     <div className="order-first xl:order-none xl:col-span-3 space-y-6 xl:space-y-8">
                         <div className="h-[420px] sm:h-[560px] md:h-[720px] xl:h-[880px] max-h-[86vh] bg-white rounded-[40px] border border-gray-100 shadow-xl overflow-hidden relative self-start">
                             <ShipmentMap shipments={[shipment]} />
-                            
+
                             <div className="absolute top-8 left-8 z-[1000] flex flex-col space-y-3">
                                 <div className="bg-white/90 backdrop-blur rounded-2xl p-4 shadow-xl border border-white/20 flex items-center space-x-4">
                                     <div className="relative">
@@ -250,22 +250,22 @@ export default function ShipmentDetail({ auth, shipment }) {
                             </div>
 
                             <div className="absolute bottom-8 right-8 z-[1000] bg-white/95 backdrop-blur p-4 rounded-2xl shadow-xl border border-gray-100 flex flex-col space-y-2">
-                                 <div className="flex items-center space-x-3">
+                                <div className="flex items-center space-x-3">
                                     <div className="w-2 h-2 rounded-full bg-indigo-500"></div>
                                     <span className="text-[10px] font-black text-gray-500 uppercase tracking-wider">Titik Asal</span>
-                                 </div>
-                                 <div className="flex items-center space-x-3">
+                                </div>
+                                <div className="flex items-center space-x-3">
                                     <div className="w-2 h-2 rounded-full bg-blue-500"></div>
                                     <span className="text-[10px] font-black text-gray-500 uppercase tracking-wider">Tujuan Akhir</span>
-                                 </div>
-                                 <div className="flex items-center space-x-3">
+                                </div>
+                                <div className="flex items-center space-x-3">
                                     <div className="w-2 h-2 rounded-full bg-red-500"></div>
                                     <span className="text-[10px] font-black text-gray-500 uppercase tracking-wider">Lokasi Driver</span>
-                                 </div>
-                                 <div className="flex items-center space-x-3">
+                                </div>
+                                <div className="flex items-center space-x-3">
                                     <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
                                     <span className="text-[10px] font-black text-gray-500 uppercase tracking-wider">Rute Aktual</span>
-                                 </div>
+                                </div>
                             </div>
                         </div>
 
@@ -439,7 +439,7 @@ export default function ShipmentDetail({ auth, shipment }) {
 
                         {/* Cargo & Stats */}
                         <div className="bg-indigo-600 rounded-[32px] p-8 text-white space-y-6 shadow-xl shadow-indigo-100">
-                             <div className="flex justify-between items-start">
+                            <div className="flex justify-between items-start">
                                 <div>
                                     <div className="text-[11px] font-black text-indigo-200 uppercase tracking-wider">JENIS KARGO</div>
                                     <div className="text-[24px] font-black mt-1 uppercase">{shipment.load_type}</div>
@@ -453,15 +453,15 @@ export default function ShipmentDetail({ auth, shipment }) {
                                         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0" /></svg>
                                     )}
                                 </div>
-                             </div>
-                             <div className="pt-6 border-t border-white/10">
+                            </div>
+                            <div className="pt-6 border-t border-white/10">
                                 <div className="text-[11px] font-black text-indigo-200 uppercase tracking-wider">ESTIMASI KEDATANGAN</div>
                                 <div className="text-[18px] font-black mt-1">{shipment.estimated_arrival}</div>
                                 <div className="text-[12px] font-bold text-indigo-200/80 mt-2">
                                     {alerts.eta_label ? `Status ETA: ${alerts.eta_label}` : 'ETA belum tersedia'}
                                 </div>
-                             </div>
-                             <div className="pt-6 border-t border-white/10 space-y-3">
+                            </div>
+                            <div className="pt-6 border-t border-white/10 space-y-3">
                                 <div>
                                     <div className="text-[11px] font-black text-indigo-200 uppercase tracking-wider">PROGRESS PERJALANAN</div>
                                     <div className="text-[28px] font-black mt-1">{routeMetrics.progress_percent ?? 0}%</div>
@@ -490,7 +490,7 @@ export default function ShipmentDetail({ auth, shipment }) {
                                         <div className="font-black mt-1">{alerts.off_route_threshold_km !== null ? `${alerts.off_route_threshold_km} km` : '-'}</div>
                                     </div>
                                 </div>
-                             </div>
+                            </div>
                         </div>
                     </div>
                 </div>

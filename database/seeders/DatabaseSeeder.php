@@ -17,8 +17,8 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $roles = [
-            ['name' => 'Admin Gudang', 'description' => 'Input data barang & supplier, mencatat stok masuk/keluar'],
-            ['name' => 'Manajer/Owner', 'description' => 'Meninjau dashboard dan laporan'],
+            ['name' => 'Manager', 'description' => 'Akses penuh operasional gudang, persetujuan, dan monitoring kinerja'],
+            ['name' => 'Staff', 'description' => 'Operasional harian gudang dengan akses terbatas sesuai tugas'],
             ['name' => 'Driver', 'description' => 'Melakukan pengiriman dan update lokasi'],
         ];
 
@@ -26,12 +26,12 @@ class DatabaseSeeder extends Seeder
             \App\Models\Role::firstOrCreate(['name' => $role['name']], $role);
         }
 
-        $adminRole = \App\Models\Role::where('name', 'Admin Gudang')->first();
+        $managerRole = \App\Models\Role::where('name', 'Manager')->first();
 
         User::query()->updateOrCreate([
             'email' => 'admin@example.com',
         ], [
-            'role_id' => $adminRole->id,
+            'role_id' => $managerRole->id,
             'name' => 'Test Admin',
             'email_verified_at' => now(),
             'password' => Hash::make('password'),

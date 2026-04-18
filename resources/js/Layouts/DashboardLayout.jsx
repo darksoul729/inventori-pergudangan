@@ -80,6 +80,8 @@ export default function DashboardLayout({
 }) {
     const { url, props } = usePage();
     const { auth } = props;
+    const userRole = normalizeRoleKey(auth?.user?.role_name || auth?.user?.role);
+    const isManager = userRole === 'manager';
     
     // Notification Read State
     const [readIds, setReadIds] = useState([]);
@@ -202,25 +204,31 @@ export default function DashboardLayout({
                              <UsersIcon className="w-5 h-5" />
                              <span className={isActive('/supplier') ? '' : 'text-gray-500'}>Pemasok</span>
                           </Link>
-                          <Link href="/reports" className={`flex items-center space-x-3.5 px-5 py-3.5 rounded-2xl font-bold text-[13px] transition-colors ${isActive('/reports') ? 'bg-white text-[#3632c0] shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-gray-50' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'}`}>
-                             <ChartIcon className="w-5 h-5" />
-                             <span className={isActive('/reports') ? '' : 'text-gray-500'}>Laporan</span>
-                          </Link>
+                          {isManager && (
+                              <Link href="/reports" className={`flex items-center space-x-3.5 px-5 py-3.5 rounded-2xl font-bold text-[13px] transition-colors ${isActive('/reports') ? 'bg-white text-[#3632c0] shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-gray-50' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'}`}>
+                                 <ChartIcon className="w-5 h-5" />
+                                 <span className={isActive('/reports') ? '' : 'text-gray-500'}>Laporan</span>
+                              </Link>
+                          )}
                           <Link href="/shipments" className={`flex items-center space-x-3.5 px-5 py-3.5 rounded-2xl font-bold text-[13px] transition-colors ${isActive('/shipments') ? 'bg-white text-[#3632c0] shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-gray-50' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'}`}>
                              <TruckIcon className="w-5 h-5" />
                              <span className={isActive('/shipments') ? '' : 'text-gray-500'}>Pengiriman</span>
                           </Link>
-                          <Link href="/drivers" className={`flex items-center space-x-3.5 px-5 py-3.5 rounded-2xl font-bold text-[13px] transition-colors ${isActive('/drivers') ? 'bg-white text-[#3632c0] shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-gray-50' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'}`}>
-                             <UsersIcon className="w-5 h-5" />
-                             <span className={isActive('/drivers') ? '' : 'text-gray-500'}>Manajemen Driver</span>
-                          </Link>
-                          <Link href="/settings" className={`flex items-center space-x-3.5 px-5 py-3.5 rounded-2xl font-bold text-[13px] transition-colors ${isActive('/settings') ? 'bg-white text-[#3632c0] shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-gray-50' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'}`}>
-                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                             </svg>
-                             <span className={isActive('/settings') ? '' : 'text-gray-500'}>Pengaturan</span>
-                          </Link>
+                          {isManager && (
+                              <Link href="/drivers" className={`flex items-center space-x-3.5 px-5 py-3.5 rounded-2xl font-bold text-[13px] transition-colors ${isActive('/drivers') ? 'bg-white text-[#3632c0] shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-gray-50' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'}`}>
+                                 <UsersIcon className="w-5 h-5" />
+                                 <span className={isActive('/drivers') ? '' : 'text-gray-500'}>Manajemen Driver</span>
+                              </Link>
+                          )}
+                          {isManager && (
+                              <Link href="/settings" className={`flex items-center space-x-3.5 px-5 py-3.5 rounded-2xl font-bold text-[13px] transition-colors ${isActive('/settings') ? 'bg-white text-[#3632c0] shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-gray-50' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'}`}>
+                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                 </svg>
+                                 <span className={isActive('/settings') ? '' : 'text-gray-500'}>Pengaturan</span>
+                              </Link>
+                          )}
                      </nav>
                 </div>
                 
@@ -385,12 +393,14 @@ export default function DashboardLayout({
                                                     </div>
                                                 )}
                                             </div>
-                                            <div className="px-7 py-4 bg-[#f8f9fb] text-center">
-                                                <Link href="/reports" className="text-[12px] font-black text-indigo-500 hover:text-indigo-700 uppercase tracking-widest transition-all flex items-center justify-center space-x-2">
-                                                    <span>Monitoring Seluruh Laporan</span>
-                                                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 5l7 7-7 7" /></svg>
-                                                </Link>
-                                            </div>
+                                            {isManager && (
+                                                <div className="px-7 py-4 bg-[#f8f9fb] text-center">
+                                                    <Link href="/reports" className="text-[12px] font-black text-indigo-500 hover:text-indigo-700 uppercase tracking-widest transition-all flex items-center justify-center space-x-2">
+                                                        <span>Monitoring Seluruh Laporan</span>
+                                                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 5l7 7-7 7" /></svg>
+                                                    </Link>
+                                                </div>
+                                            )}
                                         </Dropdown.Content>
                                     </Dropdown>
 
@@ -432,7 +442,7 @@ export default function DashboardLayout({
                                                     {auth?.user?.name || 'Administrator'}
                                                 </span>
                                                 <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
-                                                    {auth?.user?.role || 'Kepala Operasional'}
+                                                    {formatRoleLabel(auth?.user?.role_name || auth?.user?.role)}
                                                 </span>
                                             </div>
                                             <div className="w-[42px] h-[42px] rounded-full bg-[#f0f4f8] flex items-center justify-center flex-shrink-0 border-2 border-white shadow-sm overflow-hidden group-hover:border-indigo-100 transition-all text-[#1a202c] font-black text-xs uppercase">
@@ -500,4 +510,48 @@ function playAlertTone(audioContextRef) {
     } catch (_) {
         // Ignore audio failures silently; visual toast still works.
     }
+}
+
+function formatRoleLabel(role) {
+    const value = normalizeRoleKey(role);
+
+    if (!value) {
+        return 'Pengguna Sistem';
+    }
+
+    if (value === 'manager') {
+        return 'Manager Gudang';
+    }
+
+    if (value === 'staff') {
+        return 'Staff Operasional';
+    }
+
+    if (value === 'driver') {
+        return 'Driver';
+    }
+
+    return role;
+}
+
+function normalizeRoleKey(role) {
+    const value = (role || '').toString().toLowerCase();
+
+    if (!value) {
+        return '';
+    }
+
+    if (value.includes('admin gudang') || value.includes('manager') || value.includes('manajer')) {
+        return 'manager';
+    }
+
+    if (value.includes('staff') || value.includes('staf')) {
+        return 'staff';
+    }
+
+    if (value.includes('driver')) {
+        return 'driver';
+    }
+
+    return value;
 }

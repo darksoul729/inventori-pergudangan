@@ -22,20 +22,12 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
                                     Masuk ke Dashboard
                                 </Link>
                             ) : (
-                                <>
-                                    <Link
-                                        href={route('login')}
-                                        className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-[13px] font-black text-slate-700 transition hover:border-slate-300 hover:bg-slate-50"
-                                    >
-                                        Masuk
-                                    </Link>
-                                    <Link
-                                        href={route('register')}
-                                        className="rounded-xl bg-slate-900 px-4 py-2.5 text-[13px] font-black text-white transition hover:bg-slate-800"
-                                    >
-                                        Daftar
-                                    </Link>
-                                </>
+                                <Link
+                                    href={route('login')}
+                                    className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-[13px] font-black text-slate-700 transition hover:border-slate-300 hover:bg-slate-50"
+                                >
+                                    Masuk
+                                </Link>
                             )}
                         </nav>
                     </header>

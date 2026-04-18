@@ -4,7 +4,6 @@ use App\Http\Controllers\Api\DriverApiController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-Route::post('/driver/register', [DriverApiController::class, 'register']);
 Route::post('/driver/login', [DriverApiController::class, 'login']);
 
 Route::middleware('auth:sanctum')->group(function () {

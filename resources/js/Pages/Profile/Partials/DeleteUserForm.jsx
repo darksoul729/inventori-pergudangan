@@ -47,28 +47,31 @@ export default function DeleteUserForm({ className = '' }) {
 
     return (
         <section className={`space-y-6 ${className}`}>
-            <header>
-                <h2 className="text-lg font-medium text-gray-900">
+            <header className="border-b border-slate-200 pb-6">
+                <h2 className="text-xl font-semibold text-slate-900">
                     Hapus Akun
                 </h2>
 
-                <p className="mt-1 text-sm text-gray-600">
+                <p className="mt-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm leading-relaxed text-red-800">
                     Jika akun dihapus, seluruh data yang terkait akan terhapus
                     permanen. Pastikan Anda sudah menyimpan informasi yang masih dibutuhkan.
                 </p>
             </header>
 
-            <DangerButton onClick={confirmUserDeletion}>
+            <DangerButton
+                onClick={confirmUserDeletion}
+                className="rounded-xl bg-red-700 px-5 py-2.5 text-xs font-semibold tracking-[0.14em] hover:bg-red-600"
+            >
                 Hapus Akun
             </DangerButton>
 
             <Modal show={confirmingUserDeletion} onClose={closeModal}>
                 <form onSubmit={deleteUser} className="p-6">
-                    <h2 className="text-lg font-medium text-gray-900">
+                    <h2 className="text-lg font-semibold text-slate-900">
                         Yakin ingin menghapus akun?
                     </h2>
 
-                    <p className="mt-1 text-sm text-gray-600">
+                    <p className="mt-2 text-sm leading-relaxed text-slate-600">
                         Setelah dihapus, akun dan seluruh datanya tidak dapat
                         dipulihkan kembali. Masukkan kata sandi untuk konfirmasi.
                     </p>
@@ -89,7 +92,7 @@ export default function DeleteUserForm({ className = '' }) {
                             onChange={(e) =>
                                 setData('password', e.target.value)
                             }
-                            className="mt-1 block w-3/4"
+                            className="mt-1 block w-full rounded-xl border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-800 focus:border-red-500 focus:ring-red-500"
                             isFocused
                             placeholder="Kata Sandi"
                         />
@@ -100,12 +103,12 @@ export default function DeleteUserForm({ className = '' }) {
                         />
                     </div>
 
-                    <div className="mt-6 flex justify-end">
-                        <SecondaryButton onClick={closeModal}>
+                    <div className="mt-6 flex justify-end gap-3">
+                        <SecondaryButton onClick={closeModal} className="rounded-xl">
                             Batal
                         </SecondaryButton>
 
-                        <DangerButton className="ms-3" disabled={processing}>
+                        <DangerButton className="rounded-xl" disabled={processing}>
                             Hapus Akun
                         </DangerButton>
                     </div>

@@ -16,9 +16,11 @@
 /public/build
 /public/hot
 /public/storage
+/output/playwright/
 /storage/*.key
 /storage/pail
 /vendor
+/.codex/skills/
 # Android driver app artifacts
 /driver-app/.gradle/
 /driver-app/.gradle-home/

@@ -68,7 +68,7 @@ export default function Show({ purchaseOrder }) {
                     <div className="flex space-x-3">
                         {purchaseOrder.status === 'pending' && (
                             <>
-                                <button 
+                                <button
                                     onClick={() => handleStatusUpdate('rejected')}
                                     disabled={processing}
                                     className="flex items-center space-x-2 px-6 py-3.5 bg-white border border-red-200 text-red-600 font-bold rounded-xl text-[14px] hover:bg-red-50 transition-colors shadow-sm"
@@ -76,7 +76,7 @@ export default function Show({ purchaseOrder }) {
                                     <XIcon className="w-4 h-4" />
                                     <span>Tolak PO</span>
                                 </button>
-                                <button 
+                                <button
                                     onClick={() => handleStatusUpdate('approved')}
                                     disabled={processing}
                                     className="flex items-center space-x-2 px-6 py-3.5 bg-[#4f46e5] shadow-[#4f46e5]/30 shadow-lg hover:bg-indigo-700 text-white font-bold rounded-xl text-[14px] transition-colors"
@@ -87,7 +87,7 @@ export default function Show({ purchaseOrder }) {
                             </>
                         )}
                         {purchaseOrder.status === 'approved' && (
-                            <button 
+                            <button
                                 onClick={() => handleStatusUpdate('received')}
                                 disabled={processing}
                                 className="flex items-center space-x-2 px-6 py-3.5 bg-emerald-600 shadow-emerald-200 shadow-lg hover:bg-emerald-700 text-white font-bold rounded-xl text-[14px] transition-colors"
