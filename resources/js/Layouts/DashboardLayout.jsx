@@ -68,6 +68,7 @@ const HelpCircleIcon = ({ className }) => (
 );
 
 import Dropdown from '@/Components/Dropdown';
+import FloatingBubble from '@/Components/FloatingBubble';
 
 export default function DashboardLayout({
     children,
@@ -470,6 +471,7 @@ export default function DashboardLayout({
                     </div>
                 </main>
             </div>
+            <FloatingBubble />
         </div>
     );
 }
