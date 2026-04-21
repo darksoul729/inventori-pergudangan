@@ -23,24 +23,42 @@ const GridIcon2 = ({ className }) => (
     </svg>
 );
 
-export default function Create({ categories, units, suppliers, warehouses, operationalWarehouse }) {
+export default function Create({ categories, units, suppliers, warehouses, operationalWarehouse, product = null, isEdit = false }) {
+    const fieldCardClass = 'rounded-xl border border-[#d8e0ea] bg-white p-4 shadow-[0_1px_6px_rgba(15,23,42,0.04)]';
+    const inputClass = 'bg-[#f6f8fb] border border-[#d9e2ec] focus:border-[#4f46e5] focus:ring-1 focus:ring-[#4f46e5] block w-full px-5 py-3.5 sm:text-[14px] rounded-lg font-bold text-[#1a202c] placeholder-gray-400';
+    const selectClass = 'bg-[#f6f8fb] border border-[#d9e2ec] focus:border-[#4f46e5] focus:ring-1 focus:ring-[#4f46e5] block w-full px-5 py-3.5 sm:text-[14px] rounded-lg font-bold text-gray-600 appearance-none cursor-pointer';
+    const numberInputClass = 'bg-[#f6f8fb] border border-[#d9e2ec] focus:border-[#4f46e5] focus:ring-1 focus:ring-[#4f46e5] block w-full pl-5 pr-12 py-3.5 sm:text-[14px] rounded-lg font-black text-gray-600';
+
     const addProductForm = useForm({
-        sku: '',
-        name: '',
-        category_id: '',
-        unit_id: '',
-        default_supplier_id: '',
+        sku: product?.sku || '',
+        name: product?.name || '',
+        category_id: product?.category_id ? String(product.category_id) : '',
+        unit_id: product?.unit_id ? String(product.unit_id) : '',
+        default_supplier_id: product?.default_supplier_id ? String(product.default_supplier_id) : '',
         initial_stock: 0,
-        purchase_price: 0,
-        minimum_stock: 10,
+        purchase_price: product?.purchase_price || 0,
+        selling_price: product?.selling_price || 0,
+        minimum_stock: product?.minimum_stock || 10,
         warehouse_id: operationalWarehouse?.id ? String(operationalWarehouse.id) : '',
         rack_id: '',
-        description: '',
+        description: product?.description || '',
         image: null,
     });
 
     const handleAddProduct = (e) => {
         e.preventDefault();
+        if (isEdit && product?.id) {
+            addProductForm
+                .transform((data) => ({
+                    ...data,
+                    _method: 'put',
+                }))
+                .post(route('inventory.update', product.id), {
+                    forceFormData: true,
+                });
+            return;
+        }
+
         addProductForm.post(route('inventory.store'));
     };
 
@@ -48,12 +66,14 @@ export default function Create({ categories, units, suppliers, warehouses, opera
         <DashboardLayout>
             <Head title="Inventaris - Tambah Barang" />
 
-            <div className="flex flex-row gap-6 pb-12 w-full pt-2 min-w-[900px] overflow-x-auto transition-all animate-in fade-in slide-in-from-right-4 duration-300">
-                <div className="flex-1 bg-white rounded-[24px] p-10 shadow-[0_2px_16px_rgba(0,0,0,0.02)] border border-[#edf2f7] max-w-4xl mx-auto">
-                    <form onSubmit={handleAddProduct}>
-                        <div className="mb-10">
-                            <h2 className="text-[26px] font-black text-[#1a202c]">Tambah Item Inventaris Baru</h2>
-                            <p className="text-[14px] font-bold text-gray-500 mt-1">Daftarkan produk baru ke dalam jaringan Aether Logistix.</p>
+            <div className="w-full pb-12 pt-2 transition-all animate-in fade-in slide-in-from-right-4 duration-300">
+                <div className="w-full">
+                    <form onSubmit={handleAddProduct} className="w-full">
+                        <div className="mb-8 border-b border-gray-200 pb-6">
+                            <h2 className="text-[26px] font-black text-[#1a202c]">{isEdit ? 'Edit Item Inventaris' : 'Tambah Item Inventaris Baru'}</h2>
+                            <p className="text-[14px] font-semibold text-gray-500 mt-1 max-w-3xl">
+                                {isEdit ? 'Perbarui data master produk tanpa mengubah stok fisik.' : 'Daftarkan produk baru ke dalam jaringan Aether Logistix.'}
+                            </p>
                         </div>
 
                         {Object.keys(addProductForm.errors).length > 0 && (
@@ -62,14 +82,20 @@ export default function Create({ categories, units, suppliers, warehouses, opera
                             </div>
                         )}
 
-                        <div className="space-y-6">
+                        <div className="space-y-10">
+                            <section className="border-b border-gray-100 pb-10">
+                                <div className="mb-5">
+                                    <h3 className="text-[15px] font-black text-gray-900">Informasi Produk</h3>
+                                    <p className="text-[13px] font-semibold text-gray-500">Identitas utama barang untuk pencarian, pencatatan, dan relasi supplier.</p>
+                                </div>
+
                             {/* Row 1: Name */}
                             <div className="grid grid-cols-1 gap-8">
-                                <div>
+                                <div className={fieldCardClass}>
                                     <label className="block text-[11px] font-black text-gray-500 tracking-[0.1em] uppercase mb-2">NAMA PRODUK</label>
                                     <input 
                                         type="text" 
-                                        className="bg-[#f8f9fb] border border-transparent focus:border-[#4f46e5] focus:ring-1 focus:ring-[#4f46e5] block w-full px-5 py-3.5 sm:text-[14px] rounded-xl font-bold text-[#1a202c] shadow-[inset_0_2px_4px_rgba(0,0,0,0.01)] placeholder-gray-400" 
+                                        className={inputClass} 
                                         placeholder="misal: AX900 Sensor Module"
                                         value={addProductForm.data.name}
                                         onChange={e => addProductForm.setData('name', e.target.value)}
@@ -80,12 +106,12 @@ export default function Create({ categories, units, suppliers, warehouses, opera
                             </div>
 
                             {/* Row 2: SKU & Category */}
-                            <div className="grid grid-cols-2 gap-8">
-                                <div>
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-6">
+                                <div className={fieldCardClass}>
                                     <label className="block text-[11px] font-black text-gray-500 tracking-[0.1em] uppercase mb-2">SKU / BARCODE</label>
                                     <input 
                                         type="text" 
-                                        className="bg-[#f8f9fb] border border-transparent focus:border-[#4f46e5] focus:ring-1 focus:ring-[#4f46e5] block w-full px-5 py-3.5 sm:text-[14px] rounded-xl font-bold text-[#1a202c] shadow-[inset_0_2px_4px_rgba(0,0,0,0.01)] placeholder-gray-400" 
+                                        className={inputClass} 
                                         placeholder="misal: AX-2045 Quantum Unit"
                                         value={addProductForm.data.sku}
                                         onChange={e => addProductForm.setData('sku', e.target.value)}
@@ -93,11 +119,11 @@ export default function Create({ categories, units, suppliers, warehouses, opera
                                     />
                                     {addProductForm.errors.sku && <div className="text-red-500 text-xs mt-1">{addProductForm.errors.sku}</div>}
                                 </div>
-                                <div>
+                                <div className={fieldCardClass}>
                                     <label className="block text-[11px] font-black text-gray-500 tracking-[0.1em] uppercase mb-2">KATEGORI</label>
                                     <div className="relative">
                                         <select 
-                                            className="bg-[#f8f9fb] border border-transparent focus:border-[#4f46e5] focus:ring-1 focus:ring-[#4f46e5] block w-full px-5 py-3.5 sm:text-[14px] rounded-xl font-bold text-gray-400 shadow-[inset_0_2px_4px_rgba(0,0,0,0.01)] appearance-none cursor-pointer"
+                                            className={selectClass}
                                             value={addProductForm.data.category_id}
                                             onChange={e => addProductForm.setData('category_id', e.target.value)}
                                             required
@@ -112,12 +138,12 @@ export default function Create({ categories, units, suppliers, warehouses, opera
                             </div>
 
                             {/* Row 3: Unit & Supplier */}
-                            <div className="grid grid-cols-2 gap-8">
-                                <div>
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-6">
+                                <div className={fieldCardClass}>
                                     <label className="block text-[11px] font-black text-gray-500 tracking-[0.1em] uppercase mb-2">SATUAN UNIT</label>
                                     <div className="relative">
                                         <select 
-                                            className="bg-[#f8f9fb] border border-transparent focus:border-[#4f46e5] focus:ring-1 focus:ring-[#4f46e5] block w-full px-5 py-3.5 sm:text-[14px] rounded-xl font-bold text-gray-600 shadow-[inset_0_2px_4px_rgba(0,0,0,0.01)] appearance-none cursor-pointer"
+                                            className={selectClass}
                                             value={addProductForm.data.unit_id}
                                             onChange={e => addProductForm.setData('unit_id', e.target.value)}
                                             required
@@ -129,11 +155,11 @@ export default function Create({ categories, units, suppliers, warehouses, opera
                                     </div>
                                     {addProductForm.errors.unit_id && <div className="text-red-500 text-xs mt-1">{addProductForm.errors.unit_id}</div>}
                                 </div>
-                                <div>
+                                <div className={fieldCardClass}>
                                     <label className="block text-[11px] font-black text-gray-500 tracking-[0.1em] uppercase mb-2">PEMASOK</label>
                                     <div className="relative">
                                         <select 
-                                            className="bg-[#f8f9fb] border border-transparent focus:border-[#4f46e5] focus:ring-1 focus:ring-[#4f46e5] block w-full px-5 py-3.5 sm:text-[14px] rounded-xl font-bold text-gray-600 shadow-[inset_0_2px_4px_rgba(0,0,0,0.01)] appearance-none cursor-pointer"
+                                            className={selectClass}
                                             value={addProductForm.data.default_supplier_id}
                                             onChange={e => addProductForm.setData('default_supplier_id', e.target.value)}
                                         >
@@ -144,31 +170,40 @@ export default function Create({ categories, units, suppliers, warehouses, opera
                                     </div>
                                 </div>
                             </div>
+                            </section>
 
                             {/* Row 4: Stocks & Limits */}
-                            <div className="grid grid-cols-3 gap-6">
-                                <div>
-                                    <label className="block text-[11px] font-black text-gray-500 tracking-[0.1em] uppercase mb-2">STOK AWAL</label>
-                                    <div className="relative">
-                                        <input 
-                                            type="number" 
-                                            className="bg-[#f8f9fb] border border-transparent focus:border-[#4f46e5] focus:ring-1 focus:ring-[#4f46e5] block w-full pl-5 pr-12 py-3.5 sm:text-[14px] rounded-xl font-black text-gray-500 shadow-[inset_0_2px_4px_rgba(0,0,0,0.01)]" 
-                                            value={addProductForm.data.initial_stock}
-                                            onChange={e => addProductForm.setData('initial_stock', e.target.value)}
-                                        />
-                                        <div className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
-                                            <RegistryIcon2 className="w-5 h-5" />
-                                        </div>
-                                    </div>
-                                    {addProductForm.errors.initial_stock && <div className="text-red-500 text-xs mt-1">{addProductForm.errors.initial_stock}</div>}
+                            <section className="border-b border-gray-100 pb-10">
+                                <div className="mb-5">
+                                    <h3 className="text-[15px] font-black text-gray-900">Harga dan Batas Stok</h3>
+                                    <p className="text-[13px] font-semibold text-gray-500">Data komersial dan batas minimum untuk monitoring inventaris.</p>
                                 </div>
-                                <div>
+
+                            <div className={`grid grid-cols-1 ${isEdit ? 'lg:grid-cols-2' : 'lg:grid-cols-3'} gap-6`}>
+                                {!isEdit && (
+                                    <div className={fieldCardClass}>
+                                        <label className="block text-[11px] font-black text-gray-500 tracking-[0.1em] uppercase mb-2">STOK AWAL</label>
+                                        <div className="relative">
+                                            <input
+                                                type="number"
+                                                className={numberInputClass}
+                                                value={addProductForm.data.initial_stock}
+                                                onChange={e => addProductForm.setData('initial_stock', e.target.value)}
+                                            />
+                                            <div className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
+                                                <RegistryIcon2 className="w-5 h-5" />
+                                            </div>
+                                        </div>
+                                        {addProductForm.errors.initial_stock && <div className="text-red-500 text-xs mt-1">{addProductForm.errors.initial_stock}</div>}
+                                    </div>
+                                )}
+                                <div className={fieldCardClass}>
                                     <label className="block text-[11px] font-black text-gray-500 tracking-[0.1em] uppercase mb-2">HARGA SATUAN</label>
                                     <div className="relative">
                                         <input 
                                             type="number" 
                                             step="0.01"
-                                            className="bg-[#f8f9fb] border border-transparent focus:border-[#4f46e5] focus:ring-1 focus:ring-[#4f46e5] block w-full pl-5 pr-12 py-3.5 sm:text-[14px] rounded-xl font-black text-gray-500 shadow-[inset_0_2px_4px_rgba(0,0,0,0.01)]" 
+                                            className={numberInputClass} 
                                             value={addProductForm.data.purchase_price}
                                             onChange={e => addProductForm.setData('purchase_price', e.target.value)}
                                         />
@@ -178,12 +213,12 @@ export default function Create({ categories, units, suppliers, warehouses, opera
                                     </div>
                                     {addProductForm.errors.purchase_price && <div className="text-red-500 text-xs mt-1">{addProductForm.errors.purchase_price}</div>}
                                 </div>
-                                <div>
+                                <div className={fieldCardClass}>
                                     <label className="block text-[11px] font-black text-gray-500 tracking-[0.1em] uppercase mb-2">STOK MINIMUM</label>
                                     <div className="relative">
                                         <input 
                                             type="number" 
-                                            className="bg-[#f8f9fb] border border-transparent focus:border-[#4f46e5] focus:ring-1 focus:ring-[#4f46e5] block w-full pl-5 pr-12 py-3.5 sm:text-[14px] rounded-xl font-black text-gray-500 shadow-[inset_0_2px_4px_rgba(0,0,0,0.01)]" 
+                                            className={numberInputClass} 
                                             value={addProductForm.data.minimum_stock}
                                             onChange={e => addProductForm.setData('minimum_stock', e.target.value)}
                                         />
@@ -193,43 +228,59 @@ export default function Create({ categories, units, suppliers, warehouses, opera
                                     </div>
                                 </div>
                             </div>
+                            </section>
 
                             {/* Row 5: Warehouse & Rack */}
-                            <div className="grid grid-cols-2 gap-8">
-                                <div>
-                                    <label className="block text-[11px] font-black text-gray-500 tracking-[0.1em] uppercase mb-2">LOKASI GUDANG</label>
-                                    <div className="bg-[#f8f9fb] border border-transparent block w-full pl-5 pr-12 py-3.5 sm:text-[14px] rounded-xl font-bold text-gray-600 shadow-[inset_0_2px_4px_rgba(0,0,0,0.01)]">
-                                        {operationalWarehouse?.name || 'Warehouse Utama'}
+                            {!isEdit && (
+                                <section className="border-b border-gray-100 pb-10">
+                                    <div className="mb-5">
+                                        <h3 className="text-[15px] font-black text-gray-900">Penempatan Awal</h3>
+                                        <p className="text-[13px] font-semibold text-gray-500">Lokasi awal barang saat produk baru didaftarkan.</p>
                                     </div>
-                                    {addProductForm.errors.warehouse_id && <div className="text-red-500 text-xs mt-1">{addProductForm.errors.warehouse_id}</div>}
-                                </div>
-                                <div>
-                                    <label className="block text-[11px] font-black text-gray-500 tracking-[0.1em] uppercase mb-2">LOKASI RAK</label>
-                                    <div className="relative">
-                                        <select 
-                                            className="bg-[#f8f9fb] border border-transparent focus:border-[#4f46e5] focus:ring-1 focus:ring-[#4f46e5] block w-full pl-5 pr-12 py-3.5 sm:text-[14px] rounded-xl font-bold text-gray-600 shadow-[inset_0_2px_4px_rgba(0,0,0,0.01)] appearance-none cursor-pointer"
-                                            value={addProductForm.data.rack_id}
-                                            onChange={e => addProductForm.setData('rack_id', e.target.value)}
-                                            required={addProductForm.data.initial_stock > 0}
-                                            disabled={!addProductForm.data.warehouse_id}
-                                        >
-                                            <option value="">Pilih Rak</option>
-                                            {warehouses.find(w => w.id == addProductForm.data.warehouse_id)?.zones.flatMap(z => z.racks).map(r => (
-                                                <option key={r.id} value={r.id}>{r.code} - {r.name}</option>
-                                            ))}
-                                        </select>
-                                        <GridIcon2 className="w-5 h-5 absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+
+                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                                    <div className={fieldCardClass}>
+                                        <label className="block text-[11px] font-black text-gray-500 tracking-[0.1em] uppercase mb-2">LOKASI GUDANG</label>
+                                        <div className="bg-[#f6f8fb] border border-[#d9e2ec] block w-full pl-5 pr-12 py-3.5 sm:text-[14px] rounded-lg font-bold text-gray-600">
+                                            {operationalWarehouse?.name || 'Warehouse Utama'}
+                                        </div>
+                                        {addProductForm.errors.warehouse_id && <div className="text-red-500 text-xs mt-1">{addProductForm.errors.warehouse_id}</div>}
                                     </div>
-                                    {addProductForm.errors.rack_id && <div className="text-red-500 text-xs mt-1">{addProductForm.errors.rack_id}</div>}
+                                    <div className={fieldCardClass}>
+                                        <label className="block text-[11px] font-black text-gray-500 tracking-[0.1em] uppercase mb-2">LOKASI RAK</label>
+                                        <div className="relative">
+                                            <select
+                                                className="bg-[#f6f8fb] border border-[#d9e2ec] focus:border-[#4f46e5] focus:ring-1 focus:ring-[#4f46e5] block w-full pl-5 pr-12 py-3.5 sm:text-[14px] rounded-lg font-bold text-gray-600 appearance-none cursor-pointer"
+                                                value={addProductForm.data.rack_id}
+                                                onChange={e => addProductForm.setData('rack_id', e.target.value)}
+                                                required={addProductForm.data.initial_stock > 0}
+                                                disabled={!addProductForm.data.warehouse_id}
+                                            >
+                                                <option value="">Pilih Rak</option>
+                                                {warehouses.find(w => w.id == addProductForm.data.warehouse_id)?.zones.flatMap(z => z.racks).map(r => (
+                                                    <option key={r.id} value={r.id}>{r.code} - {r.name}</option>
+                                                ))}
+                                            </select>
+                                            <GridIcon2 className="w-5 h-5 absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                                        </div>
+                                        {addProductForm.errors.rack_id && <div className="text-red-500 text-xs mt-1">{addProductForm.errors.rack_id}</div>}
+                                    </div>
                                 </div>
-                            </div>
+                                </section>
+                            )}
 
                             {/* Row 6: Description */}
-                            <div>
+                            <section className="border-b border-gray-100 pb-10">
+                                <div className="mb-5">
+                                    <h3 className="text-[15px] font-black text-gray-900">Catatan dan Gambar</h3>
+                                    <p className="text-[13px] font-semibold text-gray-500">Tambahan informasi visual dan deskripsi teknis produk.</p>
+                                </div>
+
+                            <div className={fieldCardClass}>
                                 <label className="block text-[11px] font-black text-gray-500 tracking-[0.1em] uppercase mb-2">DESKRIPSI ITEM (OPSIONAL)</label>
                                 <textarea 
                                     rows="4"
-                                    className="bg-[#f8f9fb] border border-transparent focus:border-[#4f46e5] focus:ring-1 focus:ring-[#4f46e5] block w-full px-5 py-4 sm:text-[14px] rounded-xl font-bold text-gray-600 placeholder-gray-400 resize-none shadow-[inset_0_2px_4px_rgba(0,0,0,0.01)]" 
+                                    className="bg-[#f6f8fb] border border-[#d9e2ec] focus:border-[#4f46e5] focus:ring-1 focus:ring-[#4f46e5] block w-full px-5 py-4 sm:text-[14px] rounded-lg font-bold text-gray-600 placeholder-gray-400 resize-none" 
                                     placeholder="Jelaskan spesifikasi, instruksi penanganan, atau kebutuhan penyimpanan..."
                                     value={addProductForm.data.description}
                                     onChange={e => addProductForm.setData('description', e.target.value)}
@@ -237,11 +288,11 @@ export default function Create({ categories, units, suppliers, warehouses, opera
                             </div>
 
                             {/* Row 7: Image */}
-                            <div>
+                            <div className={`${fieldCardClass} mt-6`}>
                                 <label className="block text-[11px] font-black text-gray-500 tracking-[0.1em] uppercase mb-2">GAMBAR PRODUK</label>
                                 <div 
                                     onClick={() => document.getElementById('product-image-input').click()}
-                                    className="border-[2px] border-dashed border-gray-200 rounded-2xl bg-white hover:bg-gray-50 transition-colors p-10 flex flex-col items-center justify-center cursor-pointer relative overflow-hidden"
+                                    className="border-[2px] border-dashed border-[#cbd5e1] rounded-lg bg-[#f6f8fb] hover:bg-gray-50 transition-colors p-8 flex flex-col items-center justify-center cursor-pointer relative overflow-hidden"
                                 >
                                     <input 
                                         id="product-image-input"
@@ -257,6 +308,13 @@ export default function Create({ categories, units, suppliers, warehouses, opera
                                             </div>
                                             <span className="text-[12px] font-bold text-indigo-600">{addProductForm.data.image.name}</span>
                                         </div>
+                                    ) : product?.image_url ? (
+                                        <div className="flex flex-col items-center">
+                                            <div className="w-20 h-20 rounded-xl overflow-hidden mb-2 shadow-md">
+                                                <img src={product.image_url} className="w-full h-full object-cover" />
+                                            </div>
+                                            <span className="text-[12px] font-bold text-gray-500">Klik untuk mengganti gambar produk</span>
+                                        </div>
                                     ) : (
                                         <>
                                             <div className="w-[46px] h-[46px] rounded-full bg-indigo-50 flex items-center justify-center text-indigo-500 mb-3">
@@ -268,22 +326,23 @@ export default function Create({ categories, units, suppliers, warehouses, opera
                                 </div>
                                 {addProductForm.errors.image && <div className="text-red-500 text-xs mt-1">{addProductForm.errors.image}</div>}
                             </div>
+                            </section>
                         </div>
 
                         {/* Footer buttons */}
-                        <div className="mt-10 pt-6 flex justify-end gap-4 border-t border-gray-100">
+                        <div className="mt-8 flex flex-col-reverse sm:flex-row justify-end gap-3">
                             <Link 
-                                href={route('inventory')}
-                                className="px-8 py-3 bg-white border border-[#edf2f7] hover:bg-gray-50 text-gray-500 font-bold rounded-xl text-[14px] transition-colors"
+                                href={isEdit && product?.id ? route('inventory.show', product.id) : route('inventory')}
+                                className="px-8 py-3 bg-white border border-[#d9e2ec] hover:bg-gray-50 text-gray-600 font-bold rounded-lg text-[14px] transition-colors text-center"
                             >
                                 Batal
                             </Link>
                             <button 
                                 type="submit"
                                 disabled={addProductForm.processing}
-                                className="px-8 py-3 bg-[#4f46e5] shadow-[0_4px_14px_rgba(79,70,229,0.3)] hover:bg-indigo-700 text-white font-bold rounded-xl text-[14px] transition-colors flex items-center space-x-2"
+                                className="px-8 py-3 bg-[#4f46e5] shadow-[0_4px_14px_rgba(79,70,229,0.22)] hover:bg-indigo-700 text-white font-bold rounded-lg text-[14px] transition-colors flex items-center justify-center space-x-2"
                             >
-                                {addProductForm.processing ? 'Menyimpan...' : 'Tambah Item'}
+                                {addProductForm.processing ? 'Menyimpan...' : (isEdit ? 'Simpan Perubahan' : 'Tambah Item')}
                             </button>
                         </div>
                     </form>

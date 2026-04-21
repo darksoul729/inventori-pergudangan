@@ -44,7 +44,7 @@ function FocusMap({ focusedDriverId, drivers }) {
     return null;
 }
 
-export default function LiveMap({ onDriversLoad = () => {}, focusedDriverId = null }) {
+export default function LiveMap({ onDriversLoad = () => {}, focusedDriverId = null, onMarkerClick = () => {} }) {
     const [drivers, setDrivers] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -99,12 +99,24 @@ export default function LiveMap({ onDriversLoad = () => {}, focusedDriverId = nu
                         <Marker 
                             key={driver.id} 
                             position={[parseFloat(driver.latitude), parseFloat(driver.longitude)]}
+                            eventHandlers={{
+                                click: () => onMarkerClick(driver.id)
+                            }}
                             icon={L.divIcon({
                                 className: 'custom-div-icon',
-                                html: `<div style="background-color: ${driver.last_location_mock ? '#ef4444' : '#3632c0'}; width: 32px; height: 32px; border-radius: 12px; border: 3px solid white; box-shadow: 0 4px 12px rgba(${driver.last_location_mock ? '239, 68, 68' : '54, 50, 192'}, 0.3); display: flex; items-center; justify-content: center; color: white; font-weight: 900; font-size: 14px;">${driver.user.name.charAt(0)}</div>`,
-                                iconSize: [32, 32],
-                                iconAnchor: [16, 32],
-                                popupAnchor: [0, -32]
+                                html: `
+                                    <div class="truck-marker-container" style="--marker-color: ${driver.last_location_mock ? '#ef4444' : '#3632c0'};">
+                                        <div class="truck-pulse"></div>
+                                        <div class="truck-icon-bg">
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                                                <path d="M22.21 10.74c-.04-.08-.08-.16-.13-.23l-3-4C18.84 6.18 18.44 6 18 6H9c-1.1 0-2 .9-2 2v2H2c-1.1 0-2 .9-2 2v5c0 1.1.9 2 2 2h2c0 1.66 1.34 3 3 3s3-1.34 3-3h4c0 1.66 1.34 3 3 3s3-1.34 3-3h1c1.1 0 2-.9 2-2v-5.26c0-.28-.06-.56-.16-.8c-.06-.15-.14-.29-.24-.42l-.39-.58zM7 19c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm11 0c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm1-9.5V12h-3V7.5L18 9.5z" />
+                                            </svg>
+                                        </div>
+                                    </div>
+                                `,
+                                iconSize: [40, 40],
+                                iconAnchor: [20, 20],
+                                popupAnchor: [0, -20]
                             })}
                         >
                             <Popup className="custom-map-popup">
@@ -112,13 +124,32 @@ export default function LiveMap({ onDriversLoad = () => {}, focusedDriverId = nu
                                     <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Driver Aktif</div>
                                     <div className="font-black text-[#1a202c] text-[15px] leading-tight mb-2">{driver.user.name}</div>
                                     
+                                    {driver.active_shipment_id ? (
+                                        <div className="mb-3 p-2 bg-emerald-50 rounded-xl border border-emerald-100/50">
+                                            <div className="text-[9px] font-black text-emerald-600 uppercase tracking-tighter mb-1">Tugas Saat Ini</div>
+                                            <div className="font-black text-emerald-900 text-[13px] tracking-tight">{driver.active_shipment_id}</div>
+                                            <div className="text-[9px] font-bold text-emerald-600/70 mt-0.5">
+                                                {driver.active_shipment_stage === 'ready_for_pickup' && 'Siap Diambil'}
+                                                {driver.active_shipment_stage === 'picked_up' && 'Sudah Diambil'}
+                                                {driver.active_shipment_stage === 'in_transit' && 'Dalam Perjalanan'}
+                                                {driver.active_shipment_stage === 'arrived_at_destination' && 'Sampai Tujuan'}
+                                                {driver.active_shipment_stage === 'delivered' && 'Menunggu Verifikasi'}
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className="mb-3 p-2 bg-gray-50 rounded-xl border border-gray-100">
+                                            <div className="text-[9px] font-black text-gray-400 uppercase tracking-tighter">Status</div>
+                                            <div className="font-black text-gray-400 text-[11px]">Istirahat / Standby</div>
+                                        </div>
+                                    )}
+
                                     <div className="space-y-2">
-                                        <div className="flex items-center space-x-2 bg-emerald-50 px-2 py-1 rounded-lg inline-block">
+                                        <div className="flex items-center space-x-2 px-1 inline-block">
                                             <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></div>
-                                            <span className="text-[10px] font-black text-emerald-600 uppercase">Terhubung</span>
+                                            <span className="text-[9px] font-black text-gray-500 uppercase">Live Tracking</span>
                                         </div>
 
-                                        {driver.last_location_mock && (
+                                        {Boolean(driver.last_location_mock) && (
                                             <div className="flex items-center space-x-2 bg-red-50 px-2 py-1 rounded-lg border border-red-100">
                                                 <div className="w-1.5 h-1.5 bg-red-500 rounded-full"></div>
                                                 <span className="text-[10px] font-black text-red-600 uppercase">Fake GPS Terdeteksi</span>
@@ -126,7 +157,7 @@ export default function LiveMap({ onDriversLoad = () => {}, focusedDriverId = nu
                                         )}
                                     </div>
 
-                                    <div className="mt-3 pt-2 border-t border-gray-100 flex justify-between items-center text-[10px] text-gray-400 font-bold">
+                                    <div className="mt-3 pt-2 border-t border-gray-100 flex justify-between items-center text-[9px] text-gray-400 font-bold">
                                         <span>Update Terakhir</span>
                                         <span>{new Date(driver.updated_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                                     </div>

@@ -60,9 +60,8 @@ export default function KPIStats() {
                     </div>
 
                     <div
-                        className={`text-xs font-bold ${stat.trendColor} ${
-                            stat.badge ? 'bg-blue-50 text-blue-600 inline-block px-2 py-0.5 rounded text-xs' : ''
-                        }`}
+                        className={`text-xs font-bold ${stat.trendColor} ${stat.badge ? 'bg-blue-50 text-blue-600 inline-block px-2 py-0.5 rounded text-xs' : ''
+                            }`}
                     >
                         {stat.trend}
                     </div>

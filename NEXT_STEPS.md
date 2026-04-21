@@ -7,6 +7,7 @@ Catatan ini dibuat sebagai pegangan untuk melanjutkan tahap berikutnya setelah p
 - Sistem web sudah login-only. Public register web dinonaktifkan.
 - Public driver register API dinonaktifkan.
 - Akun staff dibuat oleh manager dari Settings.
+- Seeder lokal juga menyediakan akun staff demo.
 - Akun driver dibuat oleh manager dari halaman Drivers.
 - Role middleware sudah membatasi akses manager, staff, dan driver.
 - Staff dapat membuka halaman operasional read-only yang diizinkan.
@@ -34,6 +35,16 @@ Hasil terakhir:
 npm audit: found 0 vulnerabilities
 npm run audit:roles: passed true
 php artisan test: 38 passed, 109 assertions
+```
+
+## Akun Demo Lokal
+
+Gunakan akun ini untuk pengujian lokal setelah seeding:
+
+```text
+Manager: admin@example.com / password
+Staff: staff@example.com / password
+Driver: driver@example.com / password
 ```
 
 ## Artefak Audit

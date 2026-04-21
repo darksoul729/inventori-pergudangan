@@ -1,6 +1,7 @@
 package com.aether.driver.ui.screens
 
 import android.Manifest
+import android.os.Build
 import android.content.ActivityNotFoundException
 import android.content.ContentResolver
 import android.content.Intent
@@ -19,6 +20,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.*
@@ -56,6 +58,7 @@ import com.aether.driver.data.model.StatusResponse
 import com.aether.driver.ui.theme.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import com.aether.driver.service.LocationService
 import org.json.JSONObject
 import retrofit2.Response
 import java.io.ByteArrayOutputStream
@@ -85,33 +88,7 @@ fun ShipmentListScreen(
     var isClaiming           by remember { mutableStateOf(false) }
     var selectedShipment     by remember { mutableStateOf<Shipment?>(null) }
 
-    selectedShipment?.let { shipment ->
-        ShipmentDetailPage(
-            shipment = shipment,
-            onBack = { selectedShipment = null },
-        )
-        return
-    }
-
-    // Location permission
-    var locationGranted by remember {
-        mutableStateOf(
-            ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
-        )
-    }
-    val permissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
-        locationGranted = it
-    }
-
-    // Debug GPS state
-    val driverName     by sessionManager.driverName.collectAsState(initial = null)
-    val driverEmail    by sessionManager.driverEmail.collectAsState(initial = null)
-    val driverLicense  by sessionManager.driverLicenseNumber.collectAsState(initial = null)
-    val driverStatus   by sessionManager.driverStatus.collectAsState(initial = null)
-    val lastGpsSentAt  by sessionManager.lastLocationSentAt.collectAsState(initial = null)
-    val lastGpsPayload by sessionManager.lastLocationPayload.collectAsState(initial = null)
-    val lastGpsError   by sessionManager.lastLocationError.collectAsState(initial = null)
-
+    // --- Helper Functions (Local to Composable) ---
     suspend fun loadShipments() {
         try {
             val api = RetrofitClient.getApiService(sessionManager)
@@ -148,16 +125,7 @@ fun ShipmentListScreen(
         }
     }
 
-    LaunchedEffect(Unit) {
-        syncDriverProfile()
-        loadShipments()
-        while (true) {
-            delay(20_000)
-            loadShipments()
-        }
-    }
-
-    suspend fun advanceStage(shipment: Shipment, nextStage: String, note: String? = null) {
+    suspend fun advanceStage(shipment: Shipment, nextStage: String, note: String? = null, transactionCode: String? = null) {
         isAdvancing = true
         errorMessage = null
         successMessage = null
@@ -166,13 +134,14 @@ fun ShipmentListScreen(
             val body = buildMap<String, String> {
                 put("tracking_stage", nextStage)
                 if (!note.isNullOrBlank()) put("note", note)
+                if (!transactionCode.isNullOrBlank()) put("transaction_code", transactionCode)
             }
             val resp: Response<StatusResponse> = api.updateShipmentStatus(shipment.id, body)
             if (resp.isSuccessful) {
                 successMessage = "Status diperbarui: ${trackingStageLabel(nextStage)}"
                 loadShipments()
             } else {
-                errorMessage = "Gagal memperbarui status."
+                errorMessage = extractApiError(resp, "Gagal memperbarui status.")
             }
         } catch (_: Exception) {
             errorMessage = "Tidak dapat memperbarui status pengiriman. Periksa koneksi dan URL server."
@@ -229,14 +198,66 @@ fun ShipmentListScreen(
                 successMessage = resp.body()?.message ?: "Shipment berhasil diklaim."
                 loadShipments()
             } else {
-                errorMessage = extractApiError(resp, "Gagal klaim shipment.")
+                errorMessage = "Gagal klaim: ${extractApiError(resp, "Kode salah atau expired")}"
             }
         } catch (_: Exception) {
-            errorMessage = "Tidak dapat klaim shipment. Periksa koneksi dan URL server."
+            errorMessage = "Gagal menghubungi server."
         } finally {
             isClaiming = false
         }
     }
+
+    LaunchedEffect(Unit) {
+        syncDriverProfile()
+        loadShipments()
+        while (true) {
+            delay(20_000)
+            loadShipments()
+        }
+    }
+
+    selectedShipment?.let { shipment ->
+        ShipmentDetailPage(
+            shipment = shipment,
+            onBack = { selectedShipment = null },
+        )
+        return
+    }
+
+    // No verification dialog needed
+
+    // Location permission
+    var locationGranted by remember {
+        mutableStateOf(
+            ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+        )
+    }
+    val permissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
+        locationGranted = it
+    }
+
+    // --- Automated Location Service Lifecycle ---
+    LaunchedEffect(shipments.size, locationGranted) {
+        if (shipments.isNotEmpty() && locationGranted) {
+            val intent = Intent(context, LocationService::class.java)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                context.startForegroundService(intent)
+            } else {
+                context.startService(intent)
+            }
+        } else {
+            context.stopService(Intent(context, LocationService::class.java))
+        }
+    }
+
+    // Debug GPS state
+    val driverName     by sessionManager.driverName.collectAsState(initial = null)
+    val driverEmail    by sessionManager.driverEmail.collectAsState(initial = null)
+    val driverLicense  by sessionManager.driverLicenseNumber.collectAsState(initial = null)
+    val driverStatus   by sessionManager.driverStatus.collectAsState(initial = null)
+    val lastGpsSentAt  by sessionManager.lastLocationSentAt.collectAsState(initial = null)
+    val lastGpsPayload by sessionManager.lastLocationPayload.collectAsState(initial = null)
+    val lastGpsError   by sessionManager.lastLocationError.collectAsState(initial = null)
 
     Scaffold(
         topBar = {
@@ -312,13 +333,56 @@ fun ShipmentListScreen(
                     item { AlertBanner(message = msg, type = AlertType.Error) }
                 }
 
-                item {
-                    ClaimShipmentCard(
-                        claimCode = claimCode,
-                        onClaimCodeChange = { claimCode = it },
-                        onClaimClick = { scope.launch { claimShipmentByCode() } },
-                        isClaiming = isClaiming,
-                    )
+                if (shipments.isEmpty()) {
+                    item {
+                        ClaimShipmentCard(
+                            claimCode = claimCode,
+                            onClaimCodeChange = { claimCode = it },
+                            onClaimClick = { scope.launch { claimShipmentByCode() } },
+                            isClaiming = isClaiming,
+                        )
+                    }
+                } else {
+                    item {
+                        Surface(
+                            modifier = Modifier.fillMaxWidth(),
+                            color = Primary.copy(alpha = 0.05f),
+                            shape = RoundedCornerShape(16.dp),
+                            border = BorderStroke(1.dp, Primary.copy(alpha = 0.1f))
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(16.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(40.dp)
+                                        .background(Primary.copy(alpha = 0.1f), CircleShape),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        Icons.Rounded.Info,
+                                        contentDescription = null,
+                                        tint = Primary,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                }
+                                Spacer(Modifier.width(16.dp))
+                                Column {
+                                    Text(
+                                        "Pengiriman Aktif",
+                                        style = MaterialTheme.typography.titleSmall,
+                                        color = TextPrimary
+                                    )
+                                    Text(
+                                        "Selesaikan pengiriman saat ini untuk mengambil yang baru.",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = TextMuted
+                                    )
+                                }
+                            }
+                        }
+                    }
                 }
 
                 if (isLoading) {
@@ -871,6 +935,8 @@ private fun ProofOfDeliveryDialog(
     )
 }
 
+// VerificationCodeDialog removed
+2
 @Composable
 private fun ShipmentDetailPage(
     shipment: Shipment,

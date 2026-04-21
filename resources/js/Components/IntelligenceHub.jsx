@@ -37,9 +37,8 @@ export default function IntelligenceHub() {
                             {[...Array(8)].map((_, i) => (
                                 <div
                                     key={i}
-                                    className={`flex-1 h-3 rounded-sm ${
-                                        i < 6 ? 'bg-blue-300' : 'bg-blue-900/30'
-                                    }`}
+                                    className={`flex-1 h-3 rounded-sm ${i < 6 ? 'bg-blue-300' : 'bg-blue-900/30'
+                                        }`}
                                 ></div>
                             ))}
                         </div>

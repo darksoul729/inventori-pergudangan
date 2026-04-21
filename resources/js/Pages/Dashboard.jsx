@@ -1,5 +1,5 @@
 import DashboardLayout from '@/Layouts/DashboardLayout';
-import { Head } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
 import React, { useState } from 'react';
 
 // Icons
@@ -11,7 +11,7 @@ const ArrowRightIcon = ({ className }) => (
 
 const BoxIcon = ({ className }) => (
     <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
     </svg>
 );
 
@@ -33,8 +33,13 @@ const AlertCircleIcon = ({ className }) => (
     </svg>
 );
 
+const DocumentIcon = ({ className }) => (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6M7 3h5.5L19 9.5V21H7a2 2 0 01-2-2V5a2 2 0 012-2z" />
+    </svg>
+);
 
-export default function Dashboard({ stats, trends, racks }) {
+export default function Dashboard({ stats, trends, racks, wmsKpis = {} }) {
     const [selectedRack, setSelectedRack] = useState(null);
     const [sortBy, setSortBy] = useState('zone'); // 'zone', 'capacity', 'newest'
     const [hoveredTrendIndex, setHoveredTrendIndex] = useState(null);
@@ -49,7 +54,7 @@ export default function Dashboard({ stats, trends, racks }) {
     // Sorting & Grouping Logic
     const getProcessedRacks = () => {
         let processed = [...racks];
-        
+
         if (sortBy === 'capacity') {
             return { all: processed.sort((a, b) => b.fill_percent - a.fill_percent) };
         } else if (sortBy === 'newest') {
@@ -58,7 +63,7 @@ export default function Dashboard({ stats, trends, racks }) {
             // Group by Zone
             const grouped = {};
             processed.forEach(rack => {
-            const zone = rack.zone_name || 'Belum Ditentukan';
+                const zone = rack.zone_name || 'Belum Ditentukan';
                 if (!grouped[zone]) grouped[zone] = [];
                 grouped[zone].push(rack);
             });
@@ -93,7 +98,7 @@ export default function Dashboard({ stats, trends, racks }) {
 
     // Calculate SVG paths for trends
     const maxVal = Math.max(...trends.flatMap(t => [t.inbound, t.outbound]), 10);
-    
+
     const generatePath = (key, isArea = false) => {
         if (trends.length < 2) return "";
         const points = trends.map((t, i) => ({
@@ -102,7 +107,7 @@ export default function Dashboard({ stats, trends, racks }) {
         }));
 
         let path = `M ${points[0].x},${points[0].y}`;
-        
+
         // Use cubic bezier curves for smoothness
         for (let i = 0; i < points.length - 1; i++) {
             const p0 = points[i];
@@ -130,11 +135,99 @@ export default function Dashboard({ stats, trends, racks }) {
                     <h1 className="text-[24px] font-black text-[#1a202c] tracking-tight leading-tight">Dashboard Gudang</h1>
                     <p className="text-[13px] font-semibold text-gray-500 mt-1">Ringkasan kondisi stok, rack, dan pergerakan barang di gudang operasional.</p>
                 </div>
-                <div className="inline-flex items-center gap-2 rounded-xl border border-indigo-100 bg-indigo-50/70 px-3 py-1.5">
-                    <span className="inline-flex h-2 w-2 rounded-full bg-indigo-500"></span>
-                    <span className="text-[10px] font-black uppercase tracking-[0.14em] text-indigo-700">Mode Operasional Aktif</span>
+                <div className="inline-flex items-center gap-2 rounded-xl border border-[#e0dff8] bg-[#f4f3ff]/80 px-3 py-1.5">
+                    <span className="inline-flex h-2 w-2 rounded-full bg-[#3632c0]"></span>
+                    <span className="text-[10px] font-black uppercase tracking-[0.14em] text-[#3632c0]">Mode Operasional Aktif</span>
                 </div>
             </div>
+
+            <section className="mb-5 grid grid-cols-12 gap-4">
+                <div className="col-span-12 rounded-[18px] border border-[#edf2f7] bg-white p-5 shadow-[0_2px_12px_rgba(0,0,0,0.02)] xl:col-span-8">
+                    <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
+                        <div>
+                            <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[#3632c0]">WMS Command Metrics</p>
+                            <h2 className="mt-1 text-[18px] font-black text-[#1a202c]">KPI operasional hari ini</h2>
+                        </div>
+                        {wmsKpis.can_view_wms_documents && (
+                            <Link
+                                href={route('wms-documents.index')}
+                                className="inline-flex h-9 items-center justify-center gap-2 rounded-[8px] bg-gray-900 px-3 text-[11px] font-black text-white transition hover:bg-gray-800"
+                            >
+                                <DocumentIcon className="h-4 w-4" />
+                                Dokumen WMS
+                            </Link>
+                        )}
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
+                        {[
+                            { label: 'Inbound Hari Ini', value: formatNumber(wmsKpis.today_inbound || 0), tone: 'text-emerald-700 bg-emerald-50 border-emerald-100' },
+                            { label: 'Outbound Hari Ini', value: formatNumber(wmsKpis.today_outbound || 0), tone: 'text-[#3632c0] bg-[#f4f3ff] border-[#e0dff8]' },
+                            { label: 'Variance Hari Ini', value: formatNumber(wmsKpis.today_variance || 0), tone: 'text-amber-700 bg-amber-50 border-amber-100' },
+                            { label: 'Dokumen Hari Ini', value: formatNumber(wmsKpis.today_documents || 0), tone: 'text-slate-700 bg-slate-50 border-slate-100' },
+                            { label: 'Utilisasi Rack', value: `${wmsKpis.rack_utilization || 0}%`, tone: 'text-rose-700 bg-rose-50 border-rose-100' },
+                        ].map((item) => (
+                            <div key={item.label} className={`rounded-[12px] border px-3.5 py-3 ${item.tone}`}>
+                                <p className="text-[9px] font-black uppercase tracking-[0.12em] opacity-70">{item.label}</p>
+                                <p className="mt-2 text-[24px] font-black leading-none">{item.value}</p>
+                            </div>
+                        ))}
+                    </div>
+
+                    <div className="mt-4 grid grid-cols-3 gap-3">
+                        <div className="rounded-[10px] border border-[#edf2f7] bg-[#f8f9fc] px-3 py-2">
+                            <p className="text-[8px] font-black uppercase tracking-[0.14em] text-gray-400">Kapasitas Rack</p>
+                            <p className="mt-1 text-[14px] font-black text-[#1a202c]">{formatNumber(wmsKpis.rack_capacity || 0)}</p>
+                        </div>
+                        <div className="rounded-[10px] border border-[#edf2f7] bg-[#f8f9fc] px-3 py-2">
+                            <p className="text-[8px] font-black uppercase tracking-[0.14em] text-gray-400">Rack Kosong</p>
+                            <p className="mt-1 text-[14px] font-black text-[#1a202c]">{formatNumber(wmsKpis.empty_racks || 0)}</p>
+                        </div>
+                        <div className="rounded-[10px] border border-[#edf2f7] bg-[#f8f9fc] px-3 py-2">
+                            <p className="text-[8px] font-black uppercase tracking-[0.14em] text-gray-400">Antrian Audit</p>
+                            <p className="mt-1 text-[14px] font-black text-[#1a202c]">{formatNumber(wmsKpis.audit_queue || 0)}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="col-span-12 rounded-[18px] border border-[#edf2f7] bg-white p-5 shadow-[0_2px_12px_rgba(0,0,0,0.02)] xl:col-span-4">
+                    <div className="mb-4 flex items-center justify-between">
+                        <div>
+                            <p className="text-[10px] font-black uppercase tracking-[0.18em] text-gray-400">Audit Trail</p>
+                            <h2 className="mt-1 text-[18px] font-black text-[#1a202c]">Dokumen terbaru</h2>
+                        </div>
+                        <span className="rounded-[8px] bg-[#f4f3ff] px-2.5 py-1 text-[10px] font-black text-[#3632c0]">
+                            {formatNumber((wmsKpis.latest_documents || []).length)}
+                        </span>
+                    </div>
+                    <div className="space-y-2">
+                        {(wmsKpis.latest_documents || []).map((document) => {
+                            const Wrapper = document.url ? Link : 'div';
+
+                            return (
+                                <Wrapper
+                                    key={`${document.type}-${document.number}`}
+                                    {...(document.url ? { href: document.url } : {})}
+                                    className="block rounded-[10px] border border-[#edf2f7] px-3 py-2.5 transition hover:border-[#e0dff8] hover:bg-[#f4f3ff]/40"
+                                >
+                                    <div className="flex items-start justify-between gap-3">
+                                        <div className="min-w-0">
+                                            <p className="truncate text-[12px] font-black text-[#1a202c]">{document.number}</p>
+                                            <p className="mt-0.5 truncate text-[10px] font-bold text-gray-400">{document.type} - {document.party}</p>
+                                        </div>
+                                        <span className="whitespace-nowrap text-[10px] font-black text-gray-400">{document.date}</span>
+                                    </div>
+                                </Wrapper>
+                            );
+                        })}
+                        {(wmsKpis.latest_documents || []).length === 0 && (
+                            <div className="rounded-[10px] border border-dashed border-gray-200 px-3 py-6 text-center text-[12px] font-bold text-gray-400">
+                                Belum ada dokumen WMS.
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </section>
 
             <div className="mb-4 grid grid-cols-2 gap-2.5 lg:grid-cols-4">
                 <div className="rounded-xl border border-[#e9edf5] bg-white px-3.5 py-2.5">
@@ -158,7 +251,7 @@ export default function Dashboard({ stats, trends, racks }) {
             {/* KPI Stats */}
             <div className="grid grid-cols-1 gap-3 mb-5 sm:grid-cols-2 xl:grid-cols-4">
                 {[
-                    { title: "TOTAL INVENTARIS", value: formatNumber(stats.total_inventory), trend: stats.inventory_trend, color: "text-[#3632c0]", bg: "bg-[#eef2ff]", icon: BoxIcon },
+                    { title: "TOTAL INVENTARIS", value: formatNumber(stats.total_inventory), trend: stats.inventory_trend, color: "text-[#3632c0]", bg: "bg-[#f4f3ff]", icon: BoxIcon },
                     { title: "TINGKAT KELUAR", value: `${stats.outbound_rate}/jam`, trend: stats.outbound_trend, color: "text-[#10b981]", bg: "bg-[#ecfdf5]", icon: TrendingUpIcon },
                     { title: "PERINGATAN SISTEM", value: stats.system_alerts.toString(), trend: stats.system_alerts > 0 ? "Tinjau" : "Aman", color: "text-[#ef4444]", bg: "bg-[#fef2f2]", icon: AlertCircleIcon },
                     { title: "NODE AKTIF", value: stats.active_nodes.toString(), trend: "Aktif", color: "text-[#f97316]", bg: "bg-[#fff7ed]", icon: ActivityIcon },
@@ -182,7 +275,7 @@ export default function Dashboard({ stats, trends, racks }) {
                 {/* Intelligence Hub */}
                 <div className="col-span-12 lg:col-span-5 bg-[#2d2a7f] rounded-[20px] p-6 text-white shadow-[0_10px_30px_rgba(45,42,127,0.13)] flex flex-col justify-between min-h-[340px] relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-[320px] h-[320px] bg-[#4a46c8] rounded-full filter blur-[70px] opacity-55 translate-x-1/2 -translate-y-1/2 pointer-events-none"></div>
-                    
+
                     <div className="relative z-10 w-full mb-5 flex items-start justify-between gap-3">
                         <div>
                             <div className="flex items-center space-x-2 mb-1.5">
@@ -233,7 +326,7 @@ export default function Dashboard({ stats, trends, racks }) {
                         <div>
                             <h2 className="text-[16px] font-black text-[#1a202c]">Visualisasi Lantai Gudang</h2>
                             <p className="text-[11px] font-semibold text-gray-500 mt-1 uppercase tracking-wider">
-                                Tampilan: <span className="text-[#4338ca] font-black">{sortBy === 'zone' ? 'Zona' : sortBy === 'capacity' ? 'Kapasitas Penuh' : 'Baru Ditambahkan'}</span>
+                                Tampilan: <span className="text-[#3632c0] font-black">{sortBy === 'zone' ? 'Zona' : sortBy === 'capacity' ? 'Kapasitas Penuh' : 'Baru Ditambahkan'}</span>
                             </p>
                         </div>
                         <div className="flex flex-col items-end space-y-2">
@@ -247,13 +340,13 @@ export default function Dashboard({ stats, trends, racks }) {
                                     <button
                                         key={option.id}
                                         onClick={() => setSortBy(option.id)}
-                                        className={`px-2.5 py-1 rounded-[7px] text-[9px] font-black transition-all ${sortBy === option.id ? 'bg-white text-[#4338ca] shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
+                                        className={`px-2.5 py-1 rounded-[7px] text-[9px] font-black transition-all ${sortBy === option.id ? 'bg-white text-[#3632c0] shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
                                     >
                                         {option.label}
                                     </button>
                                 ))}
                             </div>
-                            
+
                             {racks.filter(r => r.has_alert).length > 0 && (
                                 <div className="flex items-center space-x-2 bg-red-50 px-2.5 py-1 rounded-[9px] border border-red-100 animate-pulse">
                                     <AlertCircleIcon className="w-3 h-3 text-red-500" />
@@ -270,7 +363,7 @@ export default function Dashboard({ stats, trends, racks }) {
                         </div>
                         <div className="rounded-lg border border-[#e9edf5] bg-slate-50/70 px-3 py-2">
                             <div className="text-[8px] font-black uppercase tracking-[0.14em] text-gray-400">Terisi</div>
-                            <div className="mt-1 text-[14px] font-black text-[#4338ca]">{occupiedRacks} Rack</div>
+                            <div className="mt-1 text-[14px] font-black text-[#3632c0]">{occupiedRacks} Rack</div>
                         </div>
                         <div className="rounded-lg border border-red-100 bg-red-50/70 px-3 py-2">
                             <div className="text-[8px] font-black uppercase tracking-[0.14em] text-red-400">Kritis</div>
@@ -296,10 +389,10 @@ export default function Dashboard({ stats, trends, racks }) {
                                             const column = index % 12;
                                             const isLeftEdge = column < 2;
                                             const isRightEdge = column > 9;
-                                            
+
                                             let tooltipPosClass = "left-1/2 -translate-x-1/2";
                                             let arrowPosClass = "left-1/2 -translate-x-1/2";
-                                            
+
                                             if (isLeftEdge) {
                                                 tooltipPosClass = "left-0 translate-x-0";
                                                 arrowPosClass = "left-4 translate-x-0";
@@ -309,10 +402,10 @@ export default function Dashboard({ stats, trends, racks }) {
                                             }
 
                                             return (
-                                                <div 
-                                                    key={rack.id} 
+                                                <div
+                                                    key={rack.id}
                                                     onClick={() => setSelectedRack(rack)}
-                                                    className={`h-4 rounded-[5px] transition-all duration-300 relative group cursor-pointer ${rack.has_alert ? 'bg-[#ef4444] shadow-[0_0_10px_rgba(239,68,68,0.3)]' : rack.is_occupied ? 'bg-[#4338ca]' : 'bg-[#e2e8f0]'}`}
+                                                    className={`h-4 rounded-[5px] transition-all duration-300 relative group cursor-pointer ${rack.has_alert ? 'bg-[#ef4444] shadow-[0_0_10px_rgba(239,68,68,0.3)]' : rack.is_occupied ? 'bg-[#3632c0]' : 'bg-[#e2e8f0]'}`}
                                                 >
                                                     {/* Advanced Tooltip (Edge-Aware) */}
                                                     <div className={`absolute bottom-full ${tooltipPosClass} mb-2.5 w-40 p-2.5 bg-white text-[#1a202c] rounded-xl opacity-0 group-hover:opacity-100 transition-all transform translate-y-2 group-hover:translate-y-0 z-50 pointer-events-none shadow-[0_10px_24px_rgba(0,0,0,0.08)] border border-[#edf2f7]`}>
@@ -321,15 +414,15 @@ export default function Dashboard({ stats, trends, racks }) {
                                                             {rack.has_alert && <span className="w-2 h-2 bg-red-500 rounded-full animate-ping"></span>}
                                                         </div>
                                                         <div className="text-[12px] font-black mb-2 text-[#1a202c]">{rack.name}</div>
-                                                        
+
                                                         <div className="space-y-1.5">
                                                             <div className="flex justify-between text-[8px] font-black uppercase tracking-widest text-gray-400">
                                                                 <span>Kapasitas</span>
-                                                                <span className={rack.has_alert ? 'text-red-600' : 'text-[#4338ca]'}>{rack.fill_percent}%</span>
+                                                                <span className={rack.has_alert ? 'text-red-600' : 'text-[#3632c0]'}>{rack.fill_percent}%</span>
                                                             </div>
                                                             <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                                                                <div 
-                                                                    className={`h-full rounded-full transition-all duration-500 ${rack.has_alert ? 'bg-red-500' : 'bg-[#4338ca]'}`}
+                                                                <div
+                                                                    className={`h-full rounded-full transition-all duration-500 ${rack.has_alert ? 'bg-red-500' : 'bg-[#3632c0]'}`}
                                                                     style={{ width: `${Math.min(rack.fill_percent, 100)}%` }}
                                                                 ></div>
                                                             </div>
@@ -338,7 +431,7 @@ export default function Dashboard({ stats, trends, racks }) {
                                                             </div>
                                                         </div>
                                                     </div>
-                                                    
+
                                                     {/* Pointer Arrow - Fixed to Rack Center */}
                                                     <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-[10px] border-[6px] border-transparent border-t-white opacity-0 group-hover:opacity-100 transition-all transform translate-y-2 group-hover:translate-y-0 z-50 pointer-events-none shadow-sm"></div>
                                                 </div>
@@ -353,17 +446,17 @@ export default function Dashboard({ stats, trends, racks }) {
                     </div>
 
 
-                        {/* Summary Legend Overlay */}
-                        <div className="absolute bottom-3 left-3 bg-white/90 backdrop-blur-sm px-2.5 py-1.5 rounded-lg border border-gray-100 shadow-sm flex items-center space-x-3">
-                            <div className="flex items-center space-x-1.5">
-                                <span className="w-2 h-2 rounded-full bg-[#4338ca]"></span>
-                                <span className="text-[9px] font-bold text-gray-500 uppercase tracking-wider">Terisi</span>
-                            </div>
-                            <div className="flex items-center space-x-1.5">
-                                <span className="w-2 h-2 rounded-full bg-[#e2e8f0]"></span>
-                                <span className="text-[9px] font-bold text-gray-500 uppercase tracking-wider">Kosong</span>
-                            </div>
+                    {/* Summary Legend Overlay */}
+                    <div className="absolute bottom-3 left-3 bg-white/90 backdrop-blur-sm px-2.5 py-1.5 rounded-lg border border-gray-100 shadow-sm flex items-center space-x-3">
+                        <div className="flex items-center space-x-1.5">
+                            <span className="w-2 h-2 rounded-full bg-[#3632c0]"></span>
+                            <span className="text-[9px] font-bold text-gray-500 uppercase tracking-wider">Terisi</span>
                         </div>
+                        <div className="flex items-center space-x-1.5">
+                            <span className="w-2 h-2 rounded-full bg-[#e2e8f0]"></span>
+                            <span className="text-[9px] font-bold text-gray-500 uppercase tracking-wider">Kosong</span>
+                        </div>
+                    </div>
 
                 </div>
             </div>
@@ -406,110 +499,110 @@ export default function Dashboard({ stats, trends, racks }) {
                 <div className="flex-1 w-full relative group/chart">
                     {/* Dynamic SVG Graph */}
                     <div className="absolute inset-0">
-                         <svg 
-                            width="100%" 
-                            height="100%" 
-                            preserveAspectRatio="none" 
+                        <svg
+                            width="100%"
+                            height="100%"
+                            preserveAspectRatio="none"
                             viewBox="0 0 100 30"
                             onMouseLeave={() => setHoveredTrendIndex(null)}
                             className="overflow-visible"
-                         >
-                             {/* Horizontal Grid Lines */}
-                             {[7.5, 15, 22.5].map(y => (
-                                 <line key={y} x1="0" y1={y} x2="100" y2={y} stroke="#f1f5f9" strokeWidth="0.5" vectorEffect="non-scaling-stroke" />
-                             ))}
+                        >
+                            {/* Horizontal Grid Lines */}
+                            {[7.5, 15, 22.5].map(y => (
+                                <line key={y} x1="0" y1={y} x2="100" y2={y} stroke="#f1f5f9" strokeWidth="0.5" vectorEffect="non-scaling-stroke" />
+                            ))}
 
-                             {/* Vertical Crosshair */}
-                             {hoveredTrendIndex !== null && (
-                                 <line 
-                                     x1={(hoveredTrendIndex / (trends.length - 1)) * 100} 
-                                     y1="0" 
-                                     x2={(hoveredTrendIndex / (trends.length - 1)) * 100} 
-                                     y2="30" 
-                                     stroke="#e2e8f0" 
-                                     strokeWidth="1" 
-                                     strokeDasharray="4 4"
-                                     vectorEffect="non-scaling-stroke"
-                                 />
-                             )}
-
-
-                             {/* Outbound (Dashed Smooth Curve) */}
-                             <path d={generatePath('outbound')} fill="none" stroke="#94a3b8" strokeWidth="2" strokeDasharray="4 2" strokeLinecap="round" opacity="0.6" vectorEffect="non-scaling-stroke" />
-                             
-                             {/* Inbound (Solid Smooth Curve) */}
-                             <path d={generatePath('inbound')} fill="none" stroke="#2563eb" strokeWidth="3" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
-                             <path 
-                                d={generatePath('inbound') + " L 100,30 L 0,30 Z"} 
-                                fill="url(#blue-gradient)" 
-                                opacity="0.08" 
-                             />
+                            {/* Vertical Crosshair */}
+                            {hoveredTrendIndex !== null && (
+                                <line
+                                    x1={(hoveredTrendIndex / (trends.length - 1)) * 100}
+                                    y1="0"
+                                    x2={(hoveredTrendIndex / (trends.length - 1)) * 100}
+                                    y2="30"
+                                    stroke="#e2e8f0"
+                                    strokeWidth="1"
+                                    strokeDasharray="4 4"
+                                    vectorEffect="non-scaling-stroke"
+                                />
+                            )}
 
 
-                             
-                             {/* Interaction Rects (for better hover detection) */}
-                             {trends.map((_, i) => (
-                                 <rect
-                                     key={i}
-                                     x={(i / (trends.length - 1)) * 100 - 5}
-                                     y="0"
-                                     width="10"
-                                     height="100"
-                                     fill="transparent"
-                                     onMouseEnter={() => setHoveredTrendIndex(i)}
-                                     className="cursor-pointer"
-                                 />
-                             ))}
+                            {/* Outbound (Dashed Smooth Curve) */}
+                            <path d={generatePath('outbound')} fill="none" stroke="#94a3b8" strokeWidth="2" strokeDasharray="4 2" strokeLinecap="round" opacity="0.6" vectorEffect="non-scaling-stroke" />
 
-                             {/* Markers */}
-                             {trends.map((t, i) => {
-                                 const x = (i / (trends.length - 1)) * 100;
-                                 const yIn = 30 - ((t.inbound / maxVal) * 20 + 5);
-                                 const yOut = 30 - ((t.outbound / maxVal) * 20 + 5);
-                                 const isHovered = hoveredTrendIndex === i;
-
-                                 return (
-                                     <React.Fragment key={i}>
-                                         <ellipse 
-                                             cx={x} cy={yIn} 
-                                             rx={isHovered ? 1 : 0.6} 
-                                             ry={isHovered ? 3 : 2}
-                                             fill="#2563eb" 
-                                             className="transition-all duration-200"
-                                             stroke="white"
-                                             strokeWidth="2"
-                                             vectorEffect="non-scaling-stroke"
-                                         />
-                                         <ellipse 
-                                             cx={x} cy={yOut} 
-                                             rx={isHovered ? 0.8 : 0.5} 
-                                             ry={isHovered ? 2.5 : 1.5}
-                                             fill="#94a3b8" 
-                                             className="transition-all duration-200"
-                                             stroke="white"
-                                             strokeWidth="1.5"
-                                             vectorEffect="non-scaling-stroke"
-                                         />
-                                     </React.Fragment>
+                            {/* Inbound (Solid Smooth Curve) */}
+                            <path d={generatePath('inbound')} fill="none" stroke="#2563eb" strokeWidth="3" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
+                            <path
+                                d={generatePath('inbound') + " L 100,30 L 0,30 Z"}
+                                fill="url(#blue-gradient)"
+                                opacity="0.08"
+                            />
 
 
-                                 );
-                             })}
 
-                             <defs>
+                            {/* Interaction Rects (for better hover detection) */}
+                            {trends.map((_, i) => (
+                                <rect
+                                    key={i}
+                                    x={(i / (trends.length - 1)) * 100 - 5}
+                                    y="0"
+                                    width="10"
+                                    height="100"
+                                    fill="transparent"
+                                    onMouseEnter={() => setHoveredTrendIndex(i)}
+                                    className="cursor-pointer"
+                                />
+                            ))}
+
+                            {/* Markers */}
+                            {trends.map((t, i) => {
+                                const x = (i / (trends.length - 1)) * 100;
+                                const yIn = 30 - ((t.inbound / maxVal) * 20 + 5);
+                                const yOut = 30 - ((t.outbound / maxVal) * 20 + 5);
+                                const isHovered = hoveredTrendIndex === i;
+
+                                return (
+                                    <React.Fragment key={i}>
+                                        <ellipse
+                                            cx={x} cy={yIn}
+                                            rx={isHovered ? 1 : 0.6}
+                                            ry={isHovered ? 3 : 2}
+                                            fill="#2563eb"
+                                            className="transition-all duration-200"
+                                            stroke="white"
+                                            strokeWidth="2"
+                                            vectorEffect="non-scaling-stroke"
+                                        />
+                                        <ellipse
+                                            cx={x} cy={yOut}
+                                            rx={isHovered ? 0.8 : 0.5}
+                                            ry={isHovered ? 2.5 : 1.5}
+                                            fill="#94a3b8"
+                                            className="transition-all duration-200"
+                                            stroke="white"
+                                            strokeWidth="1.5"
+                                            vectorEffect="non-scaling-stroke"
+                                        />
+                                    </React.Fragment>
+
+
+                                );
+                            })}
+
+                            <defs>
                                 <linearGradient id="blue-gradient" x1="0" x2="0" y1="0" y2="1">
                                     <stop offset="0%" stopColor="#2563eb" />
                                     <stop offset="100%" stopColor="transparent" />
                                 </linearGradient>
                             </defs>
-                         </svg>
+                        </svg>
                     </div>
 
                     {/* Interactive Tooltip */}
                     {hoveredTrendIndex !== null && (
-                        <div 
+                        <div
                             className="absolute z-50 pointer-events-none transition-all duration-200 bg-[#1a202c] rounded-xl p-3 shadow-2xl border border-white/10 text-white min-w-[140px]"
-                            style={{ 
+                            style={{
                                 left: `${(hoveredTrendIndex / (trends.length - 1)) * 100}%`,
                                 bottom: '60%',
                                 transform: `translateX(${hoveredTrendIndex > 3 ? '-100%' : '0%'}) ${hoveredTrendIndex > 3 ? 'translateX(-10px)' : 'translateX(10px)'}`
@@ -552,8 +645,8 @@ export default function Dashboard({ stats, trends, racks }) {
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 pb-24">
                     <div className="absolute inset-0 bg-[#0f172a]/60 backdrop-blur-md" onClick={() => setSelectedRack(null)}></div>
                     <div className="relative bg-white rounded-[32px] w-full max-w-[440px] shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
-                        <div className={`h-24 flex items-center justify-center ${selectedRack.has_alert ? 'bg-red-500' : 'bg-[#4338ca]'} relative`}>
-                            <button 
+                        <div className={`h-24 flex items-center justify-center ${selectedRack.has_alert ? 'bg-red-500' : 'bg-[#3632c0]'} relative`}>
+                            <button
                                 onClick={() => setSelectedRack(null)}
                                 className="absolute top-6 right-6 text-white opacity-60 hover:opacity-100"
                             >
@@ -561,14 +654,14 @@ export default function Dashboard({ stats, trends, racks }) {
                             </button>
                             <BoxIcon className="w-10 h-10 text-white opacity-20" />
                         </div>
-                        
+
                         <div className="p-8">
                             <div className="flex justify-between items-start mb-6">
                                 <div>
                                     <h3 className="text-[20px] font-black text-[#1a202c]">{selectedRack.name}</h3>
                                     <p className="text-[12px] font-bold text-gray-400 uppercase tracking-widest">{selectedRack.code}</p>
                                 </div>
-                                <div className={`px-3 py-1.5 rounded-xl text-[10px] font-black tracking-wide ${selectedRack.has_alert ? 'bg-red-50 text-red-600' : 'bg-blue-50 text-[#4338ca]'}`}>
+                                <div className={`px-3 py-1.5 rounded-xl text-[10px] font-black tracking-wide ${selectedRack.has_alert ? 'bg-red-50 text-red-600' : 'bg-[#f4f3ff] text-[#3632c0]'}`}>
                                     {selectedRack.fill_percent}% TERISI
                                 </div>
                             </div>
@@ -580,8 +673,8 @@ export default function Dashboard({ stats, trends, racks }) {
                                         <span className="text-[#1a202c]">{selectedRack.current_qty} / {selectedRack.capacity} Unit</span>
                                     </div>
                                     <div className="h-3 w-full bg-gray-100 rounded-full overflow-hidden">
-                                        <div 
-                                            className={`h-full transition-all duration-700 ${selectedRack.has_alert ? 'bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.5)]' : 'bg-[#4338ca]'}`}
+                                        <div
+                                            className={`h-full transition-all duration-700 ${selectedRack.has_alert ? 'bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.5)]' : 'bg-[#3632c0]'}`}
                                             style={{ width: `${Math.min(selectedRack.fill_percent, 100)}%` }}
                                         ></div>
                                     </div>
@@ -612,7 +705,7 @@ export default function Dashboard({ stats, trends, racks }) {
                                     </div>
                                 )}
 
-                                <button 
+                                <button
                                     disabled
                                     className="w-full py-4 bg-[#1a202c] hover:bg-[#2d3748] text-white rounded-2xl text-[11px] font-black tracking-widest uppercase transition-all shadow-lg shadow-black/10 active:scale-[0.98]"
                                 >

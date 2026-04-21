@@ -6,14 +6,20 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\PurchaseOrder;
 use App\Models\PurchaseOrderItem;
+use App\Models\Rack;
+use App\Models\RackStock;
 use App\Models\Supplier;
 use App\Models\Warehouse;
 use App\Models\Product;
+use App\Traits\HandlesStockSync;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 class PurchaseOrderController extends Controller
 {
+    use HandlesStockSync;
+
     public function index()
     {
         $purchaseOrders = PurchaseOrder::with(['supplier', 'warehouse', 'creator', 'items'])
@@ -95,7 +101,7 @@ class PurchaseOrderController extends Controller
 
     public function show(PurchaseOrder $purchaseOrder)
     {
-        $purchaseOrder->load(['supplier', 'warehouse', 'creator', 'approver', 'items.product']);
+        $purchaseOrder->load(['supplier', 'warehouse', 'creator', 'approver', 'items.product', 'goodsReceipts.items']);
         $purchaseOrder->total_amount = $purchaseOrder->items->sum('subtotal');
 
         return Inertia::render('PurchaseOrders/Show', [
@@ -110,6 +116,8 @@ class PurchaseOrderController extends Controller
         ]);
 
         DB::transaction(function () use ($validated, $request, $purchaseOrder) {
+            $purchaseOrder->loadMissing(['items', 'goodsReceipts']);
+            $previousStatus = $purchaseOrder->status;
             $updateData = ['status' => $validated['status']];
             
             if ($validated['status'] === 'approved') {
@@ -119,7 +127,7 @@ class PurchaseOrderController extends Controller
             $purchaseOrder->update($updateData);
 
             // If marked as received, create a Goods Receipt record
-            if ($validated['status'] === 'received') {
+            if ($validated['status'] === 'received' && $previousStatus !== 'received' && $purchaseOrder->goodsReceipts->isEmpty()) {
                 $receipt = \App\Models\GoodsReceipt::create([
                     'receipt_number' => 'GR-' . now()->format('Ymd') . '-' . strtoupper(Str::random(4)),
                     'purchase_order_id' => $purchaseOrder->id,
@@ -130,7 +138,7 @@ class PurchaseOrderController extends Controller
                     'created_by' => $request->user()->id,
                 ]);
 
-                // Copy items from PO to GR
+                // Copy items from PO to GR and put received stock into warehouse racks.
                 foreach ($purchaseOrder->items as $item) {
                     \App\Models\GoodsReceiptItem::create([
                         'goods_receipt_id' => $receipt->id,
@@ -139,6 +147,14 @@ class PurchaseOrderController extends Controller
                         'unit_price' => $item->unit_price,
                         'subtotal' => $item->subtotal,
                     ]);
+
+                    $this->putAwayReceivedItem(
+                        request: $request,
+                        warehouseId: (int) $purchaseOrder->warehouse_id,
+                        productId: (int) $item->product_id,
+                        quantity: (int) $item->quantity,
+                        receiptId: (int) $receipt->id,
+                    );
                 }
 
                 // Trigger automatic performance calculation for this supplier for the current month
@@ -150,5 +166,66 @@ class PurchaseOrderController extends Controller
         });
 
         return redirect()->back()->with('success', 'Purchase Order status updated to ' . $validated['status'] . '.');
+    }
+
+    private function putAwayReceivedItem(Request $request, int $warehouseId, int $productId, int $quantity, int $receiptId): void
+    {
+        $rack = $this->findAvailableRack($warehouseId, $productId, $quantity);
+
+        if (! $rack) {
+            throw ValidationException::withMessages([
+                'status' => 'No active rack has enough capacity for the received item. Please create rack capacity before receiving this PO.',
+            ]);
+        }
+
+        $stockBefore = (int) ($rack->zone->warehouse->productStocks()
+            ->where('product_id', $productId)
+            ->value('current_stock') ?? 0);
+
+        $rackStock = RackStock::query()->firstOrNew([
+            'rack_id' => $rack->id,
+            'product_id' => $productId,
+        ]);
+
+        $rackStock->quantity = (int) $rackStock->quantity + $quantity;
+        $rackStock->reserved_quantity = (int) ($rackStock->reserved_quantity ?? 0);
+        $rackStock->last_updated_at = now();
+        $rackStock->save();
+
+        $this->syncProductStock($warehouseId, $productId);
+
+        $this->recordMovement(
+            request: $request,
+            productId: $productId,
+            warehouseId: $warehouseId,
+            type: 'in',
+            referenceType: 'goods_receipt',
+            referenceId: $receiptId,
+            quantity: $quantity,
+            stockBefore: $stockBefore,
+            stockAfter: $stockBefore + $quantity,
+            notes: 'Goods receipt putaway to '.$rack->code,
+        );
+    }
+
+    private function findAvailableRack(int $warehouseId, int $productId, int $quantity): ?Rack
+    {
+        return Rack::query()
+            ->where('status', 'active')
+            ->whereHas('zone', fn ($query) => $query->where('warehouse_id', $warehouseId))
+            ->with(['zone.warehouse', 'rackStocks'])
+            ->orderBy('id')
+            ->get()
+            ->first(function (Rack $rack) use ($productId, $quantity) {
+                $currentOtherQuantity = $rack->rackStocks
+                    ->where('product_id', '!=', $productId)
+                    ->sum('quantity');
+
+                $currentProductQuantity = $rack->rackStocks
+                    ->where('product_id', $productId)
+                    ->sum('quantity');
+
+                return ($currentOtherQuantity + $currentProductQuantity + $quantity) <= $rack->capacity;
+            });
     }
 }

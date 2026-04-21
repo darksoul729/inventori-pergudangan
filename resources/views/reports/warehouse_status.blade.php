@@ -1,280 +1,623 @@
 <!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
     <meta charset="utf-8">
-    <title>Formal Warehouse Status Report</title>
+    <title>Laporan Status Gudang Operasional</title>
     <style>
         @page {
-            margin: 100px 50px;
+            margin: 90px 55px 80px 55px;
         }
         header {
             position: fixed;
-            top: -60px;
-            left: 0px;
-            right: 0px;
-            height: 50px;
-            border-bottom: 2px solid #333;
-            text-align: center;
-            line-height: 35px;
+            top: -65px;
+            left: 0;
+            right: 0;
+            height: 45px;
+            border-bottom: 2.5px solid #1e293b;
+            display: table;
+            width: 100%;
+        }
+        .header-left {
+            display: table-cell;
+            vertical-align: middle;
+            font-size: 8.5pt;
+            font-weight: bold;
+            color: #1e293b;
+        }
+        .header-right {
+            display: table-cell;
+            vertical-align: middle;
+            text-align: right;
+            font-size: 8pt;
+            color: #64748b;
         }
         footer {
-            position: fixed; 
-            bottom: -60px; 
-            left: 0px; 
-            right: 0px;
-            height: 50px; 
-            text-align: center;
-            font-size: 10px;
-            color: #777;
-            border-top: 1px solid #ddd;
-            padding-top: 10px;
+            position: fixed;
+            bottom: -55px;
+            left: 0;
+            right: 0;
+            height: 40px;
+            border-top: 1px solid #cbd5e1;
+            padding-top: 8px;
+            display: table;
+            width: 100%;
+        }
+        .footer-left {
+            display: table-cell;
+            font-size: 7.5pt;
+            color: #94a3b8;
+            vertical-align: middle;
+        }
+        .footer-right {
+            display: table-cell;
+            text-align: right;
+            font-size: 7.5pt;
+            color: #94a3b8;
+            vertical-align: middle;
         }
         .pagenum:before {
             content: counter(page);
         }
         body {
-            font-family: 'Times New Roman', Times, serif; /* More formal font */
-            font-size: 12pt;
-            color: #000;
-            line-height: 1.4;
-        }
-        .letterhead {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        .letterhead h1 {
-            margin: 0;
-            font-size: 20pt;
-            text-transform: uppercase;
-            font-weight: bold;
-        }
-        .letterhead p {
-            margin: 2px 0;
+            font-family: 'DejaVu Sans', Arial, sans-serif;
             font-size: 10pt;
-            color: #444;
+            color: #1e293b;
+            line-height: 1.5;
         }
-        .report-title {
-            text-align: center;
-            text-decoration: underline;
-            font-size: 16pt;
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-        .report-meta {
-            text-align: center;
-            font-size: 11pt;
-            margin-bottom: 30px;
-        }
-        .section-title {
-            background-color: #f2f2f2;
-            padding: 5px 10px;
-            font-size: 13pt;
-            font-weight: bold;
-            border-left: 5px solid #333;
-            margin-top: 25px;
-            margin-bottom: 15px;
-            text-transform: uppercase;
-        }
-        .summary-box {
-            display: table;
-            width: 100%;
+
+        /* ─── Letterhead ─── */
+        .letterhead {
+            border-bottom: 3px double #1e293b;
+            padding-bottom: 16px;
             margin-bottom: 20px;
         }
-        .summary-item {
+        .lh-inner {
+            display: table;
+            width: 100%;
+        }
+        .lh-logo-col {
             display: table-cell;
-            width: 33%;
-            padding: 10px;
-            border: 1px solid #ccc;
+            width: 70px;
+            vertical-align: middle;
         }
-        .summary-label {
-            font-size: 9pt;
+        .lh-logo-box {
+            width: 54px;
+            height: 54px;
+            background-color: #1e293b;
+            border-radius: 8px;
+            text-align: center;
+            line-height: 54px;
+            font-size: 22pt;
+            font-weight: 900;
+            color: #ffffff;
+            letter-spacing: -2px;
+        }
+        .lh-text-col {
+            display: table-cell;
+            vertical-align: middle;
+            padding-left: 14px;
+        }
+        .lh-company {
+            font-size: 16pt;
             font-weight: bold;
-            color: #555;
-            display: block;
+            color: #0f172a;
+            margin: 0;
+            letter-spacing: 0.5px;
         }
-        .summary-value {
+        .lh-sub {
+            font-size: 8.5pt;
+            color: #64748b;
+            margin: 2px 0 0;
+        }
+        .lh-badge-col {
+            display: table-cell;
+            vertical-align: middle;
+            text-align: right;
+            width: 160px;
+        }
+        .confidential-badge {
+            display: inline-block;
+            border: 1.5px solid #ef4444;
+            color: #ef4444;
+            font-size: 7.5pt;
+            font-weight: bold;
+            padding: 3px 10px;
+            border-radius: 4px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        /* ─── Report Title Block ─── */
+        .report-title-block {
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-left: 5px solid #1e293b;
+            padding: 12px 16px;
+            margin-bottom: 12px;
+        }
+        .report-title-block h1 {
+            margin: 0 0 4px;
             font-size: 14pt;
             font-weight: bold;
+            color: #0f172a;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
+        .report-meta-row {
+            display: table;
+            width: 100%;
+            margin-top: 4px;
+        }
+        .report-meta-cell {
+            display: table-cell;
+            font-size: 8.5pt;
+            color: #64748b;
+        }
+        .report-meta-cell.right {
+            text-align: right;
+        }
+
+        /* ─── Section Title ─── */
+        .section-title {
+            background-color: #1e293b;
+            color: #ffffff;
+            padding: 6px 12px;
+            font-size: 10.5pt;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            margin-top: 22px;
+            margin-bottom: 12px;
+        }
+        .section-sub {
+            font-size: 8.5pt;
+            color: #64748b;
+            margin-bottom: 10px;
+            margin-top: -8px;
+        }
+
+        /* ─── Summary KPI Grid ─── */
+        .kpi-grid {
+            display: table;
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 16px;
+        }
+        .kpi-cell {
+            display: table-cell;
+            border: 1px solid #e2e8f0;
+            padding: 10px 14px;
+            vertical-align: top;
+        }
+        .kpi-cell.shaded {
+            background-color: #f8fafc;
+        }
+        .kpi-label {
+            font-size: 7.5pt;
+            font-weight: bold;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            display: block;
+            margin-bottom: 4px;
+        }
+        .kpi-value {
+            font-size: 15pt;
+            font-weight: bold;
+            color: #0f172a;
+            line-height: 1.1;
+        }
+        .kpi-note {
+            font-size: 7.5pt;
+            color: #94a3b8;
+            margin-top: 3px;
+        }
+
+        /* ─── Description Paragraph ─── */
+        .desc {
+            font-size: 9.5pt;
+            color: #334155;
+            margin-bottom: 14px;
+            line-height: 1.6;
+        }
+
+        /* ─── Progress Bar (text only, DomPDF safe) ─── */
+        .progress-outer {
+            background-color: #e2e8f0;
+            height: 8px;
+            width: 100%;
+            margin-top: 4px;
+        }
+        .progress-inner {
+            background-color: #1e293b;
+            height: 8px;
+        }
+
+        /* ─── Tables ─── */
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 20px;
+            margin-bottom: 18px;
+            font-size: 9pt;
+        }
+        thead tr {
+            background-color: #1e293b;
+            color: #ffffff;
         }
         th {
-            border: 1px solid #000;
-            background-color: #e6e6e6;
-            padding: 8px;
+            padding: 8px 10px;
             text-align: left;
-            font-size: 10pt;
+            font-size: 8.5pt;
             font-weight: bold;
+            letter-spacing: 0.3px;
+            border: 1px solid #1e293b;
         }
         td {
-            border: 1px solid #000;
-            padding: 6px 8px;
-            font-size: 10pt;
+            border: 1px solid #e2e8f0;
+            padding: 6px 10px;
+            font-size: 9pt;
         }
-        .badge {
-            font-weight: bold;
+        tr.even td {
+            background-color: #f8fafc;
         }
+        td.center { text-align: center; }
+        td.right  { text-align: right; }
+        td.bold   { font-weight: bold; }
+        td.total  { font-weight: bold; background-color: #f1f5f9; }
+
+        /* ─── Status Badges ─── */
+        .badge-in     { color: #16a34a; font-weight: bold; }
+        .badge-out    { color: #dc2626; font-weight: bold; }
+        .badge-high   { color: #7c3aed; font-weight: bold; }
+        .badge-low    { color: #94a3b8; }
+
+        /* ─── Shipment Status ─── */
+        .badge-transit   { color: #d97706; font-weight: bold; }
+        .badge-delivered { color: #16a34a; font-weight: bold; }
+        .badge-delayed   { color: #dc2626; font-weight: bold; }
+
+        /* ─── Signatures ─── */
         .signature-section {
-            margin-top: 50px;
+            margin-top: 48px;
+            display: table;
             width: 100%;
         }
         .signature-box {
-            display: inline-block;
-            width: 45%;
+            display: table-cell;
+            width: 50%;
             text-align: center;
+            vertical-align: top;
+            padding: 0 20px;
         }
         .signature-line {
-            margin-top: 60px;
-            border-top: 1px solid #000;
-            width: 200px;
-            margin-left: auto;
-            margin-right: auto;
+            margin: 54px auto 6px;
+            border-top: 1px solid #0f172a;
+            width: 180px;
         }
-        .confidential {
-            color: red;
+        .sig-title {
+            font-size: 9.5pt;
             font-weight: bold;
-            font-size: 9pt;
-            text-align: right;
         }
+        .sig-date {
+            font-size: 8pt;
+            color: #64748b;
+            margin-top: 2px;
+        }
+
+        /* ─── Footer line ─── */
+        .end-line {
+            clear: both;
+            margin-top: 30px;
+            text-align: center;
+            font-size: 8pt;
+            font-style: italic;
+            color: #94a3b8;
+            border-top: 1px dashed #e2e8f0;
+            padding-top: 10px;
+        }
+
+        .page-break { page-break-after: always; }
     </style>
 </head>
 <body>
-    <header>
-        EXTERNAL LOGISTICS V3.0 - OFFICIAL SYSTEM REPORT
-    </header>
 
-    <footer>
-        Page <span class="pagenum"></span> | Generated by Warehouse System | Date: {{ date('Y-m-d H:i:s') }}
-    </footer>
+{{-- Fixed Header --}}
+<header>
+    <div class="header-left">SISTEM INFORMASI MANAJEMEN GUDANG — AETHER</div>
+    <div class="header-right">No. Ref: LPG/{{ date('Ymd') }}/{{ str_pad(rand(1,999), 3, '0', STR_PAD_LEFT) }}</div>
+</header>
 
-    <div class="letterhead">
-        <div class="confidential">CONFIDENTIAL</div>
-        <h1>PT. INVENTORY PERGUDANGAN INDONESIA</h1>
-        <p>Jl. Industri Kawasan Strategis No. 12, Jakarta, Indonesia</p>
-        <p>Tel: (021) 1234-5678 | Email: admin@warehouse-logistics.id</p>
-    </div>
+{{-- Fixed Footer --}}
+<footer>
+    <div class="footer-left">Laporan ini bersifat RAHASIA — Hanya untuk kalangan internal</div>
+    <div class="footer-right">Halaman <span class="pagenum"></span> | Dicetak: {{ date('d/m/Y H:i') }}</div>
+</footer>
 
-    <div class="report-title">WAREHOUSE STATUS AUDIT REPORT</div>
-    <div class="report-meta">
-        Ref No: WR/{{ date('Ymd') }}/{{ str_pad(rand(1, 999), 3, '0', STR_PAD_LEFT) }} <br>
-        Period: {{ Carbon\Carbon::now()->format('F Y') }}
-    </div>
 
-    <div class="section-title">I. Executive Summary</div>
-    <div class="summary-box">
-        <div class="summary-item">
-            <span class="summary-label">Total Inventory Units</span>
-            <span class="summary-value">{{ number_format($stats['total_inventory']) }}</span>
+{{-- ═══════════════════════ KANAN ATAS ═══════════════════════ --}}
+<div class="letterhead">
+    <div class="lh-inner">
+        <div class="lh-logo-col">
+            <div class="lh-logo-box">A</div>
         </div>
-        <div class="summary-item" style="border-left: 0; border-right: 0;">
-            <span class="summary-label">Storage Capacity Used</span>
-            <span class="summary-value">{{ $stats['efficiency'] }}%</span>
+        <div class="lh-text-col">
+            <p class="lh-company">PT. AETHER INVENTORI PERGUDANGAN</p>
+            <p class="lh-sub">Jl. Kawasan Industri Strategis No. 12, Jakarta Utara, DKI Jakarta 14350</p>
+            <p class="lh-sub">Telp: (021) 1234-5678 &nbsp;|&nbsp; Email: admin@aether-logistik.id &nbsp;|&nbsp; www.aether-logistik.id</p>
         </div>
-        <div class="summary-item">
-            <span class="summary-label">Estimated Asset Value</span>
-            <span class="summary-value">Rp {{ number_format($stats['total_value'], 0, ',', '.') }}</span>
+        <div class="lh-badge-col">
+            <span class="confidential-badge">Rahasia</span>
         </div>
     </div>
-    <p style="font-size: 10pt;">
-        This document provides a comprehensive audit of the current warehouse status, including physical stock levels, storage efficiency, and recent movement historical data. As of the time of generation, the warehouse is operating at {{ $stats['efficiency'] }}% capacity.
-    </p>
+</div>
 
-    <div class="section-title">II. Inventory Stock Manifest</div>
-    <table>
-        <thead>
-            <tr>
-                <th style="width: 15%;">SKU Code</th>
-                <th style="width: 45%;">Product Description</th>
-                <th style="width: 20%;">Category</th>
-                <th style="width: 10%; text-align: center;">Qty</th>
-                <th style="width: 10%; text-align: center;">Unit</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach($products as $product)
-            <tr>
-                <td>{{ $product->sku }}</td>
-                <td>{{ $product->name }}</td>
-                <td>{{ $product->category->name ?? 'N/A' }}</td>
-                <td style="text-align: center;">{{ number_format($product->total_qty ?? 0) }}</td>
-                <td style="text-align: center;">{{ $product->unit->name ?? 'Pcs' }}</td>
-            </tr>
-            @endforeach
-        </tbody>
-    </table>
 
-    <div style="page-break-after: always;"></div>
+{{-- ═══════════════════════ JUDUL LAPORAN ═══════════════════════ --}}
+<div class="report-title-block">
+    <h1>Laporan Status Operasional Gudang</h1>
+    <div class="report-meta-row">
+        <div class="report-meta-cell">Periode: <strong>{{ $stats['period'] }}</strong></div>
+        <div class="report-meta-cell right">Dibuat pada: {{ $stats['generated_at_idn'] }}</div>
+    </div>
+</div>
 
-    <div class="section-title">III. Recent Strategic Movements</div>
-    <table>
-        <thead>
-            <tr>
-                <th style="width: 20%;">Timestamp</th>
-                <th style="width: 10%;">Type</th>
-                <th style="width: 40%;">Product Description</th>
-                <th style="width: 10%; text-align: center;">Qty</th>
-                <th style="width: 20%;">Ref. Number</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach($movements as $m)
-            <tr>
-                <td>{{ $m->movement_date->format('d/m/Y H:i') }}</td>
-                <td style="text-align: center;" class="badge">
-                    {{ strtoupper($m->movement_type) }}
-                </td>
-                <td>{{ $m->product->name }}</td>
-                <td style="text-align: center;">{{ number_format($m->quantity) }}</td>
-                <td>{{ $m->reference_type }} #{{ $m->reference_id }}</td>
-            </tr>
-            @endforeach
-        </tbody>
-    </table>
 
-    <div class="section-title">IV. Storage Node Utilization (Rack Detail)</div>
-    <table>
-        <thead>
-            <tr>
-                <th>Node ID</th>
-                <th>Zone / Sector</th>
-                <th style="text-align: center;">Used</th>
-                <th style="text-align: center;">Capacity</th>
-                <th style="text-align: center;">Utilization (%)</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach($racks as $rack)
-            <tr>
-                <td>{{ $rack->code }}</td>
-                <td>{{ $rack->zone->name ?? 'Unclassified' }}</td>
-                <td style="text-align: center;">{{ number_format($rack->total_qty ?? 0) }}</td>
-                <td style="text-align: center;">{{ number_format($rack->capacity) }}</td>
-                <td style="text-align: center;">{{ round(($rack->total_qty / max(1, $rack->capacity)) * 100, 1) }}%</td>
-            </tr>
-            @endforeach
-        </tbody>
-    </table>
+{{-- ═══════════════════════ I. RINGKASAN EKSEKUTIF ═══════════════════════ --}}
+<div class="section-title">I. Ringkasan Eksekutif</div>
 
-    <div class="signature-section">
-        <div class="signature-box">
-            <p>Prepared By,</p>
-            <div class="signature-line"></div>
-            <p><strong>Warehouse Supervisor</strong></p>
-            <p style="font-size: 8pt; margin: 0;">Date: {{ date('d M Y') }}</p>
-        </div>
-        <div class="signature-box" style="float: right;">
-            <p>Approved By,</p>
-            <div class="signature-line"></div>
-            <p><strong>Operations Manager</strong></p>
-            <p style="font-size: 8pt; margin: 0;">Date: ___________</p>
+<div class="kpi-grid">
+    <div class="kpi-cell">
+        <span class="kpi-label">Total Unit Tersimpan</span>
+        <div class="kpi-value">{{ number_format($stats['total_inventory']) }}</div>
+        <div class="kpi-note">dari {{ number_format($stats['total_capacity']) }} kapasitas rak</div>
+    </div>
+    <div class="kpi-cell shaded">
+        <span class="kpi-label">Total Produk Terdaftar</span>
+        <div class="kpi-value">{{ number_format($stats['total_products']) }}</div>
+        <div class="kpi-note">jenis barang aktif</div>
+    </div>
+    <div class="kpi-cell">
+        <span class="kpi-label">Estimasi Nilai Aset</span>
+        <div class="kpi-value" style="font-size: 12pt;">Rp {{ number_format($stats['total_value'], 0, ',', '.') }}</div>
+        <div class="kpi-note">berdasarkan harga beli</div>
+    </div>
+    <div class="kpi-cell shaded">
+        <span class="kpi-label">Efisiensi Penyimpanan</span>
+        <div class="kpi-value">{{ $stats['efficiency'] }}%</div>
+        <div class="progress-outer">
+            <div class="progress-inner" style="width: {{ min($stats['efficiency'], 100) }}%;"></div>
         </div>
     </div>
+</div>
 
-    <div style="clear: both; margin-top: 30px; text-align: center; font-size: 8pt; font-style: italic;">
-        --- END OF DOCUMENT ---
+<div class="kpi-grid">
+    <div class="kpi-cell">
+        <span class="kpi-label">Total Pengiriman</span>
+        <div class="kpi-value">{{ number_format($shipments['total']) }}</div>
+        <div class="kpi-note">perjalanan terdaftar</div>
     </div>
+    <div class="kpi-cell shaded">
+        <span class="kpi-label">Sedang Transit</span>
+        <div class="kpi-value" style="color: #d97706;">{{ number_format($shipments['transit']) }}</div>
+        <div class="kpi-note">dalam perjalanan aktif</div>
+    </div>
+    <div class="kpi-cell">
+        <span class="kpi-label">Terkirim</span>
+        <div class="kpi-value" style="color: #16a34a;">{{ number_format($shipments['delivered']) }}</div>
+        <div class="kpi-note">selesai dikirim</div>
+    </div>
+    <div class="kpi-cell shaded">
+        <span class="kpi-label">Barang Masuk (30 Hari)</span>
+        <div class="kpi-value">{{ number_format($movementSummary['inbound']) }}</div>
+        <div class="kpi-note">unit diterima gudang</div>
+    </div>
+</div>
+
+<p class="desc">
+    Laporan ini mencakup kondisi operasional gudang secara menyeluruh per tanggal <strong>{{ date('d F Y') }}</strong>.
+    Gudang saat ini beroperasi pada kapasitas <strong>{{ $stats['efficiency'] }}%</strong>, menyimpan total
+    <strong>{{ number_format($stats['total_inventory']) }} unit barang</strong> dengan estimasi nilai aset sebesar
+    <strong>Rp {{ number_format($stats['total_value'], 0, ',', '.') }}</strong>. Dokumen ini bersifat rahasia dan
+    hanya diperuntukkan bagi pemangku kepentingan internal perusahaan.
+</p>
+
+
+{{-- ═══════════════════════ II. DISTRIBUSI PER KATEGORI ═══════════════════════ --}}
+<div class="section-title">II. Distribusi Stok & Valuasi per Kategori</div>
+<p class="section-sub">Ringkasan volume unit dan estimasi nilai aset berdasarkan kategori produk.</p>
+
+@php $grandQty = $categories->sum('total_qty'); $grandVal = $categories->sum('total_value'); @endphp
+<table>
+    <thead>
+        <tr>
+            <th style="width: 5%;">No</th>
+            <th style="width: 30%;">Kategori</th>
+            <th style="width: 12%; text-align: center;">Jml Produk</th>
+            <th style="width: 13%; text-align: center;">Total Unit</th>
+            <th style="width: 10%; text-align: center;">% Unit</th>
+            <th style="width: 20%; text-align: right;">Nilai Aset (Rp)</th>
+            <th style="width: 10%; text-align: center;">% Nilai</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach($categories as $i => $cat)
+        <tr class="{{ $i % 2 == 0 ? '' : 'even' }}">
+            <td class="center">{{ $i + 1 }}</td>
+            <td class="bold">{{ $cat->name }}</td>
+            <td class="center">{{ number_format($cat->product_count) }}</td>
+            <td class="center">{{ number_format($cat->total_qty) }}</td>
+            <td class="center">
+                {{ $grandQty > 0 ? number_format(($cat->total_qty / $grandQty) * 100, 1) : 0 }}%
+            </td>
+            <td class="right">{{ number_format($cat->total_value, 0, ',', '.') }}</td>
+            <td class="center">
+                {{ $grandVal > 0 ? number_format(($cat->total_value / $grandVal) * 100, 1) : 0 }}%
+            </td>
+        </tr>
+        @endforeach
+        <tr>
+            <td colspan="3" class="total bold right">TOTAL</td>
+            <td class="total center bold">{{ number_format($grandQty) }}</td>
+            <td class="total center bold">100%</td>
+            <td class="total right bold">{{ number_format($grandVal, 0, ',', '.') }}</td>
+            <td class="total center bold">100%</td>
+        </tr>
+    </tbody>
+</table>
+
+
+{{-- ═══════════════════════ III. MANIFEST STOK PRODUK ═══════════════════════ --}}
+<div class="page-break"></div>
+
+<div class="section-title">III. Manifest Stok Produk</div>
+<p class="section-sub">Daftar seluruh produk beserta jumlah unit yang tersimpan di rak gudang saat ini.</p>
+
+<table>
+    <thead>
+        <tr>
+            <th style="width: 5%;">No</th>
+            <th style="width: 14%;">Kode SKU</th>
+            <th style="width: 36%;">Nama Produk</th>
+            <th style="width: 20%;">Kategori</th>
+            <th style="width: 10%; text-align: center;">Qty</th>
+            <th style="width: 8%; text-align: center;">Satuan</th>
+            <th style="width: 7%; text-align: center;">Status</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach($products as $idx => $product)
+        @php $qty = $product->total_qty ?? 0; @endphp
+        <tr class="{{ $idx % 2 == 0 ? '' : 'even' }}">
+            <td class="center">{{ $idx + 1 }}</td>
+            <td class="bold">{{ $product->sku }}</td>
+            <td>{{ $product->name }}</td>
+            <td>{{ $product->category->name ?? 'Tidak Berkategori' }}</td>
+            <td class="center bold">{{ number_format($qty) }}</td>
+            <td class="center">{{ $product->unit->name ?? 'Pcs' }}</td>
+            <td class="center">
+                @if($qty > 0)
+                    <span class="badge-in">Tersedia</span>
+                @else
+                    <span class="badge-out">Habis</span>
+                @endif
+            </td>
+        </tr>
+        @endforeach
+    </tbody>
+</table>
+
+
+{{-- ═══════════════════════ IV. RIWAYAT PERGERAKAN BARANG ═══════════════════════ --}}
+<div class="page-break"></div>
+
+<div class="section-title">IV. Riwayat Pergerakan Barang (50 Terkini)</div>
+<p class="section-sub">Catatan transaksi masuk dan keluar barang paling terbaru di gudang operasional.</p>
+
+<table>
+    <thead>
+        <tr>
+            <th style="width: 16%;">Tanggal & Waktu</th>
+            <th style="width: 8%; text-align: center;">Jenis</th>
+            <th style="width: 38%;">Nama Produk</th>
+            <th style="width: 8%; text-align: center;">Qty</th>
+            <th style="width: 15%;">Referensi</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach($movements as $mi => $m)
+        <tr class="{{ $mi % 2 == 0 ? '' : 'even' }}">
+            <td>{{ $m->movement_date->format('d/m/Y H:i') }}</td>
+            <td class="center">
+                @if($m->movement_type === 'in')
+                    <span class="badge-in">MASUK</span>
+                @else
+                    <span class="badge-out">KELUAR</span>
+                @endif
+            </td>
+            <td>{{ $m->product->name }}</td>
+            <td class="center bold">{{ number_format($m->quantity) }}</td>
+            <td>{{ $m->reference_type }} #{{ $m->reference_id }}</td>
+        </tr>
+        @endforeach
+    </tbody>
+</table>
+
+
+{{-- ═══════════════════════ V. UTILISASI RAK PENYIMPANAN ═══════════════════════ --}}
+<div class="page-break"></div>
+
+<div class="section-title">V. Utilisasi Rak Penyimpanan</div>
+<p class="section-sub">Detail kapasitas dan tingkat keterisian setiap rak di gudang operasional.</p>
+
+<table>
+    <thead>
+        <tr>
+            <th style="width: 5%;">No</th>
+            <th style="width: 14%;">Kode Rak</th>
+            <th style="width: 22%;">Zona / Sektor</th>
+            <th style="width: 14%; text-align: center;">Terpakai</th>
+            <th style="width: 14%; text-align: center;">Kapasitas</th>
+            <th style="width: 13%; text-align: center;">Utilisasi</th>
+            <th style="width: 18%; text-align: center;">Status</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach($racks as $ri => $rack)
+        @php
+            $used = $rack->total_qty ?? 0;
+            $cap  = max(1, $rack->capacity);
+            $pct  = round(($used / $cap) * 100, 1);
+        @endphp
+        <tr class="{{ $ri % 2 == 0 ? '' : 'even' }}">
+            <td class="center">{{ $ri + 1 }}</td>
+            <td class="bold">{{ $rack->code }}</td>
+            <td>{{ $rack->zone->name ?? 'Tidak Terklasifikasi' }}</td>
+            <td class="center">{{ number_format($used) }}</td>
+            <td class="center">{{ number_format($rack->capacity) }}</td>
+            <td class="center bold">{{ $pct }}%</td>
+            <td class="center">
+                @if($pct >= 90)
+                    <span class="badge-out">Hampir Penuh</span>
+                @elseif($pct >= 50)
+                    <span class="badge-transit">Sedang Terisi</span>
+                @elseif($pct > 0)
+                    <span class="badge-in">Tersedia</span>
+                @else
+                    <span class="badge-low">Kosong</span>
+                @endif
+            </td>
+        </tr>
+        @endforeach
+    </tbody>
+</table>
+
+
+{{-- ═══════════════════════ VI. PENGESAHAN & TANDA TANGAN ═══════════════════════ --}}
+<div class="section-title">VI. Pengesahan Laporan</div>
+
+<p class="desc">
+    Laporan ini telah dibuat secara otomatis oleh Sistem Informasi Manajemen Gudang (SIMAG) — Aether,
+    dan disahkan oleh pihak yang bertanda tangan di bawah ini.
+</p>
+
+<div class="signature-section">
+    <div class="signature-box">
+        <p>Dibuat Oleh,</p>
+        <div class="signature-line"></div>
+        <p class="sig-title">Kepala Gudang / Supervisor</p>
+        <p class="sig-date">Tanggal: {{ date('d F Y') }}</p>
+    </div>
+    <div class="signature-box">
+        <p>Disetujui Oleh,</p>
+        <div class="signature-line"></div>
+        <p class="sig-title">Manajer Operasional</p>
+        <p class="sig-date">Tanggal: __________________</p>
+    </div>
+</div>
+
+<div class="end-line">
+    ─── AKHIR DOKUMEN ─── Dicetak oleh Sistem SIMAG Aether pada {{ $stats['generated_at'] }} WIB ───
+</div>
+
 </body>
 </html>

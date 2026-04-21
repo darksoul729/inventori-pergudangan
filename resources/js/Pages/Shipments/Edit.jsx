@@ -393,14 +393,21 @@ export default function EditShipment({ shipment, drivers = [] }) {
                                     <label className="mb-2 block text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Tugaskan Driver</label>
                                     <select className="w-full rounded-2xl border border-gray-200 bg-slate-50 px-4 py-3 text-[13px] font-bold" value={data.driver_id} onChange={(e) => setData('driver_id', e.target.value)}>
                                         <option value="">Pilih Driver (Opsional)</option>
-                                        {drivers.map((driver) => (
-                                            <option
-                                                key={driver.id}
-                                                value={driver.id}
-                                            >
-                                                {driver.name}
-                                            </option>
-                                        ))}
+                                        {drivers.map((driver) => {
+                                            // Driver is busy if is_busy is true AND they are NOT the currently assigned driver for this shipment
+                                            const isCurrentlyAssigned = driver.id === shipment.driver_id;
+                                            const showAsBusy = driver.is_busy && !isCurrentlyAssigned;
+
+                                            return (
+                                                <option
+                                                    key={driver.id}
+                                                    value={driver.id}
+                                                    disabled={showAsBusy}
+                                                >
+                                                    {driver.name} {showAsBusy ? '(SIBUK)' : ''}
+                                                </option>
+                                            );
+                                        })}
                                     </select>
                                     {errors.driver_id && <div className="mt-2 text-[11px] font-bold text-red-500">{errors.driver_id}</div>}
                                 </div>

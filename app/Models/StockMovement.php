@@ -18,12 +18,17 @@ class StockMovement extends Model
         'movement_date',
         'notes',
         'created_by',
+        'verification_status',
+        'verified_at',
+        'verified_by',
+        'verification_notes',
     ];
 
     protected function casts(): array
     {
         return [
             'movement_date' => 'datetime',
+            'verified_at' => 'datetime',
         ];
     }
 
@@ -40,5 +45,10 @@ class StockMovement extends Model
     public function user()
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function verifiedBy()
+    {
+        return $this->belongsTo(User::class, 'verified_by');
     }
 }

@@ -155,6 +155,7 @@ export default function Settings({ auth, categories, units, warehouse, staffUser
         name: '',
         email: '',
         phone: '',
+        role: 'Staff',
         password: '',
         password_confirmation: '',
     });
@@ -234,7 +235,7 @@ export default function Settings({ auth, categories, units, warehouse, staffUser
                             <UsersIcon className="w-5 h-5" />
                         </div>
                         <div>
-                            <div className="mb-0.5">Akun Staff</div>
+                            <div className="mb-0.5">Akun Operasional</div>
                             <div className={`text-[11px] font-semibold ${activeTab === 'staff' ? 'text-indigo-400' : 'text-gray-400'}`}>Login Operasional Terbatas</div>
                         </div>
                     </button>
@@ -474,15 +475,15 @@ export default function Settings({ auth, categories, units, warehouse, staffUser
                         <div className="bg-white rounded-[24px] p-8 shadow-[0_2px_16px_rgba(0,0,0,0.02)] border border-[#edf2f7]">
                             <div className="flex justify-between items-center mb-8">
                                 <div>
-                                    <h2 className="text-[20px] font-black text-[#1a202c] mb-1">Manajemen Akun Staff</h2>
-                                    <p className="text-[13px] font-semibold text-gray-400">Akun staff hanya dibuat oleh manager dan memiliki akses operasional terbatas.</p>
+                                    <h2 className="text-[20px] font-black text-[#1a202c] mb-1">Manajemen Akun Operasional</h2>
+                                    <p className="text-[13px] font-semibold text-gray-400">Manager dapat membuat akun supervisor untuk approval harian dan staff untuk input operasional.</p>
                                 </div>
                                 <button 
                                     onClick={() => setShowStaffModal(true)}
                                     className="px-5 py-2.5 bg-[#1a202c] hover:bg-[#2d3748] text-white font-bold rounded-xl transition-colors flex items-center space-x-2 text-[13px]"
                                 >
                                     <PlusIcon className="w-4 h-4" />
-                                    <span>Buat Staff</span>
+                                    <span>Buat Akun</span>
                                 </button>
                             </div>
 
@@ -491,6 +492,7 @@ export default function Settings({ auth, categories, units, warehouse, staffUser
                                     <thead>
                                         <tr className="bg-[#f8f9fb] border-b border-[#edf2f7]">
                                             <th className="px-6 py-4 text-[10px] font-extrabold text-gray-400 uppercase tracking-widest">Nama</th>
+                                            <th className="px-6 py-4 text-[10px] font-extrabold text-gray-400 uppercase tracking-widest">Role</th>
                                             <th className="px-6 py-4 text-[10px] font-extrabold text-gray-400 uppercase tracking-widest">Email</th>
                                             <th className="px-6 py-4 text-[10px] font-extrabold text-gray-400 uppercase tracking-widest">Telepon</th>
                                             <th className="px-6 py-4 text-[10px] font-extrabold text-gray-400 uppercase tracking-widest text-center">Status</th>
@@ -503,6 +505,11 @@ export default function Settings({ auth, categories, units, warehouse, staffUser
                                                 <td className="px-6 py-4">
                                                     <div className="text-[14px] font-bold text-[#1a202c]">{user.name}</div>
                                                     <div className="text-[11px] font-bold text-gray-400">Dibuat {user.created_at || '-'}</div>
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    <span className={`inline-flex items-center justify-center px-3 py-1 rounded-lg text-[12px] font-bold tracking-wide ${user.role === 'Supervisor' ? 'bg-indigo-50 text-indigo-600' : 'bg-slate-50 text-slate-600'}`}>
+                                                        {user.role || 'Staff'}
+                                                    </span>
                                                 </td>
                                                 <td className="px-6 py-4 text-[13px] font-semibold text-gray-500">{user.email}</td>
                                                 <td className="px-6 py-4 text-[13px] font-semibold text-gray-500">{user.phone || '-'}</td>
@@ -531,10 +538,10 @@ export default function Settings({ auth, categories, units, warehouse, staffUser
                                             </tr>
                                         )) : (
                                             <tr>
-                                                <td colSpan="5" className="px-6 py-12 text-center">
+                                                <td colSpan="6" className="px-6 py-12 text-center">
                                                     <div className="flex flex-col items-center justify-center">
                                                         <UsersIcon className="w-10 h-10 text-gray-200 mb-3" />
-                                                        <span className="text-[14px] font-bold text-gray-400">Belum ada akun staff</span>
+                                                        <span className="text-[14px] font-bold text-gray-400">Belum ada akun operasional</span>
                                                     </div>
                                                 </td>
                                             </tr>
@@ -673,7 +680,7 @@ export default function Settings({ auth, categories, units, warehouse, staffUser
                                 <div className="p-2 bg-indigo-100 rounded-xl">
                                     <UsersIcon className="w-5 h-5 text-indigo-600" />
                                 </div>
-                                <h3 className="text-[18px] font-black text-[#1a202c]">Akun Staff Baru</h3>
+                                <h3 className="text-[18px] font-black text-[#1a202c]">Akun Operasional Baru</h3>
                             </div>
                             <button
                                 onClick={() => {
@@ -699,6 +706,19 @@ export default function Settings({ auth, categories, units, warehouse, staffUser
                                     autoFocus
                                 />
                                 {staffForm.errors.name && <div className="text-red-500 text-xs mt-1 font-bold">{staffForm.errors.name}</div>}
+                            </div>
+                            <div>
+                                <label className="block text-[10px] font-extrabold text-gray-500 tracking-wider uppercase mb-2">ROLE AKUN</label>
+                                <select
+                                    className="bg-[#f8f9fb] border border-transparent focus:border-[#4f46e5] focus:ring-1 focus:ring-[#4f46e5] block w-full px-4 py-3 sm:text-[14px] rounded-xl font-bold text-gray-800"
+                                    value={staffForm.data.role}
+                                    onChange={e => staffForm.setData('role', e.target.value)}
+                                    required
+                                >
+                                    <option value="Staff">Staff - input outbound dan lihat data operasional</option>
+                                    <option value="Supervisor">Supervisor - approval harian, laporan, export, dan koordinasi shift</option>
+                                </select>
+                                {staffForm.errors.role && <div className="text-red-500 text-xs mt-1 font-bold">{staffForm.errors.role}</div>}
                             </div>
                             <div>
                                 <label className="block text-[10px] font-extrabold text-gray-500 tracking-wider uppercase mb-2">EMAIL LOGIN</label>
@@ -747,7 +767,7 @@ export default function Settings({ auth, categories, units, warehouse, staffUser
                             <div className="pt-4 flex justify-end gap-3">
                                 <button type="button" onClick={() => { setShowStaffModal(false); staffForm.reset(); }} className="px-5 py-3 hover:bg-gray-50 border border-gray-100 text-gray-600 font-bold rounded-xl transition-colors">Batal</button>
                                 <button type="submit" disabled={staffForm.processing} className="px-6 py-3 bg-[#4f46e5] hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg shadow-indigo-200 transition-all">
-                                    Buat Akun Staff
+                                    Buat Akun
                                 </button>
                             </div>
                         </form>

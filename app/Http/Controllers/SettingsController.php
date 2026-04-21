@@ -21,7 +21,7 @@ class SettingsController extends Controller
         $warehouse = Warehouse::first();
         $staffUsers = User::query()
             ->with('role:id,name')
-            ->whereHas('role', fn ($query) => $query->where('name', 'Staff'))
+            ->whereHas('role', fn ($query) => $query->whereIn('name', ['Supervisor', 'Staff']))
             ->orderBy('name')
             ->get(['id', 'role_id', 'name', 'email', 'phone', 'status', 'created_at'])
             ->map(fn (User $user) => [
@@ -48,10 +48,11 @@ class SettingsController extends Controller
             'name' => ['required', 'string', 'max:100'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:100', 'unique:users,email'],
             'phone' => ['nullable', 'string', 'max:20'],
+            'role' => ['required', 'in:Supervisor,Staff'],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
-        $staffRole = Role::where('name', 'Staff')->firstOrFail();
+        $staffRole = Role::where('name', $validated['role'])->firstOrFail();
 
         User::create([
             'role_id' => $staffRole->id,
@@ -65,12 +66,12 @@ class SettingsController extends Controller
 
         return redirect()
             ->route('settings', ['active' => 'staff'])
-            ->with('success', 'Akun staff berhasil dibuat.');
+            ->with('success', 'Akun operasional berhasil dibuat.');
     }
 
     public function updateStaffStatus(Request $request, User $user)
     {
-        abort_unless($user->role?->name === 'Staff', 404);
+        abort_unless(in_array($user->role?->name, ['Supervisor', 'Staff'], true), 404);
 
         $validated = $request->validate([
             'status' => ['required', 'in:active,inactive'],
@@ -82,7 +83,7 @@ class SettingsController extends Controller
 
         return redirect()
             ->route('settings', ['active' => 'staff'])
-            ->with('success', 'Status akun staff berhasil diperbarui.');
+            ->with('success', 'Status akun operasional berhasil diperbarui.');
     }
 
     public function updateWarehouse(Request $request, $id)

@@ -41,7 +41,7 @@ const PhotoPlaceholder = () => (
 export default function ProductDetail({ product, stats, distribution, movements }) {
     const { auth } = usePage().props;
     const roleName = String(auth?.user?.role_name || auth?.user?.role || '').toLowerCase();
-    const isManager = roleName === 'manager';
+    const isManager = roleName.includes('manager') || roleName.includes('manajer') || roleName.includes('admin gudang');
 
     return (
         <DashboardLayout>
@@ -84,9 +84,12 @@ export default function ProductDetail({ product, stats, distribution, movements 
                             Kembali ke Daftar
                         </Link>
                         {isManager && (
-                            <button className="px-6 py-2.5 bg-[#4f46e5] shadow-[0_4px_14px_rgba(79,70,229,0.3)] hover:bg-indigo-700 text-white font-bold rounded-xl text-[13px] transition-colors">
+                            <Link
+                                href={route('inventory.edit', product.id)}
+                                className="px-6 py-2.5 bg-[#4f46e5] shadow-[0_4px_14px_rgba(79,70,229,0.3)] hover:bg-indigo-700 text-white font-bold rounded-xl text-[13px] transition-colors"
+                            >
                                 Edit Entri
-                            </button>
+                            </Link>
                         )}
                     </div>
                 </div>

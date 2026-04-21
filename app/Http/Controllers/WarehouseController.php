@@ -23,15 +23,20 @@ class WarehouseController extends Controller
 
     public function index(Request $request): Response
     {
-        $warehouse = Warehouse::query()
-            ->with([
+        $warehouse = Warehouse::orderBy('id')->first() ?? Warehouse::query()->create([
+                'code' => 'MAIN',
+                'name' => 'Gudang Utama',
+                'location' => 'Main Warehouse',
+                'description' => 'Default single warehouse',
+            ]);
+
+        $warehouse->load([
                 'zones.racks.rackStocks.product:id,sku,name',
                 'stockMovements' => fn ($query) => $query
                     ->with(['product:id,sku,name', 'user:id,name'])
                     ->latest('movement_date')
                     ->limit(8),
-            ])
-            ->firstOrFail();
+            ]);
 
         $selectedZone = $warehouse->zones
             ->firstWhere('id', (int) $request->integer('zone'))

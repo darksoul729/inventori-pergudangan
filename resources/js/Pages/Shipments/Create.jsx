@@ -401,8 +401,9 @@ export default function CreateShipment({ drivers = [] }) {
                                             <option
                                                 key={driver.id}
                                                 value={driver.id}
+                                                disabled={driver.is_busy}
                                             >
-                                                {driver.name}
+                                                {driver.name} {driver.is_busy ? '(SIBUK)' : ''}
                                             </option>
                                         ))}
                                     </select>

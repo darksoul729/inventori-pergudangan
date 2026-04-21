@@ -1,5 +1,5 @@
 import DashboardLayout from '@/Layouts/DashboardLayout';
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import React, { useState, useEffect } from 'react';
 
 const loadExportTools = async () => {
@@ -67,8 +67,12 @@ const TransferIcon = ({ className }) => (
 );
 
 export default function Transaction({ movements, stats, filters }) {
+    const { props } = usePage();
+    const roleName = String(props.auth?.user?.role_name || props.auth?.user?.role || '').toLowerCase();
+    const canExportTransactions = roleName.includes('manager') || roleName.includes('manajer') || roleName.includes('admin gudang') || roleName.includes('supervisor') || roleName.includes('spv');
     const [searchTerm, setSearchTerm] = useState(filters.search || '');
     const [typeFilter, setTypeFilter] = useState(filters.type || 'all');
+    const [dismissedAlerts, setDismissedAlerts] = useState([]);
 
     // Debounced search
     useEffect(() => {
@@ -111,12 +115,13 @@ export default function Transaction({ movements, stats, filters }) {
             titleCell.value = 'LAPORAN RIWAYAT TRANSAKSI GUDANG';
             titleCell.font = { name: 'Arial', family: 4, size: 16, bold: true };
             titleCell.alignment = { vertical: 'middle', horizontal: 'center' };
-            worksheet.mergeCells('A1:I1');
+            worksheet.mergeCells('A1:J1');
             worksheet.getRow(1).height = 40;
 
             // 2. Define Headers
             const headers = [
                 { header: 'NO', key: 'no', width: 8 },
+                { header: 'DOKUMEN SUMBER', key: 'source_document', width: 28 },
                 { header: 'NAMA BARANG', key: 'product', width: 35 },
                 { header: 'SKU', key: 'sku', width: 15 },
                 { header: 'JENIS', key: 'type', width: 15 },
@@ -157,6 +162,7 @@ export default function Transaction({ movements, stats, filters }) {
             data.movements.forEach((m, index) => {
                 const row = worksheet.addRow({
                     no: index + 1,
+                    source_document: m['Source Document'] || '-',
                     product: m['Product Name'],
                     sku: m['SKU'],
                     type: m['Type'],
@@ -175,7 +181,7 @@ export default function Transaction({ movements, stats, filters }) {
                         right: { style: 'thin' }
                     };
                     cell.font = { size: 10 };
-                    
+
                     // Center all except Product and Notes which might be long
                     if ([1, 3, 4, 7, 8].includes(colNumber)) {
                         cell.alignment = { horizontal: 'center' };
@@ -192,7 +198,7 @@ export default function Transaction({ movements, stats, filters }) {
             worksheet.addRow([]); // Gap
             const noteRow1 = worksheet.addRow(['', 'Catatan: Laporan ini berisi riwayat mutasi stok yang tercatat pada sistem gudang.']);
             const noteRow2 = worksheet.addRow(['', 'Sistem: Operasional Gudang']);
-            
+
             noteRow1.font = { italic: true, size: 9, color: { argb: 'FF555555' } };
             noteRow2.font = { italic: true, size: 9, color: { argb: 'FF555555' } };
 
@@ -218,9 +224,10 @@ export default function Transaction({ movements, stats, filters }) {
     };
 
     const getStatusInfo = (movement) => {
-        if (movement.movement_type === 'adjustment' || movement.movement_type === 'opname') {
+        if (movement.verification_status === 'pending') {
             return { label: 'Perlu Verifikasi', color: 'bg-amber-50 text-amber-600 border border-amber-100' };
         }
+        
         if (movement.movement_type === 'transfer') {
             return { label: 'Transfer', color: 'bg-blue-50 text-blue-600 border border-blue-100' };
         }
@@ -234,7 +241,7 @@ export default function Transaction({ movements, stats, filters }) {
     };
 
     return (
-        <DashboardLayout 
+        <DashboardLayout
             headerSearchPlaceholder="Cari transaksi, barang, atau operator..."
             searchValue={searchTerm}
             onSearch={setSearchTerm}
@@ -244,7 +251,7 @@ export default function Transaction({ movements, stats, filters }) {
             <div className="flex flex-row gap-8 pb-12 w-full pt-4 min-w-[1000px] overflow-x-auto bg-[#f8fafc]">
                 {/* Left Column - Main Content */}
                 <div className="flex-1 flex flex-col space-y-8">
-                    
+
                     {/* Header */}
                     <div className="flex justify-between items-end">
                         <div>
@@ -315,19 +322,21 @@ export default function Transaction({ movements, stats, filters }) {
 
                     {/* Table Section */}
                     <div className="bg-white rounded-[24px] p-8 shadow-[0_4px_24px_rgba(0,0,0,0.02)] border border-[#edf2f7] flex-1 flex flex-col">
-                        
+
                         {/* Table Header Row */}
                         <div className="flex justify-between items-center mb-8">
                             <h2 className="text-[20px] font-black text-[#0f172a]">Daftar Mutasi Terbaru</h2>
                             <div className="flex items-center space-x-3">
-                                <button 
-                                    onClick={handleExportXlsx}
-                                    className="px-5 py-2.5 bg-white border border-gray-200 text-gray-600 font-bold rounded-xl text-[13px] hover:bg-gray-50 shadow-sm transition-colors flex items-center space-x-2"
-                                >
-                                    <span>Ekspor Excel</span>
-                                </button>
+                                {canExportTransactions && (
+                                    <button
+                                        onClick={handleExportXlsx}
+                                        className="px-5 py-2.5 bg-white border border-gray-200 text-gray-600 font-bold rounded-xl text-[13px] hover:bg-gray-50 shadow-sm transition-colors flex items-center space-x-2"
+                                    >
+                                        <span>Ekspor Excel</span>
+                                    </button>
+                                )}
                                 <div className="relative group">
-                                    <select 
+                                    <select
                                         className="flex items-center space-x-2 px-8 py-2.5 bg-indigo-50 text-indigo-600 font-black rounded-xl text-[13px] hover:bg-indigo-100 transition-colors border-none appearance-none cursor-pointer"
                                         value={typeFilter}
                                         onChange={(e) => {
@@ -364,8 +373,8 @@ export default function Transaction({ movements, stats, filters }) {
                                 {movements.data.map((m) => {
                                     const status = getStatusInfo(m);
                                     return (
-                                        <div 
-                                            key={m.id} 
+                                        <div
+                                            key={m.id}
                                             onClick={() => router.visit(route('transaction.show', m.id))}
                                             className="grid grid-cols-12 gap-4 py-5 items-center hover:bg-indigo-50/50 transition-colors group cursor-pointer"
                                         >
@@ -379,6 +388,11 @@ export default function Transaction({ movements, stats, filters }) {
                                                 <span className="text-[10px] font-bold text-gray-400 mt-0.5">
                                                     Operator: {m.user?.name || 'Sistem'}
                                                 </span>
+                                                {m.source_document_number && (
+                                                    <span className="mt-1 w-fit rounded-md bg-slate-100 px-2 py-0.5 text-[9px] font-black text-slate-600">
+                                                        {m.source_document_label}: {m.source_document_number}
+                                                    </span>
+                                                )}
                                             </div>
                                             <div className="col-span-2 flex items-center space-x-2">
                                                 {getMovementIcon(m.movement_type)}
@@ -426,13 +440,12 @@ export default function Transaction({ movements, stats, filters }) {
                                     <Link
                                         key={i}
                                         href={link.url || '#'}
-                                        className={`px-3 py-1.5 rounded-lg text-[12px] font-black transition-all ${
-                                            link.active 
-                                                ? 'bg-indigo-600 text-white shadow-md' 
-                                                : link.url 
-                                                    ? 'bg-white border border-gray-100 text-gray-500 hover:bg-gray-50' 
+                                        className={`px-3 py-1.5 rounded-lg text-[12px] font-black transition-all ${link.active
+                                                ? 'bg-indigo-600 text-white shadow-md'
+                                                : link.url
+                                                    ? 'bg-white border border-gray-100 text-gray-500 hover:bg-gray-50'
                                                     : 'bg-white border border-gray-100 text-gray-200 cursor-default'
-                                        }`}
+                                            }`}
                                         dangerouslySetInnerHTML={{ __html: link.label }}
                                     />
                                 ))}
@@ -444,10 +457,10 @@ export default function Transaction({ movements, stats, filters }) {
 
                 {/* Right Column - Status & Context */}
                 <div className="w-[360px] flex-shrink-0 flex flex-col space-y-6">
-                    
+
                     {/* Ringkasan Operasional */}
                     <div className="bg-white rounded-[24px] shadow-[0_4px_24px_rgba(0,0,0,0.03)] border border-[#edf2f7] overflow-hidden flex flex-col">
-                        
+
                         {/* Card Header */}
                         <div className="p-6 pb-4 flex items-center space-x-3">
                             <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-white shadow-[0_0_12px_rgba(79,70,229,0.4)]">
@@ -458,8 +471,8 @@ export default function Transaction({ movements, stats, filters }) {
 
                         {/* List of Alerts */}
                         <div className="px-6 pb-6 space-y-4">
-                            
-                            {stats.pending_audits > 0 && (
+
+                            {stats.pending_audits > 0 && !dismissedAlerts.includes('pending_audits') && (
                                 <div className="bg-white rounded-xl shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-gray-100 p-4 border-l-4 border-l-amber-500 relative">
                                     <div className="flex justify-between items-start mb-2">
                                         <h4 className="text-[13px] font-bold text-[#1a202c] max-w-[70%] leading-tight">Verifikasi Diperlukan</h4>
@@ -469,8 +482,18 @@ export default function Transaction({ movements, stats, filters }) {
                                         {stats.pending_audits} penyesuaian stok terbaru perlu diperiksa ulang oleh petugas.
                                     </p>
                                     <div className="flex space-x-4">
-                                        <button className="text-[11px] font-black text-indigo-600 hover:text-indigo-800 transition-colors">Mulai Pemeriksaan</button>
-                                        <button className="text-[11px] font-bold text-gray-400 hover:text-gray-600 transition-colors">Tutup</button>
+                                        <button 
+                                            onClick={() => handleFilterChange('adjustment,opname')}
+                                            className="text-[11px] font-black text-indigo-600 hover:text-indigo-800 transition-colors"
+                                        >
+                                            Mulai Pemeriksaan
+                                        </button>
+                                        <button 
+                                            onClick={() => setDismissedAlerts(prev => [...prev, 'pending_audits'])}
+                                            className="text-[11px] font-bold text-gray-400 hover:text-gray-600 transition-colors"
+                                        >
+                                            Tutup
+                                        </button>
                                     </div>
                                 </div>
                             )}
@@ -508,7 +531,7 @@ export default function Transaction({ movements, stats, filters }) {
                     </div>
 
                     <div className="bg-white rounded-[24px] p-6 shadow-[0_4px_24px_rgba(0,0,0,0.03)] border border-[#edf2f7] relative overflow-hidden h-[130px]">
-                        
+
                         <div className="relative z-10 flex items-center space-x-2 mb-4">
                             <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]"></div>
                             <span className="text-[13px] font-black text-gray-700">Status Perangkat Gudang</span>

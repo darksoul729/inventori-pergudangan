@@ -108,6 +108,36 @@ class DriverApiController extends Controller
         ]);
     }
 
+    public function assignedShipments(Request $request)
+    {
+        $driver = $request->user()->driver;
+
+        // Strictly return only ONE shipment that is active/unapproved.
+        // prioritized by Started tasks (in-progress), then by oldest assignment.
+        // Tasks assigned by Admin appear automatically.
+        $shipment = Shipment::where('driver_id', $driver->id)
+            ->where(function ($query) {
+                $query->where('tracking_stage', '!=', 'delivered')
+                    ->orWhere(function ($deliveredQuery) {
+                        $deliveredQuery->where('tracking_stage', 'delivered')
+                            ->where(function ($verificationQuery) {
+                                $verificationQuery->whereNull('pod_verification_status')
+                                    ->orWhere('pod_verification_status', '!=', 'approved');
+                            });
+                    });
+            })
+            ->orderByRaw("CASE WHEN tracking_stage != 'ready_for_pickup' THEN 0 ELSE 1 END")
+            ->oldest() // Take the oldest assigned first
+            ->first();
+
+        $data = $shipment ? [$this->transformShipment($shipment)] : [];
+
+        return response()->json([
+            'message' => $shipment ? 'Assigned shipments loaded.' : 'No active shipments.',
+            'data' => $data,
+        ]);
+    }
+
     public function claimShipment(Request $request)
     {
         $request->validate([
@@ -124,49 +154,28 @@ class DriverApiController extends Controller
         $shipmentCode = strtoupper(trim($request->string('shipment_id')->toString()));
         $shipment = Shipment::where('shipment_id', $shipmentCode)->first();
 
-        if ($shipment->driver_id) {
-            if ((int) $shipment->driver_id === (int) $driver->id) {
-                return response()->json(['message' => 'Shipment ini sudah diklaim oleh Anda.'], 422);
-            }
-            return response()->json(['message' => 'Shipment is already assigned to another driver.'], 422);
+        // Check if shipment is already assigned to someone else
+        if ($shipment->driver_id && (int) $shipment->driver_id !== (int) $driver->id) {
+            return response()->json(['message' => 'Tugas ini sudah diberikan kepada driver lain.'], 422);
+        }
+
+        // If it's already active/claimed by current driver
+        if ($shipment->claimed_at && (int) $shipment->driver_id === (int) $driver->id) {
+            return response()->json(['message' => 'Shipment ini sudah ada di daftar tugas Anda.'], 422);
         }
 
         $shipment->update([
             'driver_id' => $driver->id,
             'tracking_stage' => 'ready_for_pickup',
             'claimed_at' => now(),
-            'last_tracking_note' => 'Shipment diklaim oleh driver.',
+            'last_tracking_note' => $shipment->driver_id 
+                ? 'Shipment diaktifkan oleh driver.'
+                : 'Shipment diklaim oleh driver.',
         ]);
 
         return response()->json([
-            'message' => 'Shipment successfully claimed.',
+            'message' => 'Shipment berhasil ditambahkan.',
             'shipment' => $this->transformShipment($shipment->fresh())
-        ]);
-    }
-
-    public function assignedShipments(Request $request)
-    {
-        $driver = $request->user()->driver;
-
-        // Show active shipment or delivered shipment waiting for admin POD verification.
-        $shipments = Shipment::where('driver_id', $driver->id)
-            ->where(function ($query) {
-                $query->where('tracking_stage', '!=', 'delivered')
-                    ->orWhere(function ($deliveredQuery) {
-                        $deliveredQuery->where('tracking_stage', 'delivered')
-                            ->where(function ($verificationQuery) {
-                                $verificationQuery->whereNull('pod_verification_status')
-                                    ->orWhere('pod_verification_status', '!=', 'approved');
-                            });
-                    });
-            })
-            ->latest()
-            ->get()
-            ->map(fn (Shipment $shipment) => $this->transformShipment($shipment));
-
-        return response()->json([
-            'message' => 'Assigned shipments loaded.',
-            'data' => $shipments,
         ]);
     }
 
@@ -196,6 +205,7 @@ class DriverApiController extends Controller
             'delivery_recipient_name' => 'nullable|string|max:255',
             'delivery_note' => 'nullable|string|max:1000',
             'delivery_photo_base64' => 'nullable|string',
+            'transaction_code' => 'nullable|string',
         ]);
 
         $shipment = Shipment::where('id', $id)
@@ -203,6 +213,9 @@ class DriverApiController extends Controller
             ->firstOrFail();
 
         $trackingStage = $request->string('tracking_stage')->toString();
+
+        $trackingStage = $request->string('tracking_stage')->toString();
+
         $shipment->fill([
             'tracking_stage' => $trackingStage,
             'last_tracking_note' => $request->input('note'),
@@ -220,7 +233,7 @@ class DriverApiController extends Controller
         }
 
         $this->syncShipmentTrackingTimestamps($shipment, $trackingStage);
-        $shipment->status = $this->mapTrackingStageToShipmentStatus($trackingStage, $shipment->status);
+        $shipment->status = $this->mapTrackingStageToShipmentStatus($trackingStage, $shipment->status, $shipment->estimated_arrival);
         $shipment->save();
 
         return response()->json([
@@ -244,6 +257,9 @@ class DriverApiController extends Controller
             'last_location_mock' => $request->is_mock ?? false,
             'is_active' => true
         ]);
+        
+        // Ensure updated_at is refreshed even if lat/lng are identical (heartbeat)
+        $driver->touch();
 
         return response()->json(['message' => 'Location updated']);
     }
@@ -321,13 +337,28 @@ class DriverApiController extends Controller
         }
     }
 
-    private function mapTrackingStageToShipmentStatus(string $trackingStage, string $currentStatus): string
+    private function mapTrackingStageToShipmentStatus(string $trackingStage, string $currentStatus, ?\Carbon\Carbon $estimatedArrival = null): string
     {
-        return match ($trackingStage) {
-            'delivered' => 'delivered',
-            'picked_up', 'in_transit', 'arrived_at_destination' => 'in-transit',
-            default => $currentStatus,
-        };
+        if ($trackingStage === 'delivered') {
+            return 'delivered';
+        }
+
+        if (in_array($trackingStage, ['picked_up', 'in_transit', 'arrived_at_destination'])) {
+            // If we have an estimated arrival, check if we are already late
+            if ($estimatedArrival && $estimatedArrival->isPast()) {
+                return 'delayed';
+            }
+            return 'in-transit'; // Or 'on-time' depending on preference, but 'in-transit' is safest
+        }
+
+        if ($trackingStage === 'ready_for_pickup') {
+            if ($estimatedArrival && $estimatedArrival->isPast()) {
+                return 'delayed';
+            }
+            return 'on-time';
+        }
+
+        return $currentStatus;
     }
 
     private function storeDeliveryPhoto(string $base64Payload): string

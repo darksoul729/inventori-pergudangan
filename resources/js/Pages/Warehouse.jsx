@@ -16,6 +16,11 @@ const RackIcon = ({ className }) => (
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7h16M4 12h16M4 17h16M7 4v16M17 4v16" />
     </svg>
 );
+const TransferIcon = ({ className }) => (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h11m0 0l-4-4m4 4l-4 4M17 17H6m0 0l4 4m-4-4l4-4" />
+    </svg>
+);
 
 const formatNumber = (value) => new Intl.NumberFormat('id-ID').format(value ?? 0);
 
@@ -153,6 +158,8 @@ export default function Warehouse({
     const { props } = usePage();
     const roleName = String(props.auth?.user?.role_name || props.auth?.user?.role || '').toLowerCase();
     const isManager = roleName.includes('manager') || roleName.includes('manajer') || roleName.includes('admin gudang');
+    const isSupervisor = roleName.includes('supervisor') || roleName.includes('spv');
+    const canManageRackStock = isManager || isSupervisor;
     const [activeWorkspace, setActiveWorkspace] = useState('zone');
     const [showZoneModal, setShowZoneModal] = useState(false);
     const [showRackModal, setShowRackModal] = useState(false);
@@ -332,6 +339,15 @@ export default function Warehouse({
                         </p>
                     </div>
                     <div className="flex flex-wrap gap-3.5">
+                        {canManageRackStock && (
+                            <Link
+                                href={route('rack.allocation')}
+                                className="flex items-center gap-2 rounded-[10px] border border-[#dbe4f0] bg-white px-5 py-2.5 text-[12px] font-black text-[#4338ca] shadow-[0_2px_12px_rgba(0,0,0,0.02)] transition hover:bg-indigo-50"
+                            >
+                                <TransferIcon className="h-4 w-4" />
+                                <span>Transfer Rack</span>
+                            </Link>
+                        )}
                         {isManager && (
                             <>
                                 <button
@@ -367,8 +383,8 @@ export default function Warehouse({
                             type="button"
                             onClick={() => setActiveWorkspace(tab.id)}
                             className={`rounded-full px-4 py-2.5 text-[12px] font-black uppercase tracking-[0.16em] transition ${activeWorkspace === tab.id
-                                    ? 'bg-[#4338ca] text-white shadow-[0_10px_20px_rgba(67,56,202,0.18)]'
-                                    : 'bg-white text-gray-500 border border-[#e5e7eb]'
+                                ? 'bg-[#4338ca] text-white shadow-[0_10px_20px_rgba(67,56,202,0.18)]'
+                                : 'bg-white text-gray-500 border border-[#e5e7eb]'
                                 }`}
                         >
                             {tab.label}
@@ -573,34 +589,34 @@ export default function Warehouse({
                                 {selectedRack ? (
                                     <div className="space-y-8">
                                         {isManager && (
-                                        <form onSubmit={(e) => { e.preventDefault(); rackEditForm.put(`/warehouse/racks/${selectedRack.id}?zone=${selectedZone?.id}&rack=${selectedRack.id}`, { preserveScroll: true, preserveState: true }); }} className="space-y-4">
-                                            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                                                <SelectField label="Zona" name="warehouse_zone_id" value={rackEditForm.data.warehouse_zone_id} onChange={(e) => rackEditForm.setData('warehouse_zone_id', e.target.value)} options={zoneOptions} />
-                                                <div>
-                                                    <InputLabel value="Kode" className="mb-2 text-[11px] font-black uppercase tracking-[0.18em] text-gray-400" />
-                                                    <TextInput className="w-full rounded-xl border-[#dbe4f0] px-4 py-3 text-[13px] font-semibold" value={rackEditForm.data.code} onChange={(e) => rackEditForm.setData('code', e.target.value)} />
+                                            <form onSubmit={(e) => { e.preventDefault(); rackEditForm.put(`/warehouse/racks/${selectedRack.id}?zone=${selectedZone?.id}&rack=${selectedRack.id}`, { preserveScroll: true, preserveState: true }); }} className="space-y-4">
+                                                <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                                                    <SelectField label="Zona" name="warehouse_zone_id" value={rackEditForm.data.warehouse_zone_id} onChange={(e) => rackEditForm.setData('warehouse_zone_id', e.target.value)} options={zoneOptions} />
+                                                    <div>
+                                                        <InputLabel value="Kode" className="mb-2 text-[11px] font-black uppercase tracking-[0.18em] text-gray-400" />
+                                                        <TextInput className="w-full rounded-xl border-[#dbe4f0] px-4 py-3 text-[13px] font-semibold" value={rackEditForm.data.code} onChange={(e) => rackEditForm.setData('code', e.target.value)} />
+                                                    </div>
+                                                    <div>
+                                                        <InputLabel value="Nama" className="mb-2 text-[11px] font-black uppercase tracking-[0.18em] text-gray-400" />
+                                                        <TextInput className="w-full rounded-xl border-[#dbe4f0] px-4 py-3 text-[13px] font-semibold" value={rackEditForm.data.name} onChange={(e) => rackEditForm.setData('name', e.target.value)} />
+                                                    </div>
+                                                    <div>
+                                                        <InputLabel value="Tipe Rak" className="mb-2 text-[11px] font-black uppercase tracking-[0.18em] text-gray-400" />
+                                                        <TextInput className="w-full rounded-xl border-[#dbe4f0] px-4 py-3 text-[13px] font-semibold" value={rackEditForm.data.rack_type} onChange={(e) => rackEditForm.setData('rack_type', e.target.value)} />
+                                                    </div>
+                                                    <div>
+                                                        <InputLabel value="Kapasitas" className="mb-2 text-[11px] font-black uppercase tracking-[0.18em] text-gray-400" />
+                                                        <TextInput type="number" min="1" className="w-full rounded-xl border-[#dbe4f0] px-4 py-3 text-[13px] font-semibold" value={rackEditForm.data.capacity} onChange={(e) => rackEditForm.setData('capacity', e.target.value)} />
+                                                    </div>
+                                                    <SelectField label="Status" name="status" value={rackEditForm.data.status} onChange={(e) => rackEditForm.setData('status', e.target.value)} options={[
+                                                        { value: 'active', label: 'Aktif' },
+                                                        { value: 'maintenance', label: 'Perawatan' },
+                                                        { value: 'inactive', label: 'Tidak Aktif' },
+                                                    ]} />
                                                 </div>
-                                                <div>
-                                                    <InputLabel value="Nama" className="mb-2 text-[11px] font-black uppercase tracking-[0.18em] text-gray-400" />
-                                                    <TextInput className="w-full rounded-xl border-[#dbe4f0] px-4 py-3 text-[13px] font-semibold" value={rackEditForm.data.name} onChange={(e) => rackEditForm.setData('name', e.target.value)} />
-                                                </div>
-                                                <div>
-                                                    <InputLabel value="Tipe Rak" className="mb-2 text-[11px] font-black uppercase tracking-[0.18em] text-gray-400" />
-                                                    <TextInput className="w-full rounded-xl border-[#dbe4f0] px-4 py-3 text-[13px] font-semibold" value={rackEditForm.data.rack_type} onChange={(e) => rackEditForm.setData('rack_type', e.target.value)} />
-                                                </div>
-                                                <div>
-                                                    <InputLabel value="Kapasitas" className="mb-2 text-[11px] font-black uppercase tracking-[0.18em] text-gray-400" />
-                                                    <TextInput type="number" min="1" className="w-full rounded-xl border-[#dbe4f0] px-4 py-3 text-[13px] font-semibold" value={rackEditForm.data.capacity} onChange={(e) => rackEditForm.setData('capacity', e.target.value)} />
-                                                </div>
-                                                <SelectField label="Status" name="status" value={rackEditForm.data.status} onChange={(e) => rackEditForm.setData('status', e.target.value)} options={[
-                                                    { value: 'active', label: 'Aktif' },
-                                                    { value: 'maintenance', label: 'Perawatan' },
-                                                    { value: 'inactive', label: 'Tidak Aktif' },
-                                                ]} />
-                                            </div>
-                                            <TextAreaField label="Catatan" name="notes" value={rackEditForm.data.notes} onChange={(e) => rackEditForm.setData('notes', e.target.value)} rows={3} />
-                                            <FormActions processing={rackEditForm.processing} submitLabel="Perbarui Rak" />
-                                        </form>
+                                                <TextAreaField label="Catatan" name="notes" value={rackEditForm.data.notes} onChange={(e) => rackEditForm.setData('notes', e.target.value)} rows={3} />
+                                                <FormActions processing={rackEditForm.processing} submitLabel="Perbarui Rak" />
+                                            </form>
                                         )}
 
                                         <div className="rounded-[20px] border border-[#edf2f7] bg-[#fbfcfe] p-5">
@@ -622,7 +638,7 @@ export default function Warehouse({
                                                     <div className="rounded-full bg-white px-3 py-2 text-[11px] font-black uppercase tracking-[0.14em] text-gray-500">
                                                         Tersisa {formatNumber(rackCapacityRemaining)}
                                                     </div>
-                                                    {isManager && (
+                                                    {canManageRackStock && (
                                                         <button
                                                             type="button"
                                                             onClick={openRackStockCreateModal}
@@ -655,7 +671,7 @@ export default function Warehouse({
                                                             <div>{formatNumber(stock.available_quantity)}</div>
                                                             <div className="truncate">{stock.batch_number || '-'}</div>
                                                             <div className="flex items-center gap-2">
-                                                                {isManager ? (
+                                                                {canManageRackStock ? (
                                                                     <>
                                                                         <button
                                                                             type="button"
@@ -843,7 +859,7 @@ export default function Warehouse({
             </Modal>
 
             <Modal
-                open={isManager && showRackStockModal}
+                open={canManageRackStock && showRackStockModal}
                 title={editingRackStock ? 'Ubah Produk Rak' : 'Tambahkan Produk ke Rak'}
                 subtitle={editingRackStock ? 'Ubah detail stok produk di rak ini.' : 'Tambahkan produk baru ke rak aktif lewat modal.'}
                 onClose={() => setShowRackStockModal(false)}

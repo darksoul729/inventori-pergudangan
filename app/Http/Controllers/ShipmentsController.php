@@ -27,12 +27,12 @@ class ShipmentsController extends Controller
                     'database_id' => $shipment->id,
                     'origin' => $shipment->origin,
                     'origin_name' => $shipment->origin_name,
-                    'origin_lat' => (float) $shipment->origin_lat,
-                    'origin_lng' => (float) $shipment->origin_lng,
+                    'origin_lat' => $this->nullableCoordinate($shipment->origin_lat),
+                    'origin_lng' => $this->nullableCoordinate($shipment->origin_lng),
                     'destination' => $shipment->destination,
                     'destination_name' => $shipment->destination_name,
-                    'dest_lat' => (float) $shipment->dest_lat,
-                    'dest_lng' => (float) $shipment->dest_lng,
+                    'dest_lat' => $this->nullableCoordinate($shipment->dest_lat),
+                    'dest_lng' => $this->nullableCoordinate($shipment->dest_lng),
                     'status' => $shipment->status,
                     'tracking_stage' => $shipment->tracking_stage,
                     'tracking_stage_label' => Shipment::trackingStageLabels()[$shipment->tracking_stage] ?? $shipment->tracking_stage,
@@ -41,14 +41,15 @@ class ShipmentsController extends Controller
                     'load_type' => $shipment->load_type,
                     'driver_name' => $shipment->driver?->user?->name ?? 'Unassigned',
                     'driver_id' => $shipment->driver_id,
-                    'driver_lat' => $shipment->driver?->latitude,
-                    'driver_lng' => $shipment->driver?->longitude,
-                    'last_location_at' => $shipment->driver?->updated_at?->diffForHumans(),
+                    'driver_lat' => $this->nullableCoordinate($shipment->driver?->latitude),
+                    'driver_lng' => $this->nullableCoordinate($shipment->driver?->longitude),
+                    'last_location_mock' => (bool) ($shipment->driver?->last_location_mock ?? false),
+                    'last_location_at' => $this->lastLocationLabel($shipment),
                     'alerts' => $alerts,
                 ];
             });
 
-        // Fetch approved drivers for the dropdown
+        // Fetch approved drivers for the dropdown with busy status
         $approvedDrivers = \App\Models\Driver::with('user:id,name')
             ->where('status', 'approved')
             ->get()
@@ -56,6 +57,7 @@ class ShipmentsController extends Controller
                 return [
                     'id' => $driver->id,
                     'name' => $driver->user->name,
+                    'is_busy' => $driver->hasActiveShipment(),
                 ];
             });
 
@@ -88,6 +90,7 @@ class ShipmentsController extends Controller
                 return [
                     'id' => $driver->id,
                     'name' => $driver->user->name,
+                    'is_busy' => $driver->hasActiveShipment(),
                 ];
             });
 
@@ -114,6 +117,13 @@ class ShipmentsController extends Controller
             'driver_id' => 'nullable|exists:drivers,id',
         ]);
 
+        if ($request->filled('driver_id')) {
+            $driver = \App\Models\Driver::findOrFail($request->driver_id);
+            if ($driver->hasActiveShipment()) {
+                return back()->withErrors(['driver_id' => 'Driver ini sedang memiliki pengiriman aktif.']);
+            }
+        }
+
         $validated['tracking_stage'] = 'ready_for_pickup';
         $validated['claimed_at'] = $validated['driver_id'] ? now() : null;
         $validated['last_tracking_note'] = $validated['driver_id']
@@ -136,6 +146,7 @@ class ShipmentsController extends Controller
                 return [
                     'id' => $driver->id,
                     'name' => $driver->user->name,
+                    'is_busy' => $driver->hasActiveShipment(),
                 ];
             });
 
@@ -161,6 +172,13 @@ class ShipmentsController extends Controller
             'load_type' => 'required|in:sea,air,ground',
             'driver_id' => 'nullable|exists:drivers,id',
         ]);
+
+        if ($request->filled('driver_id') && $request->driver_id != $shipment->driver_id) {
+            $driver = \App\Models\Driver::findOrFail($request->driver_id);
+            if ($driver->hasActiveShipment()) {
+                return back()->withErrors(['driver_id' => 'Driver ini sedang memiliki pengiriman aktif.']);
+            }
+        }
 
         $shipment->update($validated);
 
@@ -189,12 +207,12 @@ class ShipmentsController extends Controller
                 'id' => $shipment->shipment_id,
                 'origin' => $shipment->origin,
                 'origin_name' => $shipment->origin_name,
-                'origin_lat' => (float) $shipment->origin_lat,
-                'origin_lng' => (float) $shipment->origin_lng,
+                'origin_lat' => $this->nullableCoordinate($shipment->origin_lat),
+                'origin_lng' => $this->nullableCoordinate($shipment->origin_lng),
                 'destination' => $shipment->destination,
                 'destination_name' => $shipment->destination_name,
-                'dest_lat' => (float) $shipment->dest_lat,
-                'dest_lng' => (float) $shipment->dest_lng,
+                'dest_lat' => $this->nullableCoordinate($shipment->dest_lat),
+                'dest_lng' => $this->nullableCoordinate($shipment->dest_lng),
                 'status' => $shipment->status,
                 'tracking_stage' => $shipment->tracking_stage,
                 'tracking_stage_label' => Shipment::trackingStageLabels()[$shipment->tracking_stage] ?? $shipment->tracking_stage,
@@ -203,9 +221,9 @@ class ShipmentsController extends Controller
                 'load_type' => $shipment->load_type,
                 'created_at' => $shipment->created_at?->format('F d, Y'),
                 'driver_name' => $shipment->driver?->user?->name ?? 'Unassigned',
-                'driver_lat' => $shipment->driver?->latitude,
-                'driver_lng' => $shipment->driver?->longitude,
-                'last_location_at' => $shipment->driver?->updated_at?->diffForHumans(),
+                'driver_lat' => $this->nullableCoordinate($shipment->driver?->latitude),
+                'driver_lng' => $this->nullableCoordinate($shipment->driver?->longitude),
+                'last_location_at' => $this->lastLocationLabel($shipment),
                 'claimed_at' => $shipment->claimed_at?->format('F d, Y H:i'),
                 'picked_up_at' => $shipment->picked_up_at?->format('F d, Y H:i'),
                 'in_transit_at' => $shipment->in_transit_at?->format('F d, Y H:i'),
@@ -313,6 +331,20 @@ class ShipmentsController extends Controller
             'covered_km' => $coveredKm !== null ? round($coveredKm, 1) : null,
             'progress_percent' => $progressPercent,
         ];
+    }
+
+    private function nullableCoordinate(mixed $value): ?float
+    {
+        return $value === null || $value === '' ? null : (float) $value;
+    }
+
+    private function lastLocationLabel(Shipment $shipment): ?string
+    {
+        if ($shipment->driver?->latitude === null || $shipment->driver?->longitude === null) {
+            return null;
+        }
+
+        return $shipment->driver->updated_at?->diffForHumans();
     }
 
     private function buildAlerts(Shipment $shipment, array $routeMetrics): array

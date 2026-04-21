@@ -30,12 +30,12 @@ $html = '
     </style>
 </head>
 <body>
-    <h1>RUNDOWN IMPLEMENTASI AI GEMINI 2.5<br>INVENTORI PERGUDANGAN</h1>
+    <h1>RUNDOWN IMPLEMENTASI AI GROQ<br>INVENTORI PERGUDANGAN</h1>
     <p style="text-align: center;"><strong>Target:</strong> AI Smart Assistant (Stock Analysis & Auto-Reporting)</p>
 
     <div class="tech-stack">
         <strong>Spesifikasi Teknis:</strong><br>
-        - Backend: Google Gemini API (Free Tier 2.5) via Laravel Service.<br>
+        - Backend: Groq AI API via Laravel Service.<br>
         - Frontend: React (Inertia.js) - AI Chat Bubble / Dashboard Insight Card.
     </div>
 
@@ -52,7 +52,7 @@ $html = '
         <tbody>
             <tr>
                 <td>Kamis</td>
-                <td>API Key Setup & Gemini Service Class di Laravel.</td>
+                <td>API Key Setup & Groq Service di Laravel.</td>
                 <td>Design Chat Component & AI Icon di Sidebar.</td>
                 <td class="status-ai">Koneksi API</td>
             </tr>
@@ -77,7 +77,7 @@ $html = '
             <tr>
                 <td>Selasa</td>
                 <td>Optimasi Kecepatan Respon & Caching AI Response.</td>
-                <td>Handling Error State (Rate Limit Gemini Free).</td>
+                <td>Handling Error State (Rate Limit Groq).</td>
                 <td class="status-fe">QA UI/UX</td>
             </tr>
             <tr>
@@ -89,7 +89,7 @@ $html = '
         </tbody>
     </table>
 
-    <h2>FITUR UTAMA AI GEMINI</h2>
+    <h2>FITUR UTAMA AI GROQ</h2>
     <ul>
         <li><strong>Smart Stock Analysis:</strong> Bertanya "Barang apa yang paling cepat habis bulan ini?".</li>
         <li><strong>Auto Recommendation:</strong> AI menyarankan jumlah restock berdasarkan histori PO.</li>
@@ -108,6 +108,6 @@ $dompdf->setPaper('A4', 'portrait');
 $dompdf->render();
 
 $output = $dompdf->output();
-file_put_contents('RUNDOWN_IMPLEMENTASI_AI_GEMINI.pdf', $output);
+file_put_contents('RUNDOWN_IMPLEMENTASI_AI_GROQ.pdf', $output);
 
-echo "PDF Berhasil dibuat: RUNDOWN_IMPLEMENTASI_AI_GEMINI.pdf\n";
+echo "PDF Berhasil dibuat: RUNDOWN_IMPLEMENTASI_AI_GROQ.pdf\n";

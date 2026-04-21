@@ -8,6 +8,9 @@ use App\Models\ProductStock;
 use App\Models\Rack;
 use App\Models\RackStock;
 use App\Models\StockMovement;
+use App\Models\Customer;
+use App\Models\StockOut;
+use App\Models\StockOutItem;
 use App\Models\Supplier;
 use App\Models\Unit;
 use App\Models\Warehouse;
@@ -15,6 +18,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use App\Traits\HandlesStockSync;
 use Inertia\Inertia;
@@ -150,6 +154,38 @@ class InventoryController extends Controller
         ]);
     }
 
+    public function edit(Product $product): Response
+    {
+        $operationalWarehouse = Warehouse::with('zones.racks')->orderBy('id')->firstOrFail();
+        $product->load(['category', 'unit', 'defaultSupplier']);
+
+        return Inertia::render('Inventory/Create', [
+            'product' => [
+                'id' => $product->id,
+                'sku' => $product->sku,
+                'name' => $product->name,
+                'category_id' => $product->category_id,
+                'unit_id' => $product->unit_id,
+                'default_supplier_id' => $product->default_supplier_id,
+                'purchase_price' => $product->purchase_price,
+                'selling_price' => $product->selling_price,
+                'minimum_stock' => $product->minimum_stock,
+                'description' => $product->description,
+                'image_url' => $product->image ? Storage::url($product->image) : null,
+            ],
+            'isEdit' => true,
+            'categories' => Category::all(['id', 'name']),
+            'units' => Unit::all(['id', 'name']),
+            'suppliers' => Supplier::all(['id', 'name']),
+            'warehouses' => [$operationalWarehouse],
+            'operationalWarehouse' => [
+                'id' => $operationalWarehouse->id,
+                'name' => $operationalWarehouse->name,
+                'location' => $operationalWarehouse->location,
+            ],
+        ]);
+    }
+
     public function outbound(): Response 
     {
         $operationalWarehouse = Warehouse::orderBy('id')->firstOrFail();
@@ -258,6 +294,49 @@ class InventoryController extends Controller
         return redirect()->route('inventory')->with('success', 'Product created successfully.');
     }
 
+    public function update(Request $request, Product $product): RedirectResponse
+    {
+        $validated = $request->validate([
+            'sku' => 'required|string|unique:products,sku,' . $product->id,
+            'name' => 'required|string',
+            'category_id' => 'required|exists:categories,id',
+            'unit_id' => 'required|exists:units,id',
+            'default_supplier_id' => 'nullable|exists:suppliers,id',
+            'purchase_price' => 'nullable|numeric',
+            'selling_price' => 'nullable|numeric',
+            'minimum_stock' => 'required|integer|min:0',
+            'description' => 'nullable|string',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ]);
+
+        if ($request->hasFile('image')) {
+            if ($product->image) {
+                Storage::disk('public')->delete($product->image);
+            }
+
+            $validated['image'] = $request->file('image')->store('products', 'public');
+        } else {
+            unset($validated['image']);
+        }
+
+        $product->update([
+            'sku' => $validated['sku'],
+            'name' => $validated['name'],
+            'category_id' => $validated['category_id'],
+            'unit_id' => $validated['unit_id'],
+            'default_supplier_id' => $validated['default_supplier_id'],
+            'purchase_price' => $validated['purchase_price'] ?? 0,
+            'selling_price' => $validated['selling_price'] ?? 0,
+            'minimum_stock' => $validated['minimum_stock'],
+            'description' => $validated['description'] ?? null,
+            ...array_intersect_key($validated, ['image' => true]),
+        ]);
+
+        return redirect()
+            ->route('inventory.show', $product)
+            ->with('success', 'Product updated successfully.');
+    }
+
     public function recordOutbound(Request $request): RedirectResponse
     {
         $operationalWarehouse = Warehouse::orderBy('id')->firstOrFail();
@@ -273,6 +352,7 @@ class InventoryController extends Controller
         $validated['warehouse_id'] = $validated['warehouse_id'] ?? $operationalWarehouse->id;
 
         DB::transaction(function () use ($validated, $request) {
+            $product = Product::findOrFail($validated['product_id']);
             $productStock = ProductStock::where('product_id', $validated['product_id'])
                 ->where('warehouse_id', $validated['warehouse_id'])
                 ->first();
@@ -282,6 +362,26 @@ class InventoryController extends Controller
                     'quantity' => "Insufficient stock in selected warehouse. Available: " . ($productStock ? $productStock->current_stock : 0) . " units."
                 ]);
             }
+
+            $customer = $this->resolveOutboundCustomer($validated['destination'] ?? null);
+            $stockOut = StockOut::create([
+                'stock_out_number' => 'SO-' . now()->format('Ymd-His') . '-' . strtoupper(Str::random(4)),
+                'warehouse_id' => $validated['warehouse_id'],
+                'customer_id' => $customer->id,
+                'out_date' => now()->toDateString(),
+                'purpose' => 'delivery',
+                'status' => 'completed',
+                'notes' => $validated['notes'] ?? $validated['destination'] ?? null,
+                'created_by' => $request->user()->id,
+            ]);
+
+            StockOutItem::create([
+                'stock_out_id' => $stockOut->id,
+                'product_id' => $product->id,
+                'quantity' => $validated['quantity'],
+                'unit_price' => $product->selling_price ?? 0,
+                'subtotal' => $validated['quantity'] * (float) ($product->selling_price ?? 0),
+            ]);
 
             // Find racks with stock for this product in this warehouse
             $racks = Rack::whereHas('zone', function($q) use ($validated) {
@@ -315,15 +415,31 @@ class InventoryController extends Controller
                 warehouseId: (int) $validated['warehouse_id'],
                 type: 'out',
                 referenceType: 'stock_out',
-                referenceId: (int) $validated['product_id'],
+                referenceId: (int) $stockOut->id,
                 quantity: $validated['quantity'],
                 stockBefore: $stockBefore,
                 stockAfter: $stockBefore - $validated['quantity'],
-                notes: $validated['notes'] ?? ('Outbound to: ' . $validated['destination'])
+                notes: $validated['notes'] ?? ('Outbound to: ' . ($validated['destination'] ?? $customer->name))
             );
         });
 
         return redirect()->route('inventory')->with('success', 'Outbound recorded successfully.');
+    }
+
+    private function resolveOutboundCustomer(?string $destination): Customer
+    {
+        $name = trim((string) $destination);
+
+        return Customer::firstOrCreate(
+            ['code' => 'GENERAL-OUT'],
+            [
+                'name' => $name !== '' ? $name : 'General Outbound',
+                'contact_person' => null,
+                'phone' => null,
+                'email' => null,
+                'address' => $name !== '' ? $name : null,
+            ]
+        );
     }
 
     private function getStockStatus(int $current, int $min): string

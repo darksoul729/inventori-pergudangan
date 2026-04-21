@@ -90,6 +90,8 @@ export default function Shipments({ shipments = [], stats = {}, drivers = [] }) 
     const { props } = usePage();
     const roleName = String(props.auth?.user?.role_name || props.auth?.user?.role || '').toLowerCase();
     const isManager = roleName.includes('manager') || roleName.includes('manajer') || roleName.includes('admin gudang');
+    const isSupervisor = roleName.includes('supervisor') || roleName.includes('spv');
+    const canManageShipments = isManager || isSupervisor;
 
     const [searchQuery, setSearchQuery] = useState('');
     const [filterStatus, setFilterStatus] = useState('all');
@@ -527,7 +529,7 @@ export default function Shipments({ shipments = [], stats = {}, drivers = [] }) 
                     <h1 className="text-[26px] font-black text-[#1a202c] tracking-tight">Pengiriman Aktif</h1>
                     <p className="text-[14px] font-semibold text-gray-500 mt-1">Pantau status pengiriman barang keluar dari gudang operasional.</p>
                 </div>
-                {isManager && (
+                {canManageShipments && (
                     <Link
                         href={route('shipments.create')}
                         className="px-6 py-2.5 bg-[#6366f1] hover:bg-[#4f46e5] text-white font-bold rounded-lg transition-colors flex items-center space-x-2"
@@ -728,7 +730,7 @@ export default function Shipments({ shipments = [], stats = {}, drivers = [] }) 
                                                         NO DRIVER
                                                     </span>
                                                 )}
-                                                {isManager && (
+                                                {canManageShipments && (
                                                     <>
                                                         <Link
                                                             href={route('shipments.edit', { shipment: shipment.id, page: currentPage })}
@@ -736,15 +738,17 @@ export default function Shipments({ shipments = [], stats = {}, drivers = [] }) 
                                                         >
                                                             EDIT
                                                         </Link>
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => handleDeleteShipment(shipment)}
-                                                            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-50 text-red-600 text-[10px] font-black rounded-lg hover:bg-red-100 transition-colors"
-                                                            title="Hapus shipment"
-                                                        >
-                                                            <Trash2 className="w-3.5 h-3.5" strokeWidth={2.2} />
-                                                            <span>DELETE</span>
-                                                        </button>
+                                                        {isManager && (
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => handleDeleteShipment(shipment)}
+                                                                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-50 text-red-600 text-[10px] font-black rounded-lg hover:bg-red-100 transition-colors"
+                                                                title="Hapus shipment"
+                                                            >
+                                                                <Trash2 className="w-3.5 h-3.5" strokeWidth={2.2} />
+                                                                <span>DELETE</span>
+                                                            </button>
+                                                        )}
                                                     </>
                                                 )}
                                                 <Link
@@ -826,7 +830,7 @@ export default function Shipments({ shipments = [], stats = {}, drivers = [] }) 
             )}
 
             {/* Create Shipment Modal */}
-            {isManager && showCreateModal && (
+            {canManageShipments && showCreateModal && (
                 <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-[9999] p-4 md:p-6">
                     <div className="bg-white rounded-[32px] w-full max-w-2xl shadow-2xl flex flex-col max-h-[90vh] animate-in fade-in zoom-in-95 duration-200">
                         <div className="px-8 py-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/50 flex-shrink-0">
@@ -921,8 +925,9 @@ export default function Shipments({ shipments = [], stats = {}, drivers = [] }) 
                                                 <option
                                                     key={driver.id}
                                                     value={driver.id}
+                                                    disabled={driver.is_busy}
                                                 >
-                                                    {driver.name}
+                                                    {driver.name} {driver.is_busy ? '(SIBUK)' : ''}
                                                 </option>
                                             ))}
                                         </select>

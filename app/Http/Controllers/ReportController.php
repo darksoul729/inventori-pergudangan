@@ -89,16 +89,36 @@ class ReportController extends Controller
             ->select(
                 'categories.name',
                 DB::raw('SUM(COALESCE(rack_stocks.quantity, 0)) as total_qty'),
-                DB::raw('SUM(COALESCE(rack_stocks.quantity, 0) * COALESCE(products.purchase_price, 0)) as total_value')
+                DB::raw('SUM(COALESCE(rack_stocks.quantity, 0) * COALESCE(products.purchase_price, 0)) as total_value'),
+                DB::raw('SUM(CASE WHEN EXISTS (SELECT 1 FROM stock_movements WHERE stock_movements.product_id = products.id AND movement_type = "in") THEN 1 ELSE 0 END) as inbound_count'),
+                DB::raw('SUM(CASE WHEN EXISTS (SELECT 1 FROM stock_movements WHERE stock_movements.product_id = products.id AND movement_type = "out") THEN 1 ELSE 0 END) as outbound_count')
             )
             ->groupBy('categories.id', 'categories.name')
             ->get();
 
-        // 6. Shipment Stats (Placeholder for Vehicle Fleet)
+        // 6. Shipment Stats & Trends (for Vehicle Fleet)
+        $shipmentTrendRows = DB::table('shipments')
+            ->select(DB::raw('DATE(created_at) as date'), DB::raw('count(*) as count'))
+            ->where('created_at', '>=', $startDate->toDateString())
+            ->groupBy('date')
+            ->orderBy('date')
+            ->get()
+            ->keyBy('date');
+
+        $fleetTrend = collect(CarbonPeriod::create($startDate, $now->copy()->startOfDay()))
+            ->map(function (Carbon $date) use ($shipmentTrendRows) {
+                return [
+                    'date' => $date->toDateString(),
+                    'count' => (int) ($shipmentTrendRows->get($date->toDateString())->count ?? 0),
+                ];
+            })
+            ->values();
+
         $shipmentStats = [
             'total' => DB::table('shipments')->count(),
             'transit' => DB::table('shipments')->where('status', 'in-transit')->count(),
             'delivered' => DB::table('shipments')->where('status', 'delivered')->count(),
+            'trend' => $fleetTrend
         ];
 
         // 7. Recent Reports
@@ -134,37 +154,87 @@ class ReportController extends Controller
     public function generatePdf(Request $request)
     {
         $now = Carbon::now();
-        
+        $startDate = $now->copy()->subDays(29);
+
         // Data for PDF
-        $products = Product::withSum('rackStocks as total_qty', 'quantity')->get();
+        $products = Product::with('category', 'unit')
+            ->withSum('rackStocks as total_qty', 'quantity')
+            ->get();
         $racks = Rack::withSum('rackStocks as total_qty', 'quantity')->with('zone')->get();
-        $movements = StockMovement::with('product')->orderByDesc('movement_date')->limit(50)->get();
-        
-        $stats = [
-            'total_inventory' => RackStock::sum('quantity'),
-            'total_value' => Product::join('rack_stocks', 'products.id', '=', 'rack_stocks.product_id')
-                ->sum(DB::raw('rack_stocks.quantity * products.purchase_price')),
-            'efficiency' => round((RackStock::sum('quantity') / max(1, Rack::sum('capacity'))) * 100, 1),
-            'generated_at' => $now->format('Y-m-d H:i:s'),
+        $movements = StockMovement::with('product')
+            ->orderByDesc('movement_date')
+            ->limit(50)
+            ->get();
+
+        // Category distribution with valuations
+        $categories = DB::table('categories')
+            ->leftJoin('products', 'categories.id', '=', 'products.category_id')
+            ->leftJoin('rack_stocks', 'products.id', '=', 'rack_stocks.product_id')
+            ->select(
+                'categories.name',
+                DB::raw('COUNT(DISTINCT products.id) as product_count'),
+                DB::raw('SUM(COALESCE(rack_stocks.quantity, 0)) as total_qty'),
+                DB::raw('SUM(COALESCE(rack_stocks.quantity, 0) * COALESCE(products.purchase_price, 0)) as total_value')
+            )
+            ->groupBy('categories.id', 'categories.name')
+            ->orderByDesc('total_value')
+            ->get();
+
+        // Shipment statistics
+        $shipments = [
+            'total'     => DB::table('shipments')->count(),
+            'transit'   => DB::table('shipments')->where('status', 'in-transit')->count(),
+            'delivered' => DB::table('shipments')->where('status', 'delivered')->count(),
+            'delayed'   => DB::table('shipments')->where('status', 'delayed')->count(),
         ];
 
-        $reportName = 'Warehouse_Status_' . $now->format('Ymd_His') . '.pdf';
-        
-        $pdf = Pdf::loadView('reports.warehouse_status', compact('products', 'racks', 'movements', 'stats'));
-        
+        // Active drivers (if table exists)
+        $totalDrivers = DB::table('users')->where('role', 'driver')->count();
+
+        // Movement summary last 30 days
+        $movementSummary = [
+            'inbound'  => StockMovement::where('movement_type', 'in')
+                ->where('movement_date', '>=', $startDate->toDateString())->sum('quantity'),
+            'outbound' => StockMovement::where('movement_type', 'out')
+                ->where('movement_date', '>=', $startDate->toDateString())->sum('quantity'),
+        ];
+
+        $totalCapacity = Rack::sum('capacity');
+        $currentStock  = RackStock::sum('quantity');
+
+        $stats = [
+            'total_inventory'  => (int) $currentStock,
+            'total_products'   => Product::count(),
+            'total_value'      => Product::join('rack_stocks', 'products.id', '=', 'rack_stocks.product_id')
+                ->sum(DB::raw('rack_stocks.quantity * products.purchase_price')),
+            'total_capacity'   => (int) $totalCapacity,
+            'efficiency'       => $totalCapacity > 0
+                ? round(($currentStock / $totalCapacity) * 100, 1) : 0,
+            'generated_at'     => $now->format('Y-m-d H:i:s'),
+            'generated_at_idn' => $now->locale('id')->isoFormat('dddd, D MMMM YYYY [pukul] HH:mm [WIB]'),
+            'period'           => $now->locale('id')->isoFormat('MMMM YYYY'),
+        ];
+
+        $reportName = 'Laporan_Gudang_' . $now->format('Ymd_His') . '.pdf';
+
+        $pdf = Pdf::loadView(
+            'reports.warehouse_status',
+            compact('products', 'racks', 'movements', 'stats', 'categories', 'shipments', 'totalDrivers', 'movementSummary')
+        )->setPaper('a4', 'portrait');
+
         $filePath = 'reports/' . $reportName;
         Storage::disk('public')->put($filePath, $pdf->output());
 
         Report::create([
-            'name' => $reportName,
-            'type' => 'PDF',
+            'name'      => $reportName,
+            'type'      => 'PDF',
             'file_path' => $filePath,
-            'user_id' => auth()->id(),
-            'status' => 'completed',
-            'metadata' => $stats
+            'user_id'   => auth()->id(),
+            'status'    => 'completed',
+            'metadata'  => $stats,
         ]);
 
-        return redirect()->back()->with('success', 'Report generated successfully.');
+        return redirect()->back()->with('success', 'Laporan berhasil dibuat.');
     }
 
     public function download(Report $report)

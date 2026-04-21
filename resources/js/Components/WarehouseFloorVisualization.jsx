@@ -31,21 +31,19 @@ export default function WarehouseFloorVisualization() {
                 <div className="flex space-x-2">
                     <button
                         onClick={() => setSelectedFloor('floor-01')}
-                        className={`px-3 py-1 rounded-lg font-semibold text-sm transition ${
-                            selectedFloor === 'floor-01'
+                        className={`px-3 py-1 rounded-lg font-semibold text-sm transition ${selectedFloor === 'floor-01'
                                 ? 'bg-gray-200 text-gray-900'
                                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                        }`}
+                            }`}
                     >
                         FLOOR 01
                     </button>
                     <button
                         onClick={() => setSelectedFloor('floor-02')}
-                        className={`px-3 py-1 rounded-lg font-semibold text-sm transition ${
-                            selectedFloor === 'floor-02'
+                        className={`px-3 py-1 rounded-lg font-semibold text-sm transition ${selectedFloor === 'floor-02'
                                 ? 'bg-blue-600 text-white'
                                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                        }`}
+                            }`}
                     >
                         FLOOR 02 (MAIN)
                     </button>
@@ -57,7 +55,7 @@ export default function WarehouseFloorVisualization() {
                 <svg viewBox="0 0 100 100" className="w-full h-full" preserveAspectRatio="xMidYMid meet">
                     {/* Background */}
                     <rect width="100" height="100" fill="#f9fafb" />
-                    
+
                     {/* Grid pattern */}
                     <defs>
                         <pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse">
@@ -124,13 +122,12 @@ export default function WarehouseFloorVisualization() {
                             </div>
                             <div className="w-full bg-gray-300 rounded-full h-1.5">
                                 <div
-                                    className={`h-full rounded-full ${
-                                        zone.capacity > 100
+                                    className={`h-full rounded-full ${zone.capacity > 100
                                             ? 'bg-red-500'
                                             : zone.capacity > 85
-                                            ? 'bg-yellow-500'
-                                            : 'bg-green-500'
-                                    }`}
+                                                ? 'bg-yellow-500'
+                                                : 'bg-green-500'
+                                        }`}
                                     style={{ width: `${Math.min(zone.capacity, 100)}%` }}
                                 ></div>
                             </div>

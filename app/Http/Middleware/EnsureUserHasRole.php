@@ -38,6 +38,10 @@ class EnsureUserHasRole
             return 'manager';
         }
 
+        if (str_contains($value, 'supervisor') || str_contains($value, 'spv')) {
+            return 'supervisor';
+        }
+
         if (str_contains($value, 'staff') || str_contains($value, 'staf')) {
             return 'staff';
         }

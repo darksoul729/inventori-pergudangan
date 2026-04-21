@@ -1,0 +1,69 @@
+
+> build
+> vite build
+
+vite v8.0.5 building client environment for production...
+[2Ktransforming...✓ 3319 modules transformed.
+rendering chunks...
+computing gzip size...
+public/build/assets/marker-shadow-f7SaPCxT.png                  0.61 kB
+public/build/assets/layers-BWBAp2CZ.png                         0.69 kB
+public/build/assets/layers-2x-Bpkbi35X.png                      1.25 kB
+public/build/assets/marker-icon-hN30_KVU.png                    1.46 kB
+public/build/assets/marker-icon-2x-_ZA0WGCc.png                 2.46 kB
+public/build/manifest.json                                     17.37 kB │ gzip:   1.94 kB
+public/build/assets/app-BErnHWF2.css                          132.61 kB │ gzip:  20.27 kB
+public/build/assets/InputLabel-zCwhs3mb.js                      0.21 kB │ gzip:   0.18 kB
+public/build/assets/save-BYbBr8Ov.js                            0.40 kB │ gzip:   0.26 kB
+public/build/assets/PrimaryButton-DgVQ68Nb.js                   0.51 kB │ gzip:   0.34 kB
+public/build/assets/TextInput-DHtYWP7R.js                       0.62 kB │ gzip:   0.39 kB
+public/build/assets/Popup-BG5gLCgu.js                           0.65 kB │ gzip:   0.37 kB
+public/build/assets/search-DXWQe5mx.js                          0.80 kB │ gzip:   0.43 kB
+public/build/assets/chunk-DseTPa7n.js                           1.07 kB │ gzip:   0.61 kB
+public/build/assets/ForgotPassword-DmUS8JYo.js                  1.10 kB │ gzip:   0.60 kB
+public/build/assets/ConfirmPassword-DSXW2QHp.js                 1.17 kB │ gzip:   0.62 kB
+public/build/assets/VerifyEmail--Inj7bM3.js                     1.18 kB │ gzip:   0.63 kB
+public/build/assets/ResetPassword-Dpsj9B-5.js                   1.83 kB │ gzip:   0.68 kB
+public/build/assets/Login-BMpRI-TU.js                           2.12 kB │ gzip:   0.91 kB
+public/build/assets/Edit-Dbs3uCua.js                            2.46 kB │ gzip:   0.94 kB
+public/build/assets/FileSaver.min-DfajIEfN.js                   2.68 kB │ gzip:   1.29 kB
+public/build/assets/UpdatePasswordForm-6Y6EHKAG.js              3.04 kB │ gzip:   1.05 kB
+public/build/assets/GuestLayout-B94NMcDp.js                     3.55 kB │ gzip:   1.60 kB
+public/build/assets/DeleteUserForm-CJK8LJ3B.js                  4.40 kB │ gzip:   1.70 kB
+public/build/assets/Index-CCCYNlhU.js                           4.81 kB │ gzip:   1.67 kB
+public/build/assets/UpdateProfileInformationForm-RRtSQp5r.js    4.84 kB │ gzip:   1.55 kB
+public/build/assets/Welcome-Ds8JykzI.js                         5.50 kB │ gzip:   1.54 kB
+public/build/assets/Show-9RXeebLd.js                            8.59 kB │ gzip:   2.11 kB
+public/build/assets/Create-Tgke7JET.js                          9.11 kB │ gzip:   2.27 kB
+public/build/assets/ShipmentMap-1KTWWQR6.js                     9.97 kB │ gzip:   3.23 kB
+public/build/assets/SupplierDetail-Co2gkh0T.js                 10.50 kB │ gzip:   2.62 kB
+public/build/assets/TransactionDetail-B6gPBLQo.js              13.09 kB │ gzip:   3.09 kB
+public/build/assets/ProductDetail-BfQjRaIT.js                  13.56 kB │ gzip:   3.11 kB
+public/build/assets/Outbound-bCQJizBb.js                       13.73 kB │ gzip:   3.45 kB
+public/build/assets/Create-DJ6TlnEI.js                         14.32 kB │ gzip:   2.98 kB
+public/build/assets/transition-DA7NjgOG.js                     14.43 kB │ gzip:   5.61 kB
+public/build/assets/Create-HTEs5YEA.js                         15.32 kB │ gzip:   4.49 kB
+public/build/assets/Edit-CN5K6xJ2.js                           15.40 kB │ gzip:   4.54 kB
+public/build/assets/RackAllocation-DNc6bzv2.js                 17.42 kB │ gzip:   3.68 kB
+public/build/assets/Transaction-BpMaCyK-.js                    20.00 kB │ gzip:   5.33 kB
+public/build/assets/Inventory-CAUUmZbr.js                      20.16 kB │ gzip:   4.78 kB
+public/build/assets/Dashboard-BHjcL4JO.js                      24.29 kB │ gzip:   5.82 kB
+public/build/assets/ShipmentDetail-BEnqJ5gQ.js                 27.33 kB │ gzip:   6.24 kB
+public/build/assets/Drivers-CFB0HJWG.js                        27.38 kB │ gzip:   6.48 kB
+public/build/assets/dialog-Bty2HfhH.js                         29.01 kB │ gzip:  10.33 kB
+public/build/assets/Settings-B0ywSb_9.js                       31.00 kB │ gzip:   4.72 kB
+public/build/assets/Shipments-qSIRJYYA.js                      32.21 kB │ gzip:   8.61 kB
+public/build/assets/Warehouse-GWlgI9zN.js                      32.74 kB │ gzip:   6.22 kB
+public/build/assets/Reports-DoMGMjF8.js                        58.36 kB │ gzip:  11.78 kB
+public/build/assets/DashboardLayout-H3utFMkD.js                63.36 kB │ gzip:  16.71 kB
+public/build/assets/TileLayer-C_IZ6F77.js                     153.31 kB │ gzip:  44.92 kB
+public/build/assets/app-rUHb_exR.js                           335.12 kB │ gzip: 110.01 kB
+public/build/assets/Supplier-CDI4v1Gv.js                      375.33 kB │ gzip: 107.99 kB
+public/build/assets/exceljs.min-Cv3dOtxi.js                   929.91 kB │ gzip: 256.40 kB
+
+✓ built in 1.10s
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.

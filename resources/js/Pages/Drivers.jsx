@@ -49,6 +49,20 @@ export default function Drivers({ drivers = [] }) {
     });
 
     useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        const tab = params.get('tab');
+        const driverId = params.get('id');
+
+        if (tab === 'tracking') {
+            setActiveTab('tracking');
+        }
+        
+        if (driverId) {
+            setFocusedDriverId(parseInt(driverId));
+        }
+    }, []);
+
+    useEffect(() => {
         if (activeTab !== 'list') return undefined;
 
         const interval = setInterval(() => {
@@ -229,54 +243,96 @@ export default function Drivers({ drivers = [] }) {
                                     <div 
                                         key={driver.id}
                                         onClick={() => setFocusedDriverId(driver.id)}
-                                        className={`p-4 rounded-2xl border transition-all cursor-pointer group ${
+                                        className={`p-4 rounded-3xl border transition-all cursor-pointer group relative overflow-hidden ${
                                             focusedDriverId === driver.id 
-                                            ? 'bg-indigo-50 border-indigo-200 shadow-sm' 
+                                            ? 'bg-white border-indigo-200 shadow-xl ring-1 ring-indigo-100' 
                                             : 'bg-gray-50/50 border-gray-100 hover:border-indigo-100 hover:bg-white hover:shadow-md'
                                         }`}
                                     >
-                                        <div className="flex items-center space-x-3">
-                                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-black text-xs transition-colors ${
-                                                focusedDriverId === driver.id ? 'bg-indigo-600 text-white' : 'bg-white text-indigo-600'
+                                        <div className="flex items-start space-x-3 relative z-10">
+                                            <div className={`w-11 h-11 rounded-[14px] flex items-center justify-center font-black text-sm transition-all duration-500 ${
+                                                focusedDriverId === driver.id ? 'bg-[#3632c0] text-white rotate-6' : 'bg-white text-[#3632c0] shadow-sm'
                                             }`}>
                                                 {driver.user.name.charAt(0)}
                                             </div>
                                             <div className="flex-1 min-w-0">
-                                                <div className="text-[13px] font-black text-[#1a202c] truncate">{driver.user.name}</div>
-                                                <div className="flex flex-col space-y-1 mt-1">
+                                                <div className="flex justify-between items-start">
+                                                    <div className="text-[14px] font-black text-[#1a202c] truncate pr-2">{driver.user.name}</div>
+                                                    {driver.active_shipment_id && (
+                                                        <div className="px-2 py-0.5 rounded-md bg-indigo-50 border border-indigo-100 text-[9px] font-black text-indigo-600 tracking-tighter">
+                                                            {driver.active_shipment_id}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                
+                                                <div className="flex flex-col space-y-1.5 mt-1.5">
                                                     <div className="flex items-center space-x-2">
                                                         <div className={`w-1.5 h-1.5 rounded-full ${driver.latitude && driver.longitude ? 'bg-emerald-500 animate-pulse' : 'bg-gray-300'}`}></div>
-                                                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                                                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest gap-2 flex items-center">
                                                             {driver.latitude && driver.longitude ? 'Terhubung' : 'Offline'}
+                                                            {focusedDriverId === driver.id && <span className="text-[8px] bg-emerald-100 text-emerald-600 px-1.5 py-0.5 rounded-full flex items-center">LIVE</span>}
                                                         </span>
                                                     </div>
-                                                    {driver.last_location_mock && (
-                                                        <div className="flex items-center space-x-1.5 bg-red-50 px-2 py-0.5 rounded-md self-start border border-red-100">
-                                                            <svg className="w-2.5 h-2.5 text-red-500" fill="currentColor" viewBox="0 0 20 20">
-                                                                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                                                            </svg>
+
+                                                    {Boolean(driver.last_location_mock) && (
+                                                        <div className="flex items-center space-x-1.5 bg-red-50 px-2 py-1 rounded-lg self-start border border-red-100">
+                                                            <div className="w-1.5 h-1.5 bg-red-500 rounded-full"></div>
                                                             <span className="text-[9px] font-black text-red-600 uppercase tracking-tight">Fake GPS Terdeteksi</span>
                                                         </div>
                                                     )}
                                                 </div>
                                             </div>
-                                            <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <svg className="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                                                </svg>
-                                            </div>
                                         </div>
-                                        
-                                        {driver.latitude && driver.longitude && (
-                                            <div className="mt-3 pt-3 border-t border-gray-100/50 flex justify-between items-center">
-                                                <span className="text-[9px] font-black text-gray-400 uppercase">Update</span>
-                                                <span className="text-[9px] font-bold text-indigo-600/70">
-                                                    {new Date(driver.updated_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                                </span>
+
+                                        {/* Expanded Details */}
+                                        <div className={`transition-all duration-300 overflow-hidden ${focusedDriverId === driver.id ? 'mt-4 max-h-[500px] opacity-100' : 'max-h-0 opacity-0'}`}>
+                                            <div className="p-3 bg-gray-50 rounded-2xl border border-gray-100 space-y-3">
+                                                {driver.active_shipment_id ? (
+                                                    <div className="space-y-3">
+                                                        <div className="space-y-2">
+                                                            <div className="flex items-center space-x-2">
+                                                                <div className="w-2 h-2 rounded-full border-2 border-indigo-400 bg-white"></div>
+                                                                <div className="text-[10px] font-bold text-gray-500 truncate">{driver.active_shipment_origin || 'Origin'}</div>
+                                                            </div>
+                                                            <div className="ml-1 w-0.5 h-2 bg-gray-200"></div>
+                                                            <div className="flex items-center space-x-2">
+                                                                <div className="w-2 h-2 rounded-full bg-indigo-500"></div>
+                                                                <div className="text-[10px] font-black text-[#1a202c] truncate">{driver.active_shipment_destination || 'Destination'}</div>
+                                                            </div>
+                                                        </div>
+                                                        <div className="pt-2 border-t border-gray-200/50">
+                                                            <div className="text-[9px] font-black text-indigo-500 uppercase tracking-widest mb-1">Status Pengiriman</div>
+                                                            <div className="text-[11px] font-bold text-gray-600">
+                                                                {driver.active_shipment_stage === 'ready_for_pickup' && '📦 Siap Diambil'}
+                                                                {driver.active_shipment_stage === 'picked_up' && '🚛 Sudah Diambil'}
+                                                                {driver.active_shipment_stage === 'in_transit' && '⏩ Dalam Perjalanan'}
+                                                                {driver.active_shipment_stage === 'arrived_at_destination' && '🏁 Sampai Tujuan'}
+                                                                {driver.active_shipment_stage === 'delivered' && '✅ Menunggu Verifikasi'}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                ) : (
+                                                    <div className="flex items-center justify-center py-2 space-x-2 opacity-50">
+                                                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">☕ Istirahat / Standby</span>
+                                                    </div>
+                                                )}
                                             </div>
+                                            
+                                            {driver.latitude && driver.longitude && (
+                                                <div className="mt-3 pt-3 border-t border-gray-100/50 flex justify-between items-center">
+                                                    <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Update Terakhir</span>
+                                                    <span className="text-[9px] font-bold text-indigo-400">
+                                                        {new Date(driver.updated_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                    </span>
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {focusedDriverId === driver.id && (
+                                            <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-50/50 rounded-full -mr-16 -mt-16 blur-3xl pointer-events-none"></div>
                                         )}
                                     </div>
-                                    ))
+                                ))
                             )}
                         </div>
                     </div>
@@ -286,6 +342,7 @@ export default function Drivers({ drivers = [] }) {
                         <LiveMap 
                             onDriversLoad={setTrackingDrivers} 
                             focusedDriverId={focusedDriverId} 
+                            onMarkerClick={setFocusedDriverId}
                         />
                     </div>
                 </div>

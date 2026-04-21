@@ -1,9 +1,41 @@
 import React, { useEffect } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet';
+import { MapContainer, Marker, Polyline, Popup, TileLayer, useMap } from 'react-leaflet';
 import L from 'leaflet';
+import { router } from '@inertiajs/react';
 import 'leaflet/dist/leaflet.css';
 
-// Component to handle map view changes
+const INDONESIA_CENTER = [-2.5489, 118.0149];
+
+function isValidCoordinate(value) {
+    if (value === null || value === undefined || value === '') return false;
+
+    return Number.isFinite(Number(value));
+}
+
+function pointFrom(lat, lng) {
+    return isValidCoordinate(lat) && isValidCoordinate(lng)
+        ? [Number(lat), Number(lng)]
+        : null;
+}
+
+function pointIcon({ color, icon, pulse = false }) {
+    const iconHtml = icon === 'warehouse' 
+        ? `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21V8l9-5 9 5v13"/><path d="M9 21V11h6v10"/></svg>`
+        : `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" x2="4" y1="22" y2="15"/></svg>`;
+
+    return L.divIcon({
+        className: 'shipment-map-marker',
+        html: `
+            <div class="shipment-marker ${pulse ? 'shipment-marker-pulse' : ''}" style="--marker-color: ${color};">
+                ${iconHtml}
+            </div>
+        `,
+        iconSize: [32, 32],
+        iconAnchor: [16, 16],
+        popupAnchor: [0, -16],
+    });
+}
+
 function MapFocus({ shipments }) {
     const map = useMap();
 
@@ -11,48 +43,79 @@ function MapFocus({ shipments }) {
         if (!shipments || shipments.length === 0) return;
 
         const bounds = [];
-        shipments.forEach(s => {
-            if (s.origin_lat && s.origin_lng) bounds.push([parseFloat(s.origin_lat), parseFloat(s.origin_lng)]);
-            if (s.dest_lat && s.dest_lng) bounds.push([parseFloat(s.dest_lat), parseFloat(s.dest_lng)]);
-            if (s.driver_lat && s.driver_lng) bounds.push([parseFloat(s.driver_lat), parseFloat(s.driver_lng)]);
+
+        shipments.forEach((shipment) => {
+            const origin = pointFrom(shipment.origin_lat, shipment.origin_lng);
+            const destination = pointFrom(shipment.dest_lat, shipment.dest_lng);
+            const driver = pointFrom(shipment.driver_lat, shipment.driver_lng);
+
+            if (origin) bounds.push(origin);
+            if (destination) bounds.push(destination);
+            if (driver) bounds.push(driver);
         });
 
-        if (bounds.length > 0) {
-            try {
-                map.fitBounds(bounds, { padding: [50, 50], maxZoom: 10 });
-            } catch (e) {
-                console.error("Leaflet fitBounds error:", e);
-            }
+        if (bounds.length === 1) {
+            map.flyTo(bounds[0], 11, { duration: 0.6 });
+            return;
+        }
+
+        if (bounds.length > 1) {
+            map.fitBounds(bounds, { padding: [72, 72], maxZoom: 9 });
         }
     }, [shipments, map]);
 
     return null;
 }
 
-export default function ShipmentMap({ shipments = [] }) {
-    const center = [-2.5489, 118.0149]; // Center of Indonesia
-    
-    // Custom icon for shipment nodes
-    const nodeIcon = L.divIcon({
-        className: 'shipment-node',
-        html: `<div style="background-color: #6366f1; width: 12px; height: 12px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 10px rgba(99, 102, 241, 0.5);"></div>`,
-        iconSize: [12, 12],
-        iconAnchor: [6, 6]
-    });
+function RouteLines({ origin, destination, driver, shipment }) {
+    const isDelivered = shipment.tracking_stage === 'delivered' || shipment.status === 'delivered';
+    const hasLiveDriver = Boolean(driver);
 
     return (
-        <div className="relative w-full h-full rounded-[20px] overflow-hidden border border-gray-100">
-            <MapContainer 
-                center={center} 
-                zoom={5} 
-                style={{ height: '100%', width: '100%', background: '#f8fafc' }}
+        <>
+            {origin && destination && (
+                <Polyline
+                    positions={[origin, destination]}
+                    color="#2563eb"
+                    weight={4}
+                    opacity={0.55}
+                    dashArray="10 12"
+                />
+            )}
+
+            {origin && hasLiveDriver && (
+                <Polyline
+                    positions={[origin, driver]}
+                    color={isDelivered ? '#10b981' : '#059669'}
+                    weight={5}
+                    opacity={0.9}
+                />
+            )}
+
+            {hasLiveDriver && destination && !isDelivered && (
+                <Polyline
+                    positions={[driver, destination]}
+                    color="#f59e0b"
+                    weight={4}
+                    opacity={0.8}
+                    dashArray="8 10"
+                />
+            )}
+        </>
+    );
+}
+
+export default function ShipmentMap({ shipments = [] }) {
+    const hasAnyGps = shipments.some((shipment) => pointFrom(shipment.driver_lat, shipment.driver_lng));
+
+    return (
+        <div className="relative h-full w-full overflow-hidden rounded-[20px] border border-gray-100 bg-slate-100">
+            <MapContainer
+                center={INDONESIA_CENTER}
+                zoom={5}
+                style={{ height: '100%', width: '100%', background: '#eef2f7' }}
                 zoomControl={false}
-                scrollWheelZoom={false}
-                doubleClickZoom={false}
-                touchZoom={false}
-                boxZoom={false}
-                keyboard={false}
-                dragging={false}
+                scrollWheelZoom
             >
                 <TileLayer
                     url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
@@ -61,105 +124,183 @@ export default function ShipmentMap({ shipments = [] }) {
                 <TileLayer
                     url="https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}"
                     attribution='Labels &copy; Esri'
-                    opacity={0.9}
+                    opacity={0.8}
                 />
-                
+
                 <MapFocus shipments={shipments} />
-                
-                {shipments.map((shipment, idx) => {
-                    const hasOrigin = shipment.origin_lat && shipment.origin_lng;
-                    const hasDest = shipment.dest_lat && shipment.dest_lng;
-                    const hasDriver = shipment.driver_lat && shipment.driver_lng;
-                    const originPos = hasOrigin ? [parseFloat(shipment.origin_lat), parseFloat(shipment.origin_lng)] : null;
-                    const destPos = hasDest ? [parseFloat(shipment.dest_lat), parseFloat(shipment.dest_lng)] : null;
-                    const driverPos = hasDriver ? [parseFloat(shipment.driver_lat), parseFloat(shipment.driver_lng)] : null;
-                    
+
+                {shipments.map((shipment, index) => {
+                    const origin = pointFrom(shipment.origin_lat, shipment.origin_lng);
+                    const destination = pointFrom(shipment.dest_lat, shipment.dest_lng);
+                    const driver = pointFrom(shipment.driver_lat, shipment.driver_lng);
+                    const isDelivered = shipment.tracking_stage === 'delivered' || shipment.status === 'delivered';
+
                     return (
-                        <React.Fragment key={idx}>
-                            {/* Planned Route */}
-                            {originPos && destPos && (
-                                <Polyline 
-                                    positions={[originPos, destPos]} 
-                                    color="#6366f1" 
-                                    weight={3} 
-                                    opacity={0.4} 
-                                    dashArray="10, 10" 
-                                />
-                            )}
+                        <React.Fragment key={shipment.database_id || shipment.id || index}>
+                            <RouteLines
+                                origin={origin}
+                                destination={destination}
+                                driver={driver}
+                                shipment={shipment}
+                            />
 
-                            {/* Actual Driver Route */}
-                            {originPos && driverPos && (
-                                <Polyline
-                                    positions={[originPos, driverPos]}
-                                    color="#22c55e"
-                                    weight={4}
-                                    opacity={0.85}
-                                />
-                            )}
-
-                            {driverPos && destPos && shipment.status === 'in-transit' && (
-                                <Polyline
-                                    positions={[driverPos, destPos]}
-                                    color="#f59e0b"
-                                    weight={4}
-                                    opacity={0.7}
-                                    dashArray="8, 8"
-                                />
-                            )}
-
-                            {/* Origin Marker */}
-                            {originPos && (
-                                <Marker position={originPos} icon={nodeIcon}>
+                            {origin && (
+                                <Marker position={origin} icon={pointIcon({ color: '#4f46e5', icon: 'warehouse' })}>
                                     <Popup>
-                                        <div className="font-bold text-[11px]">Asal: {shipment.origin_name}</div>
+                                        <div className="text-[11px] font-black uppercase tracking-wide text-indigo-600">Asal Pengiriman</div>
+                                        <div className="text-[13px] font-bold text-slate-900">{shipment.origin_name}</div>
+                                        <div className="text-[11px] font-semibold text-slate-500">{shipment.origin}</div>
                                     </Popup>
                                 </Marker>
                             )}
 
-                            {/* Destination Marker */}
-                            {destPos && (
-                                <Marker position={destPos} icon={nodeIcon}>
+                            {destination && (
+                                <Marker position={destination} icon={pointIcon({ color: '#2563eb', icon: 'flag' })}>
                                     <Popup>
-                                        <div className="font-bold text-[11px]">Tujuan: {shipment.destination_name}</div>
+                                        <div className="text-[11px] font-black uppercase tracking-wide text-blue-600">Tujuan Akhir</div>
+                                        <div className="text-[13px] font-bold text-slate-900">{shipment.destination_name}</div>
+                                        <div className="text-[11px] font-semibold text-slate-500">{shipment.destination}</div>
                                     </Popup>
                                 </Marker>
                             )}
 
-                            {/* Driver Live Position (If In-Transit) */}
-                            {shipment.driver_lat && shipment.driver_lng && (
-                                <Marker 
-                                    position={[parseFloat(shipment.driver_lat), parseFloat(shipment.driver_lng)]}
+                            {driver && (
+                                <Marker
+                                    position={driver}
                                     icon={L.divIcon({
-                                        className: 'driver-live',
-                                        html: `<div style="background-color: ${shipment.status === 'delivered' ? '#22c55e' : '#ef4444'}; width: 14px; height: 14px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 15px rgba(${shipment.status === 'delivered' ? '34, 197, 94' : '239, 68, 68'}, 0.6); animation: pulse 2s infinite;"></div>`,
-                                        iconSize: [14, 14],
-                                        iconAnchor: [7, 7]
+                                        className: 'custom-div-icon',
+                                        html: `
+                                            <div class="truck-marker-container" style="--marker-color: ${shipment.last_location_mock ? '#ef4444' : '#10b981'};">
+                                                <div class="truck-pulse"></div>
+                                                <div class="truck-icon-bg">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                                                        <path d="M22.21 10.74c-.04-.08-.08-.16-.13-.23l-3-4C18.84 6.18 18.44 6 18 6H9c-1.1 0-2 .9-2 2v2H2c-1.1 0-2 .9-2 2v5c0 1.1.9 2 2 2h2c0 1.66 1.34 3 3 3s3-1.34 3-3h4c0 1.66 1.34 3 3 3s3-1.34 3-3h1c1.1 0 2-.9 2-2v-5.26c0-.28-.06-.56-.16-.8c-.06-.15-.14-.29-.24-.42l-.39-.58zM7 19c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm11 0c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm1-9.5V12h-3V7.5L18 9.5z" />
+                                                    </svg>
+                                                </div>
+                                            </div>
+                                        `,
+                                        iconSize: [40, 40],
+                                        iconAnchor: [20, 20],
+                                        popupAnchor: [0, -20]
                                     })}
                                 >
                                     <Popup>
-                                        <div className={`font-black text-[12px] uppercase mb-1 ${shipment.status === 'delivered' ? 'text-emerald-600' : 'text-red-600'}`}>
-                                            {shipment.status === 'delivered' ? 'Pengiriman Selesai' : 'Posisi Driver'}
+                                        <div className={`mb-1 text-[11px] font-black uppercase tracking-wide ${isDelivered ? 'text-emerald-600' : 'text-red-600'}`}>
+                                            {isDelivered ? 'Pengiriman Selesai' : 'Posisi Driver dari GPS App'}
                                         </div>
-                                        <div className="font-bold text-[11px]">{shipment.driver_name}</div>
+                                        <div className="text-[13px] font-bold text-slate-900">{shipment.driver_name || 'Driver'}</div>
+                                        <div className="text-[11px] font-semibold text-slate-500">
+                                            {shipment.last_location_at ? `Update ${shipment.last_location_at}` : `${driver[0]}, ${driver[1]}`}
+                                        </div>
+                                        
+                                        {shipment.driver_id && (
+                                            <button
+                                                onClick={() => router.get(route('drivers.index'), { tab: 'tracking', id: shipment.driver_id })}
+                                                className="mt-3 w-full flex items-center justify-center gap-2 bg-[#3632c0] hover:bg-[#2a27a3] text-white text-[10px] font-black uppercase tracking-widest py-2 px-3 rounded-lg transition-all shadow-md active:scale-95"
+                                            >
+                                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                                </svg>
+                                                Lihat di Live Tracking
+                                            </button>
+                                        )}
                                     </Popup>
                                 </Marker>
                             )}
                         </React.Fragment>
                     );
                 })}
+            </MapContainer>
 
-                <div className="absolute bottom-4 left-4 z-[1000] bg-white/90 backdrop-blur px-3 py-2 rounded-xl border border-gray-100 shadow-sm">
-                    <div className="flex items-center space-x-2">
-                        <div className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></div>
-                        <span className="text-[10px] font-black text-gray-500 tracking-widest uppercase">Live Shipment Routes</span>
+            {!hasAnyGps && (
+                <div className="absolute left-4 top-4 z-[1000] max-w-[280px] rounded-2xl border border-amber-100 bg-white/95 px-4 py-3 shadow-xl backdrop-blur">
+                    <div className="text-[11px] font-black uppercase tracking-[0.16em] text-amber-600">GPS Driver Belum Masuk</div>
+                    <div className="mt-1 text-[12px] font-semibold leading-relaxed text-slate-600">
+                        Marker driver akan muncul setelah driver app mengirim lokasi ke server.
                     </div>
                 </div>
-            </MapContainer>
-            <style jsx>{`
-                @keyframes pulse {
-                    0% { transform: scale(1); opacity: 1; }
-                    50% { transform: scale(1.5); opacity: 0.5; }
-                    100% { transform: scale(1); opacity: 1; }
+            )}
+
+            <div className="absolute bottom-4 left-4 z-[1000] rounded-xl border border-gray-100 bg-white/95 px-3 py-2 shadow-sm backdrop-blur">
+                <div className="flex items-center gap-2">
+                    <span className="h-2 w-2 rounded-full bg-blue-600"></span>
+                    <span className="text-[10px] font-black uppercase tracking-widest text-gray-500">Rute Asal - Tujuan</span>
+                </div>
+            </div>
+
+            <style>{`
+                .shipment-map-marker {
+                    background: transparent;
+                    border: 0;
+                }
+
+                .shipment-marker {
+                    align-items: center;
+                    background: var(--marker-color);
+                    border: 3px solid #fff;
+                    border-radius: 999px;
+                    box-shadow: 0 10px 25px rgb(15 23 42 / 0.25);
+                    color: #fff;
+                    display: flex;
+                    justify-content: center;
+                    position: relative;
+                    width: 32px;
+                    height: 32px;
+                }
+
+                .shipment-marker svg {
+                    width: 16px;
+                    height: 16px;
+                }
+
+                .truck-marker-container {
+                    position: relative;
+                    width: 42px;
+                    height: 42px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                }
+
+                .truck-icon-bg {
+                    width: 42px;
+                    height: 42px;
+                    background: var(--marker-color);
+                    border: 3px solid white;
+                    border-radius: 14px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    color: white;
+                    box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+                    z-index: 2;
+                }
+
+                .truck-icon-bg svg {
+                    width: 24px;
+                    height: 24px;
+                }
+
+                .shipment-marker-pulse::after, .truck-pulse {
+                    animation: shipment-marker-pulse 2s infinite;
+                    border: 2px solid var(--marker-color);
+                    border-radius: 999px;
+                    content: '';
+                    inset: -8px;
+                    opacity: 0.45;
+                    position: absolute;
+                }
+                
+                .truck-pulse {
+                    border-radius: 16px;
+                    inset: -6px;
+                }
+
+                @keyframes shipment-marker-pulse {
+                    0% { transform: scale(0.8); opacity: 0.6; }
+                    70% { transform: scale(1.4); opacity: 0; }
+                    100% { transform: scale(1.4); opacity: 0; }
                 }
             `}</style>
         </div>

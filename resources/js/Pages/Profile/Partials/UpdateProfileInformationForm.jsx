@@ -166,6 +166,10 @@ function normalizeRole(role) {
         return 'Manager Gudang';
     }
 
+    if (value.includes('supervisor') || value.includes('spv')) {
+        return 'Supervisor Gudang';
+    }
+
     if (value.includes('staff') || value.includes('staf')) {
         return 'Staff Operasional';
     }

@@ -31,8 +31,13 @@ class Driver extends Model
     public function hasActiveShipment()
     {
         return $this->shipments()
-            ->whereIn('status', ['in-transit', 'on-time', 'delayed'])
-            ->whereNotIn('tracking_stage', ['delivered'])
+            ->where(function ($query) {
+                $query->where('tracking_stage', '!=', 'delivered')
+                    ->orWhere(function ($q) {
+                        $q->where('tracking_stage', 'delivered')
+                            ->where('pod_verification_status', '!=', 'approved');
+                    });
+            })
             ->exists();
     }
 

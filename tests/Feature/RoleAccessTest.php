@@ -30,6 +30,7 @@ class RoleAccessTest extends TestCase
                 'name' => 'Staff Gudang',
                 'email' => 'staff@example.com',
                 'phone' => '08123456780',
+                'role' => 'Staff',
                 'password' => 'password',
                 'password_confirmation' => 'password',
             ]);
@@ -37,6 +38,29 @@ class RoleAccessTest extends TestCase
         $response->assertRedirect(route('settings', ['active' => 'staff'], false));
         $this->assertDatabaseHas('users', [
             'email' => 'staff@example.com',
+            'status' => 'active',
+        ]);
+    }
+
+    public function test_manager_can_create_supervisor_account(): void
+    {
+        $manager = $this->userWithRole('Manager');
+        Role::firstOrCreate(['name' => 'Supervisor'], ['description' => 'Koordinator operasional gudang']);
+
+        $response = $this
+            ->actingAs($manager)
+            ->post(route('settings.staff.store'), [
+                'name' => 'Supervisor Gudang',
+                'email' => 'supervisor@example.com',
+                'phone' => '08123456782',
+                'role' => 'Supervisor',
+                'password' => 'password',
+                'password_confirmation' => 'password',
+            ]);
+
+        $response->assertRedirect(route('settings', ['active' => 'staff'], false));
+        $this->assertDatabaseHas('users', [
+            'email' => 'supervisor@example.com',
             'status' => 'active',
         ]);
     }
@@ -86,6 +110,31 @@ class RoleAccessTest extends TestCase
         $this->actingAs($staff)->post(route('supplier.store'), [])->assertForbidden();
         $this->actingAs($staff)->post(route('purchase-orders.store'), [])->assertForbidden();
         $this->actingAs($staff)->post(route('shipments.store'), [])->assertForbidden();
+    }
+
+    public function test_supervisor_has_operational_approval_access_but_not_admin_access(): void
+    {
+        $supervisor = $this->userWithRole('Supervisor');
+
+        $this->actingAs($supervisor)->get(route('dashboard'))->assertOk();
+        $this->actingAs($supervisor)->get(route('warehouse'))->assertOk();
+        $this->actingAs($supervisor)->get(route('inventory'))->assertOk();
+        $this->actingAs($supervisor)->get(route('transaction'))->assertOk();
+        $this->actingAs($supervisor)->get(route('transaction.export'))->assertOk();
+        $this->actingAs($supervisor)->get(route('supplier'))->assertOk();
+        $this->actingAs($supervisor)->get(route('purchase-orders.index'))->assertOk();
+        $this->actingAs($supervisor)->get(route('purchase-orders.create'))->assertOk();
+        $this->actingAs($supervisor)->get(route('shipments.index'))->assertOk();
+        $this->actingAs($supervisor)->get(route('shipments.create'))->assertOk();
+        $this->actingAs($supervisor)->get(route('reports'))->assertOk();
+        $this->actingAs($supervisor)->get(route('rack.allocation'))->assertOk();
+
+        $this->actingAs($supervisor)->get(route('settings'))->assertForbidden();
+        $this->actingAs($supervisor)->get(route('drivers.index'))->assertForbidden();
+        $this->actingAs($supervisor)->get(route('inventory.create'))->assertForbidden();
+        $this->actingAs($supervisor)->post(route('warehouse.zones.store'), [])->assertForbidden();
+        $this->actingAs($supervisor)->post(route('warehouse.racks.store'), [])->assertForbidden();
+        $this->actingAs($supervisor)->post(route('supplier.store'), [])->assertForbidden();
     }
 
     public function test_staff_can_record_outbound_stock_but_cannot_create_products(): void

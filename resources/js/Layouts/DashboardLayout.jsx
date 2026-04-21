@@ -1,71 +1,26 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link, usePage } from '@inertiajs/react';
-
-// Sidebar Icons
-const CubeIcon = ({ className }) => (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
-        <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
-        <line x1="12" y1="22.08" x2="12" y2="12"></line>
-    </svg>
-);
-const GridIcon = ({ className }) => (
-  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-  </svg>
-);
-const HomeIcon = ({ className }) => (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-3m0 0l7-4 7 4M5 9v10a1 1 0 001 1h2m14-11v10a1 1 0 01-1 1h-2m0-14l7 4v10a1 1 0 01-1 1H3a1 1 0 01-1-1V9l7-4z" />
-    </svg>
-);
-const BoxIcon = ({ className }) => (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.325 15.582l-6.332-6.332m0 0L18.49 3.091A1.5 1.5 0 0018 2h-4.5a1.5 1.5 0 00-1.5 1.5v6M12 21h-9a1.5 1.5 0 01-1.5-1.5v-15A1.5 1.5 0 013 3h9m0 0V1.5a1.5 1.5 0 011.5-1.5H18a1.5 1.5 0 011.5 1.5V9" />
-    </svg>
-);
-const DocumentIcon = ({ className }) => (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-    </svg>
-);
-const UsersIcon = ({ className }) => (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 19H9a6 6 0 0112 0v1H3v-1a6 6 0 0112 0z" />
-    </svg>
-);
-const ChartIcon = ({ className }) => (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-    </svg>
-);
-const TruckIcon = ({ className }) => (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l2.414 2.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001-1v-4a1 1 0 011-1h4m0 0a1 1 0 011-1h2m-2 1V5" />
-    </svg>
-);
-const ShoppingCartIcon = ({ className }) => (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-    </svg>
-);
-
-// Header Icons
-const SearchIcon = ({ className }) => (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-    </svg>
-);
-const BellIcon = ({ className }) => (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-    </svg>
-);
-const HelpCircleIcon = ({ className }) => (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-    </svg>
-);
+import {
+    LayoutDashboard,
+    Boxes,
+    Home,
+    ArrowRightLeft,
+    ClipboardCheck,
+    FileText,
+    ShoppingCart,
+    Users,
+    BarChart3,
+    Truck,
+    Settings,
+    HelpCircle,
+    Bell,
+    Search,
+    ChevronDown,
+    ChevronRight,
+    ChevronLeft,
+    Package,
+    Sparkles
+} from 'lucide-react';
 
 import Dropdown from '@/Components/Dropdown';
 import FloatingBubble from '@/Components/FloatingBubble';
@@ -78,13 +33,130 @@ export default function DashboardLayout({
     onSearch,
     headerRight,
     contentClassName = 'max-w-[1400px] mx-auto',
+    fullPage = false,
 }) {
     const { url, props } = usePage();
     const { auth } = props;
     const userRole = normalizeRoleKey(auth?.user?.role_name || auth?.user?.role);
     const isManager = userRole === 'manager';
-    
-    // Notification Read State
+    const isSupervisor = userRole === 'supervisor';
+    const canViewReports = isManager || isSupervisor;
+    const canManageWarehouseOps = isManager || isSupervisor;
+
+    // Sidebar States (Persisted)
+    const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
+        if (typeof window !== 'undefined') {
+            return localStorage.getItem('sidebar_collapsed') === 'true';
+        }
+        return false;
+    });
+
+    const [openMenus, setOpenMenus] = useState(() => {
+        if (typeof window !== 'undefined') {
+            const saved = sessionStorage.getItem('sidebar_open_menus');
+            return saved ? JSON.parse(saved) : [];
+        }
+        return [];
+    });
+
+    const sidebarScrollRef = useRef(null);
+
+    const navMenus = [
+        { title: 'Dasbor', url: '/dashboard', icon: LayoutDashboard, show: true },
+        { title: 'Aether AI', url: '/aether', icon: Sparkles, show: true },
+        {
+            title: 'Gudang & Operasional',
+            icon: Home,
+            show: true,
+            items: [
+                { title: 'Manajemen Gudang', url: '/warehouse', show: true },
+                { title: 'Transfer Rack', url: '/rack-allocation', show: canManageWarehouseOps },
+                { title: 'Stock Opname', url: '/stock-opname', show: canManageWarehouseOps },
+            ]
+        },
+        { title: 'Inventaris', url: '/inventory', icon: Boxes, show: true },
+        {
+            title: 'Pembelian & Retur',
+            icon: ShoppingCart,
+            show: true,
+            items: [
+                { title: 'Pesanan Pembelian', url: '/purchase-orders', show: true },
+                { title: 'Pemasok', url: '/supplier', show: true },
+            ]
+        },
+        {
+            title: 'Dokumen Transaksi',
+            icon: FileText,
+            show: true,
+            items: [
+                { title: 'Transaksi', url: '/transaction', show: true },
+                { title: 'Dokumen WMS', url: '/wms-documents', show: canManageWarehouseOps },
+            ]
+        },
+        {
+            title: 'Logistik Area',
+            icon: Truck,
+            show: true,
+            items: [
+                { title: 'Pengiriman', url: '/shipments', show: true },
+                { title: 'Manajemen Driver', url: '/drivers', show: isManager },
+            ]
+        },
+        {
+            title: 'Sistem',
+            icon: Settings,
+            show: true,
+            items: [
+                { title: 'Laporan', url: '/reports', show: canViewReports },
+                { title: 'Pengaturan', url: '/settings', show: isManager },
+            ]
+        }
+    ];
+
+    // Initial check to ensure active menu is open
+    useEffect(() => {
+        navMenus.forEach(menu => {
+            if (menu.items) {
+                const isActiveMenu = menu.items.some(item => isActive(item.url));
+                if (isActiveMenu && !openMenus.includes(menu.title)) {
+                    setOpenMenus(prev => {
+                        const newOpen = [...prev, menu.title];
+                        sessionStorage.setItem('sidebar_open_menus', JSON.stringify(newOpen));
+                        return newOpen;
+                    });
+                }
+            }
+        });
+    }, [url]);
+
+    // Restore scroll position
+    useEffect(() => {
+        if (sidebarScrollRef.current) {
+            const savedScroll = sessionStorage.getItem('sidebar_scroll_pos');
+            if (savedScroll) {
+                sidebarScrollRef.current.scrollTop = parseInt(savedScroll, 10);
+            }
+        }
+    }, [url]);
+
+    const handleSidebarScroll = (e) => {
+        sessionStorage.setItem('sidebar_scroll_pos', e.target.scrollTop);
+    };
+
+    const toggleSidebar = () => {
+        const newVal = !isSidebarCollapsed;
+        setIsSidebarCollapsed(newVal);
+        localStorage.setItem('sidebar_collapsed', newVal);
+    };
+
+    const toggleMenu = (title) => {
+        setOpenMenus(prev => {
+            const newOpen = prev.includes(title) ? prev.filter(t => t !== title) : [...prev, title];
+            sessionStorage.setItem('sidebar_open_menus', JSON.stringify(newOpen));
+            return newOpen;
+        });
+    };
+
     const [readIds, setReadIds] = useState([]);
     const [toastNotifications, setToastNotifications] = useState([]);
     const toastSeenIds = useRef(new Set());
@@ -164,86 +236,135 @@ export default function DashboardLayout({
     return (
         <div className="flex h-screen bg-[#f8f9fc] font-sans antialiased text-gray-900">
             {/* Sidebar */}
-            <div className="w-[270px] bg-white flex flex-col justify-between flex-shrink-0 z-[110] shadow-[4px_0_24px_rgba(0,0,0,0.02)] relative border-r border-[#edf2f7]">
-                <div>
-                     {/* Logo Area */}
-                     <div className="px-8 py-9 border-b border-gray-50/50">
-                         <div className="flex items-center space-x-3.5">
-                             <div className="w-[42px] h-[42px] bg-[#3632c0] rounded-[14px] flex items-center justify-center flex-shrink-0 shadow-lg shadow-indigo-200/50">
-                                 <CubeIcon className="w-[20px] h-[20px] text-white" />
-                             </div>
-                             <div>
-                                 <h1 className="text-[18px] font-extrabold text-[#1a202c] tracking-tight leading-tight">Aether Logistix</h1>
-                                 <p className="text-[10px] font-bold text-gray-500 tracking-wider mt-0.5">KINETIC ARCHITECT V1.0</p>
-                             </div>
-                         </div>
-                     </div>
+            <div className={`bg-white flex flex-col justify-between flex-shrink-0 z-[110] shadow-[4px_0_24px_rgba(0,0,0,0.02)] relative border-r border-[#edf2f7] transition-all duration-300 ${isSidebarCollapsed ? 'w-[96px]' : 'w-[270px]'}`}>
+                {/* Collapse Toggle Button */}
+                <button
+                    onClick={toggleSidebar}
+                    className="absolute -right-[16px] top-9 w-8 h-8 flex items-center justify-center bg-white border border-gray-200 text-gray-500 hover:text-[#3632c0] rounded-full shadow-sm hover:shadow-md transition-all z-[120] hover:scale-105"
+                >
+                    <ChevronLeft className={`w-5 h-5 transition-transform duration-300 ${isSidebarCollapsed ? 'rotate-180' : ''}`} strokeWidth={2.5} />
+                </button>
 
-                     {/* Navigation */}
-                     <nav className="px-5 space-y-2 mt-4">
-                          <Link href="/dashboard" className={`flex items-center space-x-3.5 px-5 py-3.5 rounded-2xl font-bold text-[13px] transition-colors ${isActive('/dashboard') ? 'bg-white text-[#3632c0] shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-gray-50' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'}`}>
-                             <GridIcon className="w-5 h-5" />
-                             <span>Dasbor</span>
-                          </Link>
-                          <Link href="/warehouse" className={`flex items-center space-x-3.5 px-5 py-3.5 rounded-2xl font-bold text-[13px] transition-colors ${isActive('/warehouse') ? 'bg-white text-[#3632c0] shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-gray-50' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'}`}>
-                             <HomeIcon className="w-5 h-5" />
-                             <span className={isActive('/warehouse') ? '' : 'text-gray-500'}>Manajemen Gudang</span>
-                          </Link>
-                          <Link href="/inventory" className={`flex items-center space-x-3.5 px-5 py-3.5 rounded-2xl font-bold text-[13px] transition-colors ${isActive('/inventory') ? 'bg-white text-[#3632c0] shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-gray-50' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'}`}>
-                             <BoxIcon className="w-5 h-5" />
-                             <span className={isActive('/inventory') ? '' : 'text-gray-500'}>Inventaris</span>
-                          </Link>
-                          <Link href="/transaction" className={`flex items-center space-x-3.5 px-5 py-3.5 rounded-2xl font-bold text-[13px] transition-colors ${isActive('/transaction') ? 'bg-white text-[#3632c0] shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-gray-50' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'}`}>
-                             <DocumentIcon className="w-5 h-5" />
-                             <span className={isActive('/transaction') ? '' : 'text-gray-500'}>Transaksi</span>
-                          </Link>
-                          <Link href="/purchase-orders" className={`flex items-center space-x-3.5 px-5 py-3.5 rounded-2xl font-bold text-[13px] transition-colors ${isActive('/purchase-orders') ? 'bg-white text-[#3632c0] shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-gray-50' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'}`}>
-                             <ShoppingCartIcon className="w-5 h-5" />
-                             <span className={isActive('/purchase-orders') ? '' : 'text-gray-500'}>Pesanan Pembelian</span>
-                          </Link>
-                          <Link href="/supplier" className={`flex items-center space-x-3.5 px-5 py-3.5 rounded-2xl font-bold text-[13px] transition-colors ${isActive('/supplier') ? 'bg-white text-[#3632c0] shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-gray-50' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'}`}>
-                             <UsersIcon className="w-5 h-5" />
-                             <span className={isActive('/supplier') ? '' : 'text-gray-500'}>Pemasok</span>
-                          </Link>
-                          {isManager && (
-                              <Link href="/reports" className={`flex items-center space-x-3.5 px-5 py-3.5 rounded-2xl font-bold text-[13px] transition-colors ${isActive('/reports') ? 'bg-white text-[#3632c0] shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-gray-50' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'}`}>
-                                 <ChartIcon className="w-5 h-5" />
-                                 <span className={isActive('/reports') ? '' : 'text-gray-500'}>Laporan</span>
-                              </Link>
-                          )}
-                          <Link href="/shipments" className={`flex items-center space-x-3.5 px-5 py-3.5 rounded-2xl font-bold text-[13px] transition-colors ${isActive('/shipments') ? 'bg-white text-[#3632c0] shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-gray-50' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'}`}>
-                             <TruckIcon className="w-5 h-5" />
-                             <span className={isActive('/shipments') ? '' : 'text-gray-500'}>Pengiriman</span>
-                          </Link>
-                          {isManager && (
-                              <Link href="/drivers" className={`flex items-center space-x-3.5 px-5 py-3.5 rounded-2xl font-bold text-[13px] transition-colors ${isActive('/drivers') ? 'bg-white text-[#3632c0] shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-gray-50' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'}`}>
-                                 <UsersIcon className="w-5 h-5" />
-                                 <span className={isActive('/drivers') ? '' : 'text-gray-500'}>Manajemen Driver</span>
-                              </Link>
-                          )}
-                          {isManager && (
-                              <Link href="/settings" className={`flex items-center space-x-3.5 px-5 py-3.5 rounded-2xl font-bold text-[13px] transition-colors ${isActive('/settings') ? 'bg-white text-[#3632c0] shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-gray-50' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'}`}>
-                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                 </svg>
-                                 <span className={isActive('/settings') ? '' : 'text-gray-500'}>Pengaturan</span>
-                              </Link>
-                          )}
-                     </nav>
-                </div>
-                
+                <div className="flex flex-col h-full">
+                    {/* Logo Area */}
+                    <div className={`px-5 py-7 border-b border-gray-50/50 flex ${isSidebarCollapsed ? 'justify-center items-center' : 'items-center space-x-3.5 mx-3'} transition-all`}>
+                        <div className="w-[42px] h-[42px] bg-[#3632c0] rounded-[14px] flex items-center justify-center flex-shrink-0 shadow-lg shadow-indigo-200/50">
+                            <Package className="w-[20px] h-[20px] text-white" />
+                        </div>
+                        {!isSidebarCollapsed && (
+                            <div className="overflow-hidden transition-all whitespace-nowrap">
+                                <h1 className="text-[17px] font-extrabold text-[#1a202c] tracking-tight leading-tight">Aether Logistix</h1>
+                                <p className="text-[9px] font-bold text-gray-500 tracking-wider mt-0.5 uppercase">Kinetic Architect V1.0</p>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Navigation */}
+                    <nav
+                        ref={sidebarScrollRef}
+                        onScroll={handleSidebarScroll}
+                        className="flex-1 overflow-y-auto overflow-x-visible custom-scrollbar px-4 pt-6 pb-4 space-y-2"
+                    >
+                        {navMenus.filter(menu => menu.show).map((menu, mIdx) => {
+                            // Render Single Item
+                            if (!menu.items) {
+                                const active = isActive(menu.url);
+                                return (
+                                    <Link
+                                        key={mIdx}
+                                        href={menu.url}
+                                        className={`group relative flex items-center ${isSidebarCollapsed ? 'w-[44px] h-[44px] mx-auto justify-center rounded-[14px]' : 'w-full space-x-3 px-4 py-3 rounded-[12px]'} font-bold text-[13px] transition-all ${active ? 'bg-[#f4f3ff] text-[#3632c0]' : 'text-gray-500 hover:text-[#3632c0] hover:bg-gray-50'}`}
+                                    >
+                                        <menu.icon className={`flex-shrink-0 transition-transform group-hover:scale-110 ${isSidebarCollapsed ? 'w-[22px] h-[22px]' : 'w-[18px] h-[18px]'}`} strokeWidth={active ? 2.5 : 2} />
+                                        {!isSidebarCollapsed && (
+                                            <span className="whitespace-nowrap">{menu.title}</span>
+                                        )}
+                                        {/* Tooltip for collapsed mode */}
+                                        {isSidebarCollapsed && (
+                                            <div className="absolute left-[56px] opacity-0 invisible group-hover:opacity-100 group-hover:visible bg-[#1a202c] text-white text-[12px] font-bold py-1.5 px-3 rounded-xl whitespace-nowrap z-[200] shadow-xl border border-gray-700/50 transition-all ml-1 pointer-events-none">
+                                                {menu.title}
+                                                <div className="absolute top-1/2 -left-1 -translate-y-1/2 w-2 h-2 bg-[#1a202c] rotate-45 border-b border-l border-gray-700/50"></div>
+                                            </div>
+                                        )}
+                                    </Link>
+                                );
+                            }
+
+                            // Render Dropdown Parent Item
+                            const visibleItems = menu.items.filter(i => i.show);
+                            if (visibleItems.length === 0) return null;
+
+                            const isOpen = openMenus.includes(menu.title);
+                            const hasActiveChild = visibleItems.some(i => isActive(i.url));
+
+                            return (
+                                <div key={mIdx} className="w-full relative">
+                                    <button
+                                        onClick={() => isSidebarCollapsed ? toggleSidebar() : toggleMenu(menu.title)}
+                                        className={`group relative flex items-center ${isSidebarCollapsed ? 'w-[44px] h-[44px] mx-auto justify-center rounded-[14px]' : 'w-full justify-between px-4 py-3 rounded-[12px]'} font-bold text-[13px] transition-all ${hasActiveChild && !isOpen && isSidebarCollapsed ? 'bg-[#f4f3ff] text-[#3632c0]' : 'text-gray-500 hover:text-[#3632c0] hover:bg-gray-50'} ${(hasActiveChild || isOpen) && !isSidebarCollapsed ? 'text-[#3632c0]' : ''}`}
+                                    >
+                                        <div className={`flex items-center ${isSidebarCollapsed ? 'justify-center' : 'space-x-3'}`}>
+                                            <menu.icon className={`flex-shrink-0 transition-transform group-hover:scale-110 ${isSidebarCollapsed ? 'w-[22px] h-[22px]' : 'w-[18px] h-[18px]'}`} strokeWidth={hasActiveChild ? 2.5 : 2} />
+                                            {!isSidebarCollapsed && (
+                                                <span className="whitespace-nowrap">{menu.title}</span>
+                                            )}
+                                        </div>
+                                        {!isSidebarCollapsed && (
+                                            <div className={`transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}>
+                                                <ChevronDown className="w-4 h-4 opacity-70" />
+                                            </div>
+                                        )}
+
+                                        {isSidebarCollapsed && (
+                                            <div className="absolute left-[56px] opacity-0 invisible group-hover:opacity-100 group-hover:visible bg-[#1a202c] text-white text-[12px] font-bold py-1.5 px-3 rounded-xl whitespace-nowrap z-[200] shadow-xl border border-gray-700/50 transition-all ml-1 pointer-events-none">
+                                                {menu.title}
+                                                <div className="absolute top-1/2 -left-1 -translate-y-1/2 w-2 h-2 bg-[#1a202c] rotate-45 border-b border-l border-gray-700/50"></div>
+                                            </div>
+                                        )}
+                                    </button>
+
+                                    {/* Children Container with indicator line */}
+                                    <div
+                                        className={`overflow-hidden transition-all duration-300 ease-in-out ${isOpen && !isSidebarCollapsed ? 'max-h-[500px] opacity-100 mt-1 mb-2' : 'max-h-0 opacity-0'}`}
+                                    >
+                                        <div className="ml-6 pl-4 border-l-2 border-gray-100 space-y-1.5 py-1">
+                                            {visibleItems.map((item, iIdx) => {
+                                                const active = isActive(item.url);
+                                                return (
+                                                    <Link
+                                                        key={iIdx}
+                                                        href={item.url}
+                                                        className={`block w-full text-left px-3 py-2 rounded-lg text-[13px] font-bold transition-all ${active ? 'text-[#3632c0] bg-indigo-50/50' : 'text-gray-400 hover:text-gray-700 hover:bg-gray-50'}`}
+                                                    >
+                                                        {item.title}
+                                                    </Link>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </nav>                </div>
+
                 {/* Bottom Actions Panel */}
-                <div className="px-5 pb-8 flex flex-col space-y-4">
-
-                     <Dropdown>
+                <div className={`px-5 pb-8 pt-4 border-t border-gray-50 flex flex-col space-y-4 ${isSidebarCollapsed ? 'items-center' : ''}`}>
+                    <Dropdown>
                         <Dropdown.Trigger>
-                            <button className="w-full flex items-center space-x-3 px-2 text-gray-500 hover:text-gray-700 transition-colors group">
-                                <HelpCircleIcon className={`w-[18px] h-[18px] transition-colors ${isActive('/help') ? 'text-[#3632c0]' : 'group-hover:text-gray-700'}`} />
-                                <span className={`text-[12px] font-bold ${isActive('/help') ? 'text-[#3632c0]' : ''}`}>Pusat Bantuan</span>
+                            <button className={`w-full flex items-center ${isSidebarCollapsed ? 'justify-center' : 'space-x-3 px-2'} text-gray-500 hover:text-[#3632c0] transition-colors group relative`}>
+                                <HelpCircle className={`w-[20px] h-[20px] transition-transform group-hover:scale-110 ${isActive('/help') ? 'text-[#3632c0]' : ''}`} />
+                                {!isSidebarCollapsed && (
+                                    <span className={`text-[12px] font-bold ${isActive('/help') ? 'text-[#3632c0]' : ''}`}>Pusat Bantuan</span>
+                                )}
+                                {isSidebarCollapsed && (
+                                    <div className="absolute left-[64px] opacity-0 invisible group-hover:opacity-100 group-hover:visible bg-[#1a202c] text-white text-[12px] font-bold py-1.5 px-3 rounded-xl whitespace-nowrap z-[200] shadow-xl border border-gray-700/50 transition-all ml-1 pointer-events-none">
+                                        Pusat Bantuan
+                                        <div className="absolute top-1/2 -left-1 -translate-y-1/2 w-2 h-2 bg-[#1a202c] rotate-45 border-b border-l border-gray-700/50"></div>
+                                    </div>
+                                )}
                             </button>
                         </Dropdown.Trigger>
-                        <Dropdown.Content align="left" width="56" className="mb-2 bottom-full origin-bottom-left">
+                        <Dropdown.Content align={isSidebarCollapsed ? "left" : "left"} width="56" className="mb-2 bottom-full origin-bottom-left">
                             <Dropdown.Link href="#" className="font-bold text-[12px]">Bantuan Langsung</Dropdown.Link>
                             <Dropdown.Link href="#" className="font-bold text-[12px]">Dokumentasi Sistem</Dropdown.Link>
                         </Dropdown.Content>
@@ -252,32 +373,30 @@ export default function DashboardLayout({
             </div>
 
             {/* Main Content Area */}
-            <div className="flex-1 flex flex-col h-full overflow-hidden relative bg-[#f8f9fc]">
+            <div className="flex-1 flex flex-col h-full min-w-0 overflow-hidden relative bg-[#f8f9fc]">
                 {toastNotifications.length > 0 && (
                     <div className="fixed top-24 right-8 z-[400] flex flex-col gap-3 pointer-events-none">
                         {toastNotifications.map((notif) => (
                             <div
                                 key={notif.id}
-                                className={`w-[360px] rounded-[24px] border shadow-[0_20px_50px_rgba(0,0,0,0.15)] backdrop-blur-sm px-5 py-4 pointer-events-auto animate-in slide-in-from-right duration-300 ${
-                                    notif.type === 'error'
-                                        ? 'bg-red-50/95 border-red-100'
-                                        : notif.type === 'warning'
-                                            ? 'bg-amber-50/95 border-amber-100'
-                                            : notif.type === 'success'
-                                                ? 'bg-emerald-50/95 border-emerald-100'
-                                                : 'bg-white/95 border-indigo-100'
-                                }`}
+                                className={`w-[360px] rounded-[24px] border shadow-[0_20px_50px_rgba(0,0,0,0.15)] backdrop-blur-sm px-5 py-4 pointer-events-auto animate-in slide-in-from-right duration-300 ${notif.type === 'error'
+                                    ? 'bg-red-50/95 border-red-100'
+                                    : notif.type === 'warning'
+                                        ? 'bg-amber-50/95 border-amber-100'
+                                        : notif.type === 'success'
+                                            ? 'bg-emerald-50/95 border-emerald-100'
+                                            : 'bg-white/95 border-indigo-100'
+                                    }`}
                             >
                                 <div className="flex items-start gap-3">
-                                    <div className={`mt-1 h-3 w-3 rounded-full ${
-                                        notif.type === 'error'
-                                            ? 'bg-red-500'
-                                            : notif.type === 'warning'
-                                                ? 'bg-amber-500'
-                                                : notif.type === 'success'
-                                                    ? 'bg-emerald-500'
-                                                    : 'bg-indigo-500'
-                                    }`} />
+                                    <div className={`mt-1 h-3 w-3 rounded-full ${notif.type === 'error'
+                                        ? 'bg-red-500'
+                                        : notif.type === 'warning'
+                                            ? 'bg-amber-500'
+                                            : notif.type === 'success'
+                                                ? 'bg-emerald-500'
+                                                : 'bg-indigo-500'
+                                        }`} />
                                     <div className="flex-1 min-w-0">
                                         <div className="text-[11px] font-black text-gray-400 uppercase tracking-[0.2em] mb-1">Realtime Alert</div>
                                         <div className="text-[14px] font-black text-[#1a202c] leading-tight">{notif.title}</div>
@@ -298,22 +417,23 @@ export default function DashboardLayout({
                 )}
 
                 {/* Header */}
+                {!fullPage && (
                 <header className="h-[76px] flex items-center justify-between px-10 flex-shrink-0 z-[100] bg-white shadow-[0_2px_12px_rgba(0,0,0,0.015)] border-b border-[#edf2f7]">
                     <div className="flex items-center space-x-4">
                         {headerTitle && (
                             <h2 className="text-[18px] font-black text-[#1a202c] mr-4">{headerTitle}</h2>
                         )}
                         <div className="flex-1 min-w-[380px] relative">
-                            <SearchIcon className="w-[17px] h-[17px] absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
-                            <input 
-                                type="text" 
+                            <Search className="w-[17px] h-[17px] absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+                            <input
+                                type="text"
                                 placeholder={headerSearchPlaceholder || "Cari..."}
                                 className="w-full bg-[#f4f5f9] text-[13px] text-gray-700 rounded-[12px] pl-11 pr-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-[#3632c0] border border-transparent transition-all font-bold placeholder-gray-400 shadow-[inset_0_2px_4px_rgba(0,0,0,0.01)]"
                                 value={searchValue || ''}
                                 onChange={(e) => onSearch && onSearch(e.target.value)}
                             />
                         </div>
-                        
+
                         {/* Real-time System Status Indicator */}
                         <div className="hidden lg:flex items-center space-x-2 px-4 py-2 bg-emerald-50 rounded-full border border-emerald-100/50 shadow-sm shadow-emerald-100/20">
                             <span className="relative flex h-2.5 w-2.5">
@@ -323,7 +443,7 @@ export default function DashboardLayout({
                             <span className="text-[10px] font-black text-emerald-600 uppercase tracking-[0.1em]">Core System: Operational</span>
                         </div>
                     </div>
-                    
+
                     <div className="flex items-center space-x-8">
                         {headerRight ? headerRight : (
                             <>
@@ -332,7 +452,7 @@ export default function DashboardLayout({
                                         <Dropdown.Trigger>
                                             <button className="hover:text-gray-900 transition-all relative mt-1 group">
                                                 <div className="p-2.5 rounded-xl bg-gray-50 group-hover:bg-indigo-50 group-hover:text-[#3632c0] transition-colors">
-                                                    <BellIcon className="w-[24px] h-[24px]" />
+                                                    <Bell className="w-[22px] h-[22px]" />
                                                 </div>
                                                 {activeNotifications.length > 0 && (
                                                     <span className="absolute top-1 right-1 flex h-4 w-4">
@@ -350,7 +470,7 @@ export default function DashboardLayout({
                                                     <h3 className="text-[16px] font-black text-[#1a202c]">Notifikasi Sistem</h3>
                                                     <p className="text-[11px] font-bold text-gray-400">Pembaruan keadaan operasional riil</p>
                                                 </div>
-                                                <button 
+                                                <button
                                                     onClick={() => {
                                                         const allIds = props.notifications?.map(n => n.id) || [];
                                                         setReadIds(allIds);
@@ -364,17 +484,16 @@ export default function DashboardLayout({
                                             <div className="max-h-[480px] overflow-y-auto custom-scrollbar">
                                                 {activeNotifications.length > 0 ? (
                                                     activeNotifications.map((notif) => (
-                                                        <Link 
-                                                            key={notif.id} 
+                                                        <Link
+                                                            key={notif.id}
                                                             href={notif.link}
                                                             onClick={() => markAsRead(notif.id)}
                                                             className="flex items-start space-x-5 px-7 py-6 hover:bg-gray-50 transition-all border-b border-gray-50 last:border-0 group"
                                                         >
-                                                            <div className={`mt-1.5 w-3 h-3 rounded-full flex-shrink-0 shadow-sm border-2 border-white translate-y-0.5 ${
-                                                                notif.type === 'error' ? 'bg-red-500 shadow-red-100' : 
-                                                                notif.type === 'warning' ? 'bg-amber-500 shadow-amber-100' : 
-                                                                notif.type === 'success' ? 'bg-emerald-500 shadow-emerald-100' : 'bg-indigo-500 shadow-indigo-100'
-                                                            }`} />
+                                                            <div className={`mt-1.5 w-3 h-3 rounded-full flex-shrink-0 shadow-sm border-2 border-white translate-y-0.5 ${notif.type === 'error' ? 'bg-red-500 shadow-red-100' :
+                                                                notif.type === 'warning' ? 'bg-amber-500 shadow-amber-100' :
+                                                                    notif.type === 'success' ? 'bg-emerald-500 shadow-emerald-100' : 'bg-indigo-500 shadow-indigo-100'
+                                                                }`} />
                                                             <div className="flex-1">
                                                                 <div className="flex justify-between items-start mb-1">
                                                                     <div className="text-[14px] font-black text-[#1a202c] group-hover:text-indigo-600 transition-colors uppercase tracking-tight">{notif.title}</div>
@@ -387,14 +506,14 @@ export default function DashboardLayout({
                                                 ) : (
                                                     <div className="px-10 py-20 text-center">
                                                         <div className="bg-[#f8f9fb] w-20 h-20 rounded-[32px] flex items-center justify-center mx-auto mb-6 transform -rotate-12">
-                                                            <BellIcon className="w-10 h-10 text-gray-200" />
+                                                            <Bell className="w-10 h-10 text-gray-200" />
                                                         </div>
                                                         <p className="text-[15px] font-black text-gray-400">Keadan Normal</p>
                                                         <p className="text-[12px] font-bold text-gray-300 mt-2 italic">Belum ada pembaruan status sistem saat ini.</p>
                                                     </div>
                                                 )}
                                             </div>
-                                            {isManager && (
+                                            {canViewReports && (
                                                 <div className="px-7 py-4 bg-[#f8f9fb] text-center">
                                                     <Link href="/reports" className="text-[12px] font-black text-indigo-500 hover:text-indigo-700 uppercase tracking-widest transition-all flex items-center justify-center space-x-2">
                                                         <span>Monitoring Seluruh Laporan</span>
@@ -409,7 +528,7 @@ export default function DashboardLayout({
                                         <Dropdown.Trigger>
                                             <button className="hover:text-gray-900 transition-all mt-1 group">
                                                 <div className="p-2.5 rounded-xl bg-gray-50 group-hover:bg-indigo-50 group-hover:text-[#3632c0] transition-colors">
-                                                    <HelpCircleIcon className="w-[24px] h-[24px]" />
+                                                    <HelpCircle className="w-[22px] h-[22px]" />
                                                 </div>
                                             </button>
                                         </Dropdown.Trigger>
@@ -451,7 +570,7 @@ export default function DashboardLayout({
                                             </div>
                                         </div>
                                     </Dropdown.Trigger>
-                                    
+
                                     <Dropdown.Content align="right">
                                         <Dropdown.Link href={route('profile.edit')}>Profil Saya</Dropdown.Link>
                                         <Dropdown.Link href={route('logout')} method="post" as="button">
@@ -463,15 +582,20 @@ export default function DashboardLayout({
                         )}
                     </div>
                 </header>
+                )}
 
                 {/* Dashboard Scrollable Area */}
-                <main className="flex-1 overflow-x-hidden overflow-y-auto px-10 pt-8 pb-32 scroll-smooth">
-                    <div className={contentClassName}>
-                        {children}
-                    </div>
+                <main className={`flex-1 min-h-0 overflow-x-hidden scroll-smooth ${fullPage ? 'p-0 overflow-y-hidden bg-white' : 'px-10 pt-8 pb-32 overflow-y-auto bg-[#f8f9fc]'}`}>
+                    {fullPage ? (
+                        children
+                    ) : (
+                        <div className={contentClassName}>
+                            {children}
+                        </div>
+                    )}
                 </main>
             </div>
-            <FloatingBubble />
+            {url !== '/aether' && <FloatingBubble />}
         </div>
     );
 }
@@ -488,7 +612,7 @@ function playAlertTone(audioContextRef) {
 
     const context = audioContextRef.current;
     if (context.state === 'suspended') {
-        context.resume().catch(() => {});
+        context.resume().catch(() => { });
     }
 
     try {
@@ -525,6 +649,10 @@ function formatRoleLabel(role) {
         return 'Manager Gudang';
     }
 
+    if (value === 'supervisor') {
+        return 'Supervisor Gudang';
+    }
+
     if (value === 'staff') {
         return 'Staff Operasional';
     }
@@ -545,6 +673,10 @@ function normalizeRoleKey(role) {
 
     if (value.includes('admin gudang') || value.includes('manager') || value.includes('manajer')) {
         return 'manager';
+    }
+
+    if (value.includes('supervisor') || value.includes('spv')) {
+        return 'supervisor';
     }
 
     if (value.includes('staff') || value.includes('staf')) {

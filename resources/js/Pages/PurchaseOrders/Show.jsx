@@ -144,6 +144,27 @@ export default function Show({ purchaseOrder }) {
                                 <p className="text-[14px] font-bold text-gray-500 leading-relaxed">{purchaseOrder.notes}</p>
                             </div>
                         )}
+
+                        {purchaseOrder.goods_receipts?.length > 0 && (
+                            <div className="bg-white rounded-[24px] p-8 shadow-[0_2px_16px_rgba(0,0,0,0.02)] border border-[#edf2f7]">
+                                <h2 className="text-[14px] font-black text-[#1a202c] mb-4 uppercase tracking-wider">Dokumen Penerimaan</h2>
+                                <div className="space-y-3">
+                                    {purchaseOrder.goods_receipts.map((receipt) => (
+                                        <Link
+                                            key={receipt.id}
+                                            href={route('goods-receipts.show', receipt.id)}
+                                            className="flex items-center justify-between rounded-xl border border-gray-100 px-4 py-3 transition hover:border-indigo-200 hover:bg-indigo-50"
+                                        >
+                                            <div>
+                                                <div className="text-[13px] font-black text-[#1a202c]">{receipt.receipt_number}</div>
+                                                <div className="text-[11px] font-bold text-gray-400">{receipt.status} - {receipt.items?.length || 0} item</div>
+                                            </div>
+                                            <span className="text-[11px] font-black uppercase tracking-wider text-[#4f46e5]">Lihat</span>
+                                        </Link>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     <div className="space-y-6">

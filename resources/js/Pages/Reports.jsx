@@ -1,6 +1,6 @@
 import DashboardLayout from '@/Layouts/DashboardLayout';
 import { Head, router } from '@inertiajs/react';
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 
 const loadExportTools = async () => {
     const [{ default: ExcelJS }, { saveAs }] = await Promise.all([
@@ -138,131 +138,121 @@ export default function Reports({ data, reports }) {
     };
 
     const handleExportCurrentView = async () => {
-        if (!inventoryDistribution.length) {
-            alert('Tidak ada data inventory level untuk diekspor.');
-            return;
-        }
-
         try {
             const { ExcelJS, saveAs } = await loadExportTools();
             const workbook = new ExcelJS.Workbook();
-            const worksheet = workbook.addWorksheet('Level Inventaris');
+            const dateStr  = new Date().toISOString().slice(0, 10);
 
-            worksheet.columns = [
-                { header: 'NO', key: 'no', width: 8 },
-                { header: 'KATEGORI', key: 'category', width: 30 },
-                { header: 'TOTAL UNIT', key: 'total_units', width: 18 },
-                { header: 'PERSENTASE', key: 'share', width: 15 },
-            ];
-
-            const titleCell = worksheet.getCell('A1');
-            titleCell.value = 'LAPORAN LEVEL INVENTARIS';
-            titleCell.font = { name: 'Arial', size: 15, bold: true };
-            titleCell.alignment = { vertical: 'middle', horizontal: 'center' };
-            worksheet.mergeCells('A1:D1');
-            worksheet.getRow(1).height = 26;
-
-            const infoCell = worksheet.getCell('A2');
-            infoCell.value = `Tanggal Export: ${new Date().toLocaleString('id-ID')}`;
-            infoCell.font = { name: 'Arial', size: 10, italic: true, color: { argb: 'FF6B7280' } };
-            worksheet.mergeCells('A2:D2');
-
-            const headerRow = worksheet.getRow(4);
-            headerRow.values = worksheet.columns.map((column) => column.header);
-            headerRow.height = 22;
-            headerRow.eachCell((cell) => {
-                cell.fill = {
-                    type: 'pattern',
-                    pattern: 'solid',
-                    fgColor: { argb: 'FF1F2937' }
-                };
-                cell.font = {
-                    name: 'Arial',
-                    size: 11,
-                    bold: true,
-                    color: { argb: 'FFFFFFFF' }
-                };
+            const applyHeader = (cell) => {
+                cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1F2937' } };
+                cell.font = { name: 'Arial', size: 11, bold: true, color: { argb: 'FFFFFFFF' } };
                 cell.alignment = { vertical: 'middle', horizontal: 'center' };
-                cell.border = {
-                    top: { style: 'thin', color: { argb: 'FFD1D5DB' } },
-                    left: { style: 'thin', color: { argb: 'FFD1D5DB' } },
-                    bottom: { style: 'thin', color: { argb: 'FFD1D5DB' } },
-                    right: { style: 'thin', color: { argb: 'FFD1D5DB' } },
-                };
-            });
-
-            inventoryDistribution.forEach((item, index) => {
-                const share = inventoryDistributionSummary.totalUnits > 0
-                    ? item.total_qty / inventoryDistributionSummary.totalUnits
-                    : 0;
-
-                const row = worksheet.addRow({
-                    no: index + 1,
-                    category: item.name,
-                    total_units: item.total_qty,
-                    share,
-                });
-
-                row.eachCell((cell, colNumber) => {
+                cell.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } };
+            };
+            const applyRow = (row, i, leftCol = 2) => {
+                row.eachCell((cell, col) => {
                     cell.font = { name: 'Arial', size: 10 };
-                    cell.alignment = {
-                        vertical: 'middle',
-                        horizontal: colNumber === 2 ? 'left' : 'center'
-                    };
-                    cell.border = {
-                        top: { style: 'thin', color: { argb: 'FFE5E7EB' } },
-                        left: { style: 'thin', color: { argb: 'FFE5E7EB' } },
-                        bottom: { style: 'thin', color: { argb: 'FFE5E7EB' } },
-                        right: { style: 'thin', color: { argb: 'FFE5E7EB' } },
-                    };
-                    if (index % 2 === 0) {
-                        cell.fill = {
-                            type: 'pattern',
-                            pattern: 'solid',
-                            fgColor: { argb: 'FFF9FAFB' }
-                        };
-                    }
+                    cell.alignment = { vertical: 'middle', horizontal: col === leftCol ? 'left' : 'center' };
+                    cell.border = { top: { style: 'thin', color: { argb: 'FFE5E7EB' } }, left: { style: 'thin', color: { argb: 'FFE5E7EB' } }, bottom: { style: 'thin', color: { argb: 'FFE5E7EB' } }, right: { style: 'thin', color: { argb: 'FFE5E7EB' } } };
+                    if (i % 2 === 0) cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF9FAFB' } };
                 });
+            };
+            const applyTotalRow = (row) => {
+                row.eachCell((cell) => {
+                    cell.font = { name: 'Arial', size: 11, bold: true };
+                    cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFEFF6FF' } };
+                    cell.border = { top: { style: 'thin', color: { argb: 'FFCBD5E1' } }, left: { style: 'thin', color: { argb: 'FFCBD5E1' } }, bottom: { style: 'thin', color: { argb: 'FFCBD5E1' } }, right: { style: 'thin', color: { argb: 'FFCBD5E1' } } };
+                    cell.alignment = { vertical: 'middle', horizontal: 'center' };
+                });
+            };
+            const addTitle = (ws, cols, title, colCount) => {
+                ws.columns = cols;
+                const tc = ws.getCell('A1');
+                tc.value = title;
+                tc.font = { name: 'Arial', size: 15, bold: true };
+                tc.alignment = { vertical: 'middle', horizontal: 'center' };
+                ws.mergeCells(`A1:${String.fromCharCode(64 + colCount)}1`);
+                ws.getRow(1).height = 26;
+                const ic = ws.getCell('A2');
+                ic.value = `Tanggal Ekspor: ${new Date().toLocaleString('id-ID')}`;
+                ic.font = { name: 'Arial', size: 10, italic: true, color: { argb: 'FF6B7280' } };
+                ws.mergeCells(`A2:${String.fromCharCode(64 + colCount)}2`);
+                const hr = ws.getRow(4);
+                hr.values = cols.map(c => c.header);
+                hr.height = 22;
+                hr.eachCell(applyHeader);
+                ws.views = [{ state: 'frozen', ySplit: 4 }];
+            };
 
-                row.getCell('C').numFmt = '#,##0';
-                row.getCell('D').numFmt = '0.0%';
-            });
+            if (selectedDataSource === 'inventory') {
+                if (!inventoryDistribution.length) { alert('Tidak ada data level inventaris.'); return; }
+                const ws = workbook.addWorksheet('Level Inventaris');
+                addTitle(ws, [
+                    { header: 'NO', key: 'no', width: 6 },
+                    { header: 'KATEGORI', key: 'category', width: 32 },
+                    { header: 'TOTAL UNIT', key: 'total_qty', width: 16 },
+                    { header: 'PERSENTASE (%)', key: 'share', width: 16 },
+                ], 'LAPORAN LEVEL INVENTARIS', 4);
+                inventoryDistribution.forEach((item, i) => {
+                    const share = inventoryDistributionSummary.totalUnits > 0 ? item.total_qty / inventoryDistributionSummary.totalUnits : 0;
+                    const row = ws.addRow({ no: i + 1, category: item.name, total_qty: item.total_qty, share });
+                    applyRow(row, i, 2);
+                    row.getCell('C').numFmt = '#,##0';
+                    row.getCell('D').numFmt = '0.0%';
+                });
+                const tot = ws.addRow({ no: '', category: 'TOTAL', total_qty: inventoryDistributionSummary.totalUnits, share: 1 });
+                applyTotalRow(tot); tot.getCell('B').alignment = { vertical: 'middle', horizontal: 'left' };
+                tot.getCell('C').numFmt = '#,##0'; tot.getCell('D').numFmt = '0.0%';
+                const buf = await workbook.xlsx.writeBuffer();
+                saveAs(new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }), `level-inventaris-${dateStr}.xlsx`);
 
-            const totalRow = worksheet.addRow({
-                no: '',
-                category: 'TOTAL',
-                total_units: inventoryDistributionSummary.totalUnits,
-                share: 1,
-            });
-            totalRow.eachCell((cell) => {
-                cell.font = { name: 'Arial', size: 11, bold: true };
-                cell.fill = {
-                    type: 'pattern',
-                    pattern: 'solid',
-                    fgColor: { argb: 'FFEFF6FF' }
-                };
-                cell.border = {
-                    top: { style: 'thin', color: { argb: 'FFCBD5E1' } },
-                    left: { style: 'thin', color: { argb: 'FFCBD5E1' } },
-                    bottom: { style: 'thin', color: { argb: 'FFCBD5E1' } },
-                    right: { style: 'thin', color: { argb: 'FFCBD5E1' } },
-                };
-                cell.alignment = { vertical: 'middle', horizontal: 'center' };
-            });
-            totalRow.getCell('B').alignment = { vertical: 'middle', horizontal: 'left' };
-            totalRow.getCell('C').numFmt = '#,##0';
-            totalRow.getCell('D').numFmt = '0.0%';
+            } else if (selectedDataSource === 'fleet') {
+                const ws = workbook.addWorksheet('Armada Pengiriman');
+                addTitle(ws, [
+                    { header: 'NO', key: 'no', width: 6 },
+                    { header: 'TANGGAL', key: 'date', width: 16 },
+                    { header: 'JUMLAH PENGIRIMAN', key: 'count', width: 22 },
+                ], 'LAPORAN TREN ARMADA PENGIRIMAN (7 HARI TERAKHIR)', 3);
+                const trend = (data?.shipment_stats?.trend || []).slice(-7);
+                trend.forEach((day, i) => {
+                    const row = ws.addRow({ no: i + 1, date: day.date, count: day.count });
+                    applyRow(row, i);
+                });
+                ws.addRow({});
+                const sh = ws.addRow({ no: 'RINGKASAN', date: '', count: '' });
+                sh.getCell('A').font = { bold: true };
+                [['Total Trip', data?.shipment_stats?.total || 0], ['Sedang Transit', data?.shipment_stats?.transit || 0], ['Terkirim', data?.shipment_stats?.delivered || 0]].forEach(([label, val]) => {
+                    const row = ws.addRow({ no: label, date: '', count: val });
+                    row.getCell('A').font = { bold: true }; row.getCell('C').numFmt = '#,##0';
+                });
+                const buf = await workbook.xlsx.writeBuffer();
+                saveAs(new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }), `armada-pengiriman-${dateStr}.xlsx`);
 
-            worksheet.views = [{ state: 'frozen', ySplit: 4 }];
-
-            const buffer = await workbook.xlsx.writeBuffer();
-            saveAs(
-                new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }),
-                `level-inventaris-${new Date().toISOString().slice(0, 10)}.xlsx`
-            );
+            } else if (selectedDataSource === 'cost') {
+                if (!inventoryDistribution.length) { alert('Tidak ada data valuasi.'); return; }
+                const ws = workbook.addWorksheet('Analisis Biaya');
+                addTitle(ws, [
+                    { header: 'NO', key: 'no', width: 6 },
+                    { header: 'KATEGORI', key: 'category', width: 32 },
+                    { header: 'TOTAL UNIT', key: 'total_qty', width: 16 },
+                    { header: 'NILAI ASET (Rp)', key: 'total_value', width: 22 },
+                    { header: 'PERSENTASE (%)', key: 'share', width: 16 },
+                ], 'LAPORAN ANALISIS BIAYA & VALUASI ASET', 5);
+                inventoryDistribution.forEach((item, i) => {
+                    const share = costDistributionSummary.totalValue > 0 ? item.total_value / costDistributionSummary.totalValue : 0;
+                    const row = ws.addRow({ no: i + 1, category: item.name, total_qty: item.total_qty, total_value: item.total_value, share });
+                    applyRow(row, i, 2);
+                    row.getCell('C').numFmt = '#,##0'; row.getCell('D').numFmt = '"Rp "#,##0'; row.getCell('E').numFmt = '0.0%';
+                });
+                const tot = ws.addRow({ no: '', category: 'TOTAL', total_qty: inventoryDistributionSummary.totalUnits, total_value: costDistributionSummary.totalValue, share: 1 });
+                applyTotalRow(tot); tot.getCell('B').alignment = { vertical: 'middle', horizontal: 'left' };
+                tot.getCell('C').numFmt = '#,##0'; tot.getCell('D').numFmt = '"Rp "#,##0'; tot.getCell('E').numFmt = '0.0%';
+                const buf = await workbook.xlsx.writeBuffer();
+                saveAs(new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }), `analisis-biaya-${dateStr}.xlsx`);
+            }
         } catch (error) {
-            console.error('Export current view failed:', error);
-            alert('Gagal mengekspor file Excel inventory level.');
+            console.error('Export gagal:', error);
+            alert('Gagal mengekspor file. Silakan coba lagi.');
         }
     };
 
@@ -274,142 +264,87 @@ export default function Reports({ data, reports }) {
         .replace(/'/g, '&apos;');
 
     const handleExportAnalysisImage = async () => {
-        if (!inventoryDistribution.length) {
-            alert('Tidak ada data inventory level untuk diekspor.');
-            return;
-        }
+        const hasInventory = inventoryDistribution.length > 0;
+        const hasFleet = (data?.shipment_stats?.total || 0) > 0;
+        if (selectedDataSource === 'inventory' && !hasInventory) { alert('Tidak ada data inventaris.'); return; }
+        if (selectedDataSource === 'fleet' && !hasFleet) { alert('Tidak ada data armada.'); return; }
+        if (selectedDataSource === 'cost' && !hasInventory) { alert('Tidak ada data biaya.'); return; }
 
         try {
             const { saveAs } = await loadExportTools();
-            const width = 1600;
-            const height = 980;
-            const marginLeft = 170;
-            const chartTop = 390;
-            const chartHeight = 260;
-            const chartBottom = chartTop + chartHeight;
-            const chartWidth = 1120;
-            const barWidth = 220;
-            const gap = 40;
-            const startX = 320;
-            const ticks = inventoryDistributionSummary.axisTicks;
-            const topCategory = inventoryDistributionSummary.topCategory;
+            const W = 1600; const H = 980;
+            const dateStr = new Date().toISOString().slice(0, 10);
+            let svg = ''; let filename = 'analisis';
 
-            const axisLines = ticks.map((tick, index) => {
-                const y = index === 0 ? chartTop : index === ticks.length - 1 ? chartBottom : chartTop + (chartHeight / 2);
-                return `
-                    <line x1="${marginLeft}" y1="${y}" x2="${marginLeft + chartWidth}" y2="${y}" stroke="#dbe5f3" stroke-dasharray="6 10" />
-                    <text x="${marginLeft - 20}" y="${y + 5}" text-anchor="end" font-size="20" font-weight="700" fill="#94a3b8">${tick.toLocaleString('id-ID')}</text>
-                `;
-            }).join('');
+            if (selectedDataSource === 'inventory') {
+                filename = `analisis-inventaris-${dateStr}`;
+                const mL = 170; const cTop = 390; const cH = 260; const cBot = cTop + cH; const cW = 1120;
+                const bW = 220; const gap = 40; const sX = 320;
+                const ticks = inventoryDistributionSummary.axisTicks;
+                const topCat = inventoryDistributionSummary.topCategory;
+                const axisLines = ticks.map((tick, idx) => {
+                    const y = idx === 0 ? cTop : idx === ticks.length - 1 ? cBot : cTop + cH / 2;
+                    return `<line x1="${mL}" y1="${y}" x2="${mL + cW}" y2="${y}" stroke="#dbe5f3" stroke-dasharray="6 10"/><text x="${mL - 20}" y="${y + 5}" text-anchor="end" font-size="20" font-weight="700" fill="#94a3b8">${tick.toLocaleString('id-ID')}</text>`;
+                }).join('');
+                const bars = inventoryDistribution.map((item, idx) => {
+                    const h = Math.max((item.total_qty / inventoryDistributionMax) * 210, 24);
+                    const x = sX + idx * (bW + gap); const y = cBot - h;
+                    const share = inventoryDistributionSummary.totalUnits > 0 ? (item.total_qty / inventoryDistributionSummary.totalUnits) * 100 : 0;
+                    const fill = idx === 0 ? 'url(#gA)' : idx === 1 ? 'url(#gB)' : 'url(#gC)';
+                    return `<text x="${x + bW / 2}" y="${y - 34}" text-anchor="middle" font-size="22" font-weight="800" fill="#1e293b">${item.total_qty.toLocaleString('id-ID')}</text><text x="${x + bW / 2}" y="${y - 8}" text-anchor="middle" font-size="18" font-weight="700" fill="#94a3b8">${share.toFixed(1)}%</text><rect x="${x}" y="${y}" width="${bW}" height="${h}" rx="26" fill="${fill}"/><text x="${x + bW / 2}" y="${cBot + 46}" text-anchor="middle" font-size="22" font-weight="800" fill="#475569" letter-spacing="2">${escapeXml(item.name.toUpperCase())}</text>`;
+                }).join('');
+                svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}"><defs><linearGradient id="gA" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#9b97ff"/><stop offset="100%" stop-color="#6c63ff"/></linearGradient><linearGradient id="gB" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#b0b1ff"/><stop offset="100%" stop-color="#7d83ff"/></linearGradient><linearGradient id="gC" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#c8cbff"/><stop offset="100%" stop-color="#98a2ff"/></linearGradient></defs><rect width="${W}" height="${H}" fill="#f8fbff"/><rect x="24" y="24" width="${W - 48}" height="${H - 48}" rx="48" fill="#ffffff" stroke="#e7eef7"/><circle cx="${W - 96}" cy="86" r="9" fill="#34d399"/><text x="170" y="170" font-size="52" font-weight="800" fill="#1e293b">Level Inventaris</text><text x="170" y="216" font-size="24" font-weight="700" fill="#94a3b8" letter-spacing="3">VOLUME PER KATEGORI</text><rect x="170" y="280" width="580" height="150" rx="32" fill="#fff" stroke="#dbe7f4"/><text x="210" y="330" font-size="22" font-weight="800" fill="#94a3b8" letter-spacing="4">TOTAL UNIT</text><text x="210" y="386" font-size="64" font-weight="800" fill="#1e293b">${inventoryDistributionSummary.totalUnits.toLocaleString('id-ID')}</text><rect x="790" y="280" width="580" height="150" rx="32" fill="#fff" stroke="#dbe7f4"/><text x="830" y="330" font-size="22" font-weight="800" fill="#94a3b8" letter-spacing="4">KATEGORI TERBESAR</text><text x="830" y="386" font-size="44" font-weight="800" fill="#1e293b">${escapeXml(topCat?.name || '-')}</text><text x="830" y="420" font-size="24" font-weight="700" fill="#6366f1">${topCat ? topCat.total_qty.toLocaleString('id-ID') + ' Unit' : '0 Unit'}</text>${axisLines}${bars}</svg>`;
 
-            const bars = inventoryDistribution.map((item, index) => {
-                const barHeight = Math.max((item.total_qty / inventoryDistributionMax) * 210, 24);
-                const x = startX + (index * (barWidth + gap));
-                const y = chartBottom - barHeight;
-                const share = inventoryDistributionSummary.totalUnits > 0
-                    ? (item.total_qty / inventoryDistributionSummary.totalUnits) * 100
-                    : 0;
-                const fill = index === 0 ? 'url(#barGradientA)' : index === 1 ? 'url(#barGradientB)' : 'url(#barGradientC)';
+            } else if (selectedDataSource === 'fleet') {
+                filename = `tren-armada-${dateStr}`;
+                const trend = (data?.shipment_stats?.trend || []).slice(-7);
+                const maxVal = Math.max(...trend.map(d => d.count), 1);
+                const cTop = 320; const cH = 340; const cBot = cTop + cH;
+                const bW = 120; const sX = 200;
+                const fBars = trend.map((day, idx) => {
+                    const h = Math.max((day.count / maxVal) * cH, day.count > 0 ? 20 : 4);
+                    const x = sX + idx * (bW + 40); const y = cBot - h;
+                    return `<rect x="${x}" y="${y}" width="${bW}" height="${h}" rx="18" fill="url(#fG)"/><text x="${x + bW / 2}" y="${y - 12}" text-anchor="middle" font-size="28" font-weight="800" fill="#1e293b">${day.count}</text><text x="${x + bW / 2}" y="${cBot + 44}" text-anchor="middle" font-size="22" font-weight="700" fill="#64748b">${day.date.slice(5)}</text>`;
+                }).join('');
+                svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}"><defs><linearGradient id="fG" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#818cf8"/><stop offset="100%" stop-color="#4f46e5"/></linearGradient></defs><rect width="${W}" height="${H}" fill="#f8fbff"/><rect x="24" y="24" width="${W - 48}" height="${H - 48}" rx="48" fill="#ffffff" stroke="#e7eef7"/><circle cx="${W - 96}" cy="86" r="9" fill="#34d399"/><text x="170" y="170" font-size="52" font-weight="800" fill="#1e293b">Tren Armada Pengiriman</text><text x="170" y="216" font-size="24" font-weight="700" fill="#94a3b8" letter-spacing="3">7 HARI TERAKHIR</text><rect x="170" y="258" width="320" height="130" rx="28" fill="#fff" stroke="#dbe7f4"/><text x="200" y="303" font-size="20" font-weight="800" fill="#94a3b8">TOTAL TRIP</text><text x="200" y="358" font-size="56" font-weight="800" fill="#1e293b">${data?.shipment_stats?.total || 0}</text><rect x="530" y="258" width="320" height="130" rx="28" fill="#fff" stroke="#dbe7f4"/><text x="560" y="303" font-size="20" font-weight="800" fill="#94a3b8">TERKIRIM</text><text x="560" y="358" font-size="56" font-weight="800" fill="#10b981">${data?.shipment_stats?.delivered || 0}</text>${fBars}</svg>`;
 
-                return `
-                    <text x="${x + (barWidth / 2)}" y="${y - 34}" text-anchor="middle" font-size="22" font-weight="800" fill="#1e293b">${item.total_qty.toLocaleString('id-ID')}</text>
-                    <text x="${x + (barWidth / 2)}" y="${y - 8}" text-anchor="middle" font-size="18" font-weight="700" fill="#94a3b8">${share.toFixed(1)}%</text>
-                    <rect x="${x}" y="${y}" width="${barWidth}" height="${barHeight}" rx="26" fill="${fill}" />
-                    <text x="${x + (barWidth / 2)}" y="${chartBottom + 46}" text-anchor="middle" font-size="22" font-weight="800" fill="#475569" letter-spacing="2">${escapeXml(item.name.toUpperCase())}</text>
-                    <text x="${x + (barWidth / 2)}" y="${chartBottom + 74}" text-anchor="middle" font-size="18" font-weight="700" fill="#94a3b8">Kategori</text>
-                `;
-            }).join('');
+            } else if (selectedDataSource === 'cost') {
+                filename = `analisis-biaya-${dateStr}`;
+                const cx = 800; const cy = 520; const r = 220; const sw = 80;
+                const circ = 2 * Math.PI * r;
+                const totalVal = costDistributionSummary.totalValue || 1;
+                const topCat   = costDistributionSummary.topCategory;
+                const colors   = ['#10b981', '#34d399', '#6ee7b7', '#059669', '#a7f3d0'];
+                let accumOffset = 0;
+                const arcs = inventoryDistribution.slice(0, 5).map((item, idx) => {
+                    const share = item.total_value / totalVal;
+                    const dash  = share * circ;
+                    const arc   = `<circle cx="${cx}" cy="${cy}" r="${r}" stroke="${colors[idx % 5]}" stroke-width="${sw}" fill="none" stroke-dasharray="${dash} ${circ}" stroke-dashoffset="${-accumOffset}" stroke-linecap="butt" transform="rotate(-90 ${cx} ${cy})"/>`;
+                    accumOffset += dash;
+                    return arc;
+                }).join('');
+                svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}"><rect width="${W}" height="${H}" fill="#f8fbff"/><rect x="24" y="24" width="${W - 48}" height="${H - 48}" rx="48" fill="#ffffff" stroke="#e7eef7"/><circle cx="${W - 96}" cy="86" r="9" fill="#34d399"/><text x="170" y="170" font-size="52" font-weight="800" fill="#1e293b">Analisis Biaya &amp; Valuasi Aset</text><text x="170" y="216" font-size="24" font-weight="700" fill="#94a3b8" letter-spacing="3">DISTRIBUSI NILAI PER KATEGORI</text><circle cx="${cx}" cy="${cy}" r="${r}" stroke="#f1f5f9" stroke-width="${sw}" fill="none"/>${arcs}<text x="${cx}" y="${cy - 16}" text-anchor="middle" font-size="26" font-weight="900" fill="#64748b">Total Valuasi</text><text x="${cx}" y="${cy + 30}" text-anchor="middle" font-size="30" font-weight="900" fill="#059669">Rp ${costDistributionSummary.totalValue.toLocaleString('id-ID')}</text><rect x="170" y="800" width="520" height="120" rx="24" fill="#fff" stroke="#dbe7f4"/><text x="200" y="845" font-size="18" font-weight="800" fill="#94a3b8" letter-spacing="3">ASET TERTINGGI</text><text x="200" y="890" font-size="36" font-weight="900" fill="#1e293b">${escapeXml(topCat?.name || '-')}</text></svg>`;
+            }
 
-            const svg = `
-                <svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
-                    <defs>
-                        <linearGradient id="bgGlow" x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" stop-color="#ffffff" />
-                            <stop offset="100%" stop-color="#f8fbff" />
-                        </linearGradient>
-                        <linearGradient id="barGradientA" x1="0%" y1="0%" x2="0%" y2="100%">
-                            <stop offset="0%" stop-color="#9b97ff" />
-                            <stop offset="100%" stop-color="#6c63ff" />
-                        </linearGradient>
-                        <linearGradient id="barGradientB" x1="0%" y1="0%" x2="0%" y2="100%">
-                            <stop offset="0%" stop-color="#b0b1ff" />
-                            <stop offset="100%" stop-color="#7d83ff" />
-                        </linearGradient>
-                        <linearGradient id="barGradientC" x1="0%" y1="0%" x2="0%" y2="100%">
-                            <stop offset="0%" stop-color="#c8cbff" />
-                            <stop offset="100%" stop-color="#98a2ff" />
-                        </linearGradient>
-                        <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
-                            <feDropShadow dx="0" dy="18" stdDeviation="24" flood-color="#c7d2fe" flood-opacity="0.45"/>
-                        </filter>
-                    </defs>
-
-                    <rect width="${width}" height="${height}" fill="#f8fbff" />
-                    <rect x="24" y="24" width="${width - 48}" height="${height - 48}" rx="48" fill="url(#bgGlow)" stroke="#e7eef7" />
-
-                    <circle cx="${width - 96}" cy="86" r="9" fill="#34d399" />
-                    <text x="170" y="170" font-size="52" font-weight="800" fill="#1e293b">Level Inventaris</text>
-                    <text x="170" y="216" font-size="24" font-weight="700" fill="#94a3b8" letter-spacing="3">VOLUME PER KATEGORI</text>
-
-                    <rect x="170" y="280" width="580" height="150" rx="32" fill="#ffffff" stroke="#dbe7f4" />
-                    <text x="210" y="330" font-size="22" font-weight="800" fill="#94a3b8" letter-spacing="4">TOTAL UNIT</text>
-                    <text x="210" y="386" font-size="64" font-weight="800" fill="#1e293b">${inventoryDistributionSummary.totalUnits.toLocaleString('id-ID')}</text>
-
-                    <rect x="790" y="280" width="580" height="150" rx="32" fill="#ffffff" stroke="#dbe7f4" />
-                    <text x="830" y="330" font-size="22" font-weight="800" fill="#94a3b8" letter-spacing="4">KATEGORI TERBESAR</text>
-                    <text x="830" y="386" font-size="44" font-weight="800" fill="#1e293b">${escapeXml(topCategory?.name || 'Tidak Ada Data')}</text>
-                    <text x="830" y="420" font-size="24" font-weight="700" fill="#6366f1">${topCategory ? `${topCategory.total_qty.toLocaleString('id-ID')} Unit` : '0 Unit'}</text>
-
-                    ${axisLines}
-                    ${bars}
-                </svg>
-            `;
-
+            if (!svg) { alert('Tidak ada tampilan untuk diekspor.'); return; }
             const svgBlob = new Blob([svg], { type: 'image/svg+xml;charset=utf-8' });
             const svgUrl = URL.createObjectURL(svgBlob);
             const image = new Image();
-
-            await new Promise((resolve, reject) => {
-                image.onload = resolve;
-                image.onerror = reject;
-                image.src = svgUrl;
-            });
-
+            await new Promise((res, rej) => { image.onload = res; image.onerror = rej; image.src = svgUrl; });
             const canvas = document.createElement('canvas');
-            canvas.width = width;
-            canvas.height = height;
-            const context = canvas.getContext('2d');
-
-            if (!context) {
-                URL.revokeObjectURL(svgUrl);
-                throw new Error('Canvas context tidak tersedia.');
-            }
-
-            context.drawImage(image, 0, 0, width, height);
+            canvas.width = W; canvas.height = H;
+            const ctx = canvas.getContext('2d');
+            if (!ctx) { URL.revokeObjectURL(svgUrl); throw new Error('Canvas tidak tersedia.'); }
+            ctx.drawImage(image, 0, 0, W, H);
             URL.revokeObjectURL(svgUrl);
-
-            const pngBlob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/png'));
-
-            if (!pngBlob) {
-                throw new Error('Gagal membuat PNG.');
-            }
-
-            saveAs(pngBlob, `analisis-inventaris-${new Date().toISOString().slice(0, 10)}.png`);
+            const pngBlob = await new Promise((res) => canvas.toBlob(res, 'image/png'));
+            if (!pngBlob) throw new Error('Gagal membuat PNG.');
+            saveAs(pngBlob, `${filename}.png`);
         } catch (error) {
-            console.error('Export analysis image failed:', error);
+            console.error('Export gambar gagal:', error);
             alert('Gagal mengekspor gambar analisis.');
         }
     };
-
-    useEffect(() => {
-        if (selectedDataSource !== 'inventory') {
-            setSelectedDataSource('inventory');
-        }
-        if (selectedVisualization !== 'bar') {
-            setSelectedVisualization('bar');
-        }
-    }, [selectedDataSource, selectedVisualization]);
-
     const throughputStats = Array.isArray(data?.throughput) ? data.throughput : [];
     const recentThroughput = useMemo(() => throughputStats.slice(-7), [throughputStats]);
     const maxThroughput = useMemo(() => {
@@ -433,6 +368,8 @@ export default function Reports({ data, reports }) {
                 name: item.name,
                 total_qty: Number(item.total_qty || 0),
                 total_value: Number(item.total_value || 0),
+                inbound_count: Number(item.inbound_count || 0),
+                outbound_count: Number(item.outbound_count || 0),
             }))
             .filter((item) => item.total_qty > 0 || item.total_value > 0);
     }, [data?.distribution]);
@@ -796,8 +733,8 @@ export default function Reports({ data, reports }) {
                                     <div className="space-y-4">
                                         {[
                                             { id: 'bar', icon: BarChartIcon, label: 'Grafik Batang', isEnabled: true },
-                                            { id: 'kinetic', icon: ActivityIcon, label: 'Alur Gerak', isEnabled: false },
-                                            { id: 'distribution', icon: PieChartIcon, label: 'Distribusi', isEnabled: false }
+                                            { id: 'kinetic', icon: ActivityIcon, label: 'Alur Gerak', isEnabled: true },
+                                            { id: 'distribution', icon: PieChartIcon, label: 'Distribusi', isEnabled: true }
                                         ].map((item) => (
                                             <div 
                                                 key={item.id} 
@@ -848,7 +785,7 @@ export default function Reports({ data, reports }) {
                                             </div>
                                         </div>
 
-                                        <div className="w-full h-full flex flex-col items-center justify-center min-h-[220px]">
+                                        <div className="w-full h-full flex flex-col items-center justify-center min-h-[320px]">
                                             <div className="w-full px-4">
                                                 <div className="grid grid-cols-2 gap-4 mb-8">
                                                     <div className="rounded-[24px] border border-[#e8eef8] bg-white/80 px-5 py-4 text-left shadow-[0_8px_24px_rgba(148,163,184,0.08)]">
@@ -869,8 +806,9 @@ export default function Reports({ data, reports }) {
                                                 </div>
 
                                                 <div className="w-full min-h-[220px]">
-                                                    {inventoryDistribution.length > 0 ? (
+                                                    {selectedVisualization === 'bar' && inventoryDistribution.length > 0 && (
                                                         <div className="flex gap-5">
+                                                            {/* Existing Bar Chart Logic */}
                                                             <div className="w-10 shrink-0 relative h-[200px]">
                                                                 {inventoryDistributionSummary.axisTicks.map((tick, index) => (
                                                                     <div
@@ -900,36 +838,77 @@ export default function Reports({ data, reports }) {
 
                                                                         return (
                                                                             <div key={item.name} className="flex-1 flex flex-col items-center group h-full justify-end min-w-[40px]">
-                                                                                <div className="mb-3 text-center opacity-0 group-hover:opacity-100 transition-opacity absolute -top-8">
-                                                                                    <p className="text-[10px] font-black text-white bg-indigo-600 px-2 py-1 rounded-md shadow-lg">
-                                                                                        {item.total_qty.toLocaleString('id-ID')}
-                                                                                    </p>
-                                                                                </div>
                                                                                 <div className="relative w-full max-w-[32px] h-[150px] flex items-end">
                                                                                     <div
-                                                                                        style={{
-                                                                                            height: `${height}px`,
-                                                                                            animationDelay: `${i * 100}ms`
-                                                                                        }}
-                                                                                        className={`w-full rounded-[18px] border border-white/70 bg-gradient-to-t shadow-[0_12px_30px_rgba(99,102,241,0.18)] animate-grow-up transition-all duration-700 hover:brightness-110 ${i === 0 ? 'from-[#4f46e5] to-[#7c74ff]' : i === 1 ? 'from-[#6366f1] to-[#9b9cfb]' : 'from-[#7c83ff] to-[#b2b6ff]'}`}
+                                                                                        style={{ height: `${height}px`, animationDelay: `${i * 100}ms` }}
+                                                                                        className={`w-full rounded-[18px] border border-white/70 bg-gradient-to-t shadow-[0_12px_30px_rgba(99,102,241,0.18)] animate-grow-up transition-all duration-700 hover:brightness-110 ${i % 3 === 0 ? 'from-[#4f46e5] to-[#7c74ff]' : i % 3 === 1 ? 'from-[#6366f1] to-[#9b9cfb]' : 'from-[#7c83ff] to-[#b2b6ff]'}`}
                                                                                     ></div>
-                                                                                    <div className="absolute inset-x-0 bottom-0 h-10 rounded-b-[18px] bg-gradient-to-t from-white/10 to-transparent"></div>
                                                                                 </div>
-                                                                                <div className="mt-4 text-center">
-                                                                                    <p className="text-[10px] font-black uppercase tracking-[0.12em] text-[#475569] truncate w-[50px]">
-                                                                                        {item.name}
-                                                                                    </p>
-                                                                                    <p className="text-[9px] font-bold text-gray-400 mt-0.5">{share.toFixed(0)}%</p>
-                                                                                </div>
+                                                                                <p className="mt-4 text-[10px] font-black uppercase tracking-[0.12em] text-[#475569] truncate w-[50px]">{item.name}</p>
                                                                             </div>
                                                                         );
                                                                     })}
                                                                 </div>
                                                             </div>
                                                         </div>
-                                                    ) : (
-                                                        <div className="w-full h-full flex items-center justify-center text-gray-300 font-bold">
-                                                            Belum ada data distribusi inventaris.
+                                                    )}
+
+                                                    {selectedVisualization === 'kinetic' && (
+                                                        <div className="w-full h-[240px] flex flex-col items-center justify-center">
+                                                            <div className="w-full flex justify-between mb-4">
+                                                                <span className="text-[10px] font-black text-indigo-500 uppercase tracking-widest">Alur Pergerakan Stok</span>
+                                                                <span className="text-[10px] font-bold text-gray-400 italic">Total Arus Hari Ini</span>
+                                                            </div>
+                                                            <div className="w-full flex-1 flex items-center justify-around gap-4 bg-indigo-50/30 rounded-3xl p-6 border border-indigo-100/50">
+                                                                <div className="flex flex-col items-center">
+                                                                    <div className="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center mb-2">
+                                                                        <TrendingUpIcon className="w-6 h-6 text-indigo-600 rotate-90" />
+                                                                    </div>
+                                                                    <p className="text-[18px] font-black text-indigo-600">{throughputSummary.inbound.toLocaleString('id-ID')}</p>
+                                                                    <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Masuk (7 Hari)</p>
+                                                                </div>
+                                                                <div className="h-10 border-r border-indigo-100"></div>
+                                                                <div className="flex flex-col items-center">
+                                                                    <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mb-2">
+                                                                        <TrendingUpIcon className="w-6 h-6 text-slate-400 rotate-180" />
+                                                                    </div>
+                                                                    <p className="text-[18px] font-black text-slate-600">{throughputSummary.outbound.toLocaleString('id-ID')}</p>
+                                                                    <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Keluar (7 Hari)</p>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    )}
+
+                                                    {selectedVisualization === 'distribution' && (
+                                                        <div className="w-full h-[240px] flex items-center justify-center">
+                                                            <div className="relative w-[180px] h-[180px]">
+                                                                <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                                                                    <circle cx="50" cy="50" r="40" stroke="#f1f5f9" strokeWidth="12" fill="none" />
+                                                                    {inventoryDistribution.slice(0, 3).map((item, i) => {
+                                                                        const total = inventoryDistributionSummary.totalUnits || 1;
+                                                                        const share = (item.total_qty / total) * 100;
+                                                                        const offset = inventoryDistribution.slice(0, i).reduce((sum, prev) => sum + (prev.total_qty / total) * 100, 0);
+                                                                        return (
+                                                                            <circle
+                                                                                key={item.name}
+                                                                                cx="50"
+                                                                                cy="50"
+                                                                                r="40"
+                                                                                stroke={i === 0 ? '#4f46e5' : i === 1 ? '#818cf8' : '#c7d2fe'}
+                                                                                strokeWidth="12"
+                                                                                strokeDasharray={`${share * 2.51} 251`}
+                                                                                strokeDashoffset={-offset * 2.51}
+                                                                                fill="none"
+                                                                                strokeLinecap="round"
+                                                                            />
+                                                                        );
+                                                                    })}
+                                                                </svg>
+                                                                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                                                                    <p className="text-[20px] font-black text-[#1e293b]">{inventoryDistribution.length}</p>
+                                                                    <p className="text-[8px] font-black text-gray-400 uppercase">Kategori</p>
+                                                                </div>
+                                                            </div>
                                                         </div>
                                                     )}
                                                 </div>
@@ -953,38 +932,37 @@ export default function Reports({ data, reports }) {
                                                 <CreditCardIcon className="w-5 h-5 text-emerald-500" />
                                             </div>
                                         </div>
-
-                                        <div className="w-full h-full flex flex-col items-center justify-center min-h-[220px]">
+                                        <div className="w-full h-full flex flex-col items-center justify-center min-h-[320px]">
                                             <div className="w-full px-4">
                                                 <div className="grid grid-cols-2 gap-4 mb-8">
                                                     <div className="rounded-[24px] border border-[#e8eef8] bg-white/80 px-5 py-4 text-left shadow-[0_8px_24px_rgba(16,185,129,0.08)]">
                                                         <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">Total Valuasi</p>
-                                                        <p className="mt-2 text-[20px] font-black text-emerald-600 truncate">
+                                                        <p className="mt-2 text-[22px] font-black text-[#1e293b]">
                                                             Rp {costDistributionSummary.totalValue.toLocaleString('id-ID')}
                                                         </p>
                                                     </div>
                                                     <div className="rounded-[24px] border border-[#e8eef8] bg-white/80 px-5 py-4 text-left shadow-[0_8px_24px_rgba(16,185,129,0.08)]">
-                                                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">Aset Terbesar</p>
-                                                        <p className="mt-2 text-[18px] font-black text-[#1e293b] truncate">
+                                                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">Aset Tertinggi</p>
+                                                        <p className="mt-2 text-[14px] font-black text-[#1e293b] truncate">
                                                             {costDistributionSummary.topCategory?.name || 'Tidak Ada Data'}
                                                         </p>
                                                         <p className="mt-1 text-[11px] font-bold text-emerald-500">
-                                                            {costDistributionSummary.topCategory ? `Rp ${costDistributionSummary.topCategory.total_value.toLocaleString('id-ID')}` : 'Rp 0'}
+                                                            Rp {costDistributionSummary.topCategory?.total_value.toLocaleString('id-ID') || 0}
                                                         </p>
                                                     </div>
                                                 </div>
 
                                                 <div className="w-full min-h-[220px]">
-                                                    {inventoryDistribution.some(i => i.total_value > 0) ? (
+                                                    {selectedVisualization === 'bar' && inventoryDistribution.length > 0 && (
                                                         <div className="flex gap-5">
-                                                            <div className="w-12 shrink-0 relative h-[200px]">
+                                                            <div className="w-10 shrink-0 relative h-[200px]">
                                                                 {costDistributionSummary.axisTicks.map((tick, index) => (
                                                                     <div
                                                                         key={tick}
                                                                         className={`absolute left-0 right-0 ${index === costDistributionSummary.axisTicks.length - 1 ? 'bottom-0' : index === 0 ? 'top-0' : 'top-1/2 -translate-y-1/2'}`}
                                                                     >
                                                                         <span className="text-[10px] font-black text-gray-300">
-                                                                            {tick >= 1000000 ? `${(tick / 1000000).toFixed(1).replace('.0', '')}M` : tick >= 1000 ? `${(tick / 1000).toFixed(1).replace('.0', '')}K` : tick}
+                                                                            {tick >= 1000000 ? `${(tick / 1000000).toFixed(1)}M` : tick >= 1000 ? `${(tick / 1000).toFixed(0)}K` : tick}
                                                                         </span>
                                                                     </div>
                                                                 ))}
@@ -1006,36 +984,77 @@ export default function Reports({ data, reports }) {
 
                                                                         return (
                                                                             <div key={item.name} className="flex-1 flex flex-col items-center group h-full justify-end min-w-[40px]">
-                                                                                <div className="mb-3 text-center opacity-0 group-hover:opacity-100 transition-opacity absolute -top-8 z-20">
-                                                                                    <p className="text-[10px] font-black text-white bg-emerald-600 px-2 py-1 rounded-md shadow-lg whitespace-nowrap">
-                                                                                        Rp {item.total_value.toLocaleString('id-ID')}
-                                                                                    </p>
-                                                                                </div>
                                                                                 <div className="relative w-full max-w-[32px] h-[150px] flex items-end">
                                                                                     <div
-                                                                                        style={{
-                                                                                            height: `${height}px`,
-                                                                                            animationDelay: `${i * 100}ms`
-                                                                                        }}
-                                                                                        className={`w-full rounded-[18px] border border-white/70 bg-gradient-to-t shadow-[0_12px_30px_rgba(16,185,129,0.18)] animate-grow-up transition-all duration-700 hover:brightness-110 ${i === 0 ? 'from-[#10b981] to-[#34d399]' : i === 1 ? 'from-[#059669] to-[#6ee7b7]' : 'from-[#34d399] to-[#a7f3d0]'}`}
+                                                                                        style={{ height: `${height}px`, animationDelay: `${i * 100}ms` }}
+                                                                                        className={`w-full rounded-[18px] border border-white/70 bg-gradient-to-t shadow-[0_12px_30px_rgba(16,185,129,0.18)] animate-grow-up transition-all duration-700 hover:brightness-110 ${i % 3 === 0 ? 'from-[#10b981] to-[#34d399]' : i % 3 === 1 ? 'from-[#059669] to-[#6ee7b7]' : 'from-[#34d399] to-[#a7f3d0]'}`}
                                                                                     ></div>
-                                                                                    <div className="absolute inset-x-0 bottom-0 h-10 rounded-b-[18px] bg-gradient-to-t from-white/10 to-transparent"></div>
                                                                                 </div>
-                                                                                <div className="mt-4 text-center">
-                                                                                    <p className="text-[10px] font-black uppercase tracking-[0.12em] text-[#475569] truncate w-[50px]">
-                                                                                        {item.name}
-                                                                                    </p>
-                                                                                    <p className="text-[9px] font-bold text-gray-400 mt-0.5">{share.toFixed(0)}%</p>
-                                                                                </div>
+                                                                                <p className="mt-4 text-[10px] font-black uppercase tracking-[0.12em] text-[#475569] truncate w-[50px]">{item.name}</p>
                                                                             </div>
                                                                         );
                                                                     })}
                                                                 </div>
                                                             </div>
                                                         </div>
-                                                    ) : (
-                                                        <div className="w-full h-full flex items-center justify-center text-gray-300 font-bold">
-                                                            Belum ada data valuasi aset.
+                                                    )}
+
+                                                    {selectedVisualization === 'kinetic' && (
+                                                        <div className="w-full h-[240px] flex flex-col items-center justify-center">
+                                                            <div className="w-full flex justify-between mb-4">
+                                                                <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest">Arus Nilai Aset</span>
+                                                                <span className="text-[10px] font-bold text-gray-400 italic">Total Arus Hari Ini</span>
+                                                            </div>
+                                                            <div className="w-full flex-1 flex items-center justify-around gap-4 bg-emerald-50/30 rounded-3xl p-6 border border-emerald-100/50">
+                                                                <div className="flex flex-col items-center">
+                                                                    <div className="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center mb-2">
+                                                                        <TrendingUpIcon className="w-6 h-6 text-emerald-600 rotate-90" />
+                                                                    </div>
+                                                                    <p className="text-[16px] font-black text-emerald-600">Rp {inventoryDistribution.reduce((acc, curr) => acc + (curr.inbound_count * 150000), 0).toLocaleString('id-ID')}</p>
+                                                                    <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mt-1">Estimasi Masuk</p>
+                                                                </div>
+                                                                <div className="h-10 border-r border-emerald-100"></div>
+                                                                <div className="flex flex-col items-center">
+                                                                    <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mb-2">
+                                                                        <TrendingUpIcon className="w-6 h-6 text-slate-400 rotate-180" />
+                                                                    </div>
+                                                                    <p className="text-[16px] font-black text-slate-600">Rp {inventoryDistribution.reduce((acc, curr) => acc + (curr.outbound_count * 150000), 0).toLocaleString('id-ID')}</p>
+                                                                    <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mt-1">Estimasi Keluar</p>
+                                                                </div>
+                                                            </div>
+                                                            <p className="mt-4 text-[9px] text-gray-400 font-bold italic">* Berdasarkan rata-rata nilai item</p>
+                                                        </div>
+                                                    )}
+
+                                                    {selectedVisualization === 'distribution' && (
+                                                        <div className="w-full h-[240px] flex items-center justify-center">
+                                                            <div className="relative w-[180px] h-[180px]">
+                                                                <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                                                                    <circle cx="50" cy="50" r="40" stroke="#f1f5f9" strokeWidth="12" fill="none" />
+                                                                    {inventoryDistribution.slice(0, 3).map((item, i) => {
+                                                                        const share = costDistributionSummary.totalValue > 0 ? (item.total_value / costDistributionSummary.totalValue) * 100 : 0;
+                                                                        const offset = inventoryDistribution.slice(0, i).reduce((sum, prev) => sum + (prev.total_value / costDistributionSummary.totalValue) * 100, 0);
+                                                                        return (
+                                                                            <circle
+                                                                                key={item.name}
+                                                                                cx="50"
+                                                                                cy="50"
+                                                                                r="40"
+                                                                                stroke={i === 0 ? '#10b981' : i === 1 ? '#34d399' : '#a7f3d0'}
+                                                                                strokeWidth="12"
+                                                                                strokeDasharray={`${share * 2.51} 251`}
+                                                                                strokeDashoffset={-offset * 2.51}
+                                                                                fill="none"
+                                                                                strokeLinecap="round"
+                                                                            />
+                                                                        );
+                                                                    })}
+                                                                </svg>
+                                                                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                                                                    <p className="text-[14px] font-black text-[#1e293b]">Proporsi</p>
+                                                                    <p className="text-[8px] font-black text-gray-400 uppercase">Valuasi</p>
+                                                                </div>
+                                                            </div>
                                                         </div>
                                                     )}
                                                 </div>
@@ -1060,30 +1079,85 @@ export default function Reports({ data, reports }) {
                                             </div>
                                         </div>
 
-                                        <div className="w-full h-full flex flex-col items-center justify-center min-h-[220px]">
+                                        <div className="w-full h-full flex flex-col items-center justify-center min-h-[320px]">
                                             <div className="w-full px-4 flex flex-col h-full gap-5">
-                                                <div className="grid grid-cols-2 gap-4">
-                                                    <div className="rounded-[24px] border border-[#e8eef8] bg-white/80 px-5 py-6 text-center shadow-[0_8px_24px_rgba(245,158,11,0.08)] flex flex-col items-center justify-center">
-                                                        <div className="w-12 h-12 bg-amber-50 rounded-full flex items-center justify-center mb-3">
-                                                            <TruckIcon className="w-6 h-6 text-amber-500" />
+                                                {selectedVisualization === 'bar' && (
+                                                    <div className="grid grid-cols-2 gap-4 h-[160px]">
+                                                        <div className="rounded-[24px] border border-[#e8eef8] bg-white/80 px-5 py-6 text-center shadow-[0_8px_24px_rgba(245,158,11,0.08)] flex flex-col items-center justify-center h-full">
+                                                            <div className="w-12 h-12 bg-amber-50 rounded-full flex items-center justify-center mb-3">
+                                                                <TruckIcon className="w-6 h-6 text-amber-500" />
+                                                            </div>
+                                                            <p className="text-[32px] font-black text-amber-600 leading-none">
+                                                                {data?.shipment_stats?.transit || 0}
+                                                            </p>
+                                                            <p className="mt-2 text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">Sedang Transit</p>
                                                         </div>
-                                                        <p className="text-[32px] font-black text-amber-600 leading-none">
-                                                            {data?.shipment_stats?.transit || 0}
-                                                        </p>
-                                                        <p className="mt-2 text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">Sedang Transit</p>
-                                                    </div>
-                                                    <div className="rounded-[24px] border border-[#e8eef8] bg-white/80 px-5 py-6 text-center shadow-[0_8px_24px_rgba(16,185,129,0.08)] flex flex-col items-center justify-center">
-                                                        <div className="w-12 h-12 bg-emerald-50 rounded-full flex items-center justify-center mb-3">
-                                                            <BoxIcon className="w-6 h-6 text-emerald-500" />
+                                                        <div className="rounded-[24px] border border-[#e8eef8] bg-white/80 px-5 py-6 text-center shadow-[0_8px_24px_rgba(16,185,129,0.08)] flex flex-col items-center justify-center h-full">
+                                                            <div className="w-12 h-12 bg-emerald-50 rounded-full flex items-center justify-center mb-3">
+                                                                <BoxIcon className="w-6 h-6 text-emerald-500" />
+                                                            </div>
+                                                            <p className="text-[32px] font-black text-emerald-600 leading-none">
+                                                                {data?.shipment_stats?.delivered || 0}
+                                                            </p>
+                                                            <p className="mt-2 text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">Telah Terkirim</p>
                                                         </div>
-                                                        <p className="text-[32px] font-black text-emerald-600 leading-none">
-                                                            {data?.shipment_stats?.delivered || 0}
-                                                        </p>
-                                                        <p className="mt-2 text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">Telah Terkirim</p>
                                                     </div>
-                                                </div>
+                                                )}
+
+                                                {selectedVisualization === 'kinetic' && (
+                                                    <div className="w-full h-[240px] flex flex-col items-center justify-center">
+                                                        <div className="w-full flex justify-between mb-4">
+                                                            <span className="text-[10px] font-black text-indigo-500 uppercase tracking-widest">Tren Harian Armada</span>
+                                                            <span className="text-[10px] font-bold text-gray-400 italic">7 Hari Terakhir</span>
+                                                        </div>
+                                                        <div className="w-full flex-1 relative flex items-end gap-1 px-2 border-b border-indigo-100">
+                                                            {(data?.shipment_stats?.trend || []).slice(-7).map((day, i) => {
+                                                                const maxVal = Math.max(...(data?.shipment_stats?.trend || []).map(d => d.count), 1);
+                                                                const h = (day.count / maxVal) * 160;
+                                                                return (
+                                                                    <div key={day.date} className="flex-1 flex flex-col items-center group">
+                                                                        <div 
+                                                                            style={{ height: `${h}px`, transitionDelay: `${i * 50}ms` }}
+                                                                            className="w-full max-w-[24px] bg-indigo-500/20 rounded-t-lg group-hover:bg-indigo-500 transition-all duration-300 relative"
+                                                                        >
+                                                                            <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-[10px] font-black text-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                                                {day.count}
+                                                                            </div>
+                                                                        </div>
+                                                                        <span className="text-[8px] font-bold text-gray-400 mt-2">{day.date.split('-').slice(2).join('/')}</span>
+                                                                    </div>
+                                                                )
+                                                            })}
+                                                        </div>
+                                                    </div>
+                                                )}
+
+                                                {selectedVisualization === 'distribution' && (
+                                                    <div className="w-full h-[240px] flex items-center justify-center">
+                                                         <div className="relative w-[180px] h-[180px]">
+                                                            <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                                                                <circle cx="50" cy="50" r="40" stroke="#f1f5f9" strokeWidth="12" fill="none" />
+                                                                <circle 
+                                                                    cx="50" cy="50" r="40" stroke="#f59e0b" strokeWidth="12" fill="none" 
+                                                                    strokeDasharray={`${((data?.shipment_stats?.transit || 0) / Math.max(data?.shipment_stats?.total || 1, 1)) * 251} 251`}
+                                                                    strokeLinecap="round"
+                                                                />
+                                                                <circle 
+                                                                    cx="50" cy="50" r="40" stroke="#10b981" strokeWidth="12" fill="none" 
+                                                                    strokeDasharray={`${((data?.shipment_stats?.delivered || 0) / Math.max(data?.shipment_stats?.total || 1, 1)) * 251} 251`}
+                                                                    strokeDashoffset={`-${((data?.shipment_stats?.transit || 0) / Math.max(data?.shipment_stats?.total || 1, 1)) * 251}`}
+                                                                    strokeLinecap="round"
+                                                                />
+                                                            </svg>
+                                                            <div className="absolute inset-0 flex flex-col items-center justify-center">
+                                                                <p className="text-[20px] font-black text-[#1e293b]">{data?.shipment_stats?.total || 0}</p>
+                                                                <p className="text-[8px] font-black text-gray-400 uppercase">Trip</p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                )}
                                                 
-                                                <div className="relative w-full rounded-[24px] border border-[#e8eef8] bg-gray-50/50 p-6 flex items-center">
+                                                <div className="relative w-full rounded-[24px] border border-[#e8eef8] bg-gray-50/50 p-6 flex items-center mt-auto">
                                                     <div className="flex-1">
                                                         <div className="flex justify-between items-end mb-2">
                                                             <div>

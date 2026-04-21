@@ -19,6 +19,8 @@ export default function Index({ purchaseOrders = [] }) {
     const { props } = usePage();
     const roleName = String(props.auth?.user?.role_name || props.auth?.user?.role || '').toLowerCase();
     const isManager = roleName.includes('manager') || roleName.includes('manajer') || roleName.includes('admin gudang');
+    const isSupervisor = roleName.includes('supervisor') || roleName.includes('spv');
+    const canCreatePurchaseOrder = isManager || isSupervisor;
 
     const getStatusColor = (status) => {
         switch (status) {
@@ -45,7 +47,7 @@ export default function Index({ purchaseOrders = [] }) {
                         <h1 className="text-[28px] font-black text-[#1a202c] tracking-tight">Pesanan Pembelian</h1>
                         <p className="text-[14px] font-bold text-gray-500 mt-1">Kelola pemesanan stok dari pemasok untuk gudang operasional.</p>
                     </div>
-                    {isManager && (
+                    {canCreatePurchaseOrder && (
                         <Link href={route('purchase-orders.create')} className="flex items-center space-x-2 px-6 py-3.5 bg-[#4f46e5] shadow-[#4f46e5]/30 shadow-lg hover:bg-indigo-700 text-white font-bold rounded-xl text-[14px] transition-colors">
                             <PlusIcon className="w-4 h-4" />
                             <span>Buat PO Baru</span>

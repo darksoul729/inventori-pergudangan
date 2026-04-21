@@ -20,6 +20,13 @@ class GoodsReceipt extends Model
         'created_by',
     ];
 
+    protected function casts(): array
+    {
+        return [
+            'receipt_date' => 'date',
+        ];
+    }
+
     public function purchaseOrder()
     {
         return $this->belongsTo(PurchaseOrder::class);

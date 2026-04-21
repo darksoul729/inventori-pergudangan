@@ -13,7 +13,9 @@ export default function SupplierDetail({ supplier }) {
     const [isEditOpen, setIsEditOpen] = useState(false);
     const { auth } = usePage().props;
     const roleName = String(auth?.user?.role_name || auth?.user?.role || '').toLowerCase();
-    const isManager = roleName === 'manager';
+    const isManager = roleName.includes('manager') || roleName.includes('manajer') || roleName.includes('admin gudang');
+    const isSupervisor = roleName.includes('supervisor') || roleName.includes('spv');
+    const canAssessSupplier = isManager || isSupervisor;
 
     // Convert 1-indexed month to string name
     const getMonthName = (monthNumber) => {
@@ -60,7 +62,7 @@ export default function SupplierDetail({ supplier }) {
                 <div className="bg-white rounded-[24px] p-8 shadow-[0_2px_16px_rgba(0,0,0,0.02)] border border-[#edf2f7]">
                     <div className="flex justify-between items-center mb-8">
                         <h2 className="text-[18px] font-black text-[#1a202c]">Riwayat Performa</h2>
-                        {isManager && (
+                        {canAssessSupplier && (
                             <button onClick={() => setIsEditOpen(true)} className="flex items-center space-x-2 px-6 py-2.5 bg-indigo-600 shadow-lg shadow-indigo-200 hover:bg-indigo-700 text-white font-bold rounded-xl text-[13px] transition-colors">
                                 <span>Input Penilaian</span>
                             </button>
@@ -114,7 +116,7 @@ export default function SupplierDetail({ supplier }) {
             </div>
 
             {/* Modal Edit Performance */}
-            <Transition appear show={isManager && isEditOpen} as={Fragment}>
+            <Transition appear show={canAssessSupplier && isEditOpen} as={Fragment}>
                 <Dialog as="div" className="relative z-50" onClose={() => setIsEditOpen(false)}>
                     <Transition.Child
                         as={Fragment}

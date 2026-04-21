@@ -1,10 +1,12 @@
 package com.aether.driver.service
 
+import android.Manifest
 import android.app.*
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.IBinder
+import androidx.core.content.ContextCompat
 import androidx.core.app.NotificationCompat
-import com.aether.driver.R
 import com.aether.driver.api.RetrofitClient
 import com.aether.driver.data.SessionManager
 import com.aether.driver.data.model.LocationData
@@ -32,12 +34,26 @@ class LocationService : Service() {
             .setSmallIcon(android.R.drawable.ic_menu_mylocation)
             .setOngoing(true)
             .build()
-        startForeground(NOTIFICATION_ID, notification)
+        try {
+            startForeground(NOTIFICATION_ID, notification)
+        } catch (e: SecurityException) {
+            saveLocationServiceError("Foreground location service ditolak: ${e.localizedMessage ?: "permission tidak lengkap"}")
+            stopSelf()
+            return START_NOT_STICKY
+        }
         requestLocationUpdates()
         return START_STICKY
     }
 
     private fun requestLocationUpdates() {
+        val hasFineLocation = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+        val hasCoarseLocation = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
+
+        if (!hasFineLocation && !hasCoarseLocation) {
+            saveLocationServiceError("Izin lokasi belum aktif untuk LocationService")
+            return
+        }
+
         val request = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 10000)
             .setMinUpdateIntervalMillis(5000)
             .build()
@@ -45,7 +61,7 @@ class LocationService : Service() {
         try {
             fusedLocationClient.requestLocationUpdates(request, locationCallback, null)
         } catch (e: SecurityException) {
-            e.printStackTrace()
+            saveLocationServiceError("Gagal meminta update lokasi: ${e.localizedMessage ?: "permission ditolak"}")
         }
     }
 
@@ -86,6 +102,10 @@ class LocationService : Service() {
     }
 
     private fun createNotificationChannel() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+            return
+        }
+
         val channel = NotificationChannel(
             CHANNEL_ID,
             "Driver Tracking Service",
@@ -106,6 +126,12 @@ class LocationService : Service() {
         
         val manager = getSystemService(NotificationManager::class.java)
         manager.notify(NOTIFICATION_ID, notification)
+    }
+
+    private fun saveLocationServiceError(message: String) {
+        serviceScope.launch {
+            sessionManager.saveLocationError(message)
+        }
     }
 
     override fun onBind(intent: Intent?): IBinder? = null
