@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Head, usePage, router } from '@inertiajs/react';
 import DashboardLayout from '@/Layouts/DashboardLayout';
+import AetherAIModal from '@/Components/AetherAIModal';
 import {
     X, Send, Plus, Trash2, MessageSquare, Sparkles,
     ChevronRight, Loader2, AlertCircle, Bot, User,
@@ -191,6 +192,9 @@ export default function AetherAI() {
     const [isHistoryLoading, setIsHistoryLoading] = useState(false);
     const [error, setError] = useState(null);
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+    const [isCallModalOpen, setIsCallModalOpen] = useState(false);
+    const [lastLatencyMs, setLastLatencyMs] = useState(null);
+    const [lastProviderLatencyMs, setLastProviderLatencyMs] = useState(null);
 
     const messagesEndRef = useRef(null);
     const textareaRef = useRef(null);
@@ -281,6 +285,8 @@ export default function AetherAI() {
             });
             const data = await res.json();
             if (!res.ok) throw new Error(data.error || 'Gagal mengirim');
+            setLastLatencyMs(data.latency_ms ?? null);
+            setLastProviderLatencyMs(data.provider_latency_ms ?? null);
 
             if (data.conversation_id && data.conversation_id !== activeId) {
                 setActiveId(data.conversation_id);
@@ -408,8 +414,24 @@ export default function AetherAI() {
                             <div className="hidden lg:flex items-center gap-3 px-5 py-2.5 bg-slate-50 border border-slate-100 rounded-[18px]">
                                 <Cpu className="w-4 h-4 text-slate-400" />
                                 <span className="text-xs font-black text-slate-400 uppercase tracking-widest">Latensi: </span>
-                                <span className="text-xs font-black text-indigo-600 tabular-nums">0.32s</span>
+                                <span className="text-xs font-black text-indigo-600 tabular-nums">
+                                    {lastLatencyMs !== null ? `${(lastLatencyMs / 1000).toFixed(2)}s` : '-'}
+                                </span>
+                                {lastProviderLatencyMs !== null && (
+                                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-300">
+                                        Groq {(lastProviderLatencyMs / 1000).toFixed(2)}s
+                                    </span>
+                                )}
                             </div>
+                            <button
+                                type="button"
+                                onClick={() => setIsCallModalOpen(true)}
+                                className="flex h-11 items-center gap-2 rounded-[18px] bg-indigo-600 px-5 text-xs font-black uppercase tracking-widest text-white shadow-lg shadow-indigo-100 transition-all hover:bg-indigo-700"
+                                title="Mulai panggilan suara Aether"
+                            >
+                                <Phone className="h-4 w-4" />
+                                Call
+                            </button>
                         </div>
                     </div>
 
@@ -530,6 +552,11 @@ export default function AetherAI() {
                     </div>
                 </div>
             </div>
+            <AetherAIModal
+                isOpen={isCallModalOpen}
+                onClose={() => setIsCallModalOpen(false)}
+                startInCall={true}
+            />
         </DashboardLayout>
     );
 }

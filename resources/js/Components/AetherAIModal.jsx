@@ -5,7 +5,7 @@ import {
     ChevronRight, Loader2, AlertCircle, Bot, User,
     Database, Zap, BarChart3, Info, Mic, MicOff,
     Volume2, VolumeX, Eraser, Play, Phone, PhoneOff, Waves,
-    Save
+    Save, Clock
 } from 'lucide-react';
 
 // ─── Custom External-styled AI SVG Icon ─────────────────────────────────────
@@ -218,6 +218,45 @@ function ForecastSummary({ data }) {
     );
 }
 
+function VoiceDebugPanel({ debug, latencyMs, providerLatencyMs }) {
+    const items = [
+        { label: 'Mic', value: debug.mic },
+        { label: 'Chat', value: debug.chat },
+        { label: 'TTS', value: debug.tts },
+    ];
+
+    return (
+        <div className="mt-6 w-full max-w-xl rounded-2xl border border-slate-200 bg-white/80 px-4 py-3 text-left shadow-sm">
+            <div className="flex flex-wrap items-center gap-2">
+                {items.map(item => (
+                    <div key={item.label} className="flex items-center gap-2 rounded-xl bg-slate-50 px-3 py-2">
+                        <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">{item.label}</span>
+                        <span className="text-[10px] font-black uppercase tracking-wide text-slate-700">{item.value}</span>
+                    </div>
+                ))}
+                {latencyMs !== null && (
+                    <div className="flex items-center gap-2 rounded-xl bg-indigo-50 px-3 py-2">
+                        <Clock className="h-3.5 w-3.5 text-indigo-500" />
+                        <span className="text-[10px] font-black uppercase tracking-wide text-indigo-700">
+                            Total {(latencyMs / 1000).toFixed(2)}s
+                        </span>
+                    </div>
+                )}
+                {providerLatencyMs !== null && (
+                    <div className="rounded-xl bg-slate-50 px-3 py-2 text-[10px] font-black uppercase tracking-wide text-slate-500">
+                        Groq {(providerLatencyMs / 1000).toFixed(2)}s
+                    </div>
+                )}
+            </div>
+            {debug.error && (
+                <div className="mt-3 rounded-xl bg-amber-50 px-3 py-2 text-xs font-bold leading-relaxed text-amber-700">
+                    {debug.error}
+                </div>
+            )}
+        </div>
+    );
+}
+
 function renderInline(text) {
     const parts = text.split(/(\*\*[^*]+\*\*|`[^`]+`)/g);
     return parts.map((part, i) => {
@@ -239,8 +278,9 @@ const QUICK_SUGGESTIONS = [
 ];
 
 const VOICE_SILENCE_GRACE_MS = 3400;
+const VOICE_MAX_RECORDING_MS = 6000;
 
-export default function AetherAIModal({ isOpen, onClose }) {
+export default function AetherAIModal({ isOpen, onClose, startInCall = false }) {
     const { props } = usePage();
     const auth = props?.auth || {};
     const [conversations, setConversations] = useState([]);
@@ -263,6 +303,15 @@ export default function AetherAIModal({ isOpen, onClose }) {
     const [isThinking, setIsThinking] = useState(false);
     const [stableVolumeLevel, setStableVolumeLevel] = useState(0);
     const [isStableMuted, setIsStableMuted] = useState(false);
+    const [lastLatencyMs, setLastLatencyMs] = useState(null);
+    const [lastProviderLatencyMs, setLastProviderLatencyMs] = useState(null);
+    const [voiceRecordCycle, setVoiceRecordCycle] = useState(0);
+    const [voiceDebug, setVoiceDebug] = useState({
+        mic: 'idle',
+        chat: 'idle',
+        tts: 'idle',
+        error: null,
+    });
 
     const messagesEndRef = useRef(null);
     const textareaRef = useRef(null);
@@ -288,6 +337,9 @@ export default function AetherAIModal({ isOpen, onClose }) {
     const voiceSoundStartedRef = useRef(false);
     const voiceLastSoundAtRef = useRef(0);
     const finalizeVoiceTurnRef = useRef(null);
+    const autoStartedCallRef = useRef(false);
+    const skipNextTranscriptionRef = useRef(false);
+    const voiceRecordTimeoutRef = useRef(null);
 
     const scrollToBottom = useCallback(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -316,15 +368,18 @@ export default function AetherAIModal({ isOpen, onClose }) {
         signal?.addEventListener('abort', abort, { once: true });
 
         audio.onplaying = () => {
+            setVoiceDebug(prev => ({ ...prev, tts: 'playing', error: null }));
             setIsPreparingSpeech(false);
             setIsSpeaking(true);
         };
         audio.onended = () => {
+            setVoiceDebug(prev => ({ ...prev, tts: 'done' }));
             cleanup();
             setIsSpeaking(false);
             resolve();
         };
         audio.onerror = () => {
+            setVoiceDebug(prev => ({ ...prev, tts: 'error', error: 'Audio TTS lokal gagal diputar.' }));
             cleanup();
             setIsSpeaking(false);
             reject(new Error('Audio TTS lokal gagal diputar.'));
@@ -365,17 +420,20 @@ export default function AetherAIModal({ isOpen, onClose }) {
         signal?.addEventListener('abort', abort, { once: true });
 
         utterance.onstart = () => {
+            setVoiceDebug(prev => ({ ...prev, tts: 'browser', error: null }));
             setIsPreparingSpeech(false);
             setIsSpeaking(true);
             setStableStatus('Aether sedang berbicara...');
         };
         utterance.onend = () => {
+            setVoiceDebug(prev => ({ ...prev, tts: 'done' }));
             cleanup();
             setIsSpeaking(false);
             browserSpeechRef.current = null;
             resolve();
         };
         utterance.onerror = () => {
+            setVoiceDebug(prev => ({ ...prev, tts: 'error', error: 'Browser TTS gagal memutar suara.' }));
             cleanup();
             setIsSpeaking(false);
             browserSpeechRef.current = null;
@@ -391,6 +449,7 @@ export default function AetherAIModal({ isOpen, onClose }) {
 
         const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
         setIsPreparingSpeech(true);
+        setVoiceDebug(prev => ({ ...prev, tts: 'local', error: null }));
 
         for (const chunk of chunks) {
             if (signal?.aborted) throw new DOMException('Canceled', 'AbortError');
@@ -408,6 +467,7 @@ export default function AetherAIModal({ isOpen, onClose }) {
             });
             const data = await res.json().catch(() => ({}));
             if (!res.ok || !data.audio) {
+                setVoiceDebug(prev => ({ ...prev, tts: 'fallback', error: data.error || 'TTS lokal tidak tersedia.' }));
                 throw new Error(data.error || 'TTS lokal tidak tersedia.');
             }
 
@@ -417,6 +477,7 @@ export default function AetherAIModal({ isOpen, onClose }) {
 
         setIsPreparingSpeech(false);
         setIsSpeaking(false);
+        setVoiceDebug(prev => ({ ...prev, tts: 'done' }));
     }, [playAudioData]);
 
     const stopSpeaking = useCallback(() => {
@@ -428,6 +489,7 @@ export default function AetherAIModal({ isOpen, onClose }) {
         browserSpeechRef.current = null;
         setIsPreparingSpeech(false);
         setIsSpeaking(false);
+        setVoiceDebug(prev => ({ ...prev, tts: prev.tts === 'idle' ? 'idle' : 'stopped' }));
     }, []);
 
     const stopStableCall = useCallback(() => {
@@ -442,6 +504,7 @@ export default function AetherAIModal({ isOpen, onClose }) {
         setIsThinking(false);
         setStableStatus('Panggilan Berakhir');
         setStableVolumeLevel(0);
+        setVoiceDebug({ mic: 'stopped', chat: 'idle', tts: 'stopped', error: null });
 
         stopSpeaking();
         if (recognitionRef.current) {
@@ -454,9 +517,14 @@ export default function AetherAIModal({ isOpen, onClose }) {
         voiceAudioChunksRef.current = [];
         voiceSoundStartedRef.current = false;
         voiceLastSoundAtRef.current = 0;
+        skipNextTranscriptionRef.current = false;
         if (voiceSilenceIntervalRef.current) {
             clearInterval(voiceSilenceIntervalRef.current);
             voiceSilenceIntervalRef.current = null;
+        }
+        if (voiceRecordTimeoutRef.current) {
+            clearTimeout(voiceRecordTimeoutRef.current);
+            voiceRecordTimeoutRef.current = null;
         }
         if (liveAudioContextRef.current) {
             liveAudioContextRef.current.close().catch(() => { });
@@ -492,9 +560,14 @@ export default function AetherAIModal({ isOpen, onClose }) {
         voiceAudioChunksRef.current = [];
         voiceSoundStartedRef.current = false;
         voiceLastSoundAtRef.current = 0;
+        skipNextTranscriptionRef.current = false;
         if (voiceSilenceIntervalRef.current) {
             clearInterval(voiceSilenceIntervalRef.current);
             voiceSilenceIntervalRef.current = null;
+        }
+        if (voiceRecordTimeoutRef.current) {
+            clearTimeout(voiceRecordTimeoutRef.current);
+            voiceRecordTimeoutRef.current = null;
         }
 
         stopSpeaking();
@@ -502,6 +575,7 @@ export default function AetherAIModal({ isOpen, onClose }) {
         setIsPreparingSpeech(false);
         setLiveAiText('');
         setStableStatus('Dibatalkan. Silakan bicara lagi.');
+        setVoiceDebug(prev => ({ ...prev, chat: 'canceled', tts: 'stopped', error: null }));
     }, [stopSpeaking]);
 
     const toggleStableMute = useCallback(() => {
@@ -511,8 +585,10 @@ export default function AetherAIModal({ isOpen, onClose }) {
                 try { recognitionRef.current.stop(); } catch (e) { }
                 setIsListening(false);
                 setStableStatus('Mikrofon dimatikan');
+                setVoiceDebug(prev => ({ ...prev, mic: 'muted' }));
             } else if (!next && isStableVoiceActive) {
                 setStableStatus('Sedang mendengarkan...');
+                setVoiceDebug(prev => ({ ...prev, mic: 'listening' }));
             }
             return next;
         });
@@ -521,6 +597,7 @@ export default function AetherAIModal({ isOpen, onClose }) {
     const startMicVisualizer = useCallback(async () => {
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            setVoiceDebug(prev => ({ ...prev, mic: 'ready', error: null }));
             const audioContext = new (window.AudioContext || window.webkitAudioContext)();
             const source = audioContext.createMediaStreamSource(stream);
             const analyser = audioContext.createAnalyser();
@@ -540,6 +617,10 @@ export default function AetherAIModal({ isOpen, onClose }) {
                 let sum = 0;
                 for (let i = 0; i < bufferLength; i++) sum += dataArray[i];
                 const avg = sum / bufferLength;
+                if (avg > 2) {
+                    voiceSoundStartedRef.current = true;
+                    voiceLastSoundAtRef.current = Date.now();
+                }
                 setStableVolumeLevel(Math.min(1, avg / 128));
                 requestAnimationFrame(updateVolume);
             };
@@ -547,6 +628,7 @@ export default function AetherAIModal({ isOpen, onClose }) {
             return stream;
         } catch (e) {
             console.error('Visualizer failed', e);
+            setVoiceDebug(prev => ({ ...prev, mic: 'permission', error: 'Izin mikrofon belum diberikan.' }));
             return null;
         }
     }, []);
@@ -568,6 +650,7 @@ export default function AetherAIModal({ isOpen, onClose }) {
 
         try {
             setIsPreparingSpeech(true);
+            setVoiceDebug(prev => ({ ...prev, tts: 'preparing', error: null }));
             voiceAbortControllerRef.current?.abort();
             const controller = new AbortController();
             voiceAbortControllerRef.current = controller;
@@ -576,12 +659,14 @@ export default function AetherAIModal({ isOpen, onClose }) {
             } catch (localError) {
                 if (localError.name === 'AbortError') throw localError;
                 setStableStatus('Sistem suara utama sibuk, memakai suara browser...');
+                setVoiceDebug(prev => ({ ...prev, tts: 'fallback', error: localError.message }));
                 await speakWithBrowserTts(cleanText, controller.signal);
             }
         } catch (e) {
             if (e.name === 'AbortError') return;
             setIsPreparingSpeech(false);
             setIsSpeaking(false);
+            setVoiceDebug(prev => ({ ...prev, tts: 'error', error: e.message || 'Gagal memutar suara AI.' }));
             setError(e.message || 'Gagal memutar suara AI.');
         } finally {
             voiceAbortControllerRef.current = null;
@@ -722,6 +807,8 @@ export default function AetherAIModal({ isOpen, onClose }) {
             if (data.conversation_id) setActiveConversationId(data.conversation_id);
 
             if (!res.ok) throw new Error(data.error || `Error ${res.status}`);
+            setLastLatencyMs(data.latency_ms ?? null);
+            setLastProviderLatencyMs(data.provider_latency_ms ?? null);
 
             setMessages(prev => {
                 const withoutTemp = prev.filter(m => m.id !== tempUserMsg.id);
@@ -803,6 +890,7 @@ export default function AetherAIModal({ isOpen, onClose }) {
 
         setIsThinking(true);
         setStableStatus("Aether sedang berpikir...");
+        setVoiceDebug(prev => ({ ...prev, chat: 'sending', tts: 'idle', error: null }));
         setLiveUserText(cleanText);
         setLiveAiText("");
 
@@ -826,12 +914,16 @@ export default function AetherAIModal({ isOpen, onClose }) {
             const data = await res.json();
             if (data.conversation_id) setActiveConversationId(data.conversation_id);
             if (!res.ok) throw new Error(data.error || "Gagal menghubungi AI.");
+            setLastLatencyMs(data.latency_ms ?? null);
+            setLastProviderLatencyMs(data.provider_latency_ms ?? null);
+            setVoiceDebug(prev => ({ ...prev, chat: 'done', error: null }));
 
             const aiResponse = data.message.content;
             setLiveAiText(aiResponse);
 
             setMessages(prev => [...prev.filter(m => !m.id?.toString().startsWith("temp")), { role: "user", content: cleanText }, data.message]);
             setStableStatus("Menyiapkan suara...");
+            setVoiceDebug(prev => ({ ...prev, tts: 'preparing' }));
 
             setIsThinking(false);
             setIsPreparingSpeech(true);
@@ -841,10 +933,12 @@ export default function AetherAIModal({ isOpen, onClose }) {
         } catch (e) {
             if (e.name === 'AbortError') {
                 setStableStatus("Dibatalkan. Silakan bicara lagi.");
+                setVoiceDebug(prev => ({ ...prev, chat: 'canceled', error: null }));
                 return;
             }
             setError(e.message);
             setStableStatus("Terjadi kesalahan. Coba lagi.");
+            setVoiceDebug(prev => ({ ...prev, chat: 'error', error: e.message }));
         } finally {
             if (voiceChatAbortControllerRef.current === chatController) {
                 voiceChatAbortControllerRef.current = null;
@@ -853,6 +947,150 @@ export default function AetherAIModal({ isOpen, onClose }) {
             setIsThinking(false);
         }
     };
+
+    const transcribeFallbackAudio = useCallback(async (blob) => {
+        if (!blob || blob.size < 1200 || liveSubmitInFlightRef.current) {
+            return;
+        }
+
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+        const form = new FormData();
+        form.append('audio', blob, 'aether-call.webm');
+
+        setStableStatus('Mentranskripsi suara...');
+        setVoiceDebug(prev => ({ ...prev, mic: 'transcribing', error: null }));
+
+        try {
+            const res = await fetch('/aether/transcribe', {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': csrfToken,
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+                body: form,
+            });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) throw new Error(data.error || 'Transkripsi suara gagal.');
+
+            const text = (data.text || '').trim();
+            if (!text) {
+                setStableStatus('Suara belum terbaca jelas. Silakan ulangi.');
+                setVoiceDebug(prev => ({ ...prev, mic: 'empty', error: 'Transkripsi kosong.' }));
+                return;
+            }
+
+            setLiveUserText(text);
+            setVoiceDebug(prev => ({ ...prev, mic: 'transcribed', error: null }));
+            handleStableVoiceSubmit(text);
+        } catch (e) {
+            setStableStatus('Transkripsi gagal. Coba ulangi.');
+            setVoiceDebug(prev => ({ ...prev, mic: 'transcribe_error', error: e.message || 'Transkripsi suara gagal.' }));
+        } finally {
+            window.setTimeout(() => setVoiceRecordCycle(cycle => cycle + 1), 500);
+        }
+    }, [handleStableVoiceSubmit]);
+
+    const startAudioFallbackRecorder = useCallback((stream) => {
+        if (!stream || !window.MediaRecorder || isStableMuted || isThinking || isSpeaking || isPreparingSpeech) {
+            return;
+        }
+        if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+            return;
+        }
+
+        const mimeType = MediaRecorder.isTypeSupported?.('audio/webm;codecs=opus')
+            ? 'audio/webm;codecs=opus'
+            : (MediaRecorder.isTypeSupported?.('audio/webm') ? 'audio/webm' : '');
+
+        try {
+            const recorder = mimeType ? new MediaRecorder(stream, { mimeType }) : new MediaRecorder(stream);
+            mediaRecorderRef.current = recorder;
+            voiceAudioChunksRef.current = [];
+            voiceSoundStartedRef.current = false;
+            voiceLastSoundAtRef.current = 0;
+
+            recorder.ondataavailable = (event) => {
+                if (event.data?.size > 0) {
+                    voiceAudioChunksRef.current.push(event.data);
+                }
+            };
+
+            recorder.onstart = () => {
+                setVoiceDebug(prev => ({
+                    ...prev,
+                    mic: prev.mic === 'listening' || prev.mic === 'ready' ? 'listening+rec' : 'recording',
+                    error: null,
+                }));
+            };
+
+            recorder.onstop = () => {
+                if (voiceRecordTimeoutRef.current) {
+                    clearTimeout(voiceRecordTimeoutRef.current);
+                    voiceRecordTimeoutRef.current = null;
+                }
+                const chunks = voiceAudioChunksRef.current;
+                const shouldSkip = skipNextTranscriptionRef.current;
+                skipNextTranscriptionRef.current = false;
+                voiceAudioChunksRef.current = [];
+                voiceSoundStartedRef.current = false;
+                voiceLastSoundAtRef.current = 0;
+
+                if (shouldSkip || chunks.length === 0) {
+                    return;
+                }
+
+                const blob = new Blob(chunks, { type: recorder.mimeType || 'audio/webm' });
+                transcribeFallbackAudio(blob);
+            };
+
+            recorder.start(250);
+            voiceRecordTimeoutRef.current = window.setTimeout(() => {
+                if (
+                    recorder.state === 'recording' &&
+                    !liveSubmitInFlightRef.current &&
+                    !isThinking &&
+                    !isSpeaking &&
+                    !isPreparingSpeech
+                ) {
+                    setVoiceDebug(prev => ({ ...prev, mic: 'auto-transcribe', error: null }));
+                    try { recorder.stop(); } catch (e) { }
+                }
+            }, VOICE_MAX_RECORDING_MS);
+
+            if (voiceSilenceIntervalRef.current) {
+                clearInterval(voiceSilenceIntervalRef.current);
+            }
+            voiceSilenceIntervalRef.current = setInterval(() => {
+                if (
+                    recorder.state === 'recording' &&
+                    voiceSoundStartedRef.current &&
+                    Date.now() - voiceLastSoundAtRef.current > VOICE_SILENCE_GRACE_MS &&
+                    !liveSubmitInFlightRef.current &&
+                    !isThinking &&
+                    !isSpeaking &&
+                    !isPreparingSpeech
+                ) {
+                    try { recorder.stop(); } catch (e) { }
+                }
+            }, 300);
+        } catch (e) {
+            setVoiceDebug(prev => ({ ...prev, mic: 'recorder_error', error: e.message || 'Perekam suara tidak bisa dimulai.' }));
+        }
+    }, [isStableMuted, isThinking, isSpeaking, isPreparingSpeech, transcribeFallbackAudio]);
+
+    const forceTranscribeCurrentRecording = useCallback(() => {
+        if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+            setVoiceDebug(prev => ({ ...prev, mic: 'manual-transcribe', error: null }));
+            try { mediaRecorderRef.current.stop(); } catch (e) { }
+            return;
+        }
+
+        if (liveStreamRef.current) {
+            setVoiceDebug(prev => ({ ...prev, mic: 'recording', error: null }));
+            startAudioFallbackRecorder(liveStreamRef.current);
+        }
+    }, [startAudioFallbackRecorder]);
 
     const finalizeVoiceTurn = useCallback((fallbackText = '') => {
         if (voiceTurnFinalizingRef.current || liveSubmitInFlightRef.current) return;
@@ -866,6 +1104,12 @@ export default function AetherAIModal({ isOpen, onClose }) {
 
         voiceTurnFinalizingRef.current = false;
         if (chosenText.length > 1) {
+            skipNextTranscriptionRef.current = true;
+            voiceAudioChunksRef.current = [];
+            voiceSoundStartedRef.current = false;
+            if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+                try { mediaRecorderRef.current.stop(); } catch (e) { }
+            }
             handleStableVoiceSubmit(chosenText);
         } else {
             setStableStatus('Suara belum terbaca jelas. Silakan ulangi.');
@@ -882,21 +1126,28 @@ export default function AetherAIModal({ isOpen, onClose }) {
         }
         try {
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (!SpeechRecognition) return;
+            if (!SpeechRecognition) {
+                setVoiceDebug(prev => ({ ...prev, mic: 'unsupported', error: 'Browser belum mendukung SpeechRecognition.' }));
+                setStableStatus('Browser belum mendukung input suara.');
+                return;
+            }
             const recognition = new SpeechRecognition();
             recognition.lang = "id-ID";
-            recognition.interimResults = false;
+            recognition.interimResults = true;
             recognition.continuous = true;
             recognition.onstart = () => {
                 setIsListening(true);
                 setStableStatus("Sedang mendengarkan...");
+                setVoiceDebug(prev => ({ ...prev, mic: 'listening', error: null }));
             };
             recognition.onresult = (event) => {
                 if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
+                setVoiceDebug(prev => ({ ...prev, mic: 'transcript', error: null }));
 
                 let finalTranscript = '';
                 let interimTranscript = '';
-                for (let i = 0; i < event.results.length; i++) {
+                const startIndex = typeof event.resultIndex === 'number' ? event.resultIndex : 0;
+                for (let i = startIndex; i < event.results.length; i++) {
                     const piece = event.results[i]?.[0]?.transcript || '';
                     if (event.results[i].isFinal) {
                         finalTranscript += piece;
@@ -906,10 +1157,10 @@ export default function AetherAIModal({ isOpen, onClose }) {
                 }
 
                 const stableFinalText = finalTranscript.replace(/\s+/g, ' ').trim();
-                const previewText = `${stableFinalText} ${interimTranscript}`.replace(/\s+/g, ' ').trim();
                 if (stableFinalText) {
-                    finalVoiceTranscriptRef.current = stableFinalText;
+                    finalVoiceTranscriptRef.current = `${finalVoiceTranscriptRef.current} ${stableFinalText}`.replace(/\s+/g, ' ').trim();
                 }
+                const previewText = `${finalVoiceTranscriptRef.current} ${interimTranscript}`.replace(/\s+/g, ' ').trim();
                 pendingVoiceTranscriptRef.current = previewText;
                 setLiveUserText(previewText);
 
@@ -951,6 +1202,7 @@ export default function AetherAIModal({ isOpen, onClose }) {
                     silenceTimerRef.current = null;
                 }
                 setIsListening(false);
+                setVoiceDebug(prev => ({ ...prev, mic: prev.mic === 'muted' ? 'muted' : 'idle' }));
                 const stableText = (finalVoiceTranscriptRef.current || pendingVoiceTranscriptRef.current).trim();
                 if (
                     stableText.length > 1 &&
@@ -967,12 +1219,14 @@ export default function AetherAIModal({ isOpen, onClose }) {
             recognition.onerror = (e) => {
                 if (e.error !== "no-speech") console.error("Speech recognition error", e);
                 setIsListening(false);
+                setVoiceDebug(prev => ({ ...prev, mic: e.error || 'error', error: e.error === 'no-speech' ? null : `Mic error: ${e.error}` }));
             };
             recognitionRef.current = recognition;
             recognition.start();
         } catch (e) {
             console.error("GAGAL MEMULAI SPEECH RECOGNITION:", e);
             setIsListening(false);
+            setVoiceDebug(prev => ({ ...prev, mic: 'error', error: e.message || 'Gagal memulai mikrofon.' }));
         }
     }, [isStableVoiceActive, isStableMuted, isSpeaking, isPreparingSpeech, isThinking, isListening, activeConversationId, finalizeVoiceTurn]);
 
@@ -988,6 +1242,7 @@ export default function AetherAIModal({ isOpen, onClose }) {
         setIsStableMuted(false);
         setIsLiveCallOpen(true);
         setIsStableVoiceActive(true);
+        setVoiceDebug({ mic: 'starting', chat: 'idle', tts: 'idle', error: null });
 
         // Langsung nyalakan pendengaran suara bawaan browser (Sinkron, tidak butuh await)
         // Ini menghindari hilangnya proxy 'user activation click context' pada ponsel/Tablet.
@@ -997,9 +1252,23 @@ export default function AetherAIModal({ isOpen, onClose }) {
         startMicVisualizer().then(stream => {
             if (!stream) {
                 setStableStatus('Izin mikrofon diperlukan.');
+                return;
             }
+            startAudioFallbackRecorder(stream);
         });
     };
+
+    useEffect(() => {
+        if (!isOpen) {
+            autoStartedCallRef.current = false;
+            return;
+        }
+
+        if (startInCall && !autoStartedCallRef.current && !isStableVoiceActive) {
+            autoStartedCallRef.current = true;
+            startStableVoiceCall();
+        }
+    }, [isOpen, startInCall, isStableVoiceActive]);
 
     // Auto-restart recognition when safe (not speaking/thinking/already listening)
     useEffect(() => {
@@ -1010,6 +1279,19 @@ export default function AetherAIModal({ isOpen, onClose }) {
         }
         return () => clearTimeout(timeout);
     }, [isStableVoiceActive, isSpeaking, isPreparingSpeech, isListening, isThinking, restartStableListening]);
+
+    useEffect(() => {
+        if (
+            isStableVoiceActive &&
+            !isStableMuted &&
+            !isThinking &&
+            !isSpeaking &&
+            !isPreparingSpeech &&
+            liveStreamRef.current
+        ) {
+            startAudioFallbackRecorder(liveStreamRef.current);
+        }
+    }, [isStableVoiceActive, isStableMuted, isThinking, isSpeaking, isPreparingSpeech, voiceRecordCycle, startAudioFallbackRecorder]);
 
     const handleKeyDown = (e) => {
         if (e.key === 'Enter' && !e.shiftKey) {
@@ -1131,6 +1413,19 @@ export default function AetherAIModal({ isOpen, onClose }) {
                                         {isLiveCallOpen ? 'Voice Active' : 'Online'}
                                     </span>
                                 </div>
+                                {lastLatencyMs !== null && (
+                                    <div className="hidden sm:flex items-center gap-1.5 rounded-full border border-slate-100 bg-slate-50 px-3 py-1">
+                                        <Clock className="h-3 w-3 text-slate-400" />
+                                        <span className="text-[10px] font-black uppercase tracking-wider text-slate-500">
+                                            {(lastLatencyMs / 1000).toFixed(2)}s
+                                        </span>
+                                        {lastProviderLatencyMs !== null && (
+                                            <span className="text-[9px] font-black uppercase tracking-wider text-slate-300">
+                                                Groq {(lastProviderLatencyMs / 1000).toFixed(2)}s
+                                            </span>
+                                        )}
+                                    </div>
+                                )}
                             </div>
                         </div>
 
@@ -1247,6 +1542,12 @@ export default function AetherAIModal({ isOpen, onClose }) {
                                             <div className="mt-1 line-clamp-2 text-sm font-semibold leading-relaxed text-slate-700">{liveUserText}</div>
                                         </div>
                                     )}
+
+                                    <VoiceDebugPanel
+                                        debug={voiceDebug}
+                                        latencyMs={lastLatencyMs}
+                                        providerLatencyMs={lastProviderLatencyMs}
+                                    />
                                 </div>
 
                                 <div className="border-t border-slate-100 bg-slate-50/80 px-5 py-5">
@@ -1258,6 +1559,15 @@ export default function AetherAIModal({ isOpen, onClose }) {
                                                 className="h-12 px-5 rounded-2xl bg-amber-50 text-amber-700 hover:bg-amber-100 transition-all text-[11px] font-black uppercase tracking-wide"
                                             >
                                                 Batalkan
+                                            </button>
+                                        )}
+                                        {!isThinking && !isPreparingSpeech && !isSpeaking && (
+                                            <button
+                                                type="button"
+                                                onClick={forceTranscribeCurrentRecording}
+                                                className="h-12 px-5 rounded-2xl bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition-all text-[11px] font-black uppercase tracking-wide"
+                                            >
+                                                Kirim Suara
                                             </button>
                                         )}
                                         <button

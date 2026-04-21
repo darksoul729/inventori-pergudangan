@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Http\Client\ConnectionException;
 use Symfony\Component\Process\Process;
 use Inertia\Inertia;
 
@@ -279,6 +280,7 @@ class AetherAIController extends Controller
             'conversation_id' => 'nullable|integer|exists:aether_conversations,id',
         ]);
 
+        $requestStartedAt = microtime(true);
         $user = Auth::user();
 
         // ── Resolve or create conversation ──────────────────────────────────────
@@ -313,6 +315,14 @@ class AetherAIController extends Controller
         $localIntent = $this->resolveLocalIntent($request->message);
         if ($localIntent) {
             $aiText = $this->handleLocalIntent($localIntent, $request->message, $user);
+            $latencyMs = $this->elapsedMs($requestStartedAt);
+
+            Log::info('Aether chat handled locally', [
+                'conversation_id' => $conversation->id,
+                'user_id' => $user->id,
+                'intent' => $localIntent,
+                'latency_ms' => $latencyMs,
+            ]);
 
             return $this->saveAssistantReply(
                 $conversation,
@@ -320,14 +330,16 @@ class AetherAIController extends Controller
                 $request->message,
                 $aiText,
                 'local',
-                $localIntent
+                $localIntent,
+                $latencyMs
             );
         }
 
         // ── Build system prompt ──────────────────────────────────────────────────
         $systemPrompt = $this->buildSystemPrompt($user);
         
-        if ($request->input('is_voice_call')) {
+        $isVoiceCall = $request->boolean('is_voice_call');
+        if ($isVoiceCall) {
             $systemPrompt .= "\n\n[PENTING]: INI ADALAH PERCAKAPAN SUARA TELEPON! ANDA WAJIB MERESPON DENGAN SANGAT-SANGAT SINGKAT! MAKSIMAL HANYA 1 ATAU 2 KALIMAT PENDEK SAJA BAGAIMANAPUN SITUASINYA. JANGAN GUNAKAN DAFTAR, TEKS PANJANG, ATAU BENTUK APAPUN KECUALI KALIMAT LISAN PENDEK YANG BISA LANGSUNG DIUCAPKAN VIA TELEPON.";
         }
 
@@ -341,25 +353,67 @@ class AetherAIController extends Controller
         }
 
         try {
-            $aiText = $this->callGroqApi($groqKey, $systemPrompt, $history);
+            $groqStartedAt = microtime(true);
+            $aiText = $this->callGroqApi($groqKey, $systemPrompt, $history, $isVoiceCall);
+            $groqLatencyMs = $this->elapsedMs($groqStartedAt);
+        } catch (ConnectionException $e) {
+            if ($createdConversation) $conversation->delete();
+            else $userMessage->delete();
+
+            $latencyMs = $this->elapsedMs($requestStartedAt);
+            Log::warning('Aether Groq connection timeout/failure', [
+                'conversation_id' => $conversation->id,
+                'user_id' => $user->id,
+                'latency_ms' => $latencyMs,
+                'error' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'error' => 'Koneksi ke Groq timeout atau gagal. Coba ulangi sebentar lagi.',
+                'latency_ms' => $latencyMs,
+            ], 504);
         } catch (\Exception $e) {
             if ($createdConversation) $conversation->delete();
             else $userMessage->delete();
 
-            return response()->json(['error' => $e->getMessage()], 502);
+            $latencyMs = $this->elapsedMs($requestStartedAt);
+            Log::error('Aether Groq request failed', [
+                'conversation_id' => $conversation->id,
+                'user_id' => $user->id,
+                'latency_ms' => $latencyMs,
+                'error' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'error' => $e->getMessage(),
+                'latency_ms' => $latencyMs,
+            ], 502);
         }
+
+        $latencyMs = $this->elapsedMs($requestStartedAt);
+        Log::info('Aether chat completed via Groq', [
+            'conversation_id' => $conversation->id,
+            'user_id' => $user->id,
+            'model' => config('services.groq.model', 'llama-3.3-70b-versatile'),
+            'is_voice_call' => $isVoiceCall,
+            'groq_latency_ms' => $groqLatencyMs,
+            'total_latency_ms' => $latencyMs,
+        ]);
 
         return $this->saveAssistantReply(
             $conversation,
             $history,
             $request->message,
             $aiText,
-            'groq'
+            'groq',
+            null,
+            $latencyMs,
+            $groqLatencyMs
         );
     }
 
     // ─── Call Groq API (OpenAI-compatible) ──────────────────────────────────────
-    private function callGroqApi(string $apiKey, string $systemPrompt, $history): string
+    private function callGroqApi(string $apiKey, string $systemPrompt, $history, bool $isVoiceCall = false): string
     {
         $groqModel = config('services.groq.model', 'llama-3.3-70b-versatile');
         $groqUrl   = config('services.groq.url', 'https://api.groq.com/openai/v1/chat/completions');
@@ -374,7 +428,14 @@ class AetherAIController extends Controller
             ];
         }
 
-        $response = Http::timeout(25)
+        $timeout = (int) config('services.groq.timeout', 25);
+        $connectTimeout = (int) config('services.groq.connect_timeout', 8);
+        $maxTokens = $isVoiceCall
+            ? (int) config('services.groq.voice_max_tokens', 180)
+            : (int) config('services.groq.max_tokens', 2048);
+
+        $response = Http::connectTimeout($connectTimeout)
+            ->timeout($timeout)
             ->withHeaders([
                 'Authorization' => 'Bearer ' . $apiKey,
                 'Content-Type'  => 'application/json',
@@ -382,8 +443,8 @@ class AetherAIController extends Controller
             ->post($groqUrl, [
                 'model'       => $groqModel,
                 'messages'    => $messages,
-                'temperature' => 0.7,
-                'max_tokens'  => 2048,
+                'temperature' => $isVoiceCall ? 0.45 : 0.7,
+                'max_tokens'  => $maxTokens,
                 'top_p'       => 0.95,
             ]);
 
@@ -393,6 +454,10 @@ class AetherAIController extends Controller
                 'status'  => $response->status(),
                 'error'   => $err,
                 'model'   => $groqModel,
+                'timeout' => $timeout,
+                'connect_timeout' => $connectTimeout,
+                'max_tokens' => $maxTokens,
+                'is_voice_call' => $isVoiceCall,
             ]);
             throw new \RuntimeException($err);
         }
@@ -407,6 +472,11 @@ class AetherAIController extends Controller
         $text = preg_replace('/<think>.*?(<\/think>|$)/s', '', $text);
         
         return trim($text);
+    }
+
+    private function elapsedMs(float $startedAt): int
+    {
+        return (int) round((microtime(true) - $startedAt) * 1000);
     }
 
     private function resolveLocalIntent(string $message): ?string
@@ -465,7 +535,7 @@ class AetherAIController extends Controller
         ];
     }
 
-    private function saveAssistantReply($conversation, $history, string $userMessage, string|array $reply, string $provider, ?string $intent = null)
+    private function saveAssistantReply($conversation, $history, string $userMessage, string|array $reply, string $provider, ?string $intent = null, ?int $latencyMs = null, ?int $providerLatencyMs = null)
     {
         $aiText = is_array($reply) ? (string) ($reply['text'] ?? '') : $reply;
         $type = is_array($reply) ? ($reply['type'] ?? $intent) : null;
@@ -497,6 +567,8 @@ class AetherAIController extends Controller
             'conversation_id'    => $conversation->id,
             'conversation_title' => $conversation->title,
             'provider'           => $provider,
+            'latency_ms'         => $latencyMs,
+            'provider_latency_ms' => $providerLatencyMs,
             'message'            => [
                 'id'         => $aiMessage->id,
                 'role'       => 'model',
