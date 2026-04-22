@@ -36,7 +36,21 @@ export default function Drivers({ drivers = [] }) {
     const [activeTab, setActiveTab] = useState('list'); // 'list' or 'tracking'
     const [trackingDrivers, setTrackingDrivers] = useState([]);
     const [focusedDriverId, setFocusedDriverId] = useState(null);
-    
+    const [searchTerm, setSearchTerm] = useState('');
+
+    const filteredDrivers = React.useMemo(() => {
+        if (!searchTerm) return drivers;
+        const lowerSearchText = searchTerm.toLowerCase();
+        return drivers.filter((driver) => {
+            return (
+                (driver.user?.name && driver.user.name.toLowerCase().includes(lowerSearchText)) ||
+                (driver.user?.email && driver.user.email.toLowerCase().includes(lowerSearchText)) ||
+                (driver.license_number && driver.license_number.toLowerCase().includes(lowerSearchText)) ||
+                (driver.phone && driver.phone.toLowerCase().includes(lowerSearchText))
+            );
+        });
+    }, [drivers, searchTerm]);
+
     const { put, processing } = useForm();
     const createForm = useForm({
         name: '',
@@ -56,7 +70,7 @@ export default function Drivers({ drivers = [] }) {
         if (tab === 'tracking') {
             setActiveTab('tracking');
         }
-        
+
         if (driverId) {
             setFocusedDriverId(parseInt(driverId));
         }
@@ -116,7 +130,12 @@ export default function Drivers({ drivers = [] }) {
     };
 
     return (
-        <DashboardLayout headerTitle="Manajemen Driver">
+        <DashboardLayout
+            headerTitle="Manajemen Driver"
+            headerSearchPlaceholder="Cari driver (nama, kontak, license)..."
+            searchValue={searchTerm}
+            onSearch={setSearchTerm}
+        >
             <Head title="Manajemen Driver" />
 
             <div className="flex justify-between items-end mb-8">
@@ -125,7 +144,7 @@ export default function Drivers({ drivers = [] }) {
                     <p className="text-[14px] font-semibold text-gray-500 mt-1">Kelola verifikasi dan status aktif driver di lapangan.</p>
                 </div>
                 <div className="flex items-center space-x-6">
-                     {activeTab === 'list' && (
+                    {activeTab === 'list' && (
                         <button
                             onClick={() => setShowCreateModal(true)}
                             className="flex items-center space-x-2 rounded-xl bg-[#3632c0] px-5 py-3 text-[12px] font-black text-white shadow-lg shadow-indigo-200 transition hover:bg-indigo-700"
@@ -133,25 +152,25 @@ export default function Drivers({ drivers = [] }) {
                             <PlusIcon className="h-4 w-4" />
                             <span>Buat Driver</span>
                         </button>
-                     )}
-                     <div className="flex bg-gray-100 p-1 rounded-2xl border border-gray-200">
-                        <button 
+                    )}
+                    <div className="flex bg-gray-100 p-1 rounded-2xl border border-gray-200">
+                        <button
                             onClick={() => setActiveTab('list')}
                             className={`px-6 py-2.5 rounded-xl text-[12px] font-black transition-all ${activeTab === 'list' ? 'bg-white text-[#3632c0] shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
                         >
                             DAFTAR DRIVER
                         </button>
-                        <button 
+                        <button
                             onClick={() => setActiveTab('tracking')}
                             className={`px-6 py-2.5 rounded-xl text-[12px] font-black transition-all ${activeTab === 'tracking' ? 'bg-white text-[#3632c0] shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
                         >
                             LIVE TRACKING
                         </button>
-                     </div>
-                     <div className="text-right border-l border-gray-200 pl-6">
-                         <div className="text-[11px] font-black text-gray-400 uppercase tracking-wider">Total Driver</div>
-                         <div className="text-[20px] font-black text-[#3632c0]">{drivers.length}</div>
-                     </div>
+                    </div>
+                    <div className="text-right border-l border-gray-200 pl-6">
+                        <div className="text-[11px] font-black text-gray-400 uppercase tracking-wider">Total Driver</div>
+                        <div className="text-[20px] font-black text-[#3632c0]">{drivers.length}</div>
+                    </div>
                 </div>
             </div>
 
@@ -169,7 +188,7 @@ export default function Drivers({ drivers = [] }) {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-50">
-                                {drivers.map((driver) => (
+                                {filteredDrivers.map((driver) => (
                                     <tr key={driver.id} className="hover:bg-gray-50/50 transition-colors">
                                         <td className="px-6 py-5">
                                             <div className="flex items-center space-x-3">
@@ -191,7 +210,7 @@ export default function Drivers({ drivers = [] }) {
                                         <td className="px-6 py-5">{getStatusBadge(driver.status)}</td>
                                         <td className="px-6 py-5 text-right">
                                             <div className="flex justify-end items-center space-x-2">
-                                                <button 
+                                                <button
                                                     onClick={() => { setSelectedDriver(driver); setShowDetailModal(true); }}
                                                     className="p-2 text-indigo-500 hover:bg-indigo-50 rounded-xl transition-colors"
                                                     title="Lihat Detail"
@@ -199,7 +218,7 @@ export default function Drivers({ drivers = [] }) {
                                                     <EyeIcon className="w-4 h-4" />
                                                 </button>
                                                 {driver.status !== 'approved' && (
-                                                    <button 
+                                                    <button
                                                         onClick={() => handleUpdateStatus(driver.id, 'approved')}
                                                         className="p-2 text-emerald-500 hover:bg-emerald-50 rounded-xl transition-colors"
                                                         title="Setujui Driver"
@@ -208,7 +227,7 @@ export default function Drivers({ drivers = [] }) {
                                                     </button>
                                                 )}
                                                 {driver.status !== 'suspended' && (
-                                                    <button 
+                                                    <button
                                                         onClick={() => handleUpdateStatus(driver.id, 'suspended')}
                                                         className="p-2 text-red-500 hover:bg-red-50 rounded-xl transition-colors"
                                                         title="Tangguhkan Driver"
@@ -232,7 +251,7 @@ export default function Drivers({ drivers = [] }) {
                             <h3 className="text-[16px] font-black text-[#1a202c]">Daftar Driver Aktif</h3>
                             <p className="text-[11px] font-bold text-gray-400">Klik kartu untuk fokus pada peta.</p>
                         </div>
-                        
+
                         <div className="flex-1 overflow-y-auto pr-2 space-y-3 custom-scrollbar">
                             {trackingDrivers.length === 0 ? (
                                 <div className="py-20 text-center">
@@ -240,19 +259,17 @@ export default function Drivers({ drivers = [] }) {
                                 </div>
                             ) : (
                                 trackingDrivers.map((driver) => (
-                                    <div 
+                                    <div
                                         key={driver.id}
                                         onClick={() => setFocusedDriverId(driver.id)}
-                                        className={`p-4 rounded-3xl border transition-all cursor-pointer group relative overflow-hidden ${
-                                            focusedDriverId === driver.id 
-                                            ? 'bg-white border-indigo-200 shadow-xl ring-1 ring-indigo-100' 
-                                            : 'bg-gray-50/50 border-gray-100 hover:border-indigo-100 hover:bg-white hover:shadow-md'
-                                        }`}
+                                        className={`p-4 rounded-3xl border transition-all cursor-pointer group relative overflow-hidden ${focusedDriverId === driver.id
+                                                ? 'bg-white border-indigo-200 shadow-xl ring-1 ring-indigo-100'
+                                                : 'bg-gray-50/50 border-gray-100 hover:border-indigo-100 hover:bg-white hover:shadow-md'
+                                            }`}
                                     >
                                         <div className="flex items-start space-x-3 relative z-10">
-                                            <div className={`w-11 h-11 rounded-[14px] flex items-center justify-center font-black text-sm transition-all duration-500 ${
-                                                focusedDriverId === driver.id ? 'bg-[#3632c0] text-white rotate-6' : 'bg-white text-[#3632c0] shadow-sm'
-                                            }`}>
+                                            <div className={`w-11 h-11 rounded-[14px] flex items-center justify-center font-black text-sm transition-all duration-500 ${focusedDriverId === driver.id ? 'bg-[#3632c0] text-white rotate-6' : 'bg-white text-[#3632c0] shadow-sm'
+                                                }`}>
                                                 {driver.user.name.charAt(0)}
                                             </div>
                                             <div className="flex-1 min-w-0">
@@ -264,7 +281,7 @@ export default function Drivers({ drivers = [] }) {
                                                         </div>
                                                     )}
                                                 </div>
-                                                
+
                                                 <div className="flex flex-col space-y-1.5 mt-1.5">
                                                     <div className="flex items-center space-x-2">
                                                         <div className={`w-1.5 h-1.5 rounded-full ${driver.latitude && driver.longitude ? 'bg-emerald-500 animate-pulse' : 'bg-gray-300'}`}></div>
@@ -317,7 +334,7 @@ export default function Drivers({ drivers = [] }) {
                                                     </div>
                                                 )}
                                             </div>
-                                            
+
                                             {driver.latitude && driver.longitude && (
                                                 <div className="mt-3 pt-3 border-t border-gray-100/50 flex justify-between items-center">
                                                     <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Update Terakhir</span>
@@ -339,9 +356,9 @@ export default function Drivers({ drivers = [] }) {
 
                     {/* Map View */}
                     <div className="flex-1">
-                        <LiveMap 
-                            onDriversLoad={setTrackingDrivers} 
-                            focusedDriverId={focusedDriverId} 
+                        <LiveMap
+                            onDriversLoad={setTrackingDrivers}
+                            focusedDriverId={focusedDriverId}
                             onMarkerClick={setFocusedDriverId}
                         />
                     </div>
@@ -454,9 +471,9 @@ export default function Drivers({ drivers = [] }) {
                                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-3">Foto ID Karyawan / KTP</label>
                                 {selectedDriver.photo_id_card ? (
                                     <div className="relative rounded-2xl overflow-hidden border border-gray-200 bg-gray-50 aspect-video flex items-center justify-center">
-                                        <img 
-                                            src={`/storage/${selectedDriver.photo_id_card}`} 
-                                            alt="ID Card Proof" 
+                                        <img
+                                            src={`/storage/${selectedDriver.photo_id_card}`}
+                                            alt="ID Card Proof"
                                             className="w-full h-full object-contain"
                                         />
                                     </div>
@@ -468,14 +485,14 @@ export default function Drivers({ drivers = [] }) {
                             </div>
 
                             <div className="flex space-x-3 pt-4 border-t border-gray-100">
-                                <button 
+                                <button
                                     onClick={() => handleUpdateStatus(selectedDriver.id, 'approved')}
                                     disabled={selectedDriver.status === 'approved'}
                                     className="flex-1 py-4 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white font-black rounded-2xl shadow-lg shadow-emerald-200 transition-all text-[13px] uppercase tracking-wider"
                                 >
                                     Setujui Akses
                                 </button>
-                                <button 
+                                <button
                                     onClick={() => handleUpdateStatus(selectedDriver.id, 'suspended')}
                                     disabled={selectedDriver.status === 'suspended'}
                                     className="px-6 py-4 bg-red-50 hover:bg-red-100 text-red-600 font-extrabold rounded-2xl transition-colors text-[13px]"

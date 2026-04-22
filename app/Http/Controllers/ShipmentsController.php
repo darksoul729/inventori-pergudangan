@@ -13,8 +13,21 @@ class ShipmentsController extends Controller
     public function index(Request $request)
     {
         $perPage = max(5, min($request->integer('per_page', 10), 50));
+        $search = $request->input('search');
 
         $shipments = Shipment::with('driver.user')
+            ->when($search, function ($query, $search) {
+                return $query->where(function ($q) use ($search) {
+                    $q->where('shipment_id', 'like', "%{$search}%")
+                      ->orWhere('origin', 'like', "%{$search}%")
+                      ->orWhere('origin_name', 'like', "%{$search}%")
+                      ->orWhere('destination', 'like', "%{$search}%")
+                      ->orWhere('destination_name', 'like', "%{$search}%")
+                      ->orWhereHas('driver.user', function ($driverQuery) use ($search) {
+                          $driverQuery->where('name', 'like', "%{$search}%");
+                      });
+                });
+            })
             ->latest()
             ->paginate($perPage)
             ->withQueryString()
@@ -53,7 +66,7 @@ class ShipmentsController extends Controller
         $approvedDrivers = \App\Models\Driver::with('user:id,name')
             ->where('status', 'approved')
             ->get()
-            ->map(function($driver) {
+            ->map(function ($driver) {
                 return [
                     'id' => $driver->id,
                     'name' => $driver->user->name,
@@ -78,6 +91,9 @@ class ShipmentsController extends Controller
             'shipments' => $shipments,
             'stats' => $stats,
             'drivers' => $approvedDrivers,
+            'filters' => [
+                'search' => $search,
+            ],
         ]);
     }
 
@@ -201,7 +217,7 @@ class ShipmentsController extends Controller
         $shipment->load('driver.user');
         $routeMetrics = $this->buildRouteMetrics($shipment);
         $alerts = $this->buildAlerts($shipment, $routeMetrics);
-        
+
         return Inertia::render('ShipmentDetail', [
             'shipment' => [
                 'id' => $shipment->shipment_id,
@@ -231,7 +247,7 @@ class ShipmentsController extends Controller
                 'delivered_at' => $shipment->delivered_at?->format('F d, Y H:i'),
                 'delivery_recipient_name' => $shipment->delivery_recipient_name,
                 'delivery_note' => $shipment->delivery_note,
-                'delivery_photo_url' => $shipment->delivery_photo_path ? '/storage/'.$shipment->delivery_photo_path : null,
+                'delivery_photo_url' => $shipment->delivery_photo_path ? '/storage/' . $shipment->delivery_photo_path : null,
                 'pod_verification_status' => $shipment->pod_verification_status,
                 'pod_verification_note' => $shipment->pod_verification_note,
                 'pod_verified_at' => $shipment->pod_verified_at?->format('F d, Y H:i'),

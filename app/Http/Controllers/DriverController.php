@@ -77,30 +77,33 @@ class DriverController extends Controller
 
     public function getLocations()
     {
-        $drivers = Driver::with(['user:id,name', 'shipments' => function ($query) {
-            $query->where('tracking_stage', '!=', 'delivered')
-                ->orWhere(function ($deliveredQuery) {
-                    $deliveredQuery->where('tracking_stage', 'delivered')
-                        ->where(function ($verificationQuery) {
-                            $verificationQuery->whereNull('pod_verification_status')
-                                ->orWhere('pod_verification_status', '!=', 'approved');
-                        });
-                })
-                ->select('id', 'shipment_id', 'driver_id', 'tracking_stage', 'origin_name', 'destination_name');
-        }])
+        $drivers = Driver::with([
+            'user:id,name',
+            'shipments' => function ($query) {
+                $query->where('tracking_stage', '!=', 'delivered')
+                    ->orWhere(function ($deliveredQuery) {
+                        $deliveredQuery->where('tracking_stage', 'delivered')
+                            ->where(function ($verificationQuery) {
+                                $verificationQuery->whereNull('pod_verification_status')
+                                    ->orWhere('pod_verification_status', '!=', 'approved');
+                            });
+                    })
+                    ->select('id', 'shipment_id', 'driver_id', 'tracking_stage', 'origin_name', 'destination_name');
+            }
+        ])
             ->where('status', 'approved')
             ->select('id', 'user_id', 'latitude', 'longitude', 'status', 'updated_at', 'last_location_mock')
             ->get()
             ->map(function ($driver) {
                 // Get the most "active" shipment (not ready_for_pickup takes priority)
-                $activeShipment = $driver->shipments->first(fn ($s) => $s->tracking_stage !== 'ready_for_pickup')
+                $activeShipment = $driver->shipments->first(fn($s) => $s->tracking_stage !== 'ready_for_pickup')
                     ?? $driver->shipments->first();
 
                 $driver->active_shipment_id = $activeShipment?->shipment_id;
                 $driver->active_shipment_stage = $activeShipment?->tracking_stage;
                 $driver->active_shipment_origin = $activeShipment?->origin_name;
                 $driver->active_shipment_destination = $activeShipment?->destination_name;
-                
+
                 unset($driver->shipments); // Remove full list to keep response small
                 return $driver;
             });

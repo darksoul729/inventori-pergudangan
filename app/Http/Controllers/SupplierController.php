@@ -28,7 +28,7 @@ class SupplierController extends Controller
                 return $query->where('status', $status);
             })
             ->get();
-        
+
         // Calculate global stats for current month (stats are usually global or based on filtered set? 
         // User asked to make features functional in 'suppliers' (directory). Usually directory filter affects the list.
         // Let's keep stats based on the FILTERED suppliers for consistency.
@@ -36,7 +36,7 @@ class SupplierController extends Controller
 
         $currentMonth = now()->month;
         $currentYear = now()->year;
-        
+
         $lastMonthDate = now()->subMonth();
         $lastMonth = $lastMonthDate->month;
         $lastYear = $lastMonthDate->year;
@@ -45,7 +45,7 @@ class SupplierController extends Controller
             ->where('period_month', $currentMonth)
             ->where('period_year', $currentYear)
             ->get();
-            
+
         $lastPerformances = SupplierPerformance::whereIn('supplier_id', $supplierIds)
             ->where('period_month', $lastMonth)
             ->where('period_year', $lastYear)
@@ -98,15 +98,15 @@ class SupplierController extends Controller
             ->whereIn('supplier_id', $supplierIds)
             ->where('period_year', $selectedYear)
             ->get();
-            
+
         $chartData = [];
         for ($month = 1; $month <= 12; $month++) {
             $date = \Carbon\Carbon::create($selectedYear, $month, 1);
             $node = ['name' => $date->format('M')];
             foreach ($suppliers as $sup) {
                 $perf = $allPerformances->where('supplier_id', $sup->id)
-                                        ->where('period_month', $month)
-                                        ->first();
+                    ->where('period_month', $month)
+                    ->first();
                 $node[$sup->code] = $perf ? (float) $perf->avg_lead_time_days : null;
             }
             $chartData[] = $node;
@@ -140,7 +140,7 @@ class SupplierController extends Controller
         ]);
 
         $validated['status'] = 'active';
-        
+
         $supplier = Supplier::create($validated);
 
         return redirect()->back()->with('success', 'Supplier created successfully.');
@@ -148,9 +148,11 @@ class SupplierController extends Controller
 
     public function show(Supplier $supplier)
     {
-        $supplier->load(['performances' => function ($query) {
-            $query->orderBy('period_year', 'desc')->orderBy('period_month', 'desc');
-        }]);
+        $supplier->load([
+            'performances' => function ($query) {
+                $query->orderBy('period_year', 'desc')->orderBy('period_month', 'desc');
+            }
+        ]);
 
         return Inertia::render('SupplierDetail', [
             'supplier' => $supplier,

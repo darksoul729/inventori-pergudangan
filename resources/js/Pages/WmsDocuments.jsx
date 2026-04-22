@@ -93,7 +93,9 @@ export default function WmsDocuments({ documents = [], stats = {} }) {
     return (
         <DashboardLayout
             headerTitle="Dokumen WMS"
-            headerSearchPlaceholder="Cari dokumen WMS..."
+            headerSearchPlaceholder="Cari ID dokumen, pihak, atau tipe..."
+            searchValue={searchTerm}
+            onSearch={setSearchTerm}
             contentClassName="max-w-[1500px] mx-auto"
         >
             <Head title="Dokumen WMS" />
@@ -107,15 +109,6 @@ export default function WmsDocuments({ documents = [], stats = {} }) {
                             <p className="mt-1 text-sm text-gray-500">Ringkasan dokumen penerimaan, pengeluaran, transfer rack, opname, dan adjustment untuk gudang utama.</p>
                         </div>
                         <div className="flex flex-col sm:flex-row gap-2 w-full lg:w-auto">
-                            <div className="relative w-full lg:w-[360px]">
-                                <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                                <input
-                                    value={searchTerm}
-                                    onChange={(event) => setSearchTerm(event.target.value)}
-                                    className="w-full h-11 pl-11 pr-4 rounded-[8px] border border-gray-200 text-sm font-semibold text-gray-700 focus:border-indigo-400 focus:ring-indigo-100"
-                                    placeholder="Nomor, pihak, operator, gudang..."
-                                />
-                            </div>
                             <a
                                 href={exportCsvUrl}
                                 className="h-11 px-4 rounded-[8px] border border-gray-200 bg-white text-gray-700 text-xs font-black inline-flex items-center justify-center gap-2 hover:border-gray-300 transition-colors"
@@ -178,7 +171,7 @@ export default function WmsDocuments({ documents = [], stats = {} }) {
                                     onChange={(event) => setDateTo(event.target.value)}
                                     className="mt-1 h-10 w-full rounded-[8px] border border-gray-200 px-3 text-sm font-bold text-gray-700 focus:border-indigo-400 focus:ring-indigo-100"
                                 />
-                            </label>
+                                {/* Search functionality moved to global top bar */}</label>
                         </div>
                         {(dateFrom || dateTo || searchTerm || activeType !== 'all') && (
                             <button
