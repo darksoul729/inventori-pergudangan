@@ -286,8 +286,8 @@ class ShipmentsController extends Controller
         $shipment->pod_verified_by = $request->user()->id;
         $shipment->pod_verified_at = now();
         $shipment->last_tracking_note = $validated['verification_status'] === 'approved'
-            ? 'Bukti pengiriman diverifikasi admin.'
-            : 'Bukti pengiriman ditolak admin. Driver harus kirim ulang bukti.';
+            ? 'Bukti pengiriman diverifikasi penanggung jawab gudang.'
+            : 'Bukti pengiriman ditolak penanggung jawab gudang. Driver harus kirim ulang bukti.';
         $shipment->save();
 
         return back()->with('success', 'Verifikasi bukti pengiriman berhasil disimpan.');

@@ -115,10 +115,20 @@ class PurchaseOrderController extends Controller
             'status' => 'required|in:approved,rejected,received,cancelled',
         ]);
 
+        if (in_array($validated['status'], ['approved', 'rejected', 'cancelled'], true)) {
+            abort_unless($this->isManager($request), 403, 'Hanya Manager Gudang yang dapat menyetujui, menolak, atau membatalkan PO.');
+        }
+
         DB::transaction(function () use ($validated, $request, $purchaseOrder) {
             $purchaseOrder->loadMissing(['items', 'goodsReceipts']);
             $previousStatus = $purchaseOrder->status;
             $updateData = ['status' => $validated['status']];
+
+            if ($validated['status'] === 'received' && !in_array($previousStatus, ['approved', 'received'], true)) {
+                throw ValidationException::withMessages([
+                    'status' => 'PO harus disetujui Manager Gudang sebelum bisa dikonfirmasi diterima.',
+                ]);
+            }
             
             if ($validated['status'] === 'approved') {
                 $updateData['approved_by'] = $request->user()->id;
@@ -166,6 +176,15 @@ class PurchaseOrderController extends Controller
         });
 
         return redirect()->back()->with('success', 'Purchase Order status updated to ' . $validated['status'] . '.');
+    }
+
+    private function isManager(Request $request): bool
+    {
+        $roleName = strtolower((string) ($request->user()?->role?->name ?? ''));
+
+        return str_contains($roleName, 'manager')
+            || str_contains($roleName, 'manajer')
+            || str_contains($roleName, 'admin gudang');
     }
 
     private function putAwayReceivedItem(Request $request, int $warehouseId, int $productId, int $quantity, int $receiptId): void

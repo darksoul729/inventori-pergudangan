@@ -206,6 +206,16 @@ export default function AetherAI() {
 
     useEffect(() => { scrollToBottom(); }, [messages, scrollToBottom]);
 
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        const prompt = params.get('prompt');
+
+        if (prompt) {
+            setInputText(prompt);
+            window.history.replaceState({}, '', window.location.pathname);
+        }
+    }, []);
+
     const toggleListening = () => {
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         if (!SpeechRecognition) {
@@ -474,7 +484,7 @@ export default function AetherAI() {
                                     <div className={`p-8 rounded-[32px] ${m.role === 'user' ? 'bg-[#f4f7ff] text-slate-800 border border-indigo-100/50 rounded-tr-none' : 'bg-white border border-slate-100 shadow-sm rounded-tl-none'}`}>
                                         <div className="mb-2 flex items-center gap-3">
                                             <span className={`text-[10px] font-black uppercase tracking-[0.2em] ${m.role === 'user' ? 'text-slate-400' : 'text-indigo-500'}`}>
-                                                {m.role === 'user' ? 'Administrator' : 'Aether Intelligence'}
+                                                {m.role === 'user' ? 'Pengguna Operasional' : 'Aether Intelligence'}
                                             </span>
                                             {m.role !== 'user' && (
                                                 <div className="px-2 py-0.5 rounded-lg bg-indigo-50 text-[9px] font-black text-indigo-600 uppercase tracking-widest border border-indigo-100">Certified</div>

@@ -44,6 +44,13 @@ const EditIcon = ({ className }) => (
     </svg>
 );
 
+const formatOperationalRole = (role) => {
+    if (role === 'Supervisor') return 'Supervisor Gudang';
+    if (role === 'Staff') return 'Staff Operasional';
+
+    return role || 'Staff Operasional';
+};
+
 export default function Settings({ auth, categories, units, warehouse, staffUsers = [] }) {
     const { flash = {} } = usePage().props;
     const queryParams = new URLSearchParams(window.location.search);
@@ -476,7 +483,7 @@ export default function Settings({ auth, categories, units, warehouse, staffUser
                             <div className="flex justify-between items-center mb-8">
                                 <div>
                                     <h2 className="text-[20px] font-black text-[#1a202c] mb-1">Manajemen Akun Operasional</h2>
-                                    <p className="text-[13px] font-semibold text-gray-400">Manager dapat membuat akun supervisor untuk approval harian dan staff untuk input operasional.</p>
+                                    <p className="text-[13px] font-semibold text-gray-400">Manager Gudang dapat membuat akun Supervisor Gudang untuk approval harian dan Staff Operasional untuk input operasional.</p>
                                 </div>
                                 <button 
                                     onClick={() => setShowStaffModal(true)}
@@ -508,7 +515,7 @@ export default function Settings({ auth, categories, units, warehouse, staffUser
                                                 </td>
                                                 <td className="px-6 py-4">
                                                     <span className={`inline-flex items-center justify-center px-3 py-1 rounded-lg text-[12px] font-bold tracking-wide ${user.role === 'Supervisor' ? 'bg-indigo-50 text-indigo-600' : 'bg-slate-50 text-slate-600'}`}>
-                                                        {user.role || 'Staff'}
+                                                        {formatOperationalRole(user.role)}
                                                     </span>
                                                 </td>
                                                 <td className="px-6 py-4 text-[13px] font-semibold text-gray-500">{user.email}</td>
@@ -696,7 +703,7 @@ export default function Settings({ auth, categories, units, warehouse, staffUser
                         </div>
                         <form onSubmit={submitStaff} className="p-8 space-y-5">
                             <div>
-                                <label className="block text-[10px] font-extrabold text-gray-500 tracking-wider uppercase mb-2">NAMA STAFF</label>
+                                <label className="block text-[10px] font-extrabold text-gray-500 tracking-wider uppercase mb-2">NAMA PENGGUNA OPERASIONAL</label>
                                 <input
                                     type="text"
                                     className="bg-[#f8f9fb] border border-transparent focus:border-[#4f46e5] focus:ring-1 focus:ring-[#4f46e5] block w-full px-4 py-3 sm:text-[14px] rounded-xl font-bold text-gray-800"
@@ -715,8 +722,8 @@ export default function Settings({ auth, categories, units, warehouse, staffUser
                                     onChange={e => staffForm.setData('role', e.target.value)}
                                     required
                                 >
-                                    <option value="Staff">Staff - input outbound dan lihat data operasional</option>
-                                    <option value="Supervisor">Supervisor - approval harian, laporan, export, dan koordinasi shift</option>
+                                    <option value="Staff">Staff Operasional - input outbound dan lihat data operasional</option>
+                                    <option value="Supervisor">Supervisor Gudang - approval harian, laporan, export, dan koordinasi shift</option>
                                 </select>
                                 {staffForm.errors.role && <div className="text-red-500 text-xs mt-1 font-bold">{staffForm.errors.role}</div>}
                             </div>
