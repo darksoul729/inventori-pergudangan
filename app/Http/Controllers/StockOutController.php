@@ -67,28 +67,28 @@ class StockOutController extends Controller
         ]);
 
         return [
-            'title' => 'Stock Out',
+            'title' => 'Barang Keluar',
             'subtitle' => 'Dokumen pengeluaran barang dari gudang',
             'number' => $stockOut->stock_out_number,
-            'status' => ucfirst($stockOut->status ?? 'completed'),
+            'status' => $this->statusLabel($stockOut->status ?? 'completed'),
             'stats' => [
                 ['label' => 'Tanggal Keluar', 'value' => $stockOut->out_date?->format('d M Y') ?? '-'],
-                ['label' => 'Total Qty', 'value' => number_format((float) $stockOut->items->sum('quantity'), 0, ',', '.')],
+                ['label' => 'Total Jumlah', 'value' => number_format((float) $stockOut->items->sum('quantity'), 0, ',', '.')],
                 ['label' => 'Total Nilai', 'value' => 'Rp '.number_format((float) $stockOut->items->sum('subtotal'), 0, ',', '.')],
                 ['label' => 'Operator', 'value' => $stockOut->creator?->name ?? 'Sistem'],
             ],
             'details' => [
-                ['label' => 'Customer', 'value' => $stockOut->customer?->name],
-                ['label' => 'Kode Customer', 'value' => $stockOut->customer?->code],
-                ['label' => 'Warehouse', 'value' => $stockOut->warehouse?->name],
+                ['label' => 'Pelanggan', 'value' => $stockOut->customer?->name],
+                ['label' => 'Kode Pelanggan', 'value' => $stockOut->customer?->code],
+                ['label' => 'Gudang', 'value' => $stockOut->warehouse?->name],
                 ['label' => 'Lokasi', 'value' => $stockOut->warehouse?->location],
-                ['label' => 'Purpose', 'value' => $stockOut->purpose],
+                ['label' => 'Keperluan', 'value' => $this->purposeLabel($stockOut->purpose)],
                 ['label' => 'Catatan', 'value' => $stockOut->notes],
             ],
             'columns' => [
                 ['key' => 'product', 'label' => 'Produk'],
                 ['key' => 'sku', 'label' => 'SKU'],
-                ['key' => 'quantity', 'label' => 'Qty', 'align' => 'right'],
+                ['key' => 'quantity', 'label' => 'Jumlah', 'align' => 'right'],
                 ['key' => 'unit_price', 'label' => 'Harga', 'align' => 'right'],
                 ['key' => 'subtotal', 'label' => 'Subtotal', 'align' => 'right'],
             ],
@@ -100,5 +100,28 @@ class StockOutController extends Controller
                 'subtotal' => 'Rp '.number_format((float) $item->subtotal, 0, ',', '.'),
             ])->all(),
         ];
+    }
+
+    private function statusLabel(?string $status): string
+    {
+        return match (strtolower((string) $status)) {
+            'completed', 'complete', 'done' => 'Selesai',
+            'pending' => 'Menunggu',
+            'approved' => 'Disetujui',
+            'rejected' => 'Ditolak',
+            'cancelled', 'canceled' => 'Dibatalkan',
+            default => trim((string) $status) !== '' ? ucfirst((string) $status) : 'Selesai',
+        };
+    }
+
+    private function purposeLabel(?string $purpose): string
+    {
+        return match (strtolower((string) $purpose)) {
+            'delivery' => 'Pengiriman barang',
+            'sales', 'sale' => 'Penjualan',
+            'return' => 'Retur',
+            'damage', 'damaged' => 'Barang rusak',
+            default => trim((string) $purpose) !== '' ? (string) $purpose : 'Pengeluaran barang',
+        };
     }
 }

@@ -11,6 +11,10 @@ const loadExportTools = async () => {
     return { ExcelJS, saveAs };
 };
 
+const paginationLabel = (label) => String(label || '')
+    .replace(/&laquo;/g, '<')
+    .replace(/&raquo;/g, '>');
+
 // Icons
 const InboundIcon = ({ className }) => (
     <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -446,8 +450,9 @@ export default function Transaction({ movements, stats, filters }) {
                                                     ? 'bg-white border border-gray-100 text-gray-500 hover:bg-gray-50'
                                                     : 'bg-white border border-gray-100 text-gray-200 cursor-default'
                                             }`}
-                                        dangerouslySetInnerHTML={{ __html: link.label }}
-                                    />
+                                    >
+                                        {paginationLabel(link.label)}
+                                    </Link>
                                 ))}
                             </div>
                         </div>

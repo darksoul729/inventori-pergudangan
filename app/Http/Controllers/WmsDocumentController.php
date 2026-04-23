@@ -50,16 +50,16 @@ class WmsDocumentController extends Controller
             fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
 
             fputcsv($file, [
-                'Document Number',
-                'Document Type',
-                'Date',
+                'Nomor Dokumen',
+                'Jenis Dokumen',
+                'Tanggal',
                 'Status',
-                'Party / Source',
-                'Warehouse',
-                'Item Count',
-                'Total Quantity',
+                'Pihak / Sumber',
+                'Gudang',
+                'Jumlah Item',
+                'Total Kuantitas',
                 'Operator',
-                'Summary',
+                'Ringkasan',
             ]);
 
             foreach ($documents as $document) {
@@ -156,18 +156,18 @@ class WmsDocumentController extends Controller
             ->map(fn (GoodsReceipt $receipt) => [
                 'id' => 'goods_receipt-'.$receipt->id,
                 'type' => 'goods_receipt',
-                'type_label' => 'Goods Receipt',
+                'type_label' => 'Penerimaan Barang',
                 'number' => $receipt->receipt_number,
                 'date' => optional($receipt->receipt_date)->format('Y-m-d') ?? optional($receipt->created_at)->format('Y-m-d'),
                 'date_label' => optional($receipt->receipt_date)->format('d M Y') ?? optional($receipt->created_at)->format('d M Y'),
                 'sort_date' => $receipt->receipt_date ?? $receipt->created_at,
-                'status' => ucfirst($receipt->status ?? 'completed'),
+                'status' => $this->statusLabel($receipt->status ?? 'completed'),
                 'party' => $receipt->supplier?->name ?? 'Pemasok tidak tercatat',
                 'warehouse' => $receipt->warehouse?->name ?? 'Gudang utama',
                 'operator' => $receipt->creator?->name ?? 'Sistem',
                 'item_count' => $receipt->items->count(),
                 'total_quantity' => (float) $receipt->items->sum('quantity_received'),
-                'summary' => 'Penerimaan barang dari purchase order',
+                'summary' => 'Barang diterima dari pesanan pembelian',
                 'url' => route('goods-receipts.show', $receipt),
                 'pdf_url' => route('goods-receipts.pdf', $receipt),
             ]);
@@ -184,18 +184,18 @@ class WmsDocumentController extends Controller
             ->map(fn (StockOut $stockOut) => [
                 'id' => 'stock_out-'.$stockOut->id,
                 'type' => 'stock_out',
-                'type_label' => 'Stock Out',
+                'type_label' => 'Barang Keluar',
                 'number' => $stockOut->stock_out_number,
                 'date' => optional($stockOut->out_date)->format('Y-m-d') ?? optional($stockOut->created_at)->format('Y-m-d'),
                 'date_label' => optional($stockOut->out_date)->format('d M Y') ?? optional($stockOut->created_at)->format('d M Y'),
                 'sort_date' => $stockOut->out_date ?? $stockOut->created_at,
-                'status' => ucfirst($stockOut->status ?? 'completed'),
+                'status' => $this->statusLabel($stockOut->status ?? 'completed'),
                 'party' => $stockOut->customer?->name ?? 'Umum',
                 'warehouse' => $stockOut->warehouse?->name ?? 'Gudang utama',
                 'operator' => $stockOut->creator?->name ?? 'Sistem',
                 'item_count' => $stockOut->items->count(),
                 'total_quantity' => (float) $stockOut->items->sum('quantity'),
-                'summary' => $stockOut->purpose ?: 'Pengeluaran barang',
+                'summary' => $this->purposeLabel($stockOut->purpose ?: 'Pengeluaran barang'),
                 'url' => route('stock-outs.show', $stockOut),
                 'pdf_url' => route('stock-outs.pdf', $stockOut),
             ]);
@@ -212,18 +212,18 @@ class WmsDocumentController extends Controller
             ->map(fn (StockTransfer $transfer) => [
                 'id' => 'stock_transfer-'.$transfer->id,
                 'type' => 'stock_transfer',
-                'type_label' => 'Transfer Rack',
+                'type_label' => 'Transfer Rak',
                 'number' => $transfer->transfer_number,
                 'date' => optional($transfer->transfer_date)->format('Y-m-d') ?? optional($transfer->created_at)->format('Y-m-d'),
                 'date_label' => optional($transfer->transfer_date)->format('d M Y') ?? optional($transfer->created_at)->format('d M Y'),
                 'sort_date' => $transfer->transfer_date ?? $transfer->created_at,
-                'status' => ucfirst($transfer->status ?? 'completed'),
-                'party' => 'Internal warehouse',
-                'warehouse' => trim(($transfer->fromWarehouse?->name ?? 'Gudang utama').' -> '.($transfer->toWarehouse?->name ?? 'Gudang utama')),
+                'status' => $this->statusLabel($transfer->status ?? 'completed'),
+                'party' => 'Internal gudang',
+                'warehouse' => trim(($transfer->fromWarehouse?->name ?? 'Gudang utama').' ke '.($transfer->toWarehouse?->name ?? 'Gudang utama')),
                 'operator' => $transfer->creator?->name ?? 'Sistem',
                 'item_count' => $transfer->items->count(),
                 'total_quantity' => (float) $transfer->items->sum('quantity'),
-                'summary' => 'Perpindahan stok antar rack/bin',
+                'summary' => 'Perpindahan stok antar rak',
                 'url' => route('rack.allocation.transfers.show', $transfer),
                 'pdf_url' => route('rack.allocation.transfers.pdf', $transfer),
             ]);
@@ -240,12 +240,12 @@ class WmsDocumentController extends Controller
             ->map(fn (StockOpname $opname) => [
                 'id' => 'stock_opname-'.$opname->id,
                 'type' => 'stock_opname',
-                'type_label' => 'Stock Opname',
+                'type_label' => 'Stok Opname',
                 'number' => $opname->opname_number,
                 'date' => optional($opname->opname_date)->format('Y-m-d') ?? optional($opname->created_at)->format('Y-m-d'),
                 'date_label' => optional($opname->opname_date)->format('d M Y') ?? optional($opname->created_at)->format('d M Y'),
                 'sort_date' => $opname->opname_date ?? $opname->created_at,
-                'status' => $opname->items->sum('difference') == 0 ? 'Balanced' : 'Variance',
+                'status' => $opname->items->sum('difference') == 0 ? 'Sesuai' : 'Ada selisih',
                 'party' => 'Audit stok fisik',
                 'warehouse' => $opname->warehouse?->name ?? 'Gudang utama',
                 'operator' => $opname->creator?->name ?? 'Sistem',
@@ -275,12 +275,12 @@ class WmsDocumentController extends Controller
             ->map(fn (StockAdjustment $adjustment) => [
                 'id' => 'stock_adjustment-'.$adjustment->id,
                 'type' => 'stock_adjustment',
-                'type_label' => 'Stock Adjustment',
+                'type_label' => 'Koreksi Stok',
                 'number' => $adjustment->adjustment_number,
                 'date' => optional($adjustment->adjustment_date)->format('Y-m-d') ?? optional($adjustment->created_at)->format('Y-m-d'),
                 'date_label' => optional($adjustment->adjustment_date)->format('d M Y') ?? optional($adjustment->created_at)->format('d M Y'),
                 'sort_date' => $adjustment->adjustment_date ?? $adjustment->created_at,
-                'status' => ucfirst($adjustment->reason ?? 'adjustment'),
+                'status' => $this->statusLabel($adjustment->reason ?? 'adjustment'),
                 'party' => $hasStockOpnameColumn && $adjustment->stockOpname?->opname_number
                     ? 'Dari '.$adjustment->stockOpname->opname_number
                     : 'Koreksi stok',
@@ -288,9 +288,37 @@ class WmsDocumentController extends Controller
                 'operator' => $adjustment->creator?->name ?? 'Sistem',
                 'item_count' => $adjustment->items->count(),
                 'total_quantity' => (float) $adjustment->items->sum('quantity'),
-                'summary' => 'Penyesuaian stok otomatis/manual',
+                'summary' => 'Koreksi stok otomatis atau manual',
                 'url' => route('stock-adjustments.show', $adjustment),
                 'pdf_url' => route('stock-adjustments.pdf', $adjustment),
             ]);
+    }
+
+    private function statusLabel(?string $status): string
+    {
+        return match (strtolower((string) $status)) {
+            'completed', 'complete', 'done' => 'Selesai',
+            'pending' => 'Menunggu',
+            'approved' => 'Disetujui',
+            'rejected' => 'Ditolak',
+            'cancelled', 'canceled' => 'Dibatalkan',
+            'draft' => 'Draf',
+            'delivery' => 'Pengiriman',
+            'adjustment' => 'Koreksi',
+            'manual' => 'Manual',
+            'automatic', 'auto' => 'Otomatis',
+            default => trim((string) $status) !== '' ? ucfirst((string) $status) : 'Selesai',
+        };
+    }
+
+    private function purposeLabel(?string $purpose): string
+    {
+        return match (strtolower((string) $purpose)) {
+            'delivery' => 'Pengiriman barang',
+            'sales', 'sale' => 'Penjualan',
+            'return' => 'Retur',
+            'damage', 'damaged' => 'Barang rusak',
+            default => trim((string) $purpose) !== '' ? (string) $purpose : 'Pengeluaran barang',
+        };
     }
 }

@@ -7,6 +7,7 @@ use App\Models\StockMovement;
 use App\Models\Product;
 use App\Models\Rack;
 use App\Models\RackStock;
+use App\Models\Driver;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\DB;
@@ -188,8 +189,7 @@ class ReportController extends Controller
             'delayed'   => DB::table('shipments')->where('status', 'delayed')->count(),
         ];
 
-        // Active drivers (if table exists)
-        $totalDrivers = DB::table('users')->where('role', 'driver')->count();
+        $totalDrivers = Driver::where('status', 'approved')->count();
 
         // Movement summary last 30 days
         $movementSummary = [

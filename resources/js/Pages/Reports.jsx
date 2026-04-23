@@ -436,7 +436,7 @@ export default function Reports({ data, reports }) {
     return (
         <DashboardLayout headerTitle="" headerRight={headerRight} headerSearchPlaceholder="Cari laporan atau data gudang...">
             <Head title="Laporan Gudang" />
-            <style dangerouslySetInnerHTML={{ __html: animationStyles }} />
+            <style>{animationStyles}</style>
 
             {/* Standard spacing from DashboardLayout handles padding, we just build the content */}
             <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700">

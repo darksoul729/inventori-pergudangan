@@ -156,6 +156,7 @@ use App\Http\Controllers\DriverController;
 Route::middleware(['auth', 'verified', 'role:manager'])->group(function () {
     Route::get('/drivers', [DriverController::class, 'index'])->name('drivers.index');
     Route::post('/drivers', [DriverController::class, 'store'])->name('drivers.store');
+    Route::get('/drivers/{driver}', [DriverController::class, 'show'])->name('drivers.show');
     Route::get('/api/drivers/locations', [DriverController::class, 'getLocations'])->name('drivers.locations');
     Route::put('/drivers/{driver}/status', [DriverController::class, 'updateStatus'])->name('drivers.status.update');
 });

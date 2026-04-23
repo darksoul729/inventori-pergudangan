@@ -6,12 +6,15 @@ use App\Models\Shipment;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 
 class ShipmentsController extends Controller
 {
     public function index(Request $request)
     {
+        Gate::authorize('viewAny', Shipment::class);
+
         $perPage = max(5, min($request->integer('per_page', 10), 50));
         $search = $request->input('search');
 
@@ -99,6 +102,8 @@ class ShipmentsController extends Controller
 
     public function create()
     {
+        Gate::authorize('create', Shipment::class);
+
         $approvedDrivers = \App\Models\Driver::with('user:id,name')
             ->where('status', 'approved')
             ->get()
@@ -117,6 +122,8 @@ class ShipmentsController extends Controller
 
     public function store(Request $request)
     {
+        Gate::authorize('create', Shipment::class);
+
         $validated = $request->validate([
             'shipment_id' => 'required|unique:shipments',
             'origin' => 'required|string',
@@ -155,6 +162,8 @@ class ShipmentsController extends Controller
 
     public function edit(Shipment $shipment)
     {
+        Gate::authorize('update', $shipment);
+
         $approvedDrivers = \App\Models\Driver::with('user:id,name')
             ->where('status', 'approved')
             ->get()
@@ -174,6 +183,8 @@ class ShipmentsController extends Controller
 
     public function update(Request $request, Shipment $shipment)
     {
+        Gate::authorize('update', $shipment);
+
         $validated = $request->validate([
             'origin' => 'required|string',
             'origin_name' => 'required|string',
@@ -205,6 +216,8 @@ class ShipmentsController extends Controller
 
     public function destroy(Request $request, Shipment $shipment)
     {
+        Gate::authorize('delete', $shipment);
+
         $shipment->delete();
 
         return redirect()
@@ -214,6 +227,8 @@ class ShipmentsController extends Controller
 
     public function show(Shipment $shipment)
     {
+        Gate::authorize('view', $shipment);
+
         $shipment->load('driver.user');
         $routeMetrics = $this->buildRouteMetrics($shipment);
         $alerts = $this->buildAlerts($shipment, $routeMetrics);
@@ -259,17 +274,29 @@ class ShipmentsController extends Controller
 
     public function updateStatus(Request $request, Shipment $shipment)
     {
+        Gate::authorize('updateStatus', $shipment);
+
         $validated = $request->validate([
             'status' => 'required|in:on-time,delayed,in-transit,delivered',
         ]);
 
-        $shipment->update($validated);
+        $shipment->fill($validated);
+
+        if ($validated['status'] === 'delivered') {
+            $shipment->tracking_stage = 'delivered';
+            $shipment->syncTrackingTimestamps('delivered');
+            $shipment->requirePendingProofVerification();
+        }
+
+        $shipment->save();
 
         return redirect()->back()->with('success', 'Shipment status updated.');
     }
 
     public function verifyProof(Request $request, Shipment $shipment)
     {
+        Gate::authorize('verifyProof', $shipment);
+
         $validated = $request->validate([
             'verification_status' => 'required|in:approved,rejected',
             'verification_note' => 'nullable|string|max:1000',
@@ -295,6 +322,8 @@ class ShipmentsController extends Controller
 
     public function downloadProofPdf(Shipment $shipment)
     {
+        Gate::authorize('view', $shipment);
+
         $shipment->load('driver.user');
         $routeMetrics = $this->buildRouteMetrics($shipment);
         $alerts = $this->buildAlerts($shipment, $routeMetrics);

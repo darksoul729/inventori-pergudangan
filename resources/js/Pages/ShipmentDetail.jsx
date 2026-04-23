@@ -58,17 +58,28 @@ export default function ShipmentDetail({ auth, shipment }) {
         const printWindow = window.open('', '_blank', 'width=980,height=720');
         if (!printWindow) return;
 
+        const escapeHtml = (value) => String(value ?? '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+        const printable = (value, fallback = '-') => escapeHtml(value || fallback);
+        const deliveryPhotoUrl = shipment.delivery_photo_url && String(shipment.delivery_photo_url).startsWith('/storage/')
+            ? shipment.delivery_photo_url
+            : null;
+
         const timelineHtml = trackingStages.map((stage) => `
             <tr>
-                <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;font-weight:700;color:#475569;">${stage.label}</td>
-                <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;text-align:right;color:#111827;">${shipment[stage.key] || '-'}</td>
+                <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;font-weight:700;color:#475569;">${escapeHtml(stage.label)}</td>
+                <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;text-align:right;color:#111827;">${printable(shipment[stage.key])}</td>
             </tr>
         `).join('');
 
         printWindow.document.write(`
             <html>
                 <head>
-                    <title>Proof of Delivery ${shipment.id}</title>
+                    <title>Proof of Delivery ${printable(shipment.id)}</title>
                     <style>
                         body { font-family: Arial, sans-serif; margin: 32px; color: #111827; }
                         .header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:24px; }
@@ -86,34 +97,34 @@ export default function ShipmentDetail({ auth, shipment }) {
                     <div class="header">
                         <div>
                             <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.16em;color:#6366f1;">Proof of Delivery</div>
-                            <h1 style="margin:8px 0 4px;font-size:32px;">Shipment ${shipment.id}</h1>
-                            <div style="color:#6b7280;font-weight:600;">${shipment.origin_name} (${shipment.origin}) -> ${shipment.destination_name} (${shipment.destination})</div>
+                            <h1 style="margin:8px 0 4px;font-size:32px;">Shipment ${printable(shipment.id)}</h1>
+                            <div style="color:#6b7280;font-weight:600;">${printable(shipment.origin_name)} (${printable(shipment.origin)}) -> ${printable(shipment.destination_name)} (${printable(shipment.destination)})</div>
                         </div>
-                        <div class="badge">${shipment.tracking_stage_label || shipment.status}</div>
+                        <div class="badge">${printable(shipment.tracking_stage_label || shipment.status)}</div>
                     </div>
 
                     <div class="grid">
                         <div class="card">
                             <div class="label">Penerima</div>
-                            <div class="value">${shipment.delivery_recipient_name || '-'}</div>
+                            <div class="value">${printable(shipment.delivery_recipient_name)}</div>
                         </div>
                         <div class="card">
                             <div class="label">Waktu Terkirim</div>
-                            <div class="value">${shipment.delivered_at || '-'}</div>
+                            <div class="value">${printable(shipment.delivered_at)}</div>
                         </div>
                         <div class="card">
                             <div class="label">Driver</div>
-                            <div class="value">${shipment.driver_name || '-'}</div>
+                            <div class="value">${printable(shipment.driver_name)}</div>
                         </div>
                         <div class="card">
                             <div class="label">ETA</div>
-                            <div class="value">${shipment.estimated_arrival || '-'}</div>
+                            <div class="value">${printable(shipment.estimated_arrival)}</div>
                         </div>
                     </div>
 
                     <div class="card" style="margin-bottom:24px;">
                         <div class="label">Catatan Serah Terima</div>
-                        <div style="font-size:15px;line-height:1.7;color:#374151;">${shipment.delivery_note || 'Tidak ada catatan serah terima.'}</div>
+                        <div style="font-size:15px;line-height:1.7;color:#374151;">${printable(shipment.delivery_note, 'Tidak ada catatan serah terima.')}</div>
                     </div>
 
                     <div class="card" style="margin-bottom:24px;">
@@ -123,8 +134,8 @@ export default function ShipmentDetail({ auth, shipment }) {
 
                     <div class="card">
                         <div class="label">Foto Serah Terima</div>
-                        ${shipment.delivery_photo_url
-                ? `<img src="${shipment.delivery_photo_url}" alt="Proof of delivery ${shipment.id}" />`
+                        ${deliveryPhotoUrl
+                ? `<img src="${escapeHtml(deliveryPhotoUrl)}" alt="Proof of delivery ${printable(shipment.id)}" />`
                 : '<div style="font-size:14px;color:#6b7280;font-weight:600;">Foto serah terima belum tersedia.</div>'
             }
                     </div>

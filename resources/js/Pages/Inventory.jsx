@@ -115,6 +115,15 @@ export default function Inventory({ products, stats, categories, units, supplier
     // Search state
     const queryParams = new URLSearchParams(window.location.search);
     const [searchTerm, setSearchTerm] = useState(queryParams.get('search') || '');
+    const hasAdvancedFilters = ['unit_id', 'default_supplier_id', 'min_percentage', 'max_percentage']
+        .some((key) => queryParams.has(key));
+    const [showAdvancedFilters, setShowAdvancedFilters] = useState(hasAdvancedFilters);
+    const [advancedFilters, setAdvancedFilters] = useState({
+        unit_id: queryParams.get('unit_id') || 'all',
+        default_supplier_id: queryParams.get('default_supplier_id') || 'all',
+        min_percentage: queryParams.get('min_percentage') || '',
+        max_percentage: queryParams.get('max_percentage') || '',
+    });
 
     // Debounced search effect
     useEffect(() => {
@@ -145,6 +154,51 @@ export default function Inventory({ products, stats, categories, units, supplier
             only: ['products', 'stats', 'filters'],
             preserveScroll: true
         });
+    };
+
+    const applyAdvancedFilters = () => {
+        const newParams = new URLSearchParams(window.location.search);
+        Object.entries(advancedFilters).forEach(([key, value]) => {
+            if (value === '' || value === 'all') {
+                newParams.delete(key);
+            } else {
+                newParams.set(key, value);
+            }
+        });
+        newParams.delete('page');
+
+        router.get(route('inventory'), Object.fromEntries(newParams.entries()), {
+            preserveState: true,
+            replace: true,
+            only: ['products', 'stats', 'filters'],
+            preserveScroll: true
+        });
+    };
+
+    const resetAdvancedFilters = () => {
+        const newParams = new URLSearchParams(window.location.search);
+        ['unit_id', 'default_supplier_id', 'min_percentage', 'max_percentage'].forEach((key) => newParams.delete(key));
+        newParams.delete('page');
+        setAdvancedFilters({
+            unit_id: 'all',
+            default_supplier_id: 'all',
+            min_percentage: '',
+            max_percentage: '',
+        });
+
+        router.get(route('inventory'), Object.fromEntries(newParams.entries()), {
+            preserveState: true,
+            replace: true,
+            only: ['products', 'stats', 'filters'],
+            preserveScroll: true
+        });
+    };
+
+    const updateAdvancedFilter = (key, value) => {
+        setAdvancedFilters((current) => ({
+            ...current,
+            [key]: value,
+        }));
     };
 
     return (
@@ -260,7 +314,7 @@ export default function Inventory({ products, stats, categories, units, supplier
                                 <div className="text-[26px] font-black leading-none mb-1.5">{stats.storage_efficiency}%</div>
                                 <div className="flex items-center space-x-1">
                                     <div className="w-[5px] h-[5px] bg-white rounded-full"></div>
-                                    <span className="text-[10px] font-bold text-indigo-200">Dioptimalkan AI</span>
+                                    <span className="text-[10px] font-bold text-indigo-200">{stats.occupied_storage || 0} / {stats.total_storage_capacity || 0} kapasitas</span>
                                 </div>
                             </div>
                         </div>
@@ -306,11 +360,91 @@ export default function Inventory({ products, stats, categories, units, supplier
                                     <ChevronDownIcon className="w-3.5 h-3.5 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                                 </div>
                             </div>
-                            <button className="flex items-center space-x-1.5 text-[12px] font-bold text-indigo-500 hover:text-indigo-700 transition-colors">
+                            <button
+                                type="button"
+                                onClick={() => setShowAdvancedFilters((value) => !value)}
+                                className="flex items-center space-x-1.5 text-[12px] font-bold text-indigo-500 hover:text-indigo-700 transition-colors"
+                                aria-expanded={showAdvancedFilters}
+                            >
                                 <FilterIcon className="w-3.5 h-3.5" />
                                 <span>Filter Lanjutan</span>
                             </button>
                         </div>
+
+                        {showAdvancedFilters && (
+                            <div className="mb-8 grid grid-cols-12 gap-4 rounded-2xl border border-indigo-100 bg-indigo-50/40 p-4">
+                                <div className="col-span-3">
+                                    <label className="mb-2 block text-[10px] font-black uppercase tracking-wider text-gray-400">Unit</label>
+                                    <select
+                                        className="w-full rounded-xl border border-white bg-white px-3 py-2 text-[13px] font-bold text-gray-600 shadow-sm focus:border-indigo-300 focus:ring-indigo-200"
+                                        value={advancedFilters.unit_id}
+                                        onChange={(e) => updateAdvancedFilter('unit_id', e.target.value)}
+                                    >
+                                        <option value="all">Semua unit</option>
+                                        {units.map((unit) => (
+                                            <option key={unit.id} value={unit.id}>{unit.name}</option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                <div className="col-span-3">
+                                    <label className="mb-2 block text-[10px] font-black uppercase tracking-wider text-gray-400">Supplier</label>
+                                    <select
+                                        className="w-full rounded-xl border border-white bg-white px-3 py-2 text-[13px] font-bold text-gray-600 shadow-sm focus:border-indigo-300 focus:ring-indigo-200"
+                                        value={advancedFilters.default_supplier_id}
+                                        onChange={(e) => updateAdvancedFilter('default_supplier_id', e.target.value)}
+                                    >
+                                        <option value="all">Semua supplier</option>
+                                        {suppliers.map((supplier) => (
+                                            <option key={supplier.id} value={supplier.id}>{supplier.name}</option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                <div className="col-span-2">
+                                    <label className="mb-2 block text-[10px] font-black uppercase tracking-wider text-gray-400">Stok min %</label>
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        max="100"
+                                        className="w-full rounded-xl border border-white bg-white px-3 py-2 text-[13px] font-bold text-gray-600 shadow-sm focus:border-indigo-300 focus:ring-indigo-200"
+                                        value={advancedFilters.min_percentage}
+                                        onChange={(e) => updateAdvancedFilter('min_percentage', e.target.value)}
+                                        placeholder="0"
+                                    />
+                                </div>
+
+                                <div className="col-span-2">
+                                    <label className="mb-2 block text-[10px] font-black uppercase tracking-wider text-gray-400">Stok max %</label>
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        max="100"
+                                        className="w-full rounded-xl border border-white bg-white px-3 py-2 text-[13px] font-bold text-gray-600 shadow-sm focus:border-indigo-300 focus:ring-indigo-200"
+                                        value={advancedFilters.max_percentage}
+                                        onChange={(e) => updateAdvancedFilter('max_percentage', e.target.value)}
+                                        placeholder="100"
+                                    />
+                                </div>
+
+                                <div className="col-span-2 flex items-end gap-2">
+                                    <button
+                                        type="button"
+                                        onClick={applyAdvancedFilters}
+                                        className="flex-1 rounded-xl bg-indigo-600 px-4 py-2 text-[12px] font-black text-white shadow-sm transition-colors hover:bg-indigo-700"
+                                    >
+                                        Terapkan
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={resetAdvancedFilters}
+                                        className="rounded-xl border border-white bg-white px-4 py-2 text-[12px] font-black text-gray-500 shadow-sm transition-colors hover:text-gray-700"
+                                    >
+                                        Reset
+                                    </button>
+                                </div>
+                            </div>
+                        )}
 
                         {/* Product List Table */}
                         <div className="w-full">
