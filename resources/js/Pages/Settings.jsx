@@ -179,7 +179,7 @@ export default function Settings({ auth, categories, units, warehouse, staffUser
     };
 
     return (
-        <DashboardLayout headerTitle="Pengaturan Sistem">
+        <DashboardLayout headerTitle="Pengaturan Sistem" hideSearch={true}>
             <Head title="Pengaturan" />
 
             <div className="flex flex-row gap-8 pb-12 w-full pt-4 min-w-[1000px] overflow-x-auto bg-[#f8fafc] animate-in fade-in slide-in-from-bottom-4 duration-500">

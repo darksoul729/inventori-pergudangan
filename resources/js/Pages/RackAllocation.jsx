@@ -56,7 +56,7 @@ export default function RackAllocation({ warehouse, racks = [], recentTransfers 
     };
 
     return (
-        <DashboardLayout>
+        <DashboardLayout hideSearch={true}>
             <Head title="Transfer Rack" />
 
             <div className="pb-12">

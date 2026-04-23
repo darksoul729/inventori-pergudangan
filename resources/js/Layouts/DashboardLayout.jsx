@@ -34,6 +34,7 @@ export default function DashboardLayout({
     headerRight,
     contentClassName = 'max-w-[1400px] mx-auto',
     fullPage = false,
+    hideSearch = false,
 }) {
     const { url, props } = usePage();
     const { auth } = props;
@@ -423,16 +424,20 @@ export default function DashboardLayout({
                         {headerTitle && (
                             <h2 className="text-[18px] font-black text-[#1a202c] mr-4">{headerTitle}</h2>
                         )}
-                        <div className="flex-1 min-w-[380px] relative">
-                            <Search className="w-[17px] h-[17px] absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
-                            <input
-                                type="text"
-                                placeholder={headerSearchPlaceholder || "Cari..."}
-                                className="w-full bg-[#f4f5f9] text-[13px] text-gray-700 rounded-[12px] pl-11 pr-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-[#3632c0] border border-transparent transition-all font-bold placeholder-gray-400 shadow-[inset_0_2px_4px_rgba(0,0,0,0.01)]"
-                                value={searchValue || ''}
-                                onChange={(e) => onSearch && onSearch(e.target.value)}
-                            />
-                        </div>
+                        {(!hideSearch && !url.includes('/settings') && !url.includes('/rack-allocation')) ? (
+                            <div className="flex-1 min-w-[380px] relative">
+                                <Search className="w-[17px] h-[17px] absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+                                <input
+                                    type="text"
+                                    placeholder={headerSearchPlaceholder || "Cari..."}
+                                    className="w-full bg-[#f4f5f9] text-[13px] text-gray-700 rounded-[12px] pl-11 pr-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-[#3632c0] border border-transparent transition-all font-bold placeholder-gray-400 shadow-[inset_0_2px_4px_rgba(0,0,0,0.01)]"
+                                    value={searchValue || ''}
+                                    onChange={(e) => onSearch && onSearch(e.target.value)}
+                                />
+                            </div>
+                        ) : (
+                            <div className="hidden" style={{ display: 'none' }}></div>
+                        )}
 
                         {/* Real-time System Status Indicator */}
                         <div className="hidden lg:flex items-center space-x-2 px-4 py-2 bg-emerald-50 rounded-full border border-emerald-100/50 shadow-sm shadow-emerald-100/20">

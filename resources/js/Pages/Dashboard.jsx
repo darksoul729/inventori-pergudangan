@@ -43,6 +43,18 @@ export default function Dashboard({ stats, trends, racks, wmsKpis = {} }) {
     const [selectedRack, setSelectedRack] = useState(null);
     const [sortBy, setSortBy] = useState('zone'); // 'zone', 'capacity', 'newest'
     const [hoveredTrendIndex, setHoveredTrendIndex] = useState(null);
+    const [searchTerm, setSearchTerm] = useState('');
+
+    const filteredDocuments = React.useMemo(() => {
+        const docs = wmsKpis.latest_documents || [];
+        if (!searchTerm) return docs;
+        const term = searchTerm.toLowerCase();
+        return docs.filter(doc => 
+            (doc.number || '').toLowerCase().includes(term) ||
+            (doc.type || '').toLowerCase().includes(term) ||
+            (doc.party || '').toLowerCase().includes(term)
+        );
+    }, [wmsKpis.latest_documents, searchTerm]);
 
 
     const formatNumber = (num) => {
@@ -127,7 +139,11 @@ export default function Dashboard({ stats, trends, racks, wmsKpis = {} }) {
 
 
     return (
-        <DashboardLayout>
+        <DashboardLayout
+            headerSearchPlaceholder="Cari dokumen aktivitas..."
+            searchValue={searchTerm}
+            onSearch={setSearchTerm}
+        >
             <Head title="Dashboard Gudang" />
 
             <div className="flex flex-wrap items-end justify-between gap-3 mb-4">
@@ -201,7 +217,7 @@ export default function Dashboard({ stats, trends, racks, wmsKpis = {} }) {
                         </span>
                     </div>
                     <div className="space-y-2">
-                        {(wmsKpis.latest_documents || []).map((document) => {
+                        {filteredDocuments.map((document) => {
                             const Wrapper = document.url ? Link : 'div';
 
                             return (
@@ -220,7 +236,7 @@ export default function Dashboard({ stats, trends, racks, wmsKpis = {} }) {
                                 </Wrapper>
                             );
                         })}
-                        {(wmsKpis.latest_documents || []).length === 0 && (
+                        {filteredDocuments.length === 0 && (
                             <div className="rounded-[10px] border border-dashed border-gray-200 px-3 py-6 text-center text-[12px] font-bold text-gray-400">
                                 Belum ada dokumen WMS.
                             </div>
