@@ -114,7 +114,7 @@ class DriverApiController extends Controller
 
         // Strictly return only ONE shipment that is active/unapproved.
         // prioritized by Started tasks (in-progress), then by oldest assignment.
-        // Tasks assigned by Admin appear automatically.
+        // Tasks assigned by the warehouse team appear automatically.
         $shipment = Shipment::where('driver_id', $driver->id)
             ->where(function ($query) {
                 $query->where('tracking_stage', '!=', 'delivered')
@@ -147,7 +147,7 @@ class DriverApiController extends Controller
         $driver = $request->user()->driver;
         if ($this->hasBlockedShipment($driver->id)) {
             return response()->json([
-                'message' => 'Selesaikan 1 pengiriman aktif Anda dulu. Pengiriman baru bisa diambil setelah bukti diverifikasi admin.',
+                'message' => 'Selesaikan 1 pengiriman aktif Anda dulu. Pengiriman baru bisa diambil setelah bukti diverifikasi penanggung jawab gudang.',
             ], 422);
         }
 

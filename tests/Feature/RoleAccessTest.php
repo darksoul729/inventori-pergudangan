@@ -5,9 +5,11 @@ namespace Tests\Feature;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\ProductStock;
+use App\Models\PurchaseOrder;
 use App\Models\Rack;
 use App\Models\RackStock;
 use App\Models\Role;
+use App\Models\Supplier;
 use App\Models\Unit;
 use App\Models\User;
 use App\Models\Warehouse;
@@ -100,6 +102,7 @@ class RoleAccessTest extends TestCase
         $this->actingAs($staff)->get(route('settings'))->assertForbidden();
         $this->actingAs($staff)->get(route('drivers.index'))->assertForbidden();
         $this->actingAs($staff)->get(route('rack.allocation'))->assertForbidden();
+        $this->actingAs($staff)->get(route('stock-opname.index'))->assertForbidden();
         $this->actingAs($staff)->get(route('inventory.create'))->assertForbidden();
         $this->actingAs($staff)->get(route('purchase-orders.create'))->assertForbidden();
         $this->actingAs($staff)->get(route('shipments.create'))->assertForbidden();
@@ -110,6 +113,8 @@ class RoleAccessTest extends TestCase
         $this->actingAs($staff)->post(route('supplier.store'), [])->assertForbidden();
         $this->actingAs($staff)->post(route('purchase-orders.store'), [])->assertForbidden();
         $this->actingAs($staff)->post(route('shipments.store'), [])->assertForbidden();
+        $this->actingAs($staff)->post(route('rack.allocation.transfers.store'), [])->assertForbidden();
+        $this->actingAs($staff)->post(route('stock-opname.store'), [])->assertForbidden();
     }
 
     public function test_supervisor_has_operational_approval_access_but_not_admin_access(): void
@@ -128,6 +133,7 @@ class RoleAccessTest extends TestCase
         $this->actingAs($supervisor)->get(route('shipments.create'))->assertOk();
         $this->actingAs($supervisor)->get(route('reports'))->assertOk();
         $this->actingAs($supervisor)->get(route('rack.allocation'))->assertOk();
+        $this->actingAs($supervisor)->get(route('stock-opname.index'))->assertOk();
 
         $this->actingAs($supervisor)->get(route('settings'))->assertForbidden();
         $this->actingAs($supervisor)->get(route('drivers.index'))->assertForbidden();
@@ -135,6 +141,35 @@ class RoleAccessTest extends TestCase
         $this->actingAs($supervisor)->post(route('warehouse.zones.store'), [])->assertForbidden();
         $this->actingAs($supervisor)->post(route('warehouse.racks.store'), [])->assertForbidden();
         $this->actingAs($supervisor)->post(route('supplier.store'), [])->assertForbidden();
+    }
+
+    public function test_supervisor_cannot_approve_purchase_order_but_manager_can(): void
+    {
+        $manager = $this->userWithRole('Manager');
+        $supervisor = $this->userWithRole('Supervisor');
+        $purchaseOrder = $this->createPurchaseOrderFixture($manager);
+
+        $this
+            ->actingAs($supervisor)
+            ->put(route('purchase-orders.update-status', $purchaseOrder), ['status' => 'approved'])
+            ->assertForbidden();
+
+        $this->assertDatabaseHas('purchase_orders', [
+            'id' => $purchaseOrder->id,
+            'status' => 'pending',
+            'approved_by' => null,
+        ]);
+
+        $this
+            ->actingAs($manager)
+            ->put(route('purchase-orders.update-status', $purchaseOrder), ['status' => 'approved'])
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('purchase_orders', [
+            'id' => $purchaseOrder->id,
+            'status' => 'approved',
+            'approved_by' => $manager->id,
+        ]);
     }
 
     public function test_staff_can_record_outbound_stock_but_cannot_create_products(): void
@@ -246,5 +281,33 @@ class RoleAccessTest extends TestCase
         ]);
 
         return [$warehouse, $product];
+    }
+
+    private function createPurchaseOrderFixture(User $creator): PurchaseOrder
+    {
+        $warehouse = Warehouse::create([
+            'code' => 'WH-PO',
+            'name' => 'Purchase Warehouse',
+            'location' => 'Purchase Location',
+        ]);
+
+        $supplier = Supplier::create([
+            'code' => 'SUP-PO',
+            'name' => 'Supplier PO',
+            'email' => 'supplier-po@example.com',
+            'phone' => '08123450000',
+            'address' => 'Purchase Address',
+            'status' => 'active',
+        ]);
+
+        return PurchaseOrder::create([
+            'po_number' => 'PO-ROLE-001',
+            'supplier_id' => $supplier->id,
+            'warehouse_id' => $warehouse->id,
+            'order_date' => now()->toDateString(),
+            'expected_date' => now()->addDay()->toDateString(),
+            'status' => 'pending',
+            'created_by' => $creator->id,
+        ]);
     }
 }

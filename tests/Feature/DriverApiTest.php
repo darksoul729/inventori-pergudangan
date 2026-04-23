@@ -81,7 +81,28 @@ class DriverApiTest extends TestCase
 
         $this->postJson('/api/driver/shipments/claim', ['shipment_id' => $second->shipment_id])
             ->assertStatus(422)
-            ->assertJsonPath('message', 'Selesaikan 1 pengiriman aktif Anda dulu. Pengiriman baru bisa diambil setelah bukti diverifikasi admin.');
+            ->assertJsonPath('message', 'Selesaikan 1 pengiriman aktif Anda dulu. Pengiriman baru bisa diambil setelah bukti diverifikasi penanggung jawab gudang.');
+    }
+
+    public function test_non_driver_sanctum_user_cannot_access_driver_endpoints(): void
+    {
+        $staffRole = Role::firstOrCreate(
+            ['name' => 'Staff'],
+            ['description' => 'Staff role']
+        );
+
+        $staff = User::create([
+            'role_id' => $staffRole->id,
+            'name' => 'Staff Operasional',
+            'email' => 'staff-driver-api@example.com',
+            'password' => bcrypt('password123'),
+            'status' => 'active',
+        ]);
+
+        Sanctum::actingAs($staff);
+
+        $this->getJson('/api/driver/profile')->assertForbidden();
+        $this->getJson('/api/driver/shipments')->assertForbidden();
     }
 
     public function test_driver_cannot_claim_when_previous_delivery_is_waiting_admin_verification(): void

@@ -161,6 +161,7 @@ class HandleInertiaRequests extends Middleware
                     'email' => $user->email,
                     'email_verified_at' => $user->email_verified_at,
                     'phone' => $user->phone,
+                    'profile_photo_url' => $user->profile_photo_path ? asset('storage/'.$user->profile_photo_path) : null,
                     'status' => $user->status,
                 ] : null,
             ],

@@ -1,5 +1,5 @@
 import DashboardLayout from '@/Layouts/DashboardLayout';
-import { Head, Link, useForm, router } from '@inertiajs/react';
+import { Head, Link, useForm, router, usePage } from '@inertiajs/react';
 import React from 'react';
 
 const ArrowLeftIcon = ({ className }) => (
@@ -22,6 +22,10 @@ const XIcon = ({ className }) => (
 
 export default function Show({ purchaseOrder }) {
     const { processing } = useForm({});
+    const { auth } = usePage().props;
+    const roleName = (auth?.user?.role_name || auth?.user?.role || '').toString().toLowerCase();
+    const isManager = roleName.includes('manager') || roleName.includes('manajer') || roleName.includes('admin gudang');
+    const canReceivePurchaseOrder = isManager || roleName.includes('supervisor') || roleName.includes('spv');
 
     const handleStatusUpdate = (status) => {
         if (confirm(`Yakin ingin mengubah status PO ini menjadi ${status}?`)) {
@@ -66,7 +70,7 @@ export default function Show({ purchaseOrder }) {
                     </div>
 
                     <div className="flex space-x-3">
-                        {purchaseOrder.status === 'pending' && (
+                        {isManager && purchaseOrder.status === 'pending' && (
                             <>
                                 <button
                                     onClick={() => handleStatusUpdate('rejected')}
@@ -86,7 +90,7 @@ export default function Show({ purchaseOrder }) {
                                 </button>
                             </>
                         )}
-                        {purchaseOrder.status === 'approved' && (
+                        {canReceivePurchaseOrder && purchaseOrder.status === 'approved' && (
                             <button
                                 onClick={() => handleStatusUpdate('received')}
                                 disabled={processing}
