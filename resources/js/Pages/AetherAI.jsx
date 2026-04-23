@@ -185,6 +185,7 @@ function ForecastSummary({ data }) {
 export default function AetherAI() {
     const { props } = usePage();
     const [conversations, setConversations] = useState(props.conversations || []);
+    const [searchQuery, setSearchQuery] = useState('');
     const [activeId, setActiveId] = useState(null);
     const [messages, setMessages] = useState([]);
     const [inputText, setInputText] = useState('');
@@ -333,7 +334,7 @@ export default function AetherAI() {
                 
                 {/* Conversation History Sidebar */}
                 <div className={`${isSidebarCollapsed ? 'w-20' : 'w-80'} min-h-0 border-r border-slate-50 bg-[#fcfdfe] transition-all duration-500 ease-in-out flex flex-col`}>
-                    <div className="p-6">
+                    <div className="p-6 pb-2">
                         <button 
                             onClick={startNewChat}
                             className={`w-full flex items-center justify-center gap-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-[20px] py-4 shadow-xl shadow-indigo-100 transition-all font-black uppercase tracking-widest text-[11px] ${isSidebarCollapsed ? 'px-0' : 'px-4'}`}
@@ -343,13 +344,28 @@ export default function AetherAI() {
                         </button>
                     </div>
 
+                    {!isSidebarCollapsed && (
+                        <div className="px-6 pb-4">
+                            <div className="relative">
+                                <Search className="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+                                <input
+                                    type="text"
+                                    placeholder="Cari riwayat obrolan..."
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    className="w-full bg-white border border-slate-200 rounded-xl py-3 pl-10 pr-4 text-[12px] font-bold text-slate-700 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 transition-all placeholder-slate-400 shadow-sm"
+                                />
+                            </div>
+                        </div>
+                    )}
+
                     <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar px-4 space-y-2">
                         {!isSidebarCollapsed && (
                             <div className="px-4 py-3 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2 flex items-center gap-2">
                                 <History className="w-4 h-4" /> Riwayat Baru
                             </div>
                         )}
-                        {conversations.map(conv => (
+                        {conversations.filter(c => (c.title || '').toLowerCase().includes(searchQuery.toLowerCase())).map(conv => (
                             <div 
                                 key={conv.id}
                                 onClick={() => loadMessages(conv.id)}

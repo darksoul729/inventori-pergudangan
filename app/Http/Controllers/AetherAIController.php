@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Http\Client\ConnectionException;
 use Symfony\Component\Process\Process;
@@ -30,6 +31,37 @@ class AetherAIController extends Controller
                 ->limit(50)
                 ->get(['id', 'title', 'updated_at']),
         ]);
+    }
+
+    public function dashboardInsight(Request $request)
+    {
+        $groqKey = config('services.groq.key');
+        if (empty($groqKey)) {
+            return response()->json(['text' => 'Kunci API Groq belum dikonfigurasi.']);
+        }
+
+        if ($request->boolean('refresh')) {
+            Cache::forget('aether_dashboard_insight');
+        }
+
+        $insight = Cache::remember('aether_dashboard_insight', 1800, function () use ($groqKey) {
+            $totalProducts = Product::where('is_active', true)->count();
+            $totalStock = RackStock::sum('quantity');
+            $alerts = Rack::whereHas('rackStocks')->withSum('rackStocks as total_qty', 'quantity')->get()->filter(function ($r) {
+                return $r->total_qty > ($r->capacity * 0.9);
+            })->count();
+            
+            $prompt = "Anda adalah AI analitik gudang (Aether). Berikan maksimal 2 kalimat pendek (ukuran sekitar 20-25 kata total) berisi insight cepat atau prediksi operasional untuk pengguna dashboard WMS kami. Data: Total produk: {$totalProducts}, Total stok: {$totalStock}, peringatan rak hampir penuh: {$alerts}. Berbicaralah seperti asisten eksekutif modern, langsung to the point tanpa menyapa.";
+            
+            try {
+                return $this->callGroqApi($groqKey, $prompt, []);
+            } catch (\Exception $e) {
+                Log::error('Aether Dashboard Insight fail', ['msg' => $e->getMessage()]);
+                return 'Sistem Prediksi AI saat ini aktif dalam mode pemantauan lokal rutin.';
+            }
+        });
+
+        return response()->json(['text' => $insight]);
     }
 
     // ─── API Config ─────────────────────────────────────────────────────────────
