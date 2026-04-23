@@ -118,7 +118,7 @@ export default function WmsDocuments({ documents = [], stats = {} }) {
                             </a>
                             <a
                                 href={exportPdfUrl}
-                                className="h-11 px-4 rounded-[8px] bg-gray-900 text-white text-xs font-black inline-flex items-center justify-center gap-2 hover:bg-gray-800 transition-colors"
+                                className="h-11 px-4 rounded-[8px] bg-indigo-600 text-white text-xs font-black inline-flex items-center justify-center gap-2 hover:bg-indigo-700 transition-colors"
                             >
                                 <DownloadIcon className="w-4 h-4" />
                                 PDF
@@ -143,7 +143,7 @@ export default function WmsDocuments({ documents = [], stats = {} }) {
                                 onClick={() => setActiveType(filter.value)}
                                 className={`h-9 px-4 rounded-[8px] text-xs font-extrabold border transition-colors ${
                                     activeType === filter.value
-                                        ? 'bg-gray-900 text-white border-gray-900'
+                                        ? 'bg-indigo-600 text-white border-indigo-600'
                                         : 'bg-white text-gray-500 border-gray-200 hover:border-gray-300 hover:text-gray-700'
                                 }`}
                             >
@@ -242,7 +242,7 @@ export default function WmsDocuments({ documents = [], stats = {} }) {
                                                 {document.url ? (
                                                     <Link
                                                         href={document.url}
-                                                        className="inline-flex items-center justify-center gap-2 h-9 px-3 rounded-[8px] bg-gray-900 text-white text-xs font-black hover:bg-gray-800 transition-colors"
+                                                        className="inline-flex items-center justify-center gap-2 h-9 px-3 rounded-[8px] bg-indigo-600 text-white text-xs font-black hover:bg-indigo-700 transition-colors"
                                                     >
                                                         Detail
                                                         <ArrowIcon className="w-3.5 h-3.5" />

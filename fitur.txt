@@ -1,0 +1,37 @@
+RINGKASAN FITUR PROYEK INVENTORI-PERGUDANGAN
+
+1. Manajemen Inventori (Inventory Management)
+   - Master Data Produk: Pengelolaan data barang lengkap dengan kategori, satuan (unit), dan integrasi gambar produk.
+   - Pemantauan Stok Real-time: Dashboard untuk melihat level stok global maupun per gudang.
+   - Pencatatan Masuk & Keluar: Fitur Add New Entry (untuk barang baru) dan Record Outbound untuk pengeluaran barang.
+   - Low Stock Alerts: Notifikasi otomatis untuk barang yang sudah mencapai batas minimum stok.
+
+2. Manajemen Gudang (Warehouse Management)
+   - Hierarki Lokasi Dinamis: Pengelolaan bertingkat mulai dari Gudang (Warehouses) -> Zona (Zones) -> Rak (Racks).
+   - Kapasitas Rak (Occupancy): Validasi otomatis kapasitas rak untuk mencegah pengisian barang berlebih (Capacity Guard).
+   - Tracking Lokasi Fisik: Pencatatan detail barang hingga ke level rak spesifik untuk memudahkan pencarian barang di gudang.
+
+3. Transaksi & Logistik
+   - Purchase Order (PO): Siklus pembuatan dan pemantauan pesanan pembelian ke supplier.
+   - Manajemen Pengiriman (Shipment): Melacak pengiriman barang dari gudang ke tujuan.
+   - Inbound & Outbound Logic: Kontrak data yang ketat antara transaksi bisnis dan perubahan stok fisik di rak.
+   - Stock Opname: Fitur penyesuaian stok fisik dengan data sistem untuk menjaga akurasi data.
+
+4. Manajemen Driver & Mobile Integration
+   - Aplikasi Khusus Driver: Integrasi dengan mobile app untuk driver (melalui API).
+   - Manajemen Tugas: Driver dapat mengklaim tugas pengiriman, memperbarui status pengiriman, dan melakukan pelacakan lokasi (tracking).
+   - POD (Proof of Delivery): Verifikasi pengiriman yang sah setelah barang sampai di tujuan.
+
+5. Supplier & Partner Performance
+   - Direktori Partner: Database lengkap supplier dan kontak terkait.
+   - Analisis KPI Supplier: Penilaian performa supplier secara otomatis berdasarkan histori transaksi, ketepatan waktu, dan kualitas barang yang diterima.
+
+6. Aether AI (Fitur Unggulan)
+   - Interaksi Bahasa Alami: Pengguna dapat berinteraksi dengan sistem menggunakan bahasa manusia (chat/suara) melalui Aether Orb.
+   - AI Insight & Rekomendasi: Memberikan saran cerdas terkait manajemen stok, optimalisasi ruang gudang, dan prediksi barang yang perlu dipesan ulang.
+   - Suara Interaktif: Fitur interruptible voice yang memungkinkan pengguna untuk memotong pembicaraan AI saat memberikan instruksi.
+
+7. Pelaporan & Keamanan (Reporting & Security)
+   - Custom Report Architect: Alat pembuat laporan PDF yang dapat dikustomisasi sesuai kebutuhan bisnis.
+   - Export Data: Fitur ekspor ke Excel dengan format audit yang profesional.
+   - Role-Based Access Control (RBAC): Sistem login tertutup dengan 4 level akses: Manager, Supervisor, Staff, dan Driver.

@@ -5,7 +5,7 @@ import {
     ChevronRight, Loader2, AlertCircle, Bot, User,
     Database, Zap, BarChart3, Mic,
     Volume2, VolumeX, Eraser, Phone, PhoneOff,
-    Clock
+    Clock, Search
 } from 'lucide-react';
 
 // ─── AI SVG Icon ─────────────────────────────────────────────────────────────
@@ -342,6 +342,7 @@ export default function AetherAIModal({ isOpen, onClose, startInCall = false }) 
 
     // ── State ──
     const [conversations, setConversations] = useState([]);
+    const [searchQuery, setSearchQuery] = useState('');
     const [activeConversationId, setActiveConversationId] = useState(null);
     const [messages, setMessages] = useState([]);
     const [inputText, setInputText] = useState('');
@@ -724,6 +725,16 @@ export default function AetherAIModal({ isOpen, onClose, startInCall = false }) 
                                 <Plus className="w-4 h-4" />
                                 Percakapan Baru
                             </button>
+                            <div className="mt-4 relative">
+                                <Search className="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+                                <input
+                                    type="text"
+                                    placeholder="Cari riwayat obrolan..."
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    className="w-full bg-white border border-slate-200 rounded-xl py-2.5 pl-10 pr-4 text-[12px] font-bold text-slate-700 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 transition-all placeholder-slate-400 shadow-sm"
+                                />
+                            </div>
                         </div>
                         <div className="flex-1 overflow-y-auto px-4 space-y-2">
                             <div className="px-4 mb-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Riwayat Terakhir</div>
@@ -732,7 +743,7 @@ export default function AetherAIModal({ isOpen, onClose, startInCall = false }) 
                                     <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2 opacity-50" />
                                     <span className="text-[10px] font-bold uppercase tracking-widest">Memuat...</span>
                                 </div>
-                            ) : conversations.map(conv => (
+                            ) : conversations.filter(c => (c.title || '').toLowerCase().includes(searchQuery.toLowerCase())).map(conv => (
                                 <button key={conv.id} onClick={() => loadMessages(conv.id)}
                                     className={`w-full group flex items-center gap-3 px-4 py-4 rounded-2xl text-left transition-all ${activeConversationId === conv.id ? 'bg-white shadow-xl shadow-indigo-500/5 text-indigo-600' : 'text-slate-500 hover:bg-white hover:text-slate-900'}`}>
                                     <div className={`p-2 rounded-xl transition-colors ${activeConversationId === conv.id ? 'bg-indigo-50 text-indigo-500' : 'bg-slate-100 text-slate-400 group-hover:bg-white'}`}>

@@ -211,6 +211,7 @@ use App\Http\Controllers\AetherAIController;
 // ─── Aether AI Assistant ───────────────────────────────────────────────────────
 Route::middleware(['auth', 'verified', 'role:manager,supervisor,staff'])->prefix('aether')->name('aether.')->group(function () {
     Route::get('/',                                    [AetherAIController::class, 'index'])->name('index');
+    Route::get('/dashboard-insight',                   [AetherAIController::class, 'dashboardInsight'])->name('dashboard-insight');
     Route::get('/conversations',                       [AetherAIController::class, 'conversations'])->name('conversations');
     Route::post('/conversations',                      [AetherAIController::class, 'newConversation'])->name('conversations.new');
     Route::delete('/conversations-empty',              [AetherAIController::class, 'deleteUntitledConversations'])->name('conversations.delete-empty');
