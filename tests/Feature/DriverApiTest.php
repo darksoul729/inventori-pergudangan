@@ -123,6 +123,41 @@ class DriverApiTest extends TestCase
             ->assertStatus(422);
     }
 
+    public function test_delivered_shipment_without_pod_verification_still_blocks_new_claim(): void
+    {
+        ['user' => $user, 'driver' => $driver] = $this->createApprovedDriver();
+        $waitingShipment = $this->createShipment(['shipment_id' => 'TRK-POD-NULL']);
+        $newShipment = $this->createShipment(['shipment_id' => 'TRK-POD-BLOCKED']);
+
+        $waitingShipment->update([
+            'driver_id' => $driver->id,
+            'tracking_stage' => 'delivered',
+            'pod_verification_status' => null,
+        ]);
+
+        $this->assertTrue($driver->fresh()->hasActiveShipment());
+
+        Sanctum::actingAs($user);
+
+        $this->postJson('/api/driver/shipments/claim', ['shipment_id' => $newShipment->shipment_id])
+            ->assertStatus(422);
+    }
+
+    public function test_suspended_driver_token_cannot_access_driver_endpoints(): void
+    {
+        ['user' => $user, 'driver' => $driver] = $this->createApprovedDriver();
+
+        $driver->update(['status' => 'suspended']);
+
+        Sanctum::actingAs($user);
+
+        $this->getJson('/api/driver/profile')->assertForbidden();
+        $this->postJson('/api/driver/location', [
+            'latitude' => -5.1477,
+            'longitude' => 119.4327,
+        ])->assertForbidden();
+    }
+
     public function test_driver_can_claim_new_shipment_after_admin_approves_previous_pod(): void
     {
         ['user' => $user, 'driver' => $driver] = $this->createApprovedDriver();

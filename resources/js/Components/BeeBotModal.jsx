@@ -161,7 +161,7 @@ export default function BeeBotModal({ isOpen, onClose }) {
         </div>
       </div>
 
-      <style dangerouslySetInnerHTML={{ __html: `
+      <style>{`
         .custom-scrollbar::-webkit-scrollbar {
           width: 4px;
         }
@@ -179,7 +179,7 @@ export default function BeeBotModal({ isOpen, onClose }) {
             from { opacity: 0; transform: scale(0.95) translateY(20px); }
             to { opacity: 1; transform: scale(1) translateY(0); }
         }
-      `}} />
+      `}</style>
     </div>
   );
 }

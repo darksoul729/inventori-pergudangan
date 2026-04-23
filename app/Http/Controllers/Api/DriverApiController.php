@@ -9,7 +9,6 @@ use App\Models\Driver;
 use App\Models\Role;
 use App\Models\User;
 use App\Models\Shipment;
-use Carbon\Carbon;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
@@ -227,12 +226,10 @@ class DriverApiController extends Controller
             if ($request->filled('delivery_photo_base64')) {
                 $shipment->delivery_photo_path = $this->storeDeliveryPhoto($request->string('delivery_photo_base64')->toString());
             }
-            $shipment->pod_verification_status = 'pending';
-            $shipment->pod_verified_at = null;
-            $shipment->pod_verified_by = null;
+            $shipment->requirePendingProofVerification();
         }
 
-        $this->syncShipmentTrackingTimestamps($shipment, $trackingStage);
+        $shipment->syncTrackingTimestamps($trackingStage);
         $shipment->status = $this->mapTrackingStageToShipmentStatus($trackingStage, $shipment->status, $shipment->estimated_arrival);
         $shipment->save();
 
@@ -310,31 +307,6 @@ class DriverApiController extends Controller
                     });
             })
             ->exists();
-    }
-
-    private function syncShipmentTrackingTimestamps(Shipment $shipment, string $trackingStage): void
-    {
-        $now = Carbon::now();
-
-        if (!$shipment->claimed_at) {
-            $shipment->claimed_at = $now;
-        }
-
-        if (in_array($trackingStage, ['picked_up', 'in_transit', 'arrived_at_destination', 'delivered'], true) && !$shipment->picked_up_at) {
-            $shipment->picked_up_at = $now;
-        }
-
-        if (in_array($trackingStage, ['in_transit', 'arrived_at_destination', 'delivered'], true) && !$shipment->in_transit_at) {
-            $shipment->in_transit_at = $now;
-        }
-
-        if (in_array($trackingStage, ['arrived_at_destination', 'delivered'], true) && !$shipment->arrived_at_destination_at) {
-            $shipment->arrived_at_destination_at = $now;
-        }
-
-        if ($trackingStage === 'delivered' && !$shipment->delivered_at) {
-            $shipment->delivered_at = $now;
-        }
     }
 
     private function mapTrackingStageToShipmentStatus(string $trackingStage, string $currentStatus, ?\Carbon\Carbon $estimatedArrival = null): string

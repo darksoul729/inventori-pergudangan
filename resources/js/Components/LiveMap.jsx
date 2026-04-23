@@ -71,7 +71,7 @@ export default function LiveMap({ onDriversLoad = () => {}, focusedDriverId = nu
         .map(d => ({ lat: parseFloat(d.latitude), lng: parseFloat(d.longitude) }));
 
     return (
-        <div className="h-full w-full rounded-[32px] overflow-hidden border border-gray-100 shadow-xl relative bg-gray-50 bg-white">
+        <div className="h-full w-full rounded-[8px] overflow-hidden border border-[#edf2f7] shadow-sm relative bg-white">
             {loading && (
                 <div className="absolute inset-0 z-[1000] bg-white/50 backdrop-blur-sm flex items-center justify-center">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#3632c0]"></div>
@@ -105,7 +105,7 @@ export default function LiveMap({ onDriversLoad = () => {}, focusedDriverId = nu
                             icon={L.divIcon({
                                 className: 'custom-div-icon',
                                 html: `
-                                    <div class="truck-marker-container" style="--marker-color: ${driver.last_location_mock ? '#ef4444' : '#3632c0'};">
+                                    <div class="truck-marker-container" style="--marker-color: ${driver.last_location_mock ? '#ef4444' : '#4338ca'};">
                                         <div class="truck-pulse"></div>
                                         <div class="truck-icon-bg">
                                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
@@ -171,9 +171,9 @@ export default function LiveMap({ onDriversLoad = () => {}, focusedDriverId = nu
                 <FocusMap focusedDriverId={focusedDriverId} drivers={drivers} />
             </MapContainer>
 
-            <div className="absolute bottom-6 left-6 z-[1000] bg-white px-4 py-2 rounded-xl shadow-lg border border-gray-100 flex items-center space-x-2">
+            <div className="absolute bottom-6 left-6 z-[1000] bg-white px-4 py-2 rounded-[8px] shadow-lg border border-gray-100 flex items-center space-x-2">
                 <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
-                <span className="text-[11px] font-black text-gray-600 uppercase tracking-widest">Live Monitoring Active</span>
+                <span className="text-[11px] font-black text-gray-600 uppercase tracking-widest">Live Monitoring Aktif</span>
             </div>
         </div>
     );

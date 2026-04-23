@@ -110,7 +110,7 @@ export default function TransactionDetail({ transaction }) {
     const generatedAt = formatDate(new Date(), { dateStyle: 'medium', timeStyle: 'short' });
 
     return (
-        <DashboardLayout headerSearchPlaceholder="Cari transaksi lain..." contentClassName="max-w-[1180px] mx-auto">
+        <DashboardLayout headerSearchPlaceholder="Cari transaksi lain..." contentClassName="w-full max-w-none">
             <Head title={`Detail Transaksi #${transaction.id.toString().padStart(6, '0')}`} />
 
             <div className="detail-page-root w-full pb-16 pt-2">
@@ -152,8 +152,8 @@ export default function TransactionDetail({ transaction }) {
                     </div>
                 </div>
 
-                <article className="overflow-hidden rounded-[24px] border border-[#edf2f7] bg-white shadow-[0_2px_16px_rgba(0,0,0,0.02)]">
-                    <header className="border-b border-[#edf2f7] bg-white px-6 py-6 sm:px-8">
+                <article className="w-full">
+                    <header className="border-b border-[#edf2f7] pb-6">
                         <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
                             <div>
                                 <div className="mb-4 flex items-center gap-3">
@@ -186,7 +186,7 @@ export default function TransactionDetail({ transaction }) {
                         </div>
                     </header>
 
-                    <main className="space-y-7 px-6 py-6 sm:px-8">
+                    <main className="space-y-7 py-6">
                         <section className="document-section grid gap-4 md:grid-cols-3">
                             <div className={`rounded-xl border px-5 py-4 ${status.tone}`}>
                                 <div className="mb-3 flex items-center gap-2">
@@ -313,7 +313,7 @@ export default function TransactionDetail({ transaction }) {
                         </section>
                     </main>
 
-                    <footer className="flex flex-col gap-2 border-t border-[#edf2f7] bg-[#f8f9fc] px-6 py-4 text-[12px] font-semibold text-slate-500 sm:flex-row sm:items-center sm:justify-between sm:px-8">
+                    <footer className="flex flex-col gap-2 border-t border-[#edf2f7] py-4 text-[12px] font-semibold text-slate-500 sm:flex-row sm:items-center sm:justify-between">
                         <span>{transactionNumber} / {status.label} / {transaction.product?.sku || '-'}</span>
                         <span>Siap export pada {generatedAt}</span>
                     </footer>

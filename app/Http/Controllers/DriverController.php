@@ -21,6 +21,77 @@ class DriverController extends Controller
         ]);
     }
 
+    public function show(Driver $driver)
+    {
+        $driver->load([
+            'user:id,name,email,role_id,status',
+            'shipments' => fn ($query) => $query
+                ->select(
+                    'id',
+                    'shipment_id',
+                    'driver_id',
+                    'status',
+                    'tracking_stage',
+                    'origin_name',
+                    'destination_name',
+                    'estimated_arrival',
+                    'pod_verification_status',
+                    'updated_at'
+                )
+                ->latest('updated_at')
+                ->limit(8),
+        ]);
+
+        $activeShipment = $driver->shipments
+            ->first(fn ($shipment) => $shipment->tracking_stage !== 'delivered')
+            ?? $driver->shipments->first(fn ($shipment) => $shipment->tracking_stage === 'delivered' && $shipment->pod_verification_status !== 'approved');
+
+        return Inertia::render('DriverDetail', [
+            'driver' => [
+                'id' => $driver->id,
+                'name' => $driver->user?->name,
+                'email' => $driver->user?->email,
+                'account_status' => $driver->user?->status,
+                'license_number' => $driver->license_number,
+                'phone' => $driver->phone,
+                'photo_id_card' => $driver->photo_id_card,
+                'status' => $driver->status,
+                'is_active' => (bool) $driver->is_active,
+                'latitude' => $driver->latitude,
+                'longitude' => $driver->longitude,
+                'last_location_mock' => (bool) ($driver->last_location_mock ?? false),
+                'updated_at' => $driver->updated_at?->toISOString(),
+                'active_shipment' => $activeShipment ? [
+                    'id' => $activeShipment->id,
+                    'shipment_id' => $activeShipment->shipment_id,
+                    'status' => $activeShipment->status,
+                    'tracking_stage' => $activeShipment->tracking_stage,
+                    'origin_name' => $activeShipment->origin_name,
+                    'destination_name' => $activeShipment->destination_name,
+                    'estimated_arrival' => $activeShipment->estimated_arrival?->format('d M Y H:i'),
+                    'pod_verification_status' => $activeShipment->pod_verification_status,
+                ] : null,
+                'shipments' => $driver->shipments->map(fn ($shipment) => [
+                    'id' => $shipment->id,
+                    'shipment_id' => $shipment->shipment_id,
+                    'status' => $shipment->status,
+                    'tracking_stage' => $shipment->tracking_stage,
+                    'origin_name' => $shipment->origin_name,
+                    'destination_name' => $shipment->destination_name,
+                    'estimated_arrival' => $shipment->estimated_arrival?->format('d M Y H:i'),
+                    'pod_verification_status' => $shipment->pod_verification_status,
+                    'updated_at' => $shipment->updated_at?->format('d M Y H:i'),
+                    'url' => route('shipments.show', $shipment),
+                ])->values(),
+                'stats' => [
+                    'total_shipments' => $driver->shipments->count(),
+                    'active_shipments' => $driver->shipments->filter(fn ($shipment) => $shipment->tracking_stage !== 'delivered')->count(),
+                    'delivered_shipments' => $driver->shipments->filter(fn ($shipment) => $shipment->tracking_stage === 'delivered')->count(),
+                ],
+            ],
+        ]);
+    }
+
     public function updateStatus(Request $request, Driver $driver)
     {
         $request->validate([
