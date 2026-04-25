@@ -1,5 +1,5 @@
 import DashboardLayout from '@/Layouts/DashboardLayout';
-import { Head, useForm, router } from '@inertiajs/react';
+import { Head, Link, useForm, router } from '@inertiajs/react';
 import React, { useEffect, useState } from 'react';
 import LiveMap from '@/Components/LiveMap';
 
@@ -30,13 +30,25 @@ const PlusIcon = ({ className }) => (
 );
 
 export default function Drivers({ drivers = [] }) {
-    const [selectedDriver, setSelectedDriver] = useState(null);
-    const [showDetailModal, setShowDetailModal] = useState(false);
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [activeTab, setActiveTab] = useState('list'); // 'list' or 'tracking'
     const [trackingDrivers, setTrackingDrivers] = useState([]);
     const [focusedDriverId, setFocusedDriverId] = useState(null);
-    
+    const [searchTerm, setSearchTerm] = useState('');
+
+    const filteredDrivers = React.useMemo(() => {
+        if (!searchTerm) return drivers;
+        const lowerSearchText = searchTerm.toLowerCase();
+        return drivers.filter((driver) => {
+            return (
+                (driver.user?.name && driver.user.name.toLowerCase().includes(lowerSearchText)) ||
+                (driver.user?.email && driver.user.email.toLowerCase().includes(lowerSearchText)) ||
+                (driver.license_number && driver.license_number.toLowerCase().includes(lowerSearchText)) ||
+                (driver.phone && driver.phone.toLowerCase().includes(lowerSearchText))
+            );
+        });
+    }, [drivers, searchTerm]);
+
     const { put, processing } = useForm();
     const createForm = useForm({
         name: '',
@@ -56,7 +68,7 @@ export default function Drivers({ drivers = [] }) {
         if (tab === 'tracking') {
             setActiveTab('tracking');
         }
-        
+
         if (driverId) {
             setFocusedDriverId(parseInt(driverId));
         }
@@ -80,7 +92,6 @@ export default function Drivers({ drivers = [] }) {
         if (confirm(`Apakah Anda yakin ingin mengubah status driver ini menjadi ${status}?`)) {
             put(route('drivers.status.update', id), {
                 data: { status },
-                onSuccess: () => setShowDetailModal(false)
             });
         }
     };
@@ -116,51 +127,57 @@ export default function Drivers({ drivers = [] }) {
     };
 
     return (
-        <DashboardLayout headerTitle="Manajemen Driver">
+        <DashboardLayout
+            headerTitle="Manajemen Driver"
+            headerSearchPlaceholder="Cari driver, kontak, atau nomor SIM..."
+            searchValue={searchTerm}
+            onSearch={setSearchTerm}
+            contentClassName="w-full max-w-none"
+        >
             <Head title="Manajemen Driver" />
 
-            <div className="flex justify-between items-end mb-8">
+            <div className="mb-6 flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
                 <div>
                     <h1 className="text-[26px] font-black text-[#1a202c] tracking-tight">Daftar Driver</h1>
                     <p className="text-[14px] font-semibold text-gray-500 mt-1">Kelola verifikasi dan status aktif driver di lapangan.</p>
                 </div>
-                <div className="flex items-center space-x-6">
-                     {activeTab === 'list' && (
+                <div className="flex flex-wrap items-center gap-3">
+                    {activeTab === 'list' && (
                         <button
                             onClick={() => setShowCreateModal(true)}
-                            className="flex items-center space-x-2 rounded-xl bg-[#3632c0] px-5 py-3 text-[12px] font-black text-white shadow-lg shadow-indigo-200 transition hover:bg-indigo-700"
+                            className="flex h-11 items-center space-x-2 rounded-[8px] bg-[#4338ca] px-5 text-[12px] font-black text-white shadow-sm transition hover:bg-[#3730a3]"
                         >
                             <PlusIcon className="h-4 w-4" />
                             <span>Buat Driver</span>
                         </button>
-                     )}
-                     <div className="flex bg-gray-100 p-1 rounded-2xl border border-gray-200">
-                        <button 
+                    )}
+                    <div className="flex rounded-[8px] border border-gray-200 bg-white p-1 shadow-sm">
+                        <button
                             onClick={() => setActiveTab('list')}
-                            className={`px-6 py-2.5 rounded-xl text-[12px] font-black transition-all ${activeTab === 'list' ? 'bg-white text-[#3632c0] shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
+                            className={`h-9 px-5 rounded-[6px] text-[12px] font-black transition-all ${activeTab === 'list' ? 'bg-[#eef2ff] text-[#4338ca]' : 'text-gray-400 hover:text-gray-600'}`}
                         >
                             DAFTAR DRIVER
                         </button>
-                        <button 
+                        <button
                             onClick={() => setActiveTab('tracking')}
-                            className={`px-6 py-2.5 rounded-xl text-[12px] font-black transition-all ${activeTab === 'tracking' ? 'bg-white text-[#3632c0] shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
+                            className={`h-9 px-5 rounded-[6px] text-[12px] font-black transition-all ${activeTab === 'tracking' ? 'bg-[#eef2ff] text-[#4338ca]' : 'text-gray-400 hover:text-gray-600'}`}
                         >
                             LIVE TRACKING
                         </button>
-                     </div>
-                     <div className="text-right border-l border-gray-200 pl-6">
-                         <div className="text-[11px] font-black text-gray-400 uppercase tracking-wider">Total Driver</div>
-                         <div className="text-[20px] font-black text-[#3632c0]">{drivers.length}</div>
-                     </div>
+                    </div>
+                    <div className="rounded-[8px] border border-gray-200 bg-white px-5 py-2 text-right shadow-sm">
+                        <div className="text-[11px] font-black text-gray-400 uppercase tracking-wider">Total Driver</div>
+                        <div className="text-[20px] font-black text-[#3632c0]">{drivers.length}</div>
+                    </div>
                 </div>
             </div>
 
             {activeTab === 'list' ? (
-                <div className="bg-white rounded-[24px] p-8 shadow-[0_2px_16px_rgba(0,0,0,0.02)] border border-[#edf2f7]">
+                <section className="overflow-hidden rounded-[8px] border border-[#edf2f7] bg-white shadow-sm">
                     <div className="overflow-x-auto">
-                        <table className="w-full">
+                        <table className="w-full min-w-[980px]">
                             <thead>
-                                <tr className="border-b border-gray-100">
+                                <tr className="border-b border-gray-100 bg-gray-50/70">
                                     <th className="px-6 py-4 text-left text-[11px] font-black text-gray-400 uppercase tracking-widest">Driver</th>
                                     <th className="px-6 py-4 text-left text-[11px] font-black text-gray-400 uppercase tracking-widest">Kontak</th>
                                     <th className="px-6 py-4 text-left text-[11px] font-black text-gray-400 uppercase tracking-widest">No. SIM</th>
@@ -169,11 +186,11 @@ export default function Drivers({ drivers = [] }) {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-50">
-                                {drivers.map((driver) => (
+                                {filteredDrivers.map((driver) => (
                                     <tr key={driver.id} className="hover:bg-gray-50/50 transition-colors">
                                         <td className="px-6 py-5">
                                             <div className="flex items-center space-x-3">
-                                                <div className="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600 font-black text-xs">
+                                                <div className="w-10 h-10 rounded-[12px] bg-[#4338ca] flex items-center justify-center text-white font-black text-xs shadow-sm shadow-indigo-100">
                                                     {driver.user.name.charAt(0)}
                                                 </div>
                                                 <div>
@@ -190,30 +207,33 @@ export default function Drivers({ drivers = [] }) {
                                         </td>
                                         <td className="px-6 py-5">{getStatusBadge(driver.status)}</td>
                                         <td className="px-6 py-5 text-right">
-                                            <div className="flex justify-end items-center space-x-2">
-                                                <button 
-                                                    onClick={() => { setSelectedDriver(driver); setShowDetailModal(true); }}
-                                                    className="p-2 text-indigo-500 hover:bg-indigo-50 rounded-xl transition-colors"
+                                            <div className="flex justify-end items-center gap-2">
+                                                <Link
+                                                    href={route('drivers.show', driver.id)}
+                                                    className="inline-flex h-9 items-center gap-2 rounded-[8px] border border-indigo-100 bg-indigo-50 px-3 text-[11px] font-black text-[#4338ca] transition-colors hover:bg-indigo-100"
                                                     title="Lihat Detail"
                                                 >
                                                     <EyeIcon className="w-4 h-4" />
-                                                </button>
+                                                    Detail
+                                                </Link>
                                                 {driver.status !== 'approved' && (
-                                                    <button 
+                                                    <button
                                                         onClick={() => handleUpdateStatus(driver.id, 'approved')}
-                                                        className="p-2 text-emerald-500 hover:bg-emerald-50 rounded-xl transition-colors"
+                                                        className="inline-flex h-9 items-center gap-2 rounded-[8px] border border-emerald-100 bg-emerald-50 px-3 text-[11px] font-black text-emerald-600 transition-colors hover:bg-emerald-100"
                                                         title="Setujui Driver"
                                                     >
                                                         <UserCheckIcon className="w-4 h-4" />
+                                                        Setujui
                                                     </button>
                                                 )}
                                                 {driver.status !== 'suspended' && (
-                                                    <button 
+                                                    <button
                                                         onClick={() => handleUpdateStatus(driver.id, 'suspended')}
-                                                        className="p-2 text-red-500 hover:bg-red-50 rounded-xl transition-colors"
+                                                        className="inline-flex h-9 items-center gap-2 rounded-[8px] border border-red-100 bg-red-50 px-3 text-[11px] font-black text-red-600 transition-colors hover:bg-red-100"
                                                         title="Tangguhkan Driver"
                                                     >
                                                         <UserXIcon className="w-4 h-4" />
+                                                        Tahan
                                                     </button>
                                                 )}
                                             </div>
@@ -223,16 +243,19 @@ export default function Drivers({ drivers = [] }) {
                             </tbody>
                         </table>
                     </div>
-                </div>
+                </section>
             ) : (
-                <div className="flex h-[600px] gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <div className="grid h-[calc(100vh-230px)] min-h-[620px] grid-cols-[360px_1fr] gap-5 animate-in fade-in slide-in-from-bottom-4 duration-500">
                     {/* Sidebar Driver Cards */}
-                    <div className="w-[320px] bg-white rounded-[32px] p-6 shadow-sm border border-gray-100 flex flex-col h-full overflow-hidden">
-                        <div className="mb-4">
-                            <h3 className="text-[16px] font-black text-[#1a202c]">Daftar Driver Aktif</h3>
-                            <p className="text-[11px] font-bold text-gray-400">Klik kartu untuk fokus pada peta.</p>
+                    <div className="flex h-full flex-col overflow-hidden rounded-[8px] border border-[#edf2f7] bg-white p-5 shadow-sm">
+                        <div className="mb-4 flex items-start justify-between gap-3">
+                            <div>
+                                <h3 className="text-[16px] font-black text-[#1a202c]">Daftar Driver Aktif</h3>
+                                <p className="text-[11px] font-bold text-gray-400">Klik kartu untuk fokus pada peta.</p>
+                            </div>
+                            <span className="rounded-[8px] bg-indigo-50 px-3 py-1 text-[11px] font-black text-[#4338ca]">{trackingDrivers.length}</span>
                         </div>
-                        
+
                         <div className="flex-1 overflow-y-auto pr-2 space-y-3 custom-scrollbar">
                             {trackingDrivers.length === 0 ? (
                                 <div className="py-20 text-center">
@@ -240,19 +263,17 @@ export default function Drivers({ drivers = [] }) {
                                 </div>
                             ) : (
                                 trackingDrivers.map((driver) => (
-                                    <div 
+                                    <div
                                         key={driver.id}
                                         onClick={() => setFocusedDriverId(driver.id)}
-                                        className={`p-4 rounded-3xl border transition-all cursor-pointer group relative overflow-hidden ${
-                                            focusedDriverId === driver.id 
-                                            ? 'bg-white border-indigo-200 shadow-xl ring-1 ring-indigo-100' 
-                                            : 'bg-gray-50/50 border-gray-100 hover:border-indigo-100 hover:bg-white hover:shadow-md'
-                                        }`}
+                                        className={`p-4 rounded-[8px] border transition-all cursor-pointer group relative overflow-hidden ${focusedDriverId === driver.id
+                                                ? 'bg-indigo-50/60 border-indigo-200 ring-1 ring-indigo-100'
+                                                : 'bg-white border-gray-100 hover:border-indigo-100 hover:bg-gray-50/70'
+                                            }`}
                                     >
                                         <div className="flex items-start space-x-3 relative z-10">
-                                            <div className={`w-11 h-11 rounded-[14px] flex items-center justify-center font-black text-sm transition-all duration-500 ${
-                                                focusedDriverId === driver.id ? 'bg-[#3632c0] text-white rotate-6' : 'bg-white text-[#3632c0] shadow-sm'
-                                            }`}>
+                                            <div className={`w-11 h-11 rounded-[12px] flex items-center justify-center font-black text-sm transition-all duration-300 ${focusedDriverId === driver.id ? 'bg-[#4338ca] text-white' : 'bg-indigo-50 text-[#4338ca]'
+                                                }`}>
                                                 {driver.user.name.charAt(0)}
                                             </div>
                                             <div className="flex-1 min-w-0">
@@ -264,7 +285,7 @@ export default function Drivers({ drivers = [] }) {
                                                         </div>
                                                     )}
                                                 </div>
-                                                
+
                                                 <div className="flex flex-col space-y-1.5 mt-1.5">
                                                     <div className="flex items-center space-x-2">
                                                         <div className={`w-1.5 h-1.5 rounded-full ${driver.latitude && driver.longitude ? 'bg-emerald-500 animate-pulse' : 'bg-gray-300'}`}></div>
@@ -292,32 +313,32 @@ export default function Drivers({ drivers = [] }) {
                                                         <div className="space-y-2">
                                                             <div className="flex items-center space-x-2">
                                                                 <div className="w-2 h-2 rounded-full border-2 border-indigo-400 bg-white"></div>
-                                                                <div className="text-[10px] font-bold text-gray-500 truncate">{driver.active_shipment_origin || 'Origin'}</div>
+                                                                <div className="text-[10px] font-bold text-gray-500 truncate">{driver.active_shipment_origin || 'Asal'}</div>
                                                             </div>
                                                             <div className="ml-1 w-0.5 h-2 bg-gray-200"></div>
                                                             <div className="flex items-center space-x-2">
                                                                 <div className="w-2 h-2 rounded-full bg-indigo-500"></div>
-                                                                <div className="text-[10px] font-black text-[#1a202c] truncate">{driver.active_shipment_destination || 'Destination'}</div>
+                                                                <div className="text-[10px] font-black text-[#1a202c] truncate">{driver.active_shipment_destination || 'Tujuan'}</div>
                                                             </div>
                                                         </div>
                                                         <div className="pt-2 border-t border-gray-200/50">
                                                             <div className="text-[9px] font-black text-indigo-500 uppercase tracking-widest mb-1">Status Pengiriman</div>
                                                             <div className="text-[11px] font-bold text-gray-600">
-                                                                {driver.active_shipment_stage === 'ready_for_pickup' && '📦 Siap Diambil'}
-                                                                {driver.active_shipment_stage === 'picked_up' && '🚛 Sudah Diambil'}
-                                                                {driver.active_shipment_stage === 'in_transit' && '⏩ Dalam Perjalanan'}
-                                                                {driver.active_shipment_stage === 'arrived_at_destination' && '🏁 Sampai Tujuan'}
-                                                                {driver.active_shipment_stage === 'delivered' && '✅ Menunggu Verifikasi'}
+                                                                {driver.active_shipment_stage === 'ready_for_pickup' && 'Siap Diambil'}
+                                                                {driver.active_shipment_stage === 'picked_up' && 'Sudah Diambil'}
+                                                                {driver.active_shipment_stage === 'in_transit' && 'Dalam Perjalanan'}
+                                                                {driver.active_shipment_stage === 'arrived_at_destination' && 'Sampai Tujuan'}
+                                                                {driver.active_shipment_stage === 'delivered' && 'Menunggu Verifikasi'}
                                                             </div>
                                                         </div>
                                                     </div>
                                                 ) : (
-                                                    <div className="flex items-center justify-center py-2 space-x-2 opacity-50">
-                                                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">☕ Istirahat / Standby</span>
+                                                    <div className="flex items-center justify-center py-2 opacity-60">
+                                                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Standby</span>
                                                     </div>
                                                 )}
                                             </div>
-                                            
+
                                             {driver.latitude && driver.longitude && (
                                                 <div className="mt-3 pt-3 border-t border-gray-100/50 flex justify-between items-center">
                                                     <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Update Terakhir</span>
@@ -338,10 +359,10 @@ export default function Drivers({ drivers = [] }) {
                     </div>
 
                     {/* Map View */}
-                    <div className="flex-1">
-                        <LiveMap 
-                            onDriversLoad={setTrackingDrivers} 
-                            focusedDriverId={focusedDriverId} 
+                    <div className="min-w-0">
+                        <LiveMap
+                            onDriversLoad={setTrackingDrivers}
+                            focusedDriverId={focusedDriverId}
                             onMarkerClick={setFocusedDriverId}
                         />
                     </div>
@@ -418,75 +439,6 @@ export default function Drivers({ drivers = [] }) {
                 </div>
             )}
 
-            {showDetailModal && selectedDriver && (
-                <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-[200] p-6">
-                    <div className="bg-white rounded-[32px] w-full max-w-xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-                        <div className="px-8 py-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-                            <div>
-                                <h3 className="text-[18px] font-black text-[#1a202c]">Verifikasi Driver</h3>
-                                <p className="text-[12px] font-bold text-gray-400">Tinjau dokumen identitas sebelum menyetujui akses.</p>
-                            </div>
-                            <button onClick={() => setShowDetailModal(false)} className="text-gray-400 hover:text-gray-600">
-                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-                            </button>
-                        </div>
-                        <div className="p-8">
-                            <div className="grid grid-cols-2 gap-6 mb-8">
-                                <div>
-                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Nama Lengkap</label>
-                                    <p className="text-[15px] font-bold text-[#1a202c] mt-1">{selectedDriver.user.name}</p>
-                                </div>
-                                <div>
-                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Email</label>
-                                    <p className="text-[15px] font-bold text-[#1a202c] mt-1">{selectedDriver.user.email}</p>
-                                </div>
-                                <div>
-                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">No. SIM</label>
-                                    <p className="text-[15px] font-bold text-[#1a202c] mt-1">{selectedDriver.license_number}</p>
-                                </div>
-                                <div>
-                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Status Saat Ini</label>
-                                    <div className="mt-1">{getStatusBadge(selectedDriver.status)}</div>
-                                </div>
-                            </div>
-
-                            <div className="mb-8">
-                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-3">Foto ID Karyawan / KTP</label>
-                                {selectedDriver.photo_id_card ? (
-                                    <div className="relative rounded-2xl overflow-hidden border border-gray-200 bg-gray-50 aspect-video flex items-center justify-center">
-                                        <img 
-                                            src={`/storage/${selectedDriver.photo_id_card}`} 
-                                            alt="ID Card Proof" 
-                                            className="w-full h-full object-contain"
-                                        />
-                                    </div>
-                                ) : (
-                                    <div className="rounded-2xl border-2 border-dashed border-gray-200 bg-gray-50 py-12 text-center">
-                                        <p className="text-[13px] font-bold text-gray-400 italic">Driver belum mengunggah foto ID.</p>
-                                    </div>
-                                )}
-                            </div>
-
-                            <div className="flex space-x-3 pt-4 border-t border-gray-100">
-                                <button 
-                                    onClick={() => handleUpdateStatus(selectedDriver.id, 'approved')}
-                                    disabled={selectedDriver.status === 'approved'}
-                                    className="flex-1 py-4 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white font-black rounded-2xl shadow-lg shadow-emerald-200 transition-all text-[13px] uppercase tracking-wider"
-                                >
-                                    Setujui Akses
-                                </button>
-                                <button 
-                                    onClick={() => handleUpdateStatus(selectedDriver.id, 'suspended')}
-                                    disabled={selectedDriver.status === 'suspended'}
-                                    className="px-6 py-4 bg-red-50 hover:bg-red-100 text-red-600 font-extrabold rounded-2xl transition-colors text-[13px]"
-                                >
-                                    Tangguhkan
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
         </DashboardLayout>
     );
 }

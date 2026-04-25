@@ -19,11 +19,13 @@ import {
     ChevronRight,
     ChevronLeft,
     Package,
-    Sparkles
+    Sparkles,
+    LogOut
 } from 'lucide-react';
 
 import Dropdown from '@/Components/Dropdown';
 import FloatingBubble from '@/Components/FloatingBubble';
+import Modal from '@/Components/Modal';
 
 export default function DashboardLayout({
     children,
@@ -34,6 +36,7 @@ export default function DashboardLayout({
     headerRight,
     contentClassName = 'max-w-[1400px] mx-auto',
     fullPage = false,
+    hideSearch = false,
 }) {
     const { url, props } = usePage();
     const { auth } = props;
@@ -58,6 +61,8 @@ export default function DashboardLayout({
         }
         return [];
     });
+    const [helpMenuOpen, setHelpMenuOpen] = useState(() => url.startsWith('/help'));
+    const [confirmingLogout, setConfirmingLogout] = useState(false);
 
     const sidebarScrollRef = useRef(null);
 
@@ -127,6 +132,10 @@ export default function DashboardLayout({
                 }
             }
         });
+
+        if (url.startsWith('/help')) {
+            setHelpMenuOpen(true);
+        }
     }, [url]);
 
     // Restore scroll position
@@ -171,12 +180,6 @@ export default function DashboardLayout({
             toastSeenIds.current = new Set(JSON.parse(savedToastSeen));
         }
     }, []);
-
-    const markAsRead = (id) => {
-        const newReadIds = [...readIds, id];
-        setReadIds(newReadIds);
-        localStorage.setItem('read_notifications', JSON.stringify(newReadIds));
-    };
 
     const activeNotifications = props.notifications?.filter(n => !readIds.includes(n.id)) || [];
 
@@ -236,16 +239,16 @@ export default function DashboardLayout({
     return (
         <div className="flex h-screen bg-[#f8f9fc] font-sans antialiased text-gray-900">
             {/* Sidebar */}
-            <div className={`bg-white flex flex-col justify-between flex-shrink-0 z-[110] shadow-[4px_0_24px_rgba(0,0,0,0.02)] relative border-r border-[#edf2f7] transition-all duration-300 ${isSidebarCollapsed ? 'w-[96px]' : 'w-[270px]'}`}>
+            <div className={`h-screen overflow-visible bg-white flex flex-col justify-between flex-shrink-0 z-[250] shadow-[4px_0_24px_rgba(0,0,0,0.02)] relative border-r border-[#edf2f7] transition-all duration-300 ${isSidebarCollapsed ? 'w-[96px]' : 'w-[270px]'}`}>
                 {/* Collapse Toggle Button */}
                 <button
                     onClick={toggleSidebar}
-                    className="absolute -right-[16px] top-9 w-8 h-8 flex items-center justify-center bg-white border border-gray-200 text-gray-500 hover:text-[#3632c0] rounded-full shadow-sm hover:shadow-md transition-all z-[120] hover:scale-105"
+                    className="absolute -right-[16px] top-9 w-8 h-8 flex items-center justify-center bg-white border border-gray-200 text-gray-500 hover:text-[#3632c0] rounded-full shadow-sm hover:shadow-md transition-all z-[300] hover:scale-105"
                 >
                     <ChevronLeft className={`w-5 h-5 transition-transform duration-300 ${isSidebarCollapsed ? 'rotate-180' : ''}`} strokeWidth={2.5} />
                 </button>
 
-                <div className="flex flex-col h-full">
+                <div className="flex min-h-0 flex-col h-full">
                     {/* Logo Area */}
                     <div className={`px-5 py-7 border-b border-gray-50/50 flex ${isSidebarCollapsed ? 'justify-center items-center' : 'items-center space-x-3.5 mx-3'} transition-all`}>
                         <div className="w-[42px] h-[42px] bg-[#3632c0] rounded-[14px] flex items-center justify-center flex-shrink-0 shadow-lg shadow-indigo-200/50">
@@ -263,7 +266,7 @@ export default function DashboardLayout({
                     <nav
                         ref={sidebarScrollRef}
                         onScroll={handleSidebarScroll}
-                        className="flex-1 overflow-y-auto overflow-x-visible custom-scrollbar px-4 pt-6 pb-4 space-y-2"
+                        className="flex-1 min-h-0 overflow-y-auto overflow-x-visible scrollbar-none px-4 pt-6 pb-8 space-y-2"
                     >
                         {navMenus.filter(menu => menu.show).map((menu, mIdx) => {
                             // Render Single Item
@@ -345,30 +348,41 @@ export default function DashboardLayout({
                                 </div>
                             );
                         })}
-                    </nav>                </div>
-
-                {/* Bottom Actions Panel */}
-                <div className={`px-5 pb-8 pt-4 border-t border-gray-50 flex flex-col space-y-4 ${isSidebarCollapsed ? 'items-center' : ''}`}>
-                    <Dropdown>
-                        <Dropdown.Trigger>
-                            <button className={`w-full flex items-center ${isSidebarCollapsed ? 'justify-center' : 'space-x-3 px-2'} text-gray-500 hover:text-[#3632c0] transition-colors group relative`}>
-                                <HelpCircle className={`w-[20px] h-[20px] transition-transform group-hover:scale-110 ${isActive('/help') ? 'text-[#3632c0]' : ''}`} />
+                        <div className={`mt-5 pt-5 border-t border-gray-50 ${isSidebarCollapsed ? 'flex justify-center' : ''}`}>
+                            <button
+                                type="button"
+                                onClick={() => isSidebarCollapsed ? toggleSidebar() : setHelpMenuOpen((open) => !open)}
+                                className={`flex items-center ${isSidebarCollapsed ? 'w-[44px] h-[44px] justify-center rounded-[14px]' : 'w-full justify-between px-4 py-3 rounded-[12px]'} text-gray-500 hover:text-[#3632c0] hover:bg-gray-50 transition-all group relative`}
+                            >
+                                <span className={`flex items-center ${isSidebarCollapsed ? 'justify-center' : 'space-x-3'}`}>
+                                    <HelpCircle className={`w-[20px] h-[20px] transition-transform group-hover:scale-110 ${isActive('/help') ? 'text-[#3632c0]' : ''}`} />
+                                    {!isSidebarCollapsed && (
+                                        <span className={`text-[12px] font-bold ${isActive('/help') ? 'text-[#3632c0]' : ''}`}>Pusat Bantuan</span>
+                                    )}
+                                </span>
                                 {!isSidebarCollapsed && (
-                                    <span className={`text-[12px] font-bold ${isActive('/help') ? 'text-[#3632c0]' : ''}`}>Pusat Bantuan</span>
+                                    <ChevronRight className={`w-4 h-4 opacity-60 transition-transform duration-300 ${helpMenuOpen ? 'rotate-90' : ''}`} />
                                 )}
                                 {isSidebarCollapsed && (
-                                    <div className="absolute left-[64px] opacity-0 invisible group-hover:opacity-100 group-hover:visible bg-[#1a202c] text-white text-[12px] font-bold py-1.5 px-3 rounded-xl whitespace-nowrap z-[200] shadow-xl border border-gray-700/50 transition-all ml-1 pointer-events-none">
+                                    <div className="absolute left-[56px] opacity-0 invisible group-hover:opacity-100 group-hover:visible bg-[#1a202c] text-white text-[12px] font-bold py-1.5 px-3 rounded-xl whitespace-nowrap z-[200] shadow-xl border border-gray-700/50 transition-all ml-1 pointer-events-none">
                                         Pusat Bantuan
                                         <div className="absolute top-1/2 -left-1 -translate-y-1/2 w-2 h-2 bg-[#1a202c] rotate-45 border-b border-l border-gray-700/50"></div>
                                     </div>
                                 )}
                             </button>
-                        </Dropdown.Trigger>
-                        <Dropdown.Content align={isSidebarCollapsed ? "left" : "left"} width="56" className="mb-2 bottom-full origin-bottom-left">
-                            <Dropdown.Link href="#" className="font-bold text-[12px]">Bantuan Langsung</Dropdown.Link>
-                            <Dropdown.Link href="#" className="font-bold text-[12px]">Dokumentasi Sistem</Dropdown.Link>
-                        </Dropdown.Content>
-                    </Dropdown>
+
+                            <div className={`overflow-hidden transition-all duration-300 ease-in-out ${helpMenuOpen && !isSidebarCollapsed ? 'max-h-32 opacity-100 mt-1' : 'max-h-0 opacity-0'}`}>
+                                <div className="ml-6 pl-4 border-l-2 border-gray-100 space-y-1.5 py-1">
+                                    <Link href="/help/live-support" className={`block w-full text-left px-3 py-2 rounded-lg text-[13px] font-bold transition-all ${isActive('/help/live-support') ? 'text-[#3632c0] bg-indigo-50/50' : 'text-gray-400 hover:text-gray-700 hover:bg-gray-50'}`}>
+                                        Bantuan Langsung
+                                    </Link>
+                                    <Link href="/help/documentation" className={`block w-full text-left px-3 py-2 rounded-lg text-[13px] font-bold transition-all ${isActive('/help/documentation') ? 'text-[#3632c0] bg-indigo-50/50' : 'text-gray-400 hover:text-gray-700 hover:bg-gray-50'}`}>
+                                        Dokumentasi Sistem
+                                    </Link>
+                                </div>
+                            </div>
+                        </div>
+                    </nav>
                 </div>
             </div>
 
@@ -423,16 +437,20 @@ export default function DashboardLayout({
                         {headerTitle && (
                             <h2 className="text-[18px] font-black text-[#1a202c] mr-4">{headerTitle}</h2>
                         )}
-                        <div className="flex-1 min-w-[380px] relative">
-                            <Search className="w-[17px] h-[17px] absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
-                            <input
-                                type="text"
-                                placeholder={headerSearchPlaceholder || "Cari..."}
-                                className="w-full bg-[#f4f5f9] text-[13px] text-gray-700 rounded-[12px] pl-11 pr-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-[#3632c0] border border-transparent transition-all font-bold placeholder-gray-400 shadow-[inset_0_2px_4px_rgba(0,0,0,0.01)]"
-                                value={searchValue || ''}
-                                onChange={(e) => onSearch && onSearch(e.target.value)}
-                            />
-                        </div>
+                        {(!hideSearch && !url.includes('/settings') && !url.includes('/rack-allocation')) ? (
+                            <div className="flex-1 min-w-[380px] relative">
+                                <Search className="w-[17px] h-[17px] absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+                                <input
+                                    type="text"
+                                    placeholder={headerSearchPlaceholder || "Cari..."}
+                                    className="w-full bg-[#f4f5f9] text-[13px] text-gray-700 rounded-[12px] pl-11 pr-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-[#3632c0] border border-transparent transition-all font-bold placeholder-gray-400 shadow-[inset_0_2px_4px_rgba(0,0,0,0.01)]"
+                                    value={searchValue || ''}
+                                    onChange={(e) => onSearch && onSearch(e.target.value)}
+                                />
+                            </div>
+                        ) : (
+                            <div className="hidden" style={{ display: 'none' }}></div>
+                        )}
 
                         {/* Real-time System Status Indicator */}
                         <div className="hidden lg:flex items-center space-x-2 px-4 py-2 bg-emerald-50 rounded-full border border-emerald-100/50 shadow-sm shadow-emerald-100/20">
@@ -448,108 +466,25 @@ export default function DashboardLayout({
                         {headerRight ? headerRight : (
                             <>
                                 <div className="flex items-center space-x-6 text-gray-500">
-                                    <Dropdown>
-                                        <Dropdown.Trigger>
-                                            <button className="hover:text-gray-900 transition-all relative mt-1 group">
-                                                <div className="p-2.5 rounded-xl bg-gray-50 group-hover:bg-indigo-50 group-hover:text-[#3632c0] transition-colors">
-                                                    <Bell className="w-[22px] h-[22px]" />
-                                                </div>
-                                                {activeNotifications.length > 0 && (
-                                                    <span className="absolute top-1 right-1 flex h-4 w-4">
-                                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                                                        <span className="relative inline-flex rounded-full h-4 w-4 bg-red-500 border-2 border-white flex items-center justify-center text-[8px] text-white font-black">
-                                                            {activeNotifications.length}
-                                                        </span>
-                                                    </span>
-                                                )}
-                                            </button>
-                                        </Dropdown.Trigger>
-                                        <Dropdown.Content align="right" width="96" className="p-0 overflow-hidden rounded-[32px] shadow-[0_30px_90px_rgba(0,0,0,0.35)] border border-gray-100 z-[500] animate-in fade-in zoom-in-95 duration-200">
-                                            <div className="bg-white px-7 py-6 border-b border-gray-100 flex justify-between items-center">
-                                                <div>
-                                                    <h3 className="text-[16px] font-black text-[#1a202c]">Notifikasi Sistem</h3>
-                                                    <p className="text-[11px] font-bold text-gray-400">Pembaruan keadaan operasional riil</p>
-                                                </div>
-                                                <button
-                                                    onClick={() => {
-                                                        const allIds = props.notifications?.map(n => n.id) || [];
-                                                        setReadIds(allIds);
-                                                        localStorage.setItem('read_notifications', JSON.stringify(allIds));
-                                                    }}
-                                                    className="px-3 py-1.5 hover:bg-gray-50 text-indigo-600 rounded-lg text-[10px] font-black uppercase tracking-wider transition-colors border border-transparent hover:border-indigo-100"
-                                                >
-                                                    Tandai Semua Selesai
-                                                </button>
-                                            </div>
-                                            <div className="max-h-[480px] overflow-y-auto custom-scrollbar">
-                                                {activeNotifications.length > 0 ? (
-                                                    activeNotifications.map((notif) => (
-                                                        <Link
-                                                            key={notif.id}
-                                                            href={notif.link}
-                                                            onClick={() => markAsRead(notif.id)}
-                                                            className="flex items-start space-x-5 px-7 py-6 hover:bg-gray-50 transition-all border-b border-gray-50 last:border-0 group"
-                                                        >
-                                                            <div className={`mt-1.5 w-3 h-3 rounded-full flex-shrink-0 shadow-sm border-2 border-white translate-y-0.5 ${notif.type === 'error' ? 'bg-red-500 shadow-red-100' :
-                                                                notif.type === 'warning' ? 'bg-amber-500 shadow-amber-100' :
-                                                                    notif.type === 'success' ? 'bg-emerald-500 shadow-emerald-100' : 'bg-indigo-500 shadow-indigo-100'
-                                                                }`} />
-                                                            <div className="flex-1">
-                                                                <div className="flex justify-between items-start mb-1">
-                                                                    <div className="text-[14px] font-black text-[#1a202c] group-hover:text-indigo-600 transition-colors uppercase tracking-tight">{notif.title}</div>
-                                                                    <span className="text-[10px] font-bold text-gray-300">BARU</span>
-                                                                </div>
-                                                                <div className="text-[13px] font-semibold text-gray-500 leading-[1.6] line-clamp-3 italic">"{notif.message}"</div>
-                                                            </div>
-                                                        </Link>
-                                                    ))
-                                                ) : (
-                                                    <div className="px-10 py-20 text-center">
-                                                        <div className="bg-[#f8f9fb] w-20 h-20 rounded-[32px] flex items-center justify-center mx-auto mb-6 transform -rotate-12">
-                                                            <Bell className="w-10 h-10 text-gray-200" />
-                                                        </div>
-                                                        <p className="text-[15px] font-black text-gray-400">Keadan Normal</p>
-                                                        <p className="text-[12px] font-bold text-gray-300 mt-2 italic">Belum ada pembaruan status sistem saat ini.</p>
-                                                    </div>
-                                                )}
-                                            </div>
-                                            {canViewReports && (
-                                                <div className="px-7 py-4 bg-[#f8f9fb] text-center">
-                                                    <Link href="/reports" className="text-[12px] font-black text-indigo-500 hover:text-indigo-700 uppercase tracking-widest transition-all flex items-center justify-center space-x-2">
-                                                        <span>Monitoring Seluruh Laporan</span>
-                                                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 5l7 7-7 7" /></svg>
-                                                    </Link>
-                                                </div>
-                                            )}
-                                        </Dropdown.Content>
-                                    </Dropdown>
+                                    <Link href="/notifications" className="hover:text-gray-900 transition-all relative mt-1 group">
+                                        <div className="p-2.5 rounded-xl bg-gray-50 group-hover:bg-indigo-50 group-hover:text-[#3632c0] transition-colors">
+                                            <Bell className="w-[22px] h-[22px]" />
+                                        </div>
+                                        {activeNotifications.length > 0 && (
+                                            <span className="absolute top-1 right-1 flex h-4 w-4">
+                                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                                                <span className="relative inline-flex rounded-full h-4 w-4 bg-red-500 border-2 border-white flex items-center justify-center text-[8px] text-white font-black">
+                                                    {activeNotifications.length}
+                                                </span>
+                                            </span>
+                                        )}
+                                    </Link>
 
-                                    <Dropdown>
-                                        <Dropdown.Trigger>
-                                            <button className="hover:text-gray-900 transition-all mt-1 group">
-                                                <div className="p-2.5 rounded-xl bg-gray-50 group-hover:bg-indigo-50 group-hover:text-[#3632c0] transition-colors">
-                                                    <HelpCircle className="w-[22px] h-[22px]" />
-                                                </div>
-                                            </button>
-                                        </Dropdown.Trigger>
-                                        <Dropdown.Content align="right" width="80" className="p-0 overflow-hidden rounded-[24px] shadow-[0_20px_70px_rgba(0,0,0,0.15)] bg-white">
-                                            <div className="px-7 py-6 border-b border-gray-50 bg-gray-900">
-                                                <p className="text-[11px] font-black text-gray-400 uppercase tracking-[2px] mb-1">Operational Support</p>
-                                                <h4 className="text-[16px] font-black text-white">Pusat Bantuan SOP</h4>
-                                            </div>
-                                            <div className="py-2">
-                                                <Dropdown.Link href="#" className="font-extrabold text-[14px] px-7 py-4 hover:bg-gray-50 border-b border-gray-50 last:border-0 flex items-center justify-between group">
-                                                    <span>Panduan Pengguna (PDF)</span>
-                                                    <svg className="w-4 h-4 text-gray-300 group-hover:text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" strokeWidth={2} /></svg>
-                                                </Dropdown.Link>
-                                                <Dropdown.Link href="#" className="font-extrabold text-[14px] px-7 py-4 hover:bg-gray-50 border-b border-gray-50 last:border-0">Alur Kerja Gudang</Dropdown.Link>
-                                                <Dropdown.Link href="#" className="font-extrabold text-[14px] px-7 py-4 hover:bg-gray-50">Lapor Bug / Kendala Data</Dropdown.Link>
-                                            </div>
-                                            <div className="px-7 py-4 bg-indigo-600 text-white text-center cursor-pointer hover:bg-indigo-700 transition-colors">
-                                                <span className="text-[12px] font-black uppercase tracking-widest">Kontak Admin Pusat</span>
-                                            </div>
-                                        </Dropdown.Content>
-                                    </Dropdown>
+                                    <Link href="/help/live-support" className="hover:text-gray-900 transition-all mt-1 group">
+                                        <div className="p-2.5 rounded-xl bg-gray-50 group-hover:bg-indigo-50 group-hover:text-[#3632c0] transition-colors">
+                                            <HelpCircle className="w-[22px] h-[22px]" />
+                                        </div>
+                                    </Link>
                                 </div>
 
                                 <div className="h-8 w-[1px] bg-gray-100"></div>
@@ -559,23 +494,35 @@ export default function DashboardLayout({
                                         <div className="flex items-center space-x-3 pl-2 cursor-pointer group">
                                             <div className="flex flex-col text-right">
                                                 <span className="text-[13px] font-extrabold text-[#1a202c] group-hover:text-[#4f46e5] transition-colors leading-tight">
-                                                    {auth?.user?.name || 'Administrator'}
+                                                    {auth?.user?.name || 'Pengguna Sistem'}
                                                 </span>
                                                 <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
                                                     {formatRoleLabel(auth?.user?.role_name || auth?.user?.role)}
                                                 </span>
                                             </div>
                                             <div className="w-[42px] h-[42px] rounded-full bg-[#f0f4f8] flex items-center justify-center flex-shrink-0 border-2 border-white shadow-sm overflow-hidden group-hover:border-indigo-100 transition-all text-[#1a202c] font-black text-xs uppercase">
-                                                {auth?.user?.name ? auth.user.name.charAt(0) : 'A'}
+                                                {auth?.user?.profile_photo_url ? (
+                                                    <img
+                                                        src={auth.user.profile_photo_url}
+                                                        alt={`Foto profil ${auth?.user?.name || 'Pengguna Sistem'}`}
+                                                        className="h-full w-full object-cover"
+                                                    />
+                                                ) : (
+                                                    auth?.user?.name ? auth.user.name.charAt(0) : 'A'
+                                                )}
                                             </div>
                                         </div>
                                     </Dropdown.Trigger>
 
                                     <Dropdown.Content align="right">
                                         <Dropdown.Link href={route('profile.edit')}>Profil Saya</Dropdown.Link>
-                                        <Dropdown.Link href={route('logout')} method="post" as="button">
+                                        <button
+                                            type="button"
+                                            onClick={() => setConfirmingLogout(true)}
+                                            className="block w-full px-4 py-2 text-start text-sm leading-5 text-gray-700 transition duration-150 ease-in-out hover:bg-gray-100 focus:bg-gray-100 focus:outline-none"
+                                        >
                                             Logout
-                                        </Dropdown.Link>
+                                        </button>
                                     </Dropdown.Content>
                                 </Dropdown>
                             </>
@@ -596,6 +543,41 @@ export default function DashboardLayout({
                 </main>
             </div>
             {url !== '/aether' && <FloatingBubble />}
+
+            <Modal show={confirmingLogout} maxWidth="md" onClose={() => setConfirmingLogout(false)}>
+                <div className="p-6">
+                    <div className="flex items-start gap-4">
+                        <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-[8px] bg-red-50 text-red-600">
+                            <LogOut className="h-5 w-5" />
+                        </div>
+                        <div className="min-w-0">
+                            <h2 className="text-[20px] font-black text-slate-950">Keluar dari akun?</h2>
+                            <p className="mt-2 text-[14px] font-semibold leading-7 text-slate-500">
+                                Sesi kerja WMS akan ditutup. Pastikan perubahan data yang sedang dikerjakan sudah disimpan.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div className="mt-7 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+                        <button
+                            type="button"
+                            onClick={() => setConfirmingLogout(false)}
+                            className="inline-flex items-center justify-center rounded-[10px] border border-slate-200 bg-white px-5 py-3 text-[12px] font-black uppercase tracking-wider text-slate-700 transition-all hover:border-slate-300 hover:bg-slate-50"
+                        >
+                            Batal
+                        </button>
+                        <Link
+                            href={route('logout')}
+                            method="post"
+                            as="button"
+                            className="inline-flex items-center justify-center gap-2 rounded-[10px] bg-red-600 px-5 py-3 text-[12px] font-black uppercase tracking-wider text-white transition-all hover:bg-red-700"
+                        >
+                            <LogOut className="h-4 w-4" />
+                            Ya, Logout
+                        </Link>
+                    </div>
+                </div>
+            </Modal>
         </div>
     );
 }

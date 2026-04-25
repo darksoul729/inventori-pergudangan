@@ -22,10 +22,26 @@ Route::get('/', function () {
 });
 
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\HelpCenterController;
+use App\Http\Controllers\NotificationCenterController;
 
 Route::get('/dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth', 'verified', 'role:manager,supervisor,staff'])
     ->name('dashboard');
+
+Route::middleware(['auth', 'verified', 'role:manager,supervisor,staff'])->prefix('help')->name('help.')->group(function () {
+    Route::redirect('/', '/help/documentation')->name('index');
+    Route::get('/live-support', [HelpCenterController::class, 'liveSupport'])->name('live-support');
+    Route::get('/documentation', [HelpCenterController::class, 'documentation'])->name('documentation');
+});
+
+Route::get('/notifications', [NotificationCenterController::class, 'index'])
+    ->middleware(['auth', 'verified', 'role:manager,supervisor,staff'])
+    ->name('notifications.index');
+
+Route::get('/notifications/{notificationId}', [NotificationCenterController::class, 'show'])
+    ->middleware(['auth', 'verified', 'role:manager,supervisor,staff'])
+    ->name('notifications.show');
 
 Route::middleware(['auth', 'verified', 'role:manager,supervisor,staff'])->group(function () {
     Route::get('/warehouse', [WarehouseController::class, 'index'])->name('warehouse');
@@ -140,11 +156,12 @@ use App\Http\Controllers\DriverController;
 Route::middleware(['auth', 'verified', 'role:manager'])->group(function () {
     Route::get('/drivers', [DriverController::class, 'index'])->name('drivers.index');
     Route::post('/drivers', [DriverController::class, 'store'])->name('drivers.store');
+    Route::get('/drivers/{driver}', [DriverController::class, 'show'])->name('drivers.show');
     Route::get('/api/drivers/locations', [DriverController::class, 'getLocations'])->name('drivers.locations');
     Route::put('/drivers/{driver}/status', [DriverController::class, 'updateStatus'])->name('drivers.status.update');
 });
 
-Route::middleware(['auth', 'verified', 'role:manager,supervisor,staff'])->group(function () {
+Route::middleware(['auth', 'verified', 'role:manager,supervisor'])->group(function () {
     Route::get('/rack-allocation', [StockTransferController::class, 'index'])->name('rack.allocation');
     Route::post('/rack-allocation/transfers', [StockTransferController::class, 'store'])->name('rack.allocation.transfers.store');
     Route::get('/rack-allocation/transfers/{stockTransfer}/pdf', [StockTransferController::class, 'downloadPdf'])->name('rack.allocation.transfers.pdf');
@@ -193,8 +210,9 @@ Route::middleware(['auth', 'verified', 'role:manager'])->group(function () {
 use App\Http\Controllers\AetherAIController;
 
 // ─── Aether AI Assistant ───────────────────────────────────────────────────────
-Route::middleware(['auth', 'verified'])->prefix('aether')->name('aether.')->group(function () {
+Route::middleware(['auth', 'verified', 'role:manager,supervisor,staff'])->prefix('aether')->name('aether.')->group(function () {
     Route::get('/',                                    [AetherAIController::class, 'index'])->name('index');
+    Route::get('/dashboard-insight',                   [AetherAIController::class, 'dashboardInsight'])->name('dashboard-insight');
     Route::get('/conversations',                       [AetherAIController::class, 'conversations'])->name('conversations');
     Route::post('/conversations',                      [AetherAIController::class, 'newConversation'])->name('conversations.new');
     Route::delete('/conversations-empty',              [AetherAIController::class, 'deleteUntitledConversations'])->name('conversations.delete-empty');

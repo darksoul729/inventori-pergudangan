@@ -87,4 +87,40 @@ class Shipment extends Model
             'delivered' => 'Terkirim',
         ];
     }
+
+    public function syncTrackingTimestamps(string $trackingStage): void
+    {
+        $now = now();
+
+        if (!$this->claimed_at) {
+            $this->claimed_at = $now;
+        }
+
+        if (in_array($trackingStage, ['picked_up', 'in_transit', 'arrived_at_destination', 'delivered'], true) && !$this->picked_up_at) {
+            $this->picked_up_at = $now;
+        }
+
+        if (in_array($trackingStage, ['in_transit', 'arrived_at_destination', 'delivered'], true) && !$this->in_transit_at) {
+            $this->in_transit_at = $now;
+        }
+
+        if (in_array($trackingStage, ['arrived_at_destination', 'delivered'], true) && !$this->arrived_at_destination_at) {
+            $this->arrived_at_destination_at = $now;
+        }
+
+        if ($trackingStage === 'delivered' && !$this->delivered_at) {
+            $this->delivered_at = $now;
+        }
+    }
+
+    public function requirePendingProofVerification(): void
+    {
+        if ($this->pod_verification_status === 'approved') {
+            return;
+        }
+
+        $this->pod_verification_status = 'pending';
+        $this->pod_verified_at = null;
+        $this->pod_verified_by = null;
+    }
 }

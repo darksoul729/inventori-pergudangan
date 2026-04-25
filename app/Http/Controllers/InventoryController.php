@@ -36,11 +36,11 @@ class InventoryController extends Controller
             ->with([
                 'category',
                 'unit',
-                'productStocks' => fn ($q) => $q->where('warehouse_id', $operationalWarehouse->id)->with('warehouse'),
+                'productStocks' => fn($q) => $q->where('warehouse_id', $operationalWarehouse->id)->with('warehouse'),
                 'rackStocks.rack'
             ])
             ->withSum([
-                'productStocks as total_stock' => fn ($q) => $q->where('warehouse_id', $operationalWarehouse->id)
+                'productStocks as total_stock' => fn($q) => $q->where('warehouse_id', $operationalWarehouse->id)
             ], 'current_stock');
 
         // 1. Filter by Category
@@ -48,22 +48,34 @@ class InventoryController extends Controller
             $query->where('category_id', $request->category_id);
         }
 
+        if ($request->filled('unit_id') && $request->unit_id !== 'all') {
+            $query->where('unit_id', $request->unit_id);
+        }
+
+        if ($request->filled('default_supplier_id') && $request->default_supplier_id !== 'all') {
+            $query->where('default_supplier_id', $request->default_supplier_id);
+        }
+
         // 3. Filter by Status
         if ($request->filled('status') && $request->status !== 'all') {
-            $query->where(function($q) use ($request, $operationalWarehouse) {
-                $subquery = DB::table('product_stocks')
-                    ->select(DB::raw('SUM(current_stock)'))
-                    ->whereColumn('product_id', 'products.id')
-                    ->where('warehouse_id', $operationalWarehouse->id);
+            $query->where(function ($q) use ($request, $operationalWarehouse) {
+                $stockSubquery = 'COALESCE((select SUM(current_stock) from product_stocks where product_id = products.id and warehouse_id = ?), 0)';
+                $capacitySubquery = 'COALESCE((select SUM(racks.capacity) from rack_stocks inner join racks on racks.id = rack_stocks.rack_id where rack_stocks.product_id = products.id), 0)';
+                $maxStockExpression = "CASE WHEN {$capacitySubquery} > 0 THEN {$capacitySubquery} ELSE GREATEST(1000, products.minimum_stock * 10) END";
+                $warehouseId = $operationalWarehouse->id;
 
                 if ($request->status === 'OutOfStock') {
-                    $q->whereDoesntHave('productStocks')
-                      ->orWhereRaw("({$subquery->toSql()}) = 0");
+                    $q->whereRaw("{$stockSubquery} = 0", [$warehouseId]);
                 } elseif ($request->status === 'LowStock') {
-                    $q->whereRaw("({$subquery->toSql()}) > 0")
-                      ->whereRaw("({$subquery->toSql()}) < products.minimum_stock");
+                    $q->whereRaw(
+                        "{$stockSubquery} > 0 and ({$stockSubquery} <= products.minimum_stock or {$stockSubquery} <= ({$maxStockExpression} * 0.20))",
+                        [$warehouseId, $warehouseId, $warehouseId]
+                    );
                 } elseif ($request->status === 'Healthy') {
-                    $q->whereRaw("({$subquery->toSql()}) >= products.minimum_stock");
+                    $q->whereRaw(
+                        "{$stockSubquery} > products.minimum_stock and {$stockSubquery} > ({$maxStockExpression} * 0.20)",
+                        [$warehouseId, $warehouseId]
+                    );
                 }
             });
         }
@@ -72,24 +84,34 @@ class InventoryController extends Controller
         if ($request->filled('search')) {
             $query->where(function ($q) use ($request) {
                 $q->where('name', 'like', '%' . $request->search . '%')
-                  ->orWhere('sku', 'like', '%' . $request->search . '%');
+                    ->orWhere('sku', 'like', '%' . $request->search . '%');
             });
+        }
+
+        if ($request->filled('min_percentage') || $request->filled('max_percentage')) {
+            $stockSubquery = 'COALESCE((select SUM(current_stock) from product_stocks where product_id = products.id and warehouse_id = ?), 0)';
+            $capacitySubquery = 'COALESCE((select SUM(racks.capacity) from rack_stocks inner join racks on racks.id = rack_stocks.rack_id where rack_stocks.product_id = products.id), 0)';
+            $maxStockExpression = "CASE WHEN {$capacitySubquery} > 0 THEN {$capacitySubquery} ELSE GREATEST(1000, products.minimum_stock * 10) END";
+            $percentageExpression = "({$stockSubquery} / NULLIF({$maxStockExpression}, 0)) * 100";
+            $warehouseId = $operationalWarehouse->id;
+
+            if ($request->filled('min_percentage')) {
+                $query->whereRaw("{$percentageExpression} >= ?", [$warehouseId, max(0, min(100, (float) $request->min_percentage))]);
+            }
+
+            if ($request->filled('max_percentage')) {
+                $query->whereRaw("{$percentageExpression} <= ?", [$warehouseId, max(0, min(100, (float) $request->max_percentage))]);
+            }
         }
 
         $productsPagination = $query->paginate(10)->withQueryString();
 
         $productsResult = $productsPagination->getCollection()->map(function ($product) {
-            $totalStock = $product->total_stock ?? 0;
-            
-            // Calculate total capacity from all racks holding this product
-            $realCapacity = $product->rackStocks->sum(function($rs) {
-                return $rs->rack->capacity ?? 0;
-            });
+            $totalStock = (int) ($product->total_stock ?? 0);
 
-            // Use real capacity if available, otherwise fallback to a multiple of min stock or 1000
-            $maxStock = $realCapacity > 0 ? $realCapacity : max(1000, $product->minimum_stock * 10);
+            $maxStock = $this->getDisplayCapacity($product);
             $percentage = $maxStock > 0 ? min(round(($totalStock / $maxStock) * 100), 100) : 0;
-            
+
             return [
                 'id' => $product->id,
                 'sku' => $product->sku,
@@ -98,8 +120,8 @@ class InventoryController extends Controller
                 'current_stock' => $totalStock,
                 'max_stock' => $maxStock,
                 'percentage' => $percentage,
-                'status' => $this->getStockStatus($totalStock, (int) $product->minimum_stock),
-                'status_color' => $this->getStatusColor($totalStock, (int) $product->minimum_stock),
+                'status' => $this->getStockStatus($totalStock, (int) $product->minimum_stock, (int) $maxStock),
+                'status_color' => $this->getStatusColor($totalStock, (int) $product->minimum_stock, (int) $maxStock),
                 'image_url' => $product->image ? Storage::url($product->image) : null,
                 'warehouse_stocks' => $product->productStocks->pluck('current_stock', 'warehouse_id')->toArray(),
             ];
@@ -109,17 +131,33 @@ class InventoryController extends Controller
         $productsData = $productsPagination->toArray();
         $productsData['data'] = $productsResult;
 
+        $totalRackCapacity = (int) $operationalWarehouse->zones
+            ->flatMap(fn($zone) => $zone->racks)
+            ->sum('capacity');
+        $occupiedRackStock = (int) RackStock::whereHas('rack.zone', fn($query) => $query->where('warehouse_id', $operationalWarehouse->id))
+            ->sum('quantity');
+        $storageEfficiency = $totalRackCapacity > 0
+            ? min(round(($occupiedRackStock / $totalRackCapacity) * 100, 1), 100)
+            : 0;
+
         $stats = [
             'total_skus' => Product::count(),
-            'out_of_stock' => Product::whereDoesntHave('productStocks', function($query) use ($operationalWarehouse) {
+            'out_of_stock' => Product::whereDoesntHave('productStocks', function ($query) use ($operationalWarehouse) {
                 $query->where('warehouse_id', $operationalWarehouse->id)
                     ->where('current_stock', '>', 0);
             })->count(),
-            'low_stock' => Product::with(['productStocks' => fn ($q) => $q->where('warehouse_id', $operationalWarehouse->id)])
+            'low_stock' => Product::with(['productStocks' => fn($q) => $q->where('warehouse_id', $operationalWarehouse->id)])
+                ->with('rackStocks.rack')
                 ->get()
-                ->filter(fn($p) => $this->getStockStatus($p->productStocks->sum('current_stock'), $p->minimum_stock) !== 'Healthy')
+                ->filter(fn($p) => $this->getStockStatus(
+                    (int) $p->productStocks->sum('current_stock'),
+                    (int) $p->minimum_stock,
+                    $this->getDisplayCapacity($p)
+                ) !== 'Healthy')
                 ->count(),
-            'storage_efficiency' => '94.8',
+            'storage_efficiency' => $storageEfficiency,
+            'occupied_storage' => $occupiedRackStock,
+            'total_storage_capacity' => $totalRackCapacity,
         ];
 
         return Inertia::render('Inventory', [
@@ -134,13 +172,22 @@ class InventoryController extends Controller
                 'name' => $operationalWarehouse->name,
                 'location' => $operationalWarehouse->location,
             ],
+            'filters' => $request->only([
+                'search',
+                'category_id',
+                'status',
+                'unit_id',
+                'default_supplier_id',
+                'min_percentage',
+                'max_percentage',
+            ]),
         ]);
     }
 
     public function create(): Response
     {
         $operationalWarehouse = Warehouse::with('zones.racks')->orderBy('id')->firstOrFail();
-        
+
         return Inertia::render('Inventory/Create', [
             'categories' => Category::all(['id', 'name']),
             'units' => Unit::all(['id', 'name']),
@@ -186,14 +233,14 @@ class InventoryController extends Controller
         ]);
     }
 
-    public function outbound(): Response 
+    public function outbound(): Response
     {
         $operationalWarehouse = Warehouse::orderBy('id')->firstOrFail();
-        
-        $products = Product::whereHas('productStocks', function($q) use ($operationalWarehouse) {
-                $q->where('warehouse_id', $operationalWarehouse->id)->where('current_stock', '>', 0);
-            })
-            ->with(['productStocks' => fn ($q) => $q->where('warehouse_id', $operationalWarehouse->id)])
+
+        $products = Product::whereHas('productStocks', function ($q) use ($operationalWarehouse) {
+            $q->where('warehouse_id', $operationalWarehouse->id)->where('current_stock', '>', 0);
+        })
+            ->with(['productStocks' => fn($q) => $q->where('warehouse_id', $operationalWarehouse->id)])
             ->get(['id', 'sku', 'name', 'minimum_stock'])
             ->map(function ($product) {
                 return [
@@ -259,7 +306,7 @@ class InventoryController extends Controller
 
             if (!empty($validated['initial_stock']) && $validated['initial_stock'] > 0) {
                 $rack = Rack::findOrFail($validated['rack_id']);
-                
+
                 // 1. Capacity Validation - use 'initial_stock' as error key for frontend mapping
                 $this->ensureRackCapacity($rack, (int) $validated['initial_stock'], $product->id, 'initial_stock');
 
@@ -384,19 +431,22 @@ class InventoryController extends Controller
             ]);
 
             // Find racks with stock for this product in this warehouse
-            $racks = Rack::whereHas('zone', function($q) use ($validated) {
+            $racks = Rack::whereHas('zone', function ($q) use ($validated) {
                 $q->where('warehouse_id', $validated['warehouse_id']);
-            })->whereHas('rackStocks', function($q) use ($validated) {
+            })->whereHas('rackStocks', function ($q) use ($validated) {
                 $q->where('product_id', $validated['product_id'])->where('quantity', '>', 0);
-            })->with(['rackStocks' => function($q) use ($validated) {
-                $q->where('product_id', $validated['product_id']);
-            }])->get();
+            })->with([
+                        'rackStocks' => function ($q) use ($validated) {
+                            $q->where('product_id', $validated['product_id']);
+                        }
+                    ])->get();
 
             $remainingToReduce = $validated['quantity'];
             $stockBefore = $productStock->current_stock;
 
             foreach ($racks as $rack) {
-                if ($remainingToReduce <= 0) break;
+                if ($remainingToReduce <= 0)
+                    break;
 
                 $rackStock = $rack->rackStocks->first();
                 $reduction = min($rackStock->quantity, $remainingToReduce);
@@ -442,18 +492,44 @@ class InventoryController extends Controller
         );
     }
 
-    private function getStockStatus(int $current, int $min): string
+    private function getStockStatus(int $current, int $min, ?int $maxStock = null): string
     {
-        if ($current <= 0) return 'Critical';
-        if ($current <= $min) return 'Low Stock';
+        if ($current <= 0)
+            return 'Critical';
+        if ($this->isLowStock($current, $min, $maxStock))
+            return 'Low Stock';
         return 'Healthy';
     }
 
-    private function getStatusColor(int $current, int $min): string
+    private function getStatusColor(int $current, int $min, ?int $maxStock = null): string
     {
-        if ($current <= 0) return 'text-red-500 bg-red-50';
-        if ($current <= $min) return 'text-amber-600 bg-amber-50';
+        if ($current <= 0)
+            return 'text-red-500 bg-red-50';
+        if ($this->isLowStock($current, $min, $maxStock))
+            return 'text-amber-600 bg-amber-50';
         return 'text-emerald-600 bg-emerald-50';
+    }
+
+    private function isLowStock(int $current, int $min, ?int $maxStock = null): bool
+    {
+        if ($current <= $min) {
+            return true;
+        }
+
+        if ($maxStock === null || $maxStock <= 0) {
+            return false;
+        }
+
+        return ($current / $maxStock) * 100 <= 20;
+    }
+
+    private function getDisplayCapacity(Product $product): int
+    {
+        $realCapacity = (int) $product->rackStocks->sum(function ($rackStock) {
+            return $rackStock->rack->capacity ?? 0;
+        });
+
+        return $realCapacity > 0 ? $realCapacity : max(1000, (int) $product->minimum_stock * 10);
     }
 
     public function show(Product $product): Response
@@ -468,8 +544,8 @@ class InventoryController extends Controller
             'productStocks.warehouse'
         ]);
 
-        $totalStock = $product->productStocks->sum('current_stock');
-        
+        $totalStock = (int) $product->productStocks->sum('current_stock');
+
         // Distribution by zone/rack
         $distribution = $product->rackStocks->map(function ($rs) {
             return [
@@ -507,14 +583,14 @@ class InventoryController extends Controller
             });
 
         // Calculate max stock for progress bar (sum of capacities where product is stored or default)
-        $maxStock = $product->rackStocks->sum(fn($rs) => $rs->rack->capacity) ?: max(1000, $product->minimum_stock * 10);
-        
+        $maxStock = $this->getDisplayCapacity($product);
+
         $stats = [
             'current_stock' => $totalStock,
             'max_stock' => $maxStock,
             'percentage' => $maxStock > 0 ? min(round(($totalStock / $maxStock) * 100), 100) : 0,
-            'status' => $this->getStockStatus($totalStock, (int) $product->minimum_stock),
-            'status_color' => $this->getStatusColor($totalStock, (int) $product->minimum_stock),
+            'status' => $this->getStockStatus($totalStock, (int) $product->minimum_stock, (int) $maxStock),
+            'status_color' => $this->getStatusColor($totalStock, (int) $product->minimum_stock, (int) $maxStock),
             'velocity' => $movements->count() > 5 ? 'Tinggi' : ($movements->count() > 0 ? 'Sedang' : 'Rendah'),
         ];
 

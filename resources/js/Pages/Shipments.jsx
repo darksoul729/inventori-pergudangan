@@ -1,6 +1,6 @@
 import DashboardLayout from '@/Layouts/DashboardLayout';
 import { Head, useForm, Link, router, usePage } from '@inertiajs/react';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import ShipmentMap from '@/Components/ShipmentMap';
 import { MapContainer, Marker, TileLayer, useMapEvents } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -86,14 +86,14 @@ function CoordinateMapPicker({ value, onPick }) {
     );
 }
 
-export default function Shipments({ shipments = [], stats = {}, drivers = [] }) {
+export default function Shipments({ shipments = [], stats = {}, drivers = [], filters = {} }) {
     const { props } = usePage();
     const roleName = String(props.auth?.user?.role_name || props.auth?.user?.role || '').toLowerCase();
     const isManager = roleName.includes('manager') || roleName.includes('manajer') || roleName.includes('admin gudang');
     const isSupervisor = roleName.includes('supervisor') || roleName.includes('spv');
     const canManageShipments = isManager || isSupervisor;
 
-    const [searchQuery, setSearchQuery] = useState('');
+    const [searchTerm, setSearchTerm] = useState(filters?.search || '');
     const [filterStatus, setFilterStatus] = useState('all');
     const [sortBy, setSortBy] = useState('id');
     const [showCreateModal, setShowCreateModal] = useState(false);
@@ -102,6 +102,25 @@ export default function Shipments({ shipments = [], stats = {}, drivers = [] }) 
     const [originSearch, setOriginSearch] = useState('');
     const [destinationSearch, setDestinationSearch] = useState('');
     const [deleteTarget, setDeleteTarget] = useState(null);
+
+    const isMounted = useRef(false);
+
+    useEffect(() => {
+        if (!isMounted.current) {
+            isMounted.current = true;
+            return;
+        }
+
+        const delayDebounceFn = setTimeout(() => {
+            router.get(route('shipments.index'), { search: searchTerm }, { 
+                preserveState: true, 
+                preserveScroll: true,
+                replace: true
+            });
+        }, 400);
+
+        return () => clearTimeout(delayDebounceFn);
+    }, [searchTerm]);
 
     const { data, setData, post, processing, errors, reset } = useForm({
         shipment_id: '',
@@ -321,13 +340,9 @@ export default function Shipments({ shipments = [], stats = {}, drivers = [] }) 
         return () => clearInterval(interval);
     }, []);
 
-    // Filter and search logic
+    // Filter logic (status filtering only, search is handled server-side now)
     const filteredShipments = currentShipments.filter(shipment => {
-        const matchesSearch = shipment.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            shipment.origin_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            shipment.destination_name?.toLowerCase().includes(searchQuery.toLowerCase());
-        const matchesFilter = filterStatus === 'all' || shipment.status === filterStatus;
-        return matchesSearch && matchesFilter;
+        return filterStatus === 'all' || shipment.status === filterStatus;
     }).sort((a, b) => {
         if (sortBy === 'date') {
             return new Date(b.estimated_arrival) - new Date(a.estimated_arrival);
@@ -416,8 +431,8 @@ export default function Shipments({ shipments = [], stats = {}, drivers = [] }) 
                                 type="button"
                                 onClick={() => setMode(item.id)}
                                 className={`flex items-center justify-center gap-2 rounded-2xl border px-4 py-3 text-[12px] font-black transition-all ${active
-                                        ? 'border-indigo-200 bg-indigo-600 text-white shadow-lg shadow-indigo-100'
-                                        : 'border-gray-200 bg-white text-slate-500 hover:border-indigo-100 hover:text-indigo-600'
+                                    ? 'border-indigo-200 bg-indigo-600 text-white shadow-lg shadow-indigo-100'
+                                    : 'border-gray-200 bg-white text-slate-500 hover:border-indigo-100 hover:text-indigo-600'
                                     }`}
                             >
                                 <Icon className="h-4 w-4" strokeWidth={2.1} />
@@ -521,7 +536,11 @@ export default function Shipments({ shipments = [], stats = {}, drivers = [] }) 
     };
 
     return (
-        <DashboardLayout>
+        <DashboardLayout
+            headerSearchPlaceholder="Cari ID pengiriman, asal, tujuan, atau driver..."
+            searchValue={searchTerm}
+            onSearch={setSearchTerm}
+        >
             <Head title="Pengiriman" />
 
             <div className="flex justify-between items-end mb-6">
@@ -619,15 +638,8 @@ export default function Shipments({ shipments = [], stats = {}, drivers = [] }) 
                 <div className="flex justify-between items-center mb-6">
                     <h2 className="text-[16px] font-black text-[#1a202c]">JALUR PENGIRIMAN</h2>
                     <div className="flex items-center space-x-3">
-                        <div className="relative">
-                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" strokeWidth={2.1} />
-                            <input
-                                type="text"
-                                placeholder="Cari ID Pengiriman..."
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                className="pl-9 pr-4 py-2 text-[13px] border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            />
+                        <div className="text-[13px] font-bold text-gray-400 bg-gray-50 px-3 py-2 rounded-lg border border-gray-200">
+                            ID: {searchTerm || 'Semua'}
                         </div>
                         <button className="px-4 py-2 text-[13px] font-semibold text-gray-600 bg-gray-50 border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors flex items-center space-x-1.5">
                             <Filter className="w-4 h-4" strokeWidth={2.1} />
@@ -781,8 +793,8 @@ export default function Shipments({ shipments = [], stats = {}, drivers = [] }) 
                                         preserveScroll
                                         preserveState
                                         className={`rounded-lg border px-3 py-1.5 text-[12px] font-bold transition-colors ${link.active
-                                                ? 'border-indigo-200 bg-indigo-600 text-white'
-                                                : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50'
+                                            ? 'border-indigo-200 bg-indigo-600 text-white'
+                                            : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50'
                                             }`}
                                     >
                                         {formatPaginationLabel(link.label)}

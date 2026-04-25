@@ -87,7 +87,11 @@ export default function StockOpname({ warehouse, products = [], recentOpnames = 
     };
 
     return (
-        <DashboardLayout>
+        <DashboardLayout
+            headerSearchPlaceholder="Cari SKU, produk, kategori..."
+            searchValue={search}
+            onSearch={setSearch}
+        >
             <Head title="Stock Opname" />
 
             <div className="pb-12">
@@ -123,17 +127,6 @@ export default function StockOpname({ warehouse, products = [], recentOpnames = 
                                     <h2 className="text-[18px] font-black text-[#1a202c]">Form Hitung Fisik</h2>
                                     <p className="text-[12px] font-semibold text-gray-400">Input stok fisik hasil hitung lapangan per SKU.</p>
                                 </div>
-                            </div>
-
-                            <div className="relative w-full lg:w-[300px]">
-                                <SearchIcon className="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
-                                <input
-                                    type="text"
-                                    className="bg-[#f8f9fb] border border-transparent focus:border-[#4f46e5] focus:ring-1 focus:ring-[#4f46e5] block w-full pl-10 pr-4 py-3 rounded-xl font-bold text-sm text-[#1a202c]"
-                                    placeholder="Cari SKU, produk, kategori"
-                                    value={search}
-                                    onChange={(event) => setSearch(event.target.value)}
-                                />
                             </div>
                         </div>
 

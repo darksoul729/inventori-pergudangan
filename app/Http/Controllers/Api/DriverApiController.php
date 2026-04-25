@@ -9,7 +9,6 @@ use App\Models\Driver;
 use App\Models\Role;
 use App\Models\User;
 use App\Models\Shipment;
-use Carbon\Carbon;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
@@ -114,7 +113,7 @@ class DriverApiController extends Controller
 
         // Strictly return only ONE shipment that is active/unapproved.
         // prioritized by Started tasks (in-progress), then by oldest assignment.
-        // Tasks assigned by Admin appear automatically.
+        // Tasks assigned by the warehouse team appear automatically.
         $shipment = Shipment::where('driver_id', $driver->id)
             ->where(function ($query) {
                 $query->where('tracking_stage', '!=', 'delivered')
@@ -147,7 +146,7 @@ class DriverApiController extends Controller
         $driver = $request->user()->driver;
         if ($this->hasBlockedShipment($driver->id)) {
             return response()->json([
-                'message' => 'Selesaikan 1 pengiriman aktif Anda dulu. Pengiriman baru bisa diambil setelah bukti diverifikasi admin.',
+                'message' => 'Selesaikan 1 pengiriman aktif Anda dulu. Pengiriman baru bisa diambil setelah bukti diverifikasi penanggung jawab gudang.',
             ], 422);
         }
 
@@ -227,12 +226,10 @@ class DriverApiController extends Controller
             if ($request->filled('delivery_photo_base64')) {
                 $shipment->delivery_photo_path = $this->storeDeliveryPhoto($request->string('delivery_photo_base64')->toString());
             }
-            $shipment->pod_verification_status = 'pending';
-            $shipment->pod_verified_at = null;
-            $shipment->pod_verified_by = null;
+            $shipment->requirePendingProofVerification();
         }
 
-        $this->syncShipmentTrackingTimestamps($shipment, $trackingStage);
+        $shipment->syncTrackingTimestamps($trackingStage);
         $shipment->status = $this->mapTrackingStageToShipmentStatus($trackingStage, $shipment->status, $shipment->estimated_arrival);
         $shipment->save();
 
@@ -310,31 +307,6 @@ class DriverApiController extends Controller
                     });
             })
             ->exists();
-    }
-
-    private function syncShipmentTrackingTimestamps(Shipment $shipment, string $trackingStage): void
-    {
-        $now = Carbon::now();
-
-        if (!$shipment->claimed_at) {
-            $shipment->claimed_at = $now;
-        }
-
-        if (in_array($trackingStage, ['picked_up', 'in_transit', 'arrived_at_destination', 'delivered'], true) && !$shipment->picked_up_at) {
-            $shipment->picked_up_at = $now;
-        }
-
-        if (in_array($trackingStage, ['in_transit', 'arrived_at_destination', 'delivered'], true) && !$shipment->in_transit_at) {
-            $shipment->in_transit_at = $now;
-        }
-
-        if (in_array($trackingStage, ['arrived_at_destination', 'delivered'], true) && !$shipment->arrived_at_destination_at) {
-            $shipment->arrived_at_destination_at = $now;
-        }
-
-        if ($trackingStage === 'delivered' && !$shipment->delivered_at) {
-            $shipment->delivered_at = $now;
-        }
     }
 
     private function mapTrackingStageToShipmentStatus(string $trackingStage, string $currentStatus, ?\Carbon\Carbon $estimatedArrival = null): string

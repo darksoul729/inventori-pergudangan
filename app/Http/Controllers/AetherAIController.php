@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Http\Client\ConnectionException;
 use Symfony\Component\Process\Process;
@@ -30,6 +31,37 @@ class AetherAIController extends Controller
                 ->limit(50)
                 ->get(['id', 'title', 'updated_at']),
         ]);
+    }
+
+    public function dashboardInsight(Request $request)
+    {
+        $groqKey = config('services.groq.key');
+        if (empty($groqKey)) {
+            return response()->json(['text' => 'Kunci API Groq belum dikonfigurasi.']);
+        }
+
+        if ($request->boolean('refresh')) {
+            Cache::forget('aether_dashboard_insight');
+        }
+
+        $insight = Cache::remember('aether_dashboard_insight', 1800, function () use ($groqKey) {
+            $totalProducts = Product::where('is_active', true)->count();
+            $totalStock = RackStock::sum('quantity');
+            $alerts = Rack::whereHas('rackStocks')->withSum('rackStocks as total_qty', 'quantity')->get()->filter(function ($r) {
+                return $r->total_qty > ($r->capacity * 0.9);
+            })->count();
+            
+            $prompt = "Anda adalah AI analitik gudang (Aether). Berikan maksimal 2 kalimat pendek (ukuran sekitar 20-25 kata total) berisi insight cepat atau prediksi operasional untuk pengguna dashboard WMS kami. Data: Total produk: {$totalProducts}, Total stok: {$totalStock}, peringatan rak hampir penuh: {$alerts}. Berbicaralah seperti asisten eksekutif modern, langsung to the point tanpa menyapa.";
+            
+            try {
+                return $this->callGroqApi($groqKey, $prompt, []);
+            } catch (\Exception $e) {
+                Log::error('Aether Dashboard Insight fail', ['msg' => $e->getMessage()]);
+                return 'Sistem Prediksi AI saat ini aktif dalam mode pemantauan lokal rutin.';
+            }
+        });
+
+        return response()->json(['text' => $insight]);
     }
 
     // ─── API Config ─────────────────────────────────────────────────────────────
@@ -1274,7 +1306,19 @@ class AetherAIController extends Controller
  4. Jika ada data yang mengkhawatirkan (stok rendah atau rak penuh), sebutkan hanya ketika relevan dengan pertanyaan.
  5. Ringkas, percakapan, dan dinamis. Format markdown boleh dipakai untuk daftar/data, tapi jangan berlebihan.
  6. BATASAN KONTEKS (SANGAT PENTING): Kamu HANYA boleh menjawab pertanyaan yang berkaitan dengan operasional gudang, inventaris, logistik, stok, driver, pengiriman, dan manajemen WMS (Warehouse Management System). 
- 7. Jika pengguna menanyakan hal di luar urusan gudang (seperti membuat kode program, pertanyaan umum, matematika murni, sains, atau tips gaya hidup yang tidak relevan dengan gudang), kamu WAJIB menjawab bahwa kamu tidak bisa menjawab pertanyaan tersebut karena fokus utama kamu hanya pada manajemen sistem gudang PT. Aether. 
+ 7. Kamu BOLEH menjawab pertanyaan tentang Pusat Bantuan, Bantuan Langsung, Dokumentasi Sistem, hak akses role, dan alur eskalasi kendala sistem karena itu bagian dari operasional WMS.
+ 8. Aturan Bantuan Langsung:
+    - Staff Operasional melapor dulu ke Supervisor Gudang untuk kendala input, transaksi harian, stock opname, pengiriman, atau data operasional.
+    - Supervisor Gudang eskalasi ke Manager Gudang untuk approval, data master, koreksi stok final, PO, dan keputusan lintas shift.
+    - Manager Gudang memakai Aether AI dan Dokumentasi Sistem untuk analisis awal, validasi alur, dan keputusan operasional.
+    - Driver melapor ke Supervisor Gudang untuk kendala shipment, status pengiriman, proof of delivery, atau lokasi.
+    - Format laporan kendala yang baik: menu terkait, nomor dokumen, nama produk/rack/supplier/driver/shipment, deskripsi masalah, screenshot, waktu kejadian, dan akun pengguna.
+ 9. Hak akses standar:
+    - Manager Gudang: akses penuh, master data, pengaturan, driver, approval PO, laporan, dan koreksi final.
+    - Supervisor Gudang: validasi transaksi, laporan, Dokumen WMS, pengiriman, receive PO setelah approval Manager, Transfer Rack, dan Stock Opname.
+    - Staff Operasional: dashboard, inventory view, outbound, transaksi, supplier/PO view, shipment view, dan input operasional non-approval.
+    - Driver: mobile/API untuk shipment assigned/claim/status/POD/location/history.
+ 10. Jika pengguna menanyakan hal di luar urusan gudang (seperti membuat kode program, pertanyaan umum, matematika murni, sains, atau tips gaya hidup yang tidak relevan dengan gudang), kamu WAJIB menjawab bahwa kamu tidak bisa menjawab pertanyaan tersebut karena fokus utama kamu hanya pada manajemen sistem gudang PT. Aether. 
  
  Ingat, kamu adalah asisten spesialis gudang yang handal bagi {$user->name}, bukan asisten umum!
 PROMPT;

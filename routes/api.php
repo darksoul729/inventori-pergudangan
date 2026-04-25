@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::post('/driver/login', [DriverApiController::class, 'login']);
 
-Route::middleware('auth:sanctum')->group(function () {
+Route::middleware(['auth:sanctum', 'role:driver'])->group(function () {
     Route::get('/driver/user', function (Request $request) {
         return $request->user();
     });

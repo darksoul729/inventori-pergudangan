@@ -16,11 +16,19 @@ class EnsureUserHasRole
             abort(403);
         }
 
+        if ($user->status !== 'active') {
+            abort(403, 'Akun Anda tidak aktif.');
+        }
+
         $currentRole = $this->normalizeRole($user->role?->name);
         $allowedRoles = array_map(fn ($role) => $this->normalizeRole($role), $roles);
 
         if (!$currentRole || !in_array($currentRole, $allowedRoles, true)) {
             abort(403, 'Anda tidak memiliki izin untuk mengakses halaman ini.');
+        }
+
+        if ($currentRole === 'driver' && $user->driver?->status !== 'approved') {
+            abort(403, 'Akun driver belum disetujui atau sedang ditangguhkan.');
         }
 
         return $next($request);

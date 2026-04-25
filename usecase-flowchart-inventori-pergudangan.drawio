@@ -1,0 +1,569 @@
+1<mxfile host="app.diagrams.net" agent="Antigravity">
+  <diagram id="usecase-clean" name="1. Use Case Diagram">
+    <mxGraphModel dx="1677" dy="959" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="2000" pageHeight="1400" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title-bg" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1a237e;strokeColor=#1a237e;arcSize=3;" value="" vertex="1">
+          <mxGeometry height="60" width="1120" x="440" y="20" as="geometry" />
+        </mxCell>
+        <mxCell id="title-txt" parent="1" style="text;html=1;align=center;fontColor=#ffffff;fontSize=18;fontStyle=1;" value="USE CASE DIAGRAM — Sistem Manajemen Inventori Pergudangan" vertex="1">
+          <mxGeometry height="30" width="1120" x="440" y="25" as="geometry" />
+        </mxCell>
+        <mxCell id="subtitle-txt" parent="1" style="text;html=1;align=center;fontColor=#90caf9;fontSize=11;" value="Berbasis Role: Manager | Supervisor | Staff | Driver | System" vertex="1">
+          <mxGeometry height="20" width="1120" x="440" y="53" as="geometry" />
+        </mxCell>
+        <mxCell id="sys-boundary" parent="1" style="swimlane;startSize=32;fontSize=13;fontStyle=1;fillColor=#e8eaf6;strokeColor=#283593;strokeWidth=3;fontColor=#283593;" value="Web Dashboard (Laravel + Inertia.js + React)" vertex="1">
+          <mxGeometry height="1200" width="1120" x="440" y="95" as="geometry" />
+        </mxCell>
+        <mxCell id="grp-auth" parent="sys-boundary" style="swimlane;startSize=28;fillColor=#e3f2fd;strokeColor=#0d47a1;fontSize=11;fontStyle=1;" value="Modul: Autentikasi" vertex="1">
+          <mxGeometry height="90" width="1040" x="40" y="50" as="geometry" />
+        </mxCell>
+        <mxCell id="uc-login" parent="grp-auth" style="ellipse;fillColor=#bbdefb;strokeColor=#0d47a1;fontSize=10;" value="Login ke Sistem&#xa;(Web)" vertex="1">
+          <mxGeometry height="45" width="160" x="20" y="35" as="geometry" />
+        </mxCell>
+        <mxCell id="uc-driver-login-api" parent="grp-auth" style="ellipse;fillColor=#bbdefb;strokeColor=#0d47a1;fontSize=10;" value="Login Driver&#xa;(POST /api/driver/login)" vertex="1">
+          <mxGeometry height="45" width="180" x="200" y="35" as="geometry" />
+        </mxCell>
+        <mxCell id="uc-logout" parent="grp-auth" style="ellipse;fillColor=#bbdefb;strokeColor=#0d47a1;fontSize=10;" value="Logout dari Sistem" vertex="1">
+          <mxGeometry height="45" width="160" x="400" y="35" as="geometry" />
+        </mxCell>
+        <mxCell id="b-auth-mgr" parent="grp-auth" style="ellipse;fillColor=#1a237e;strokeColor=#1a237e;fontColor=#fff;fontSize=9;fontStyle=1;" value="M" vertex="1">
+          <mxGeometry height="22" width="22" x="570" y="38" as="geometry" />
+        </mxCell>
+        <mxCell id="b-auth-sup" parent="grp-auth" style="ellipse;fillColor=#1565c0;strokeColor=#1565c0;fontColor=#fff;fontSize=9;fontStyle=1;" value="S" vertex="1">
+          <mxGeometry height="22" width="22" x="596" y="38" as="geometry" />
+        </mxCell>
+        <mxCell id="b-auth-stf" parent="grp-auth" style="ellipse;fillColor=#1976d2;strokeColor=#1976d2;fontColor=#fff;fontSize=9;fontStyle=1;" value="St" vertex="1">
+          <mxGeometry height="22" width="22" x="622" y="38" as="geometry" />
+        </mxCell>
+        <mxCell id="b-auth-drv" parent="grp-auth" style="ellipse;fillColor=#1b5e20;strokeColor=#1b5e20;fontColor=#fff;fontSize=9;fontStyle=1;" value="D" vertex="1">
+          <mxGeometry height="22" width="22" x="648" y="38" as="geometry" />
+        </mxCell>
+        <mxCell id="b-auth-note" parent="grp-auth" style="text;html=1;align=left;fontSize=9;fontColor=#455a64;" value="Semua Role" vertex="1">
+          <mxGeometry height="18" width="100" x="676" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="grp-dash" parent="sys-boundary" style="swimlane;startSize=28;fillColor=#e8f5e9;strokeColor=#2e7d32;fontSize=11;fontStyle=1;" value="Modul: Dashboard &amp; Monitoring" vertex="1">
+          <mxGeometry height="90" width="1040" x="40" y="160" as="geometry" />
+        </mxCell>
+        <mxCell id="uc-view-kpi" parent="grp-dash" style="ellipse;fillColor=#c8e6c9;strokeColor=#2e7d32;fontSize=10;" value="Lihat Dashboard &amp; KPI" vertex="1">
+          <mxGeometry height="45" width="160" x="20" y="35" as="geometry" />
+        </mxCell>
+        <mxCell id="uc-floor-viz" parent="grp-dash" style="ellipse;fillColor=#c8e6c9;strokeColor=#2e7d32;fontSize=10;" value="Lihat Warehouse Floor&#xa;Visualization" vertex="1">
+          <mxGeometry height="45" width="160" x="200" y="35" as="geometry" />
+        </mxCell>
+        <mxCell id="uc-view-alerts" parent="grp-dash" style="ellipse;fillColor=#c8e6c9;strokeColor=#2e7d32;fontSize=10;" value="Lihat System Alerts&#xa;(Low Stock / Delay)" vertex="1">
+          <mxGeometry height="45" width="160" x="380" y="35" as="geometry" />
+        </mxCell>
+        <mxCell id="uc-stock-trend" parent="grp-dash" style="ellipse;fillColor=#c8e6c9;strokeColor=#2e7d32;fontSize=10;" value="Lihat Tren Stok 7 Hari" vertex="1">
+          <mxGeometry height="45" width="160" x="560" y="35" as="geometry" />
+        </mxCell>
+        <mxCell id="b-dash-roles" parent="grp-dash" style="text;html=1;align=left;fontSize=9;fontColor=#2e7d32;fontStyle=1;" value="Manager  Supervisor  Staff" vertex="1">
+          <mxGeometry height="18" width="280" x="740" y="42" as="geometry" />
+        </mxCell>
+        <mxCell id="grp-wh" parent="sys-boundary" style="swimlane;startSize=28;fillColor=#fff3e0;strokeColor=#e65100;fontSize=11;fontStyle=1;" value="Modul: Manajemen Gudang &amp; Rak" vertex="1">
+          <mxGeometry height="90" width="1040" x="40" y="270" as="geometry" />
+        </mxCell>
+        <mxCell id="uc-view-wh" parent="grp-wh" style="ellipse;fillColor=#ffe0b2;strokeColor=#e65100;fontSize=10;" value="Lihat Gudang, Zona&#xa;&amp; Rak" vertex="1">
+          <mxGeometry height="45" width="150" x="20" y="35" as="geometry" />
+        </mxCell>
+        <mxCell id="uc-crud-zone" parent="grp-wh" style="ellipse;fillColor=#ffe0b2;strokeColor=#e65100;fontSize=10;" value="Kelola Zona Gudang&#xa;(CRUD)" vertex="1">
+          <mxGeometry height="45" width="150" x="190" y="35" as="geometry" />
+        </mxCell>
+        <mxCell id="uc-crud-rack" parent="grp-wh" style="ellipse;fillColor=#ffe0b2;strokeColor=#e65100;fontSize=10;" value="Kelola Rak&#xa;(CRUD)" vertex="1">
+          <mxGeometry height="45" width="150" x="360" y="35" as="geometry" />
+        </mxCell>
+        <mxCell id="uc-crud-rackstock" parent="grp-wh" style="ellipse;fillColor=#ffe0b2;strokeColor=#e65100;fontSize=10;" value="Kelola Stok di Rak&#xa;(Tambah/Ubah/Hapus)" vertex="1">
+          <mxGeometry height="45" width="160" x="530" y="35" as="geometry" />
+        </mxCell>
+        <mxCell id="uc-rack-alloc" parent="grp-wh" style="ellipse;fillColor=#ffe0b2;strokeColor=#e65100;fontSize=10;" value="Alokasi Rack untuk&#xa;Produk" vertex="1">
+          <mxGeometry height="45" width="150" x="710" y="35" as="geometry" />
+        </mxCell>
+        <mxCell id="wh-note" parent="grp-wh" style="text;html=1;align=left;fontSize=9;fontColor=#e65100;fontStyle=2;" value="Lihat: M+S+St  |  CRUD Zona/Rak: M  |  Kelola Stok Rak: M+S  |  Alokasi: M+S" vertex="1">
+          <mxGeometry height="14" width="900" x="20" y="78" as="geometry" />
+        </mxCell>
+        <mxCell id="grp-inv" parent="sys-boundary" style="swimlane;startSize=28;fillColor=#fce4ec;strokeColor=#880e4f;fontSize=11;fontStyle=1;" value="Modul: Manajemen Inventori" vertex="1">
+          <mxGeometry height="90" width="1040" x="40" y="380" as="geometry" />
+        </mxCell>
+        <mxCell id="uc-view-inv" parent="grp-inv" style="ellipse;fillColor=#f8bbd0;strokeColor=#880e4f;fontSize=10;" value="Lihat Daftar &amp; Detail&#xa;Inventori" vertex="1">
+          <mxGeometry height="45" width="160" x="20" y="35" as="geometry" />
+        </mxCell>
+        <mxCell id="uc-add-prod" parent="grp-inv" style="ellipse;fillColor=#f8bbd0;strokeColor=#880e4f;fontSize=10;" value="Tambah Produk Baru&#xa;(Add New Entry)" vertex="1">
+          <mxGeometry height="45" width="160" x="200" y="35" as="geometry" />
+        </mxCell>
+        <mxCell id="uc-edit-prod" parent="grp-inv" style="ellipse;fillColor=#f8bbd0;strokeColor=#880e4f;fontSize=10;" value="Edit / Hapus Produk" vertex="1">
+          <mxGeometry height="45" width="150" x="380" y="35" as="geometry" />
+        </mxCell>
+        <mxCell id="uc-outbound" parent="grp-inv" style="ellipse;fillColor=#f8bbd0;strokeColor=#880e4f;fontSize=10;" value="Catat Stok Keluar&#xa;(Outbound)" vertex="1">
+          <mxGeometry height="45" width="150" x="550" y="35" as="geometry" />
+        </mxCell>
+        <mxCell id="uc-filter-prod" parent="grp-inv" style="ellipse;fillColor=#f8bbd0;strokeColor=#880e4f;fontSize=10;" value="Filter &amp; Cari Produk&#xa;(Kategori/Lokasi/Status)" vertex="1">
+          <mxGeometry height="45" width="170" x="720" y="35" as="geometry" />
+        </mxCell>
+        <mxCell id="inv-note" parent="grp-inv" style="text;html=1;align=left;fontSize=9;fontColor=#880e4f;fontStyle=2;" value="Lihat/Filter: M+S+St  |  Add/Edit/Hapus Produk: M  |  Outbound: M+S+St" vertex="1">
+          <mxGeometry height="14" width="900" x="20" y="78" as="geometry" />
+        </mxCell>
+        <mxCell id="grp-sup" parent="sys-boundary" style="swimlane;startSize=28;fillColor=#ede7f6;strokeColor=#4527a0;fontSize=11;fontStyle=1;" value="Modul: Supplier &amp; Purchase Order" vertex="1">
+          <mxGeometry height="90" width="1040" x="40" y="490" as="geometry" />
+        </mxCell>
+        <mxCell id="uc-view-sup" parent="grp-sup" style="ellipse;fillColor=#d1c4e9;strokeColor=#4527a0;fontSize=10;" value="Lihat Data Supplier" vertex="1">
+          <mxGeometry height="45" width="150" x="20" y="35" as="geometry" />
+        </mxCell>
+        <mxCell id="uc-add-sup" parent="grp-sup" style="ellipse;fillColor=#d1c4e9;strokeColor=#4527a0;fontSize=10;" value="Tambah Supplier Baru" vertex="1">
+          <mxGeometry height="45" width="150" x="190" y="35" as="geometry" />
+        </mxCell>
+        <mxCell id="uc-sup-perf" parent="grp-sup" style="ellipse;fillColor=#d1c4e9;strokeColor=#4527a0;fontSize=10;" value="Update Performa Supplier" vertex="1">
+          <mxGeometry height="45" width="160" x="360" y="35" as="geometry" />
+        </mxCell>
+        <mxCell id="uc-view-po" parent="grp-sup" style="ellipse;fillColor=#d1c4e9;strokeColor=#4527a0;fontSize=10;" value="Lihat Purchase Order" vertex="1">
+          <mxGeometry height="45" width="150" x="540" y="35" as="geometry" />
+        </mxCell>
+        <mxCell id="uc-create-po" parent="grp-sup" style="ellipse;fillColor=#d1c4e9;strokeColor=#4527a0;fontSize=10;" value="Buat Purchase Order&#xa;(+ Approval Status)" vertex="1">
+          <mxGeometry height="45" width="165" x="710" y="35" as="geometry" />
+        </mxCell>
+        <mxCell id="sup-note" parent="grp-sup" style="text;html=1;align=left;fontSize=9;fontColor=#4527a0;fontStyle=2;" value="Lihat Supplier/PO: M+S+St  |  Tambah Supplier: M  |  Update Perf: M+S  |  Buat/Approval PO: M+S" vertex="1">
+          <mxGeometry height="14" width="960" x="20" y="78" as="geometry" />
+        </mxCell>
+        <mxCell id="grp-ship" parent="sys-boundary" style="swimlane;startSize=28;fillColor=#f3e5f5;strokeColor=#6a1b9a;fontSize=11;fontStyle=1;" value="Modul: Manajemen Pengiriman (Shipment)" vertex="1">
+          <mxGeometry height="90" width="1040" x="40" y="600" as="geometry" />
+        </mxCell>
+        <mxCell id="uc-view-ship" parent="grp-ship" style="ellipse;fillColor=#e1bee7;strokeColor=#6a1b9a;fontSize=10;" value="Lihat Daftar &amp; Detail&#xa;Pengiriman" vertex="1">
+          <mxGeometry height="45" width="160" x="20" y="35" as="geometry" />
+        </mxCell>
+        <mxCell id="uc-create-ship" parent="grp-ship" style="ellipse;fillColor=#e1bee7;strokeColor=#6a1b9a;fontSize=10;" value="Buat &amp; Assign&#xa;Pengiriman" vertex="1">
+          <mxGeometry height="45" width="155" x="200" y="35" as="geometry" />
+        </mxCell>
+        <mxCell id="uc-delete-ship" parent="grp-ship" style="ellipse;fillColor=#e1bee7;strokeColor=#6a1b9a;fontSize=10;" value="Hapus Pengiriman" vertex="1">
+          <mxGeometry height="45" width="145" x="375" y="35" as="geometry" />
+        </mxCell>
+        <mxCell id="uc-live-track" parent="grp-ship" style="ellipse;fillColor=#e1bee7;strokeColor=#6a1b9a;fontSize=10;" value="Monitor Live Tracking&#xa;GPS Driver" vertex="1">
+          <mxGeometry height="45" width="155" x="540" y="35" as="geometry" />
+        </mxCell>
+        <mxCell id="uc-pod-ver" parent="grp-ship" style="ellipse;fillColor=#e1bee7;strokeColor=#6a1b9a;fontSize=10;" value="Verifikasi Proof of&#xa;Delivery (POD)" vertex="1">
+          <mxGeometry height="45" width="155" x="715" y="35" as="geometry" />
+        </mxCell>
+        <mxCell id="uc-pod-dl" parent="grp-ship" style="ellipse;fillColor=#e1bee7;strokeColor=#6a1b9a;fontSize=10;" value="Download PDF POD" vertex="1">
+          <mxGeometry height="45" width="140" x="880" y="35" as="geometry" />
+        </mxCell>
+        <mxCell id="ship-note" parent="grp-ship" style="text;html=1;align=left;fontSize=9;fontColor=#6a1b9a;fontStyle=2;" value="Lihat: M+S+St  |  Buat/Update: M+S  |  Hapus: M  |  Monitor/POD/Download: M+S" vertex="1">
+          <mxGeometry height="14" width="900" x="20" y="78" as="geometry" />
+        </mxCell>
+        <mxCell id="grp-drv" parent="sys-boundary" style="swimlane;startSize=28;fillColor=#e0f2f1;strokeColor=#004d40;fontSize=11;fontStyle=1;" value="Modul: Manajemen Driver (Web)" vertex="1">
+          <mxGeometry height="90" width="1040" x="40" y="710" as="geometry" />
+        </mxCell>
+        <mxCell id="uc-view-drv" parent="grp-drv" style="ellipse;fillColor=#b2dfdb;strokeColor=#004d40;fontSize=10;" value="Lihat Daftar Driver&#xa;&amp; Status" vertex="1">
+          <mxGeometry height="45" width="155" x="20" y="35" as="geometry" />
+        </mxCell>
+        <mxCell id="uc-approve-drv" parent="grp-drv" style="ellipse;fillColor=#b2dfdb;strokeColor=#004d40;fontSize=10;" value="Approve / Suspend&#xa;Driver" vertex="1">
+          <mxGeometry height="45" width="155" x="195" y="35" as="geometry" />
+        </mxCell>
+        <mxCell id="uc-view-ktp" parent="grp-drv" style="ellipse;fillColor=#b2dfdb;strokeColor=#004d40;fontSize=10;" value="Lihat Foto KTP Driver" vertex="1">
+          <mxGeometry height="45" width="150" x="370" y="35" as="geometry" />
+        </mxCell>
+        <mxCell id="uc-livetrack-map" parent="grp-drv" style="ellipse;fillColor=#b2dfdb;strokeColor=#004d40;fontSize=10;" value="Pantau Live Tracking&#xa;GPS di Peta (Leaflet)" vertex="1">
+          <mxGeometry height="45" width="160" x="540" y="35" as="geometry" />
+        </mxCell>
+        <mxCell id="uc-fake-gps" parent="grp-drv" style="ellipse;fillColor=#b2dfdb;strokeColor=#004d40;fontSize=10;" value="Deteksi Fake GPS&#xa;(Badge Alert)" vertex="1">
+          <mxGeometry height="45" width="150" x="720" y="35" as="geometry" />
+        </mxCell>
+        <mxCell id="drv-note" parent="grp-drv" style="text;html=1;align=left;fontSize=9;fontColor=#004d40;fontStyle=2;" value="Approve/Suspend/Buat Driver: M   |   Lihat/Pantau: M" vertex="1">
+          <mxGeometry height="14" width="700" x="20" y="78" as="geometry" />
+        </mxCell>
+        <mxCell id="grp-txn" parent="sys-boundary" style="swimlane;startSize=28;fillColor=#fff8e1;strokeColor=#f57f17;fontSize=11;fontStyle=1;" value="Modul: Transaksi &amp; Laporan" vertex="1">
+          <mxGeometry height="90" width="1040" x="40" y="820" as="geometry" />
+        </mxCell>
+        <mxCell id="uc-view-txn" parent="grp-txn" style="ellipse;fillColor=#fffde7;strokeColor=#f57f17;fontSize=10;" value="Lihat Histori Transaksi&#xa;(Stock Movements)" vertex="1">
+          <mxGeometry height="45" width="170" x="20" y="35" as="geometry" />
+        </mxCell>
+        <mxCell id="uc-filter-txn" parent="grp-txn" style="ellipse;fillColor=#fffde7;strokeColor=#f57f17;fontSize=10;" value="Filter Transaksi&#xa;(No Reload)" vertex="1">
+          <mxGeometry height="45" width="145" x="210" y="35" as="geometry" />
+        </mxCell>
+        <mxCell id="uc-export-xl" parent="grp-txn" style="ellipse;fillColor=#fffde7;strokeColor=#f57f17;fontSize=10;" value="Export Laporan Excel&#xa;(.xlsx Premium)" vertex="1">
+          <mxGeometry height="45" width="155" x="375" y="35" as="geometry" />
+        </mxCell>
+        <mxCell id="uc-view-rpt" parent="grp-txn" style="ellipse;fillColor=#fffde7;strokeColor=#f57f17;fontSize=10;" value="Lihat Laporan&#xa;Performa Supplier" vertex="1">
+          <mxGeometry height="45" width="155" x="550" y="35" as="geometry" />
+        </mxCell>
+        <mxCell id="uc-dl-po-pdf" parent="grp-txn" style="ellipse;fillColor=#fffde7;strokeColor=#f57f17;fontSize=10;" value="Download PDF&#xa;Purchase Order" vertex="1">
+          <mxGeometry height="45" width="145" x="725" y="35" as="geometry" />
+        </mxCell>
+        <mxCell id="txn-note" parent="grp-txn" style="text;html=1;align=left;fontSize=9;fontColor=#f57f17;fontStyle=2;" value="Lihat Histori/Filter: M+S+St  |  Export/Laporan Performa: M+S  |  Download PDF: M+S+St" vertex="1">
+          <mxGeometry height="14" width="900" x="20" y="78" as="geometry" />
+        </mxCell>
+        <mxCell id="grp-set" parent="sys-boundary" style="swimlane;startSize=28;fillColor=#f9fbe7;strokeColor=#558b2f;fontSize=11;fontStyle=1;" value="Modul: Pengaturan Sistem (Manager Only)" vertex="1">
+          <mxGeometry height="90" width="1040" x="40" y="930" as="geometry" />
+        </mxCell>
+        <mxCell id="uc-manage-acc" parent="grp-set" style="ellipse;fillColor=#dcedc8;strokeColor=#558b2f;fontSize=10;" value="Buat Akun Operasional&#xa;(Supervisor/Staff)" vertex="1">
+          <mxGeometry height="45" width="175" x="20" y="35" as="geometry" />
+        </mxCell>
+        <mxCell id="uc-toggle-acc" parent="grp-set" style="ellipse;fillColor=#dcedc8;strokeColor=#558b2f;fontSize=10;" value="Aktifkan / Nonaktifkan&#xa;Akun" vertex="1">
+          <mxGeometry height="45" width="165" x="215" y="35" as="geometry" />
+        </mxCell>
+        <mxCell id="uc-sys-config" parent="grp-set" style="ellipse;fillColor=#dcedc8;strokeColor=#558b2f;fontSize=10;" value="Konfigurasi Sistem&#xa;&amp; Warehouse" vertex="1">
+          <mxGeometry height="45" width="160" x="400" y="35" as="geometry" />
+        </mxCell>
+        <mxCell id="set-note" parent="grp-set" style="text;html=1;align=left;fontSize=9;fontColor=#558b2f;fontStyle=2;" value="Manager Only — Semua fitur di modul ini hanya bisa diakses oleh Manager." vertex="1">
+          <mxGeometry height="32" width="440" x="590" y="42" as="geometry" />
+        </mxCell>
+        <mxCell id="act-mgr-icon" parent="1" style="shape=mxgraph.basic.person;fillColor=#1a237e;strokeColor=#1a237e;fontColor=#1a237e;fontSize=12;fontStyle=1;labelPosition=bottom;verticalLabelPosition=bottom;align=center;verticalAlign=top;" value="Manager" vertex="1">
+          <mxGeometry height="70" width="60" x="60" y="300" as="geometry" />
+        </mxCell>
+        <mxCell id="act-sup-icon" parent="1" style="shape=mxgraph.basic.person;fillColor=#1565c0;strokeColor=#1565c0;fontColor=#1565c0;fontSize=12;fontStyle=1;labelPosition=bottom;verticalLabelPosition=bottom;align=center;verticalAlign=top;" value="Supervisor" vertex="1">
+          <mxGeometry height="70" width="60" x="60" y="600" as="geometry" />
+        </mxCell>
+        <mxCell id="act-stf-icon" parent="1" style="shape=mxgraph.basic.person;fillColor=#1976d2;strokeColor=#1976d2;fontColor=#1976d2;fontSize=12;fontStyle=1;labelPosition=bottom;verticalLabelPosition=bottom;align=center;verticalAlign=top;" value="Staff" vertex="1">
+          <mxGeometry height="70" width="60" x="60" y="900" as="geometry" />
+        </mxCell>
+        <mxCell id="drv-app-boundary" parent="1" style="swimlane;startSize=28;fillColor=#e8f5e9;strokeColor=#1b5e20;strokeWidth=2;fontSize=12;fontStyle=1;fontColor=#1b5e20;dashed=1;" value="Driver Android App (Kotlin)" vertex="1">
+          <mxGeometry height="520" width="380" x="1560" y="200" as="geometry" />
+        </mxCell>
+        <mxCell id="uc-drv-reg" parent="drv-app-boundary" style="ellipse;fillColor=#c8e6c9;strokeColor=#1b5e20;fontSize=10;" value="Daftar Akun Driver&#xa;(POST /api/driver/register)" vertex="1">
+          <mxGeometry height="50" width="190" x="30" y="50" as="geometry" />
+        </mxCell>
+        <mxCell id="uc-drv-login" parent="drv-app-boundary" style="ellipse;fillColor=#c8e6c9;strokeColor=#1b5e20;fontSize=10;" value="Login Driver&#xa;(POST /api/driver/login)" vertex="1">
+          <mxGeometry height="50" width="190" x="30" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="uc-drv-shiplist" parent="drv-app-boundary" style="ellipse;fillColor=#c8e6c9;strokeColor=#1b5e20;fontSize=10;" value="Lihat Shipment Ditugaskan&#xa;(GET /api/driver/shipments)" vertex="1">
+          <mxGeometry height="50" width="190" x="30" y="190" as="geometry" />
+        </mxCell>
+        <mxCell id="uc-drv-stage" parent="drv-app-boundary" style="ellipse;fillColor=#c8e6c9;strokeColor=#1b5e20;fontSize=10;" value="Update Tracking Stage&#xa;(PUT /api/driver/shipments/{id}/status)" vertex="1">
+          <mxGeometry height="55" width="190" x="30" y="260" as="geometry" />
+        </mxCell>
+        <mxCell id="uc-drv-gps" parent="drv-app-boundary" style="ellipse;fillColor=#c8e6c9;strokeColor=#1b5e20;fontSize=10;" value="Kirim Lokasi GPS&#xa;(POST /api/driver/location)" vertex="1">
+          <mxGeometry height="50" width="190" x="30" y="330" as="geometry" />
+        </mxCell>
+        <mxCell id="uc-drv-pod-upload" parent="drv-app-boundary" style="ellipse;fillColor=#c8e6c9;strokeColor=#1b5e20;fontSize=10;" value="Upload Foto POD &amp;&#xa;Konfirmasi Terkirim" vertex="1">
+          <mxGeometry height="50" width="190" x="30" y="400" as="geometry" />
+        </mxCell>
+        <mxCell id="act-drv-icon" parent="drv-app-boundary" style="shape=mxgraph.basic.person;fillColor=#1b5e20;strokeColor=#1b5e20;fontColor=#1b5e20;fontSize=12;fontStyle=1;labelPosition=bottom;verticalLabelPosition=bottom;align=center;verticalAlign=top;" value="Driver&#xa;(Android App)" vertex="1">
+          <mxGeometry height="70" width="60" x="288" y="214" as="geometry" />
+        </mxCell>
+        <mxCell id="sys-auto-boundary" parent="1" style="swimlane;startSize=28;fillColor=#ede7f6;strokeColor=#4a148c;strokeWidth=2;fontSize=12;fontStyle=1;fontColor=#4a148c;dashed=1;" value="System (Proses Otomatis)" vertex="1">
+          <mxGeometry height="290" width="380" x="1560" y="750" as="geometry" />
+        </mxCell>
+        <mxCell id="uc-sys-sync" parent="sys-auto-boundary" style="ellipse;fillColor=#e1bee7;strokeColor=#4a148c;fontSize=10;" value="Sinkronisasi Stok&#xa;(rack_stocks → product_stocks)" vertex="1">
+          <mxGeometry height="55" width="190" x="30" y="50" as="geometry" />
+        </mxCell>
+        <mxCell id="uc-sys-alert-calc" parent="sys-auto-boundary" style="ellipse;fillColor=#e1bee7;strokeColor=#4a148c;fontSize=10;" value="Hitung System Alerts&#xa;(Low Stock / Shipment Delay)" vertex="1">
+          <mxGeometry height="55" width="190" x="30" y="125" as="geometry" />
+        </mxCell>
+        <mxCell id="uc-sys-kpi" parent="sys-auto-boundary" style="ellipse;fillColor=#e1bee7;strokeColor=#4a148c;fontSize=10;" value="Hitung KPI Supplier&#xa;(Artisan Command Otomatis)" vertex="1">
+          <mxGeometry height="55" width="190" x="30" y="200" as="geometry" />
+        </mxCell>
+        <mxCell id="act-sys-icon" parent="sys-auto-boundary" style="shape=mxgraph.basic.person;fillColor=#4a148c;strokeColor=#4a148c;fontColor=#4a148c;fontSize=12;fontStyle=1;labelPosition=bottom;verticalLabelPosition=bottom;align=center;verticalAlign=top;" value="System&#xa;(Otomatis)" vertex="1">
+          <mxGeometry height="70" width="60" x="271" y="105" as="geometry" />
+        </mxCell>
+        <mxCell id="e-mgr-auth" edge="1" parent="1" source="act-mgr-icon" style="endArrow=open;endFill=0;strokeColor=#1a237e;strokeWidth=1.5;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" target="grp-auth">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-mgr-dash" edge="1" parent="1" source="act-mgr-icon" style="endArrow=open;endFill=0;strokeColor=#1a237e;strokeWidth=1.5;" target="grp-dash">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-mgr-wh" edge="1" parent="1" source="act-mgr-icon" style="endArrow=open;endFill=0;strokeColor=#1a237e;strokeWidth=1.5;" target="grp-wh">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-mgr-inv" edge="1" parent="1" source="act-mgr-icon" style="endArrow=open;endFill=0;strokeColor=#1a237e;strokeWidth=1.5;" target="grp-inv">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-mgr-sup" edge="1" parent="1" source="act-mgr-icon" style="endArrow=open;endFill=0;strokeColor=#1a237e;strokeWidth=1.5;" target="grp-sup">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-mgr-ship" edge="1" parent="1" source="act-mgr-icon" style="endArrow=open;endFill=0;strokeColor=#1a237e;strokeWidth=1.5;" target="grp-ship">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-mgr-drv" edge="1" parent="1" source="act-mgr-icon" style="endArrow=open;endFill=0;strokeColor=#1a237e;strokeWidth=1.5;" target="grp-drv">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-mgr-txn" edge="1" parent="1" source="act-mgr-icon" style="endArrow=open;endFill=0;strokeColor=#1a237e;strokeWidth=1.5;" target="grp-txn">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-mgr-set" edge="1" parent="1" source="act-mgr-icon" style="endArrow=open;endFill=0;strokeColor=#1a237e;strokeWidth=1.5;" target="grp-set">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-sup-auth" edge="1" parent="1" source="act-sup-icon" style="endArrow=open;endFill=0;strokeColor=#1565c0;strokeWidth=1.5;" target="grp-auth">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-sup-dash" edge="1" parent="1" source="act-sup-icon" style="endArrow=open;endFill=0;strokeColor=#1565c0;strokeWidth=1.5;" target="grp-dash">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-sup-wh" edge="1" parent="1" source="act-sup-icon" style="endArrow=open;endFill=0;strokeColor=#1565c0;strokeWidth=1.5;" target="grp-wh">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-sup-inv" edge="1" parent="1" source="act-sup-icon" style="endArrow=open;endFill=0;strokeColor=#1565c0;strokeWidth=1.5;" target="grp-inv">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-sup-sup" edge="1" parent="1" source="act-sup-icon" style="endArrow=open;endFill=0;strokeColor=#1565c0;strokeWidth=1.5;" target="grp-sup">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-sup-ship" edge="1" parent="1" source="act-sup-icon" style="endArrow=open;endFill=0;strokeColor=#1565c0;strokeWidth=1.5;" target="grp-ship">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-sup-txn" edge="1" parent="1" source="act-sup-icon" style="endArrow=open;endFill=0;strokeColor=#1565c0;strokeWidth=1.5;" target="grp-txn">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-stf-auth" edge="1" parent="1" source="act-stf-icon" style="endArrow=open;endFill=0;strokeColor=#1976d2;strokeWidth=1.5;" target="grp-auth">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-stf-dash" edge="1" parent="1" source="act-stf-icon" style="endArrow=open;endFill=0;strokeColor=#1976d2;strokeWidth=1.5;" target="grp-dash">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-stf-inv" edge="1" parent="1" source="act-stf-icon" style="endArrow=open;endFill=0;strokeColor=#1976d2;strokeWidth=1.5;" target="grp-inv">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-stf-txn" edge="1" parent="1" source="act-stf-icon" style="endArrow=open;endFill=0;strokeColor=#1976d2;strokeWidth=1.5;" target="grp-txn">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-stf-ship" edge="1" parent="1" source="act-stf-icon" style="endArrow=open;endFill=0;strokeColor=#1976d2;strokeWidth=1.5;" target="grp-ship">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-stf-wh" edge="1" parent="1" source="act-stf-icon" style="endArrow=open;endFill=0;strokeColor=#1976d2;strokeWidth=1.5;" target="grp-wh">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-box" parent="1" style="rounded=1;fillColor=#fafafa;strokeColor=#b0bec5;strokeWidth=1;" value="" vertex="1">
+          <mxGeometry height="100" width="380" x="1560" y="90" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-title" parent="1" style="text;html=1;align=center;fontStyle=1;fontSize=11;fontColor=#263238;" value="LEGENDA ROLE" vertex="1">
+          <mxGeometry height="18" width="380" x="1560" y="92" as="geometry" />
+        </mxCell>
+        <mxCell id="leg-m" parent="1" style="text;html=1;align=left;fontSize=10;fontColor=#1a237e;" value="■  M = Manager (Akses Penuh)" vertex="1">
+          <mxGeometry height="16" width="360" x="1572" y="112" as="geometry" />
+        </mxCell>
+        <mxCell id="leg-s" parent="1" style="text;html=1;align=left;fontSize=10;fontColor=#1565c0;" value="■  S = Supervisor (Koordinasi &amp; Validasi)" vertex="1">
+          <mxGeometry height="16" width="360" x="1572" y="128" as="geometry" />
+        </mxCell>
+        <mxCell id="leg-st" parent="1" style="text;html=1;align=left;fontSize=10;fontColor=#1976d2;" value="■  St = Staff (Operasional Outbound Harian)" vertex="1">
+          <mxGeometry height="16" width="360" x="1572" y="144" as="geometry" />
+        </mxCell>
+        <mxCell id="leg-d" parent="1" style="text;html=1;align=left;fontSize=10;fontColor=#1b5e20;" value="■  D = Driver (Android App via API Sanctum)" vertex="1">
+          <mxGeometry height="16" width="360" x="1572" y="160" as="geometry" />
+        </mxCell>
+        <mxCell id="leg-sys" parent="1" style="text;html=1;align=left;fontSize=10;fontColor=#4a148c;" value="■  Sys = System (Artisan / Auto-Process)" vertex="1">
+          <mxGeometry height="16" width="360" x="1572" y="176" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="flowchart-buat-akun" name="2. Flowchart Pembuatan Akun">
+    <mxGraphModel dx="1200" dy="900" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="900" pageHeight="1650" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- ===== TITLE ===== -->
+        <mxCell id="fc-title-bg" parent="1" value="" vertex="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1a237e;strokeColor=#1a237e;arcSize=3;">
+          <mxGeometry x="80" y="20" width="700" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="fc-title-txt" parent="1" value="FLOWCHART — Pembuatan Akun Operasional (Supervisor / Staff)" vertex="1" style="text;html=1;align=center;fontColor=#ffffff;fontSize=14;fontStyle=1;">
+          <mxGeometry x="80" y="24" width="700" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="fc-sub-txt" parent="1" value="Aktor: Manager  |  Modul: Settings → Akun Operasional" vertex="1" style="text;html=1;align=center;fontColor=#90caf9;fontSize=10;">
+          <mxGeometry x="80" y="50" width="700" height="18" as="geometry" />
+        </mxCell>
+
+        <!-- ===== LEGENDA SIMBOL ===== -->
+        <mxCell id="leg-box" parent="1" value="" vertex="1" style="rounded=1;fillColor=#fafafa;strokeColor=#b0bec5;strokeWidth=1;">
+          <mxGeometry x="620" y="90" width="215" height="220" as="geometry" />
+        </mxCell>
+        <mxCell id="leg-hdr" parent="1" value="LEGENDA SIMBOL" vertex="1" style="text;html=1;align=center;fontStyle=1;fontSize=10;fontColor=#263238;">
+          <mxGeometry x="620" y="93" width="215" height="16" as="geometry" />
+        </mxCell>
+        <!-- terminator -->
+        <mxCell id="leg-term-shape" parent="1" value="Terminator&#xa;(Mulai/Selesai)" vertex="1" style="shape=mxgraph.flowchart.terminator;fillColor=#c5cae9;strokeColor=#1a237e;fontSize=9;fontColor=#1a237e;">
+          <mxGeometry x="630" y="112" width="90" height="28" as="geometry" />
+        </mxCell>
+        <!-- process -->
+        <mxCell id="leg-proc-shape" parent="1" value="Process&#xa;(Langkah Otomatis)" vertex="1" style="shape=mxgraph.flowchart.process;fillColor=#bbdefb;strokeColor=#0d47a1;fontSize=9;fontColor=#0d47a1;">
+          <mxGeometry x="630" y="148" width="90" height="28" as="geometry" />
+        </mxCell>
+        <!-- manual input -->
+        <mxCell id="leg-input-shape" parent="1" value="Manual Input&#xa;(Input keyboard)" vertex="1" style="shape=mxgraph.flowchart.manual_input;fillColor=#fff3e0;strokeColor=#e65100;fontSize=9;fontColor=#e65100;">
+          <mxGeometry x="630" y="184" width="90" height="28" as="geometry" />
+        </mxCell>
+        <!-- manual operation -->
+        <mxCell id="leg-manop-shape" parent="1" value="Manual Operation&#xa;(Aksi oleh user)" vertex="1" style="shape=mxgraph.flowchart.manual_operation;fillColor=#e3f2fd;strokeColor=#0d47a1;fontSize=9;fontColor=#0d47a1;">
+          <mxGeometry x="630" y="220" width="90" height="28" as="geometry" />
+        </mxCell>
+        <!-- decision -->
+        <mxCell id="leg-dec-shape" parent="1" value="Decision&#xa;(Kondisi/Pilihan)" vertex="1" style="rhombus;fillColor=#fff9c4;strokeColor=#f9a825;fontSize=9;fontColor=#795548;">
+          <mxGeometry x="630" y="256" width="90" height="40" as="geometry" />
+        </mxCell>
+        <!-- labels beside shapes -->
+        <mxCell id="leg-note" parent="1" value="⬭ Oval = Mulai/Selesai&#xa;▭ Kotak = Proses komputer&#xa;▱ Miring = Input keyboard&#xa;⌂ Trapesium = Aksi manual&#xa;◇ Diamond = Keputusan" vertex="1" style="text;html=1;fontSize=9;fontColor=#455a64;align=left;verticalAlign=top;">
+          <mxGeometry x="728" y="112" width="100" height="100" as="geometry" />
+        </mxCell>
+
+        <!-- ===== 1. TERMINATOR: MULAI ===== -->
+        <mxCell id="fc-start" parent="1" value="MULAI" vertex="1" style="shape=mxgraph.flowchart.terminator;fillColor=#1a237e;strokeColor=#1a237e;fontColor=#ffffff;fontSize=13;fontStyle=1;">
+          <mxGeometry x="325" y="90" width="150" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- ===== 2. PROCESS: Manager login ===== -->
+        <mxCell id="fc-s1" parent="1" value="Manager login ke sistem" vertex="1" style="shape=mxgraph.flowchart.process;fillColor=#bbdefb;strokeColor=#0d47a1;fontSize=11;fontColor=#0d47a1;">
+          <mxGeometry x="275" y="185" width="250" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- ===== 3. PROCESS: Buka Settings ===== -->
+        <mxCell id="fc-s2" parent="1" value="Buka Settings → Tab Akun Operasional" vertex="1" style="shape=mxgraph.flowchart.process;fillColor=#bbdefb;strokeColor=#0d47a1;fontSize=11;fontColor=#0d47a1;">
+          <mxGeometry x="275" y="280" width="250" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- ===== 4. MANUAL OPERATION: Klik Buat Akun ===== -->
+        <mxCell id="fc-s3" parent="1" value='Klik tombol "Buat Akun Baru"' vertex="1" style="shape=mxgraph.flowchart.manual_operation;fillColor=#e3f2fd;strokeColor=#1565c0;fontSize=11;fontColor=#1565c0;">
+          <mxGeometry x="275" y="375" width="250" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- ===== 5. MANUAL INPUT: Isi Form ===== -->
+        <mxCell id="fc-s4" parent="1" value="Isi form:&#xa;• Nama (wajib, maks 100 karakter)&#xa;• Email (wajib, harus unik)&#xa;• No. Telepon (opsional)&#xa;• Role: Supervisor / Staff&#xa;• Password + Konfirmasi Password" vertex="1" style="shape=mxgraph.flowchart.manual_input;fillColor=#fff3e0;strokeColor=#e65100;fontSize=10;fontColor=#bf360c;align=left;">
+          <mxGeometry x="250" y="470" width="300" height="110" as="geometry" />
+        </mxCell>
+
+        <!-- ===== 6. MANUAL OPERATION: Klik Simpan ===== -->
+        <mxCell id="fc-s5" parent="1" value="Klik Simpan / Submit" vertex="1" style="shape=mxgraph.flowchart.manual_operation;fillColor=#e3f2fd;strokeColor=#1565c0;fontSize=11;fontColor=#1565c0;">
+          <mxGeometry x="275" y="625" width="250" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- ===== 7. DECISION: Validasi berhasil? ===== -->
+        <mxCell id="fc-d1" parent="1" value="Validasi input&#xa;berhasil?" vertex="1" style="rhombus;fillColor=#fff9c4;strokeColor=#f9a825;fontSize=11;fontStyle=1;fontColor=#5d4037;">
+          <mxGeometry x="300" y="715" width="200" height="90" as="geometry" />
+        </mxCell>
+
+        <!-- Error 1: Validasi gagal -->
+        <mxCell id="fc-err1" parent="1" value="Tampilkan pesan error&#xa;validasi pada form" vertex="1" style="shape=mxgraph.flowchart.process;fillColor=#ffebee;strokeColor=#c62828;fontSize=10;fontColor=#c62828;">
+          <mxGeometry x="590" y="733" width="185" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="lbl-gagal" parent="1" value="GAGAL" vertex="1" style="text;html=1;fontSize=9;fontColor=#c62828;fontStyle=1;align=center;">
+          <mxGeometry x="507" y="740" width="80" height="18" as="geometry" />
+        </mxCell>
+
+        <!-- ===== 8. DECISION: Email terdaftar? ===== -->
+        <mxCell id="fc-d2" parent="1" value="Email sudah&#xa;terdaftar?" vertex="1" style="rhombus;fillColor=#fff9c4;strokeColor=#f9a825;fontSize=11;fontStyle=1;fontColor=#5d4037;">
+          <mxGeometry x="300" y="850" width="200" height="90" as="geometry" />
+        </mxCell>
+
+        <!-- Error 2: Email duplikat -->
+        <mxCell id="fc-err2" parent="1" value='Error: "Email sudah&#xa;digunakan"' vertex="1" style="shape=mxgraph.flowchart.process;fillColor=#ffebee;strokeColor=#c62828;fontSize=10;fontColor=#c62828;">
+          <mxGeometry x="590" y="868" width="185" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="lbl-dup" parent="1" value="YA" vertex="1" style="text;html=1;fontSize=9;fontColor=#c62828;fontStyle=1;align=center;">
+          <mxGeometry x="507" y="875" width="80" height="18" as="geometry" />
+        </mxCell>
+
+        <!-- ===== 9. PROCESS: Ambil role_id ===== -->
+        <mxCell id="fc-s6" parent="1" value="Ambil role_id dari tabel roles&#xa;sesuai nama (Supervisor / Staff)" vertex="1" style="shape=mxgraph.flowchart.process;fillColor=#e8f5e9;strokeColor=#2e7d32;fontSize=10;fontColor=#1b5e20;">
+          <mxGeometry x="262" y="985" width="276" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- ===== 10. PROCESS: Simpan user ke DB ===== -->
+        <mxCell id="fc-s7" parent="1" value="Simpan user baru ke tabel users:&#xa;• role_id (sesuai pilihan)&#xa;• name, email, phone&#xa;• password → bcrypt hash&#xa;• email_verified_at = now()&#xa;• status = 'active'" vertex="1" style="shape=mxgraph.flowchart.process;fillColor=#e8f5e9;strokeColor=#2e7d32;fontSize=10;fontColor=#1b5e20;align=left;">
+          <mxGeometry x="250" y="1080" width="300" height="110" as="geometry" />
+        </mxCell>
+
+        <!-- ===== 11. PROCESS: Redirect ===== -->
+        <mxCell id="fc-s8" parent="1" value="Redirect → Settings Tab Akun Operasional" vertex="1" style="shape=mxgraph.flowchart.process;fillColor=#bbdefb;strokeColor=#0d47a1;fontSize=11;fontColor=#0d47a1;">
+          <mxGeometry x="262" y="1235" width="276" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- ===== 12. PROCESS: Notifikasi sukses ===== -->
+        <mxCell id="fc-s9" parent="1" value='Tampil notifikasi:&#xa;"Akun operasional berhasil dibuat"' vertex="1" style="shape=mxgraph.flowchart.process;fillColor=#f3e5f5;strokeColor=#6a1b9a;fontSize=10;fontColor=#6a1b9a;">
+          <mxGeometry x="262" y="1330" width="276" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- ===== 13. PROCESS: Akun aktif ===== -->
+        <mxCell id="fc-s10" parent="1" value="Akun aktif — siap digunakan untuk login" vertex="1" style="shape=mxgraph.flowchart.process;fillColor=#e8f5e9;strokeColor=#2e7d32;fontSize=11;fontStyle=1;fontColor=#1b5e20;">
+          <mxGeometry x="262" y="1430" width="276" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- ===== 14. TERMINATOR: SELESAI ===== -->
+        <mxCell id="fc-end" parent="1" value="SELESAI" vertex="1" style="shape=mxgraph.flowchart.terminator;fillColor=#1a237e;strokeColor=#1a237e;fontColor=#ffffff;fontSize=13;fontStyle=1;">
+          <mxGeometry x="325" y="1530" width="150" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- ============================= -->
+        <!-- PANAH HAPPY PATH (vertical)  -->
+        <!-- ============================= -->
+        <mxCell id="e-start-s1" edge="1" parent="1" source="fc-start" target="fc-s1" style="endArrow=block;endFill=1;strokeColor=#1a237e;strokeWidth=2;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-s1-s2" edge="1" parent="1" source="fc-s1" target="fc-s2" style="endArrow=block;endFill=1;strokeColor=#0d47a1;strokeWidth=1.5;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-s2-s3" edge="1" parent="1" source="fc-s2" target="fc-s3" style="endArrow=block;endFill=1;strokeColor=#0d47a1;strokeWidth=1.5;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-s3-s4" edge="1" parent="1" source="fc-s3" target="fc-s4" style="endArrow=block;endFill=1;strokeColor=#e65100;strokeWidth=1.5;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-s4-s5" edge="1" parent="1" source="fc-s4" target="fc-s5" style="endArrow=block;endFill=1;strokeColor=#0d47a1;strokeWidth=1.5;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-s5-d1" edge="1" parent="1" source="fc-s5" target="fc-d1" style="endArrow=block;endFill=1;strokeColor=#f9a825;strokeWidth=1.5;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Decision 1 → GAGAL (kanan) -->
+        <mxCell id="e-d1-err1" edge="1" parent="1" source="fc-d1" target="fc-err1" style="endArrow=block;endFill=1;strokeColor=#c62828;strokeWidth=1.5;exitX=1;exitY=0.5;entryX=0;entryY=0.5;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <!-- error 1 → kembali ke form (fc-s4) -->
+        <mxCell id="e-err1-s4" edge="1" parent="1" source="fc-err1" target="fc-s4" style="endArrow=block;endFill=1;strokeColor=#c62828;strokeWidth=1.5;dashed=1;exitX=0.5;exitY=0;entryX=1;entryY=0.5;">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="682" y="615" />
+              <mxPoint x="682" y="525" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Decision 1 → YA (bawah ke d2) -->
+        <mxCell id="e-d1-d2" edge="1" parent="1" source="fc-d1" target="fc-d2" style="endArrow=block;endFill=1;strokeColor=#2e7d32;strokeWidth=1.5;exitX=0.5;exitY=1;entryX=0.5;entryY=0;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="lbl-val-ok" parent="1" value="YA" vertex="1" style="text;html=1;fontSize=9;fontColor=#2e7d32;fontStyle=1;align=center;">
+          <mxGeometry x="407" y="806" width="35" height="16" as="geometry" />
+        </mxCell>
+
+        <!-- Decision 2 → YA email duplikat (kanan) -->
+        <mxCell id="e-d2-err2" edge="1" parent="1" source="fc-d2" target="fc-err2" style="endArrow=block;endFill=1;strokeColor=#c62828;strokeWidth=1.5;exitX=1;exitY=0.5;entryX=0;entryY=0.5;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <!-- error 2 → kembali ke form -->
+        <mxCell id="e-err2-s4" edge="1" parent="1" source="fc-err2" target="fc-s4" style="endArrow=block;endFill=1;strokeColor=#c62828;strokeWidth=1.5;dashed=1;exitX=0.5;exitY=0;entryX=1;entryY=0.5;">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="682" y="760" />
+              <mxPoint x="682" y="525" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Decision 2 → TIDAK email unik (bawah ke s6) -->
+        <mxCell id="e-d2-s6" edge="1" parent="1" source="fc-d2" target="fc-s6" style="endArrow=block;endFill=1;strokeColor=#2e7d32;strokeWidth=1.5;exitX=0.5;exitY=1;entryX=0.5;entryY=0;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="lbl-unik" parent="1" value="TIDAK (Email unik)" vertex="1" style="text;html=1;fontSize=9;fontColor=#2e7d32;fontStyle=1;align=center;">
+          <mxGeometry x="375" y="942" width="120" height="18" as="geometry" />
+        </mxCell>
+
+        <!-- s6 → s7 → s8 → s9 → s10 → end -->
+        <mxCell id="e-s6-s7" edge="1" parent="1" source="fc-s6" target="fc-s7" style="endArrow=block;endFill=1;strokeColor=#2e7d32;strokeWidth=1.5;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-s7-s8" edge="1" parent="1" source="fc-s7" target="fc-s8" style="endArrow=block;endFill=1;strokeColor=#0d47a1;strokeWidth=1.5;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-s8-s9" edge="1" parent="1" source="fc-s8" target="fc-s9" style="endArrow=block;endFill=1;strokeColor=#6a1b9a;strokeWidth=1.5;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-s9-s10" edge="1" parent="1" source="fc-s9" target="fc-s10" style="endArrow=block;endFill=1;strokeColor=#2e7d32;strokeWidth=1.5;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-s10-end" edge="1" parent="1" source="fc-s10" target="fc-end" style="endArrow=block;endFill=1;strokeColor=#1a237e;strokeWidth=2;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
+
+

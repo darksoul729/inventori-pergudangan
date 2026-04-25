@@ -24,7 +24,7 @@ class TransactionController extends Controller
             ->with(['product:id,sku,name', 'warehouse:id,name', 'user:id,name'])
             ->latest('movement_date');
 
-        // Filter by Search (Transaction ID or SKU/Product Name)
+        // Filter by Search (Transaction ID, SKU/Product Name, or Operator Name)
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
@@ -32,6 +32,9 @@ class TransactionController extends Controller
                   ->orWhereHas('product', function($pq) use ($search) {
                       $pq->where('name', 'like', "%{$search}%")
                         ->orWhere('sku', 'like', "%{$search}%");
+                  })
+                  ->orWhereHas('user', function($uq) use ($search) {
+                      $uq->where('name', 'like', "%{$search}%");
                   });
             });
         }
@@ -256,6 +259,9 @@ class TransactionController extends Controller
                   ->orWhereHas('product', function($pq) use ($search) {
                       $pq->where('name', 'like', "%{$search}%")
                         ->orWhere('sku', 'like', "%{$search}%");
+                  })
+                  ->orWhereHas('user', function($uq) use ($search) {
+                      $uq->where('name', 'like', "%{$search}%");
                   });
             });
         }

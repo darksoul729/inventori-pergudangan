@@ -3,16 +3,22 @@
 namespace Tests\Feature;
 
 use App\Models\Category;
+use App\Models\Driver;
 use App\Models\Product;
 use App\Models\ProductStock;
+use App\Models\PurchaseOrder;
 use App\Models\Rack;
 use App\Models\RackStock;
 use App\Models\Role;
+use App\Models\Shipment;
+use App\Models\Supplier;
 use App\Models\Unit;
 use App\Models\User;
 use App\Models\Warehouse;
 use App\Models\WarehouseZone;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Gate;
+use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
 
 class RoleAccessTest extends TestCase
@@ -93,6 +99,37 @@ class RoleAccessTest extends TestCase
         ]);
     }
 
+    public function test_manager_can_open_driver_detail_page(): void
+    {
+        $manager = $this->userWithRole('Manager');
+        $driverRole = Role::firstOrCreate(['name' => 'Driver'], ['description' => 'Driver role']);
+        $driverUser = User::factory()->create([
+            'role_id' => $driverRole->id,
+            'name' => 'Test Driver',
+            'email' => 'test-driver@example.com',
+            'status' => 'active',
+        ]);
+        $driver = Driver::create([
+            'user_id' => $driverUser->id,
+            'license_number' => 'D-12345-BT',
+            'phone' => '08123456789',
+            'status' => 'approved',
+            'is_active' => true,
+        ]);
+
+        $this
+            ->actingAs($manager)
+            ->get(route('drivers.show', $driver))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('DriverDetail')
+                ->where('driver.name', 'Test Driver')
+                ->where('driver.email', 'test-driver@example.com')
+                ->where('driver.license_number', 'D-12345-BT')
+                ->where('driver.status', 'approved')
+            );
+    }
+
     public function test_staff_cannot_access_manager_only_routes(): void
     {
         $staff = $this->userWithRole('Staff');
@@ -100,6 +137,7 @@ class RoleAccessTest extends TestCase
         $this->actingAs($staff)->get(route('settings'))->assertForbidden();
         $this->actingAs($staff)->get(route('drivers.index'))->assertForbidden();
         $this->actingAs($staff)->get(route('rack.allocation'))->assertForbidden();
+        $this->actingAs($staff)->get(route('stock-opname.index'))->assertForbidden();
         $this->actingAs($staff)->get(route('inventory.create'))->assertForbidden();
         $this->actingAs($staff)->get(route('purchase-orders.create'))->assertForbidden();
         $this->actingAs($staff)->get(route('shipments.create'))->assertForbidden();
@@ -110,6 +148,8 @@ class RoleAccessTest extends TestCase
         $this->actingAs($staff)->post(route('supplier.store'), [])->assertForbidden();
         $this->actingAs($staff)->post(route('purchase-orders.store'), [])->assertForbidden();
         $this->actingAs($staff)->post(route('shipments.store'), [])->assertForbidden();
+        $this->actingAs($staff)->post(route('rack.allocation.transfers.store'), [])->assertForbidden();
+        $this->actingAs($staff)->post(route('stock-opname.store'), [])->assertForbidden();
     }
 
     public function test_supervisor_has_operational_approval_access_but_not_admin_access(): void
@@ -128,6 +168,7 @@ class RoleAccessTest extends TestCase
         $this->actingAs($supervisor)->get(route('shipments.create'))->assertOk();
         $this->actingAs($supervisor)->get(route('reports'))->assertOk();
         $this->actingAs($supervisor)->get(route('rack.allocation'))->assertOk();
+        $this->actingAs($supervisor)->get(route('stock-opname.index'))->assertOk();
 
         $this->actingAs($supervisor)->get(route('settings'))->assertForbidden();
         $this->actingAs($supervisor)->get(route('drivers.index'))->assertForbidden();
@@ -135,6 +176,83 @@ class RoleAccessTest extends TestCase
         $this->actingAs($supervisor)->post(route('warehouse.zones.store'), [])->assertForbidden();
         $this->actingAs($supervisor)->post(route('warehouse.racks.store'), [])->assertForbidden();
         $this->actingAs($supervisor)->post(route('supplier.store'), [])->assertForbidden();
+    }
+
+    public function test_supervisor_cannot_approve_purchase_order_but_manager_can(): void
+    {
+        $manager = $this->userWithRole('Manager');
+        $supervisor = $this->userWithRole('Supervisor');
+        $purchaseOrder = $this->createPurchaseOrderFixture($manager);
+
+        $this
+            ->actingAs($supervisor)
+            ->put(route('purchase-orders.update-status', $purchaseOrder), ['status' => 'approved'])
+            ->assertForbidden();
+
+        $this->assertDatabaseHas('purchase_orders', [
+            'id' => $purchaseOrder->id,
+            'status' => 'pending',
+            'approved_by' => null,
+        ]);
+
+        $this
+            ->actingAs($manager)
+            ->put(route('purchase-orders.update-status', $purchaseOrder), ['status' => 'approved'])
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('purchase_orders', [
+            'id' => $purchaseOrder->id,
+            'status' => 'approved',
+            'approved_by' => $manager->id,
+        ]);
+    }
+
+    public function test_web_delivery_status_syncs_tracking_and_pod_verification(): void
+    {
+        $supervisor = $this->userWithRole('Supervisor');
+        $shipment = Shipment::create([
+            'shipment_id' => 'TRK-WEB-DELIVERED',
+            'origin' => 'MKS',
+            'origin_name' => 'Makassar',
+            'destination' => 'SBY',
+            'destination_name' => 'Surabaya',
+            'status' => 'in-transit',
+            'estimated_arrival' => now()->addDay(),
+            'load_type' => 'ground',
+            'tracking_stage' => 'in_transit',
+        ]);
+
+        $this
+            ->actingAs($supervisor)
+            ->put(route('shipments.update-status', $shipment), ['status' => 'delivered'])
+            ->assertRedirect();
+
+        $shipment->refresh();
+
+        $this->assertSame('delivered', $shipment->status);
+        $this->assertSame('delivered', $shipment->tracking_stage);
+        $this->assertSame('pending', $shipment->pod_verification_status);
+        $this->assertNotNull($shipment->delivered_at);
+    }
+
+    public function test_shipment_policy_keeps_staff_read_only_and_manager_supervisor_operational(): void
+    {
+        $manager = $this->userWithRole('Manager');
+        $supervisor = $this->userWithRole('Supervisor');
+        $staff = $this->userWithRole('Staff');
+        $shipment = $this->createShipmentFixture('TRK-POLICY-001');
+
+        $this->assertTrue(Gate::forUser($staff)->allows('view', $shipment));
+        $this->assertTrue(Gate::forUser($staff)->denies('update', $shipment));
+        $this->assertTrue(Gate::forUser($staff)->denies('updateStatus', $shipment));
+        $this->assertTrue(Gate::forUser($staff)->denies('verifyProof', $shipment));
+        $this->assertTrue(Gate::forUser($staff)->denies('delete', $shipment));
+
+        $this->assertTrue(Gate::forUser($supervisor)->allows('update', $shipment));
+        $this->assertTrue(Gate::forUser($supervisor)->allows('verifyProof', $shipment));
+        $this->assertTrue(Gate::forUser($supervisor)->denies('delete', $shipment));
+
+        $this->assertTrue(Gate::forUser($manager)->allows('delete', $shipment));
     }
 
     public function test_staff_can_record_outbound_stock_but_cannot_create_products(): void
@@ -246,5 +364,48 @@ class RoleAccessTest extends TestCase
         ]);
 
         return [$warehouse, $product];
+    }
+
+    private function createPurchaseOrderFixture(User $creator): PurchaseOrder
+    {
+        $warehouse = Warehouse::create([
+            'code' => 'WH-PO',
+            'name' => 'Purchase Warehouse',
+            'location' => 'Purchase Location',
+        ]);
+
+        $supplier = Supplier::create([
+            'code' => 'SUP-PO',
+            'name' => 'Supplier PO',
+            'email' => 'supplier-po@example.com',
+            'phone' => '08123450000',
+            'address' => 'Purchase Address',
+            'status' => 'active',
+        ]);
+
+        return PurchaseOrder::create([
+            'po_number' => 'PO-ROLE-001',
+            'supplier_id' => $supplier->id,
+            'warehouse_id' => $warehouse->id,
+            'order_date' => now()->toDateString(),
+            'expected_date' => now()->addDay()->toDateString(),
+            'status' => 'pending',
+            'created_by' => $creator->id,
+        ]);
+    }
+
+    private function createShipmentFixture(string $shipmentId): Shipment
+    {
+        return Shipment::create([
+            'shipment_id' => $shipmentId,
+            'origin' => 'MKS',
+            'origin_name' => 'Makassar',
+            'destination' => 'SBY',
+            'destination_name' => 'Surabaya',
+            'status' => 'in-transit',
+            'estimated_arrival' => now()->addDay(),
+            'load_type' => 'ground',
+            'tracking_stage' => 'in_transit',
+        ]);
     }
 }

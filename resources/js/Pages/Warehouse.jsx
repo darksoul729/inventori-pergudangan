@@ -166,6 +166,27 @@ export default function Warehouse({
     const [showRackStockModal, setShowRackStockModal] = useState(false);
     const [editingRackStock, setEditingRackStock] = useState(null);
     const [toastStatus, setToastStatus] = useState(status ?? '');
+    const [searchTerm, setSearchTerm] = useState('');
+
+    const filteredZoneSummaries = React.useMemo(() => {
+        if (!searchTerm) return zoneSummaries;
+        const lowerTerm = searchTerm.toLowerCase();
+        return zoneSummaries.filter(zone => 
+            (zone.name || '').toLowerCase().includes(lowerTerm) || 
+            (zone.code || '').toLowerCase().includes(lowerTerm) ||
+            (zone.type || '').toLowerCase().includes(lowerTerm)
+        );
+    }, [zoneSummaries, searchTerm]);
+
+    const filteredRackSummaries = React.useMemo(() => {
+        if (!searchTerm) return rackSummaries;
+        const lowerTerm = searchTerm.toLowerCase();
+        return rackSummaries.filter(rack => 
+            (rack.name || '').toLowerCase().includes(lowerTerm) || 
+            (rack.code || '').toLowerCase().includes(lowerTerm) ||
+            (rack.rack_type || '').toLowerCase().includes(lowerTerm)
+        );
+    }, [rackSummaries, searchTerm]);
     const rackCapacityRemaining = selectedRack
         ? Math.max(
             0,
@@ -327,7 +348,11 @@ export default function Warehouse({
     };
 
     return (
-        <DashboardLayout>
+        <DashboardLayout
+            headerSearchPlaceholder="Cari zona atau rak (kode, nama, tipe)..."
+            searchValue={searchTerm}
+            onSearch={setSearchTerm}
+        >
             <Head title="Detail Operasional Gudang" />
 
             <div className="flex flex-col gap-6">
@@ -393,7 +418,7 @@ export default function Warehouse({
                 </div>
 
                 <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-5">
-                    {zoneSummaries.map((zone) => (
+                    {filteredZoneSummaries.map((zone) => (
                         <Link
                             key={zone.id}
                             href={`/warehouse?zone=${zone.id}`}
@@ -426,7 +451,7 @@ export default function Warehouse({
                         aside={
                             <SectionCard title="Direktori Zona" subtitle="Klik zona untuk berpindah konteks kerja.">
                                 <div className="space-y-3">
-                                    {zoneSummaries.map((zone) => (
+                                    {filteredZoneSummaries.map((zone) => (
                                         <Link
                                             key={zone.id}
                                             href={`/warehouse?zone=${zone.id}`}
@@ -540,14 +565,14 @@ export default function Warehouse({
                                     </div>
                                     {selectedZone ? (
                                         <div className="text-[11px] font-black uppercase tracking-[0.16em] text-gray-400">
-                                            {selectedZone.code} • {selectedZone.racks.length} rak
+                                            {selectedZone.code} • {selectedZone.racks?.length} rak
                                         </div>
                                     ) : null}
                                 </div>
 
                                 {selectedZone ? (
                                     <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-                                        {selectedZone.racks.map((rack) => (
+                                        {selectedZone.racks?.filter(r => !searchTerm || r.name.toLowerCase().includes(searchTerm.toLowerCase()) || r.code.toLowerCase().includes(searchTerm.toLowerCase())).map((rack) => (
                                             <Link
                                                 key={rack.id}
                                                 href={`/warehouse?zone=${selectedZone.id}&rack=${rack.id}`}
@@ -738,7 +763,7 @@ export default function Warehouse({
                             <div className="rounded-[20px] border border-[#edf2f7] bg-[#fbfcfe] p-6">
                                 <div className="text-[11px] font-black uppercase tracking-[0.18em] text-gray-400">Fokus Rak Terakhir</div>
                                 <div className="mt-4 space-y-3">
-                                    {topRacks.map((rack) => (
+                                    {filteredRackSummaries.slice(0, 5).map((rack) => (
                                         <Link
                                             key={rack.id}
                                             href={`/warehouse?zone=${rack.zone_id}&rack=${rack.id}`}

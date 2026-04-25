@@ -1,6 +1,6 @@
 import DashboardLayout from '@/Layouts/DashboardLayout';
 import { Head, router, useForm, Link, usePage } from '@inertiajs/react';
-import React, { useState, Fragment } from 'react';
+import React, { useState, useMemo, Fragment } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
@@ -95,6 +95,21 @@ const supplierColors = [
 export default function Supplier({ suppliers = [], stats = {}, chartData = [], availableYears = [], selectedYear = null, categories = [], filters = {} }) {
     const { props } = usePage();
     const roleName = String(props.auth?.user?.role_name || props.auth?.user?.role || '').toLowerCase();
+    const [searchTerm, setSearchTerm] = useState('');
+
+    const filteredSuppliers = useMemo(() => {
+        let list = suppliers;
+        if (searchTerm) {
+            const lowerSearch = searchTerm.toLowerCase();
+            list = list.filter(sup => 
+                (sup.name || '').toLowerCase().includes(lowerSearch) || 
+                (sup.code || '').toLowerCase().includes(lowerSearch) ||
+                (sup.contact_person || '').toLowerCase().includes(lowerSearch)
+            );
+        }
+        return list;
+    }, [suppliers, searchTerm]);
+
     const isManager = roleName.includes('manager') || roleName.includes('manajer') || roleName.includes('admin gudang');
     const [isAddOpen, setIsAddOpen] = useState(false);
     const { data, setData, post, processing, errors, reset } = useForm({
@@ -207,7 +222,9 @@ export default function Supplier({ suppliers = [], stats = {}, chartData = [], a
 
     return (
         <DashboardLayout
-            headerSearchPlaceholder="Cari pemasok atau audit..."
+            headerSearchPlaceholder="Cari pemasok (nama, kode, atau kontak)..."
+            searchValue={searchTerm}
+            onSearch={setSearchTerm}
         >
             <Head title="Performa Pemasok" />
 
@@ -320,7 +337,7 @@ export default function Supplier({ suppliers = [], stats = {}, chartData = [], a
                                         labelStyle={{ color: '#64748b', marginBottom: '4px' }}
                                     />
                                     <Legend iconType="circle" wrapperStyle={{ paddingTop: '20px', fontSize: '12px', fontWeight: 'bold', color: '#64748b' }} />
-                                    {suppliers.map((sup, index) => (
+                                    {filteredSuppliers.map((sup, index) => (
                                         <Line
                                             key={sup.id}
                                             type="monotone"
@@ -391,7 +408,7 @@ export default function Supplier({ suppliers = [], stats = {}, chartData = [], a
                             <div className="divide-y divide-gray-50/80">
 
                                 {/* Dynamic Rows */}
-                                {suppliers.map((supplier) => {
+                                {filteredSuppliers.map((supplier) => {
                                     const perf = supplier.latest_performance || {};
                                     const score = perf.performance_score || 0;
                                     const leadTime = perf.avg_lead_time_days || 0;
@@ -450,176 +467,94 @@ export default function Supplier({ suppliers = [], stats = {}, chartData = [], a
                             </div>
                         </div>
 
-                    </div>
                 </div>
-
-                {/* Right Column - Status & Context */}
-                <div className="w-[340px] flex-shrink-0 flex flex-col space-y-6">
-
-                    {/* Intelligence Hub */}
-                    <div className="bg-[#f8f9fb] rounded-[24px] p-6 border border-[#edf2f7]">
-
-                        {/* Header */}
-                        <div className="flex items-center space-x-3 mb-8">
-                            <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 shadow-sm flex-shrink-0">
-                                <IntelligenceIcon className="w-4 h-4" />
-                            </div>
-                            <h2 className="text-[16px] font-black text-[#1a202c]">Catatan Pemasok</h2>
-                        </div>
-
-                        {/* Red Risk Detected */}
-                        <div className="mb-6">
-                            <div className="flex items-center space-x-2 mb-3">
-                                <div className="w-1.5 h-1.5 rounded-full bg-red-500"></div>
-                                <h4 className="text-[10px] font-black text-red-600 tracking-widest uppercase">Perlu Perhatian</h4>
-                            </div>
-
-                            <div className="bg-white rounded-[16px] shadow-sm border border-gray-100 p-5 relative overflow-hidden">
-                                <div className="absolute left-0 top-0 bottom-0 w-[4px] bg-red-500 rounded-l-[16px]"></div>
-                                <h5 className="text-[14px] font-black text-[#1a202c] mb-2 leading-tight">Penyimpangan Waktu Tunggu</h5>
-                                <p className="text-[12px] font-semibold text-gray-500 leading-relaxed mb-4">
-                                    SwiftMv menunjukkan <span className="font-extrabold text-red-500">+1.2 hari</span> penyimpangan waktu tunggu lebih dari 5 pengiriman berturut-turut.
-                                </p>
-                                <div className="flex items-center space-x-3">
-                                    <button className="px-4 py-2 bg-red-50 text-red-600 text-[11px] font-bold rounded-lg hover:bg-red-100 transition-colors">Munculkan Peringatan</button>
-                                    <button className="px-4 py-2 bg-white border border-gray-200 text-gray-600 text-[11px] font-bold rounded-lg hover:bg-gray-50 shadow-sm transition-colors">Lihat Pengiriman</button>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Orange Optimization Hint */}
-                        <div className="mb-6">
-                            <div className="flex items-center space-x-2 mb-3">
-                                <div className="w-1.5 h-1.5 rounded-full bg-amber-600"></div>
-                                <h4 className="text-[10px] font-black text-amber-600 tracking-widest uppercase">Saran Evaluasi</h4>
-                            </div>
-
-                            <div className="bg-white rounded-[16px] shadow-sm border border-gray-100 p-5 relative overflow-hidden">
-                                <div className="absolute left-0 top-0 bottom-0 w-[4px] bg-[#92400e] rounded-l-[16px]"></div>
-                                <h5 className="text-[14px] font-black text-[#1a202c] mb-2 leading-tight">Konsolidasi Nexus</h5>
-                                <p className="text-[12px] font-semibold text-gray-500 leading-relaxed mb-4">
-                                    Menggabungkan pesanan regional Nexus dapat mengurangi biaya operasional logistik sebesar <span className="font-extrabold text-[#92400e]">14.2%</span> per tahun.
-                                </p>
-                                <button className="w-full py-2.5 bg-[#92400e] text-white text-[12px] font-bold rounded-lg hover:bg-[#78350f] transition-colors shadow-sm">
-                                    Tinjau Peluang
-                                </button>
-                            </div>
-                        </div>
-
-                        {/* API Sync Status */}
-                        <div className="bg-white rounded-xl py-3.5 px-4 shadow-sm border border-gray-100 flex justify-between items-center mt-2">
-                            <div className="flex items-center space-x-3">
-                                <NodeSyncIcon className="w-5 h-5 text-gray-400" />
-                                <span className="text-[12px] font-bold text-[#1a202c]">Status Sinkronisasi</span>
-                            </div>
-                            <span className="text-[9px] font-black text-indigo-500 bg-indigo-50 px-2 py-1 rounded shadow-sm tracking-widest uppercase">Aktif</span>
-                        </div>
-                    </div>
-
-                    {/* Inventory Ribbon */}
-                    <div className="bg-white rounded-[24px] p-6 border border-[#edf2f7] shadow-[0_2px_16px_rgba(0,0,0,0.02)]">
-                        <h4 className="text-[10px] font-black text-gray-400 tracking-widest uppercase mb-4">Ringkasan Volume</h4>
-
-                        <div className="flex space-x-3">
-                            <div className="flex-1 bg-gray-50 border border-gray-100 rounded-xl py-3 flex flex-col items-center justify-center shadow-sm">
-                                <span className="text-[10px] font-bold text-gray-400 mb-1">Masuk</span>
-                                <span className="text-[16px] font-black text-[#1a202c]">1,240</span>
-                            </div>
-                            <div className="flex-1 bg-gray-50 border border-gray-100 rounded-xl py-3 flex flex-col items-center justify-center shadow-sm">
-                                <span className="text-[10px] font-bold text-gray-400 mb-1">Transit</span>
-                                <span className="text-[16px] font-black text-[#1a202c]">842</span>
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
-
             </div>
+        </div>
 
-            {/* Modal Add Partner */}
-            <Transition appear show={isManager && isAddOpen} as={Fragment}>
-                <Dialog as="div" className="relative z-50" onClose={() => setIsAddOpen(false)}>
-                    <Transition.Child
-                        as={Fragment}
-                        enter="ease-out duration-300"
-                        enterFrom="opacity-0"
-                        enterTo="opacity-100"
-                        leave="ease-in duration-200"
-                        leaveFrom="opacity-100"
-                        leaveTo="opacity-0"
-                    >
-                        <div className="fixed inset-0 bg-black bg-opacity-25 backdrop-blur-sm" />
-                    </Transition.Child>
+        {/* Modal Add Partner */}
+        <Transition appear show={isManager && isAddOpen} as={Fragment}>
+            <Dialog as="div" className="relative z-50" onClose={() => setIsAddOpen(false)}>
+                <Transition.Child
+                    as={Fragment}
+                    enter="ease-out duration-300"
+                    enterFrom="opacity-0"
+                    enterTo="opacity-100"
+                    leave="ease-in duration-200"
+                    leaveFrom="opacity-100"
+                    leaveTo="opacity-0"
+                >
+                    <div className="fixed inset-0 bg-black bg-opacity-25 backdrop-blur-sm" />
+                </Transition.Child>
 
-                    <div className="fixed inset-0 overflow-y-auto">
-                        <div className="flex min-h-full items-center justify-center p-4 text-center">
-                            <Transition.Child
-                                as={Fragment}
-                                enter="ease-out duration-300"
-                                enterFrom="opacity-0 scale-95"
-                                enterTo="opacity-100 scale-100"
-                                leave="ease-in duration-200"
-                                leaveFrom="opacity-100 scale-100"
-                                leaveTo="opacity-0 scale-95"
-                            >
-                                <Dialog.Panel className="w-full max-w-lg transform overflow-hidden rounded-2xl bg-white p-8 text-left align-middle shadow-xl transition-all">
-                                    <Dialog.Title as="h3" className="text-xl font-black text-gray-900 mb-2">
-                                        Tambah Pemasok Baru
-                                    </Dialog.Title>
-                                    <p className="text-[13px] text-gray-500 mb-6 font-semibold">
-                                        Masukkan profil mitra dengan teliti. Data performa akan dibuat secara otomatis pada pesanan pembelian awal.
-                                    </p>
+                <div className="fixed inset-0 overflow-y-auto">
+                    <div className="flex min-h-full items-center justify-center p-4 text-center">
+                        <Transition.Child
+                            as={Fragment}
+                            enter="ease-out duration-300"
+                            enterFrom="opacity-0 scale-95"
+                            enterTo="opacity-100 scale-100"
+                            leave="ease-in duration-200"
+                            leaveFrom="opacity-100 scale-100"
+                            leaveTo="opacity-0 scale-95"
+                        >
+                            <Dialog.Panel className="w-full max-w-lg transform overflow-hidden rounded-2xl bg-white p-8 text-left align-middle shadow-xl transition-all">
+                                <Dialog.Title as="h3" className="text-xl font-black text-gray-900 mb-2">
+                                    Tambah Pemasok Baru
+                                </Dialog.Title>
+                                <p className="text-[13px] text-gray-500 mb-6 font-semibold">
+                                    Masukkan profil mitra dengan teliti. Data performa akan dibuat secara otomatis pada pesanan pembelian awal.
+                                </p>
 
-                                    <form onSubmit={submitAdd} className="space-y-4">
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div>
-                                                <label className="block text-[11px] font-black tracking-wider text-gray-500 uppercase mb-1">Kode Perusahaan</label>
-                                                <input required type="text" value={data.code} onChange={e => setData('code', e.target.value)} className="w-full rounded-xl bg-gray-50 border-gray-200 text-[14px] font-bold focus:ring-indigo-500 focus:border-indigo-500" placeholder="misal: AMZ" />
-                                                {errors.code && <p className="text-red-500 text-xs mt-1">{errors.code}</p>}
-                                            </div>
-                                            <div>
-                                                <label className="block text-[11px] font-black tracking-wider text-gray-500 uppercase mb-1">Kategori / Tingkat</label>
-                                                <input type="text" value={data.category} onChange={e => setData('category', e.target.value)} className="w-full rounded-xl bg-gray-50 border-gray-200 text-[14px] font-bold focus:ring-indigo-500 focus:border-indigo-500" placeholder="misal: Tingkat 1 Utama" />
-                                            </div>
-                                        </div>
-
+                                <form onSubmit={submitAdd} className="space-y-4">
+                                    <div className="grid grid-cols-2 gap-4">
                                         <div>
-                                            <label className="block text-[11px] font-black tracking-wider text-gray-500 uppercase mb-1">Nama Perusahaan</label>
-                                            <input required type="text" value={data.name} onChange={e => setData('name', e.target.value)} className="w-full rounded-xl bg-gray-50 border-gray-200 text-[14px] font-bold focus:ring-indigo-500 focus:border-indigo-500" placeholder="misal: Amazon Logistics" />
-                                            {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
+                                            <label className="block text-[11px] font-black tracking-wider text-gray-500 uppercase mb-1">Kode Perusahaan</label>
+                                            <input required type="text" value={data.code} onChange={e => setData('code', e.target.value)} className="w-full rounded-xl bg-gray-50 border-gray-200 text-[14px] font-bold focus:ring-indigo-500 focus:border-indigo-500" placeholder="misal: AMZ" />
+                                            {errors.code && <p className="text-red-500 text-xs mt-1">{errors.code}</p>}
                                         </div>
-
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div>
-                                                <label className="block text-[11px] font-black tracking-wider text-gray-500 uppercase mb-1">Kontak Personal</label>
-                                                <input type="text" value={data.contact_person} onChange={e => setData('contact_person', e.target.value)} className="w-full rounded-xl bg-gray-50 border-gray-200 text-[14px] font-bold focus:ring-indigo-500 focus:border-indigo-500" placeholder="John Doe" />
-                                            </div>
-                                            <div>
-                                                <label className="block text-[11px] font-black tracking-wider text-gray-500 uppercase mb-1">Nomor Telepon</label>
-                                                <input type="text" value={data.phone} onChange={e => setData('phone', e.target.value)} className="w-full rounded-xl bg-gray-50 border-gray-200 text-[14px] font-bold focus:ring-indigo-500 focus:border-indigo-500" placeholder="+1 234 567 89" />
-                                            </div>
-                                        </div>
-
                                         <div>
-                                            <label className="block text-[11px] font-black tracking-wider text-gray-500 uppercase mb-1">Alamat Email</label>
-                                            <input type="email" value={data.email} onChange={e => setData('email', e.target.value)} className="w-full rounded-xl bg-gray-50 border-gray-200 text-[14px] font-bold focus:ring-indigo-500 focus:border-indigo-500" placeholder="john.doe@example.com" />
-                                            {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
+                                            <label className="block text-[11px] font-black tracking-wider text-gray-500 uppercase mb-1">Kategori / Tingkat</label>
+                                            <input type="text" value={data.category} onChange={e => setData('category', e.target.value)} className="w-full rounded-xl bg-gray-50 border-gray-200 text-[14px] font-bold focus:ring-indigo-500 focus:border-indigo-500" placeholder="misal: Tingkat 1 Utama" />
                                         </div>
+                                    </div>
 
-                                        <div className="mt-8 flex justify-end space-x-3">
-                                            <button type="button" onClick={() => setIsAddOpen(false)} className="px-5 py-2.5 rounded-xl border border-gray-200 text-gray-600 font-bold text-[13px] hover:bg-gray-50">Batal</button>
-                                            <button type="submit" disabled={processing} className="px-5 py-2.5 rounded-xl bg-indigo-600 text-white font-bold text-[13px] hover:bg-indigo-700 disabled:opacity-50 flex items-center shadow-lg shadow-indigo-200">
-                                                {processing ? 'Menyimpan...' : 'Simpan Pemasok'}
-                                            </button>
+                                    <div>
+                                        <label className="block text-[11px] font-black tracking-wider text-gray-500 uppercase mb-1">Nama Perusahaan</label>
+                                        <input required type="text" value={data.name} onChange={e => setData('name', e.target.value)} className="w-full rounded-xl bg-gray-50 border-gray-200 text-[14px] font-bold focus:ring-indigo-500 focus:border-indigo-500" placeholder="misal: Amazon Logistics" />
+                                        {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-[11px] font-black tracking-wider text-gray-500 uppercase mb-1">Kontak Personal</label>
+                                            <input type="text" value={data.contact_person} onChange={e => setData('contact_person', e.target.value)} className="w-full rounded-xl bg-gray-50 border-gray-200 text-[14px] font-bold focus:ring-indigo-500 focus:border-indigo-500" placeholder="John Doe" />
                                         </div>
-                                    </form>
-                                </Dialog.Panel>
-                            </Transition.Child>
-                        </div>
+                                        <div>
+                                            <label className="block text-[11px] font-black tracking-wider text-gray-500 uppercase mb-1">Nomor Telepon</label>
+                                            <input type="text" value={data.phone} onChange={e => setData('phone', e.target.value)} className="w-full rounded-xl bg-gray-50 border-gray-200 text-[14px] font-bold focus:ring-indigo-500 focus:border-indigo-500" placeholder="+1 234 567 89" />
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-[11px] font-black tracking-wider text-gray-500 uppercase mb-1">Alamat Email</label>
+                                        <input type="email" value={data.email} onChange={e => setData('email', e.target.value)} className="w-full rounded-xl bg-gray-50 border-gray-200 text-[14px] font-bold focus:ring-indigo-500 focus:border-indigo-500" placeholder="john.doe@example.com" />
+                                        {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
+                                    </div>
+
+                                    <div className="mt-8 flex justify-end space-x-3">
+                                        <button type="button" onClick={() => setIsAddOpen(false)} className="px-5 py-2.5 rounded-xl border border-gray-200 text-gray-600 font-bold text-[13px] hover:bg-gray-50">Batal</button>
+                                        <button type="submit" disabled={processing} className="px-5 py-2.5 rounded-xl bg-indigo-600 text-white font-bold text-[13px] hover:bg-indigo-700 disabled:opacity-50 flex items-center shadow-lg shadow-indigo-200">
+                                            {processing ? 'Menyimpan...' : 'Simpan Pemasok'}
+                                        </button>
+                                    </div>
+                                </form>
+                            </Dialog.Panel>
+                        </Transition.Child>
                     </div>
-                </Dialog>
-            </Transition>
+                </div>
+            </Dialog>
+        </Transition>
 
-        </DashboardLayout>
+    </DashboardLayout>
     );
 }

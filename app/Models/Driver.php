@@ -35,7 +35,10 @@ class Driver extends Model
                 $query->where('tracking_stage', '!=', 'delivered')
                     ->orWhere(function ($q) {
                         $q->where('tracking_stage', 'delivered')
-                            ->where('pod_verification_status', '!=', 'approved');
+                            ->where(function ($verificationQuery) {
+                                $verificationQuery->whereNull('pod_verification_status')
+                                    ->orWhere('pod_verification_status', '!=', 'approved');
+                            });
                     });
             })
             ->exists();

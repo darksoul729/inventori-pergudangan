@@ -36,11 +36,11 @@ const typeStyles = {
 
 const filters = [
     { value: 'all', label: 'Semua' },
-    { value: 'goods_receipt', label: 'Goods Receipt' },
-    { value: 'stock_out', label: 'Stock Out' },
-    { value: 'stock_transfer', label: 'Transfer' },
-    { value: 'stock_opname', label: 'Opname' },
-    { value: 'stock_adjustment', label: 'Adjustment' },
+    { value: 'goods_receipt', label: 'Penerimaan' },
+    { value: 'stock_out', label: 'Barang Keluar' },
+    { value: 'stock_transfer', label: 'Transfer Rak' },
+    { value: 'stock_opname', label: 'Stok Opname' },
+    { value: 'stock_adjustment', label: 'Koreksi Stok' },
 ];
 
 const formatNumber = (value) => Number(value || 0).toLocaleString('id-ID');
@@ -74,11 +74,11 @@ export default function WmsDocuments({ documents = [], stats = {} }) {
 
     const statCards = [
         { label: 'Total Dokumen', value: stats.total || documents.length, color: 'text-gray-900' },
-        { label: 'Goods Receipt', value: stats.goods_receipt || 0, color: 'text-emerald-600' },
-        { label: 'Stock Out', value: stats.stock_out || 0, color: 'text-indigo-600' },
-        { label: 'Transfer', value: stats.stock_transfer || 0, color: 'text-blue-600' },
-        { label: 'Opname', value: stats.stock_opname || 0, color: 'text-amber-600' },
-        { label: 'Adjustment', value: stats.stock_adjustment || 0, color: 'text-rose-600' },
+        { label: 'Penerimaan', value: stats.goods_receipt || 0, color: 'text-emerald-600' },
+        { label: 'Barang Keluar', value: stats.stock_out || 0, color: 'text-indigo-600' },
+        { label: 'Transfer Rak', value: stats.stock_transfer || 0, color: 'text-blue-600' },
+        { label: 'Stok Opname', value: stats.stock_opname || 0, color: 'text-amber-600' },
+        { label: 'Koreksi Stok', value: stats.stock_adjustment || 0, color: 'text-rose-600' },
     ];
 
     const exportParams = new URLSearchParams({
@@ -93,119 +93,114 @@ export default function WmsDocuments({ documents = [], stats = {} }) {
     return (
         <DashboardLayout
             headerTitle="Dokumen WMS"
-            headerSearchPlaceholder="Cari dokumen WMS..."
-            contentClassName="max-w-[1500px] mx-auto"
+            headerSearchPlaceholder="Cari nomor dokumen, pihak, atau jenis..."
+            searchValue={searchTerm}
+            onSearch={setSearchTerm}
+            contentClassName="w-full max-w-none"
         >
             <Head title="Dokumen WMS" />
 
-            <div className="space-y-6">
-                <section className="bg-white border border-gray-100 rounded-[8px] shadow-sm">
-                    <div className="px-6 py-5 border-b border-gray-100 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div className="space-y-5">
+                <section className="space-y-4">
+                    <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                         <div>
-                            <p className="text-[11px] font-extrabold text-indigo-500 tracking-[0.18em] uppercase">Warehouse Document Center</p>
-                            <h2 className="mt-1 text-2xl font-black text-gray-900 tracking-tight">Audit trail dokumen operasional</h2>
-                            <p className="mt-1 text-sm text-gray-500">Ringkasan dokumen penerimaan, pengeluaran, transfer rack, opname, dan adjustment untuk gudang utama.</p>
+                            <p className="text-[11px] font-extrabold text-indigo-500 tracking-[0.18em] uppercase">Pusat Dokumen Gudang</p>
+                            <h2 className="mt-1 text-2xl font-black text-gray-900 tracking-tight">Daftar dokumen operasional</h2>
+                            <p className="mt-1 text-sm text-gray-500">Pantau dokumen penerimaan, barang keluar, transfer rak, stok opname, dan koreksi stok.</p>
                         </div>
                         <div className="flex flex-col sm:flex-row gap-2 w-full lg:w-auto">
-                            <div className="relative w-full lg:w-[360px]">
-                                <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                                <input
-                                    value={searchTerm}
-                                    onChange={(event) => setSearchTerm(event.target.value)}
-                                    className="w-full h-11 pl-11 pr-4 rounded-[8px] border border-gray-200 text-sm font-semibold text-gray-700 focus:border-indigo-400 focus:ring-indigo-100"
-                                    placeholder="Nomor, pihak, operator, gudang..."
-                                />
-                            </div>
                             <a
                                 href={exportCsvUrl}
                                 className="h-11 px-4 rounded-[8px] border border-gray-200 bg-white text-gray-700 text-xs font-black inline-flex items-center justify-center gap-2 hover:border-gray-300 transition-colors"
                             >
                                 <DownloadIcon className="w-4 h-4" />
-                                CSV
+                                Unduh CSV
                             </a>
                             <a
                                 href={exportPdfUrl}
-                                className="h-11 px-4 rounded-[8px] bg-gray-900 text-white text-xs font-black inline-flex items-center justify-center gap-2 hover:bg-gray-800 transition-colors"
+                                className="h-11 px-4 rounded-[8px] bg-indigo-600 text-white text-xs font-black inline-flex items-center justify-center gap-2 hover:bg-indigo-700 transition-colors"
                             >
                                 <DownloadIcon className="w-4 h-4" />
-                                PDF
+                                Unduh PDF
                             </a>
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 border-b border-gray-100">
+                    <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
                         {statCards.map((card) => (
-                            <div key={card.label} className="px-6 py-4 border-r border-gray-100 last:border-r-0">
+                            <div key={card.label} className="rounded-[8px] border border-gray-100 bg-white px-5 py-4 shadow-sm">
                                 <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">{card.label}</p>
                                 <p className={`mt-1 text-2xl font-black ${card.color}`}>{formatNumber(card.value)}</p>
                             </div>
                         ))}
                     </div>
 
-                    <div className="px-6 py-4 flex flex-wrap gap-2 border-b border-gray-100">
-                        {filters.map((filter) => (
-                            <button
-                                key={filter.value}
-                                type="button"
-                                onClick={() => setActiveType(filter.value)}
-                                className={`h-9 px-4 rounded-[8px] text-xs font-extrabold border transition-colors ${
-                                    activeType === filter.value
-                                        ? 'bg-gray-900 text-white border-gray-900'
-                                        : 'bg-white text-gray-500 border-gray-200 hover:border-gray-300 hover:text-gray-700'
-                                }`}
-                            >
-                                {filter.label}
-                            </button>
-                        ))}
-                    </div>
-
-                    <div className="px-6 py-4 flex flex-col gap-3 border-b border-gray-100 md:flex-row md:items-end md:justify-between">
-                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                            <label className="block">
-                                <span className="text-[11px] font-black uppercase tracking-wider text-gray-400">Dari Tanggal</span>
-                                <input
-                                    type="date"
-                                    value={dateFrom}
-                                    onChange={(event) => setDateFrom(event.target.value)}
-                                    className="mt-1 h-10 w-full rounded-[8px] border border-gray-200 px-3 text-sm font-bold text-gray-700 focus:border-indigo-400 focus:ring-indigo-100"
-                                />
-                            </label>
-                            <label className="block">
-                                <span className="text-[11px] font-black uppercase tracking-wider text-gray-400">Sampai Tanggal</span>
-                                <input
-                                    type="date"
-                                    value={dateTo}
-                                    onChange={(event) => setDateTo(event.target.value)}
-                                    className="mt-1 h-10 w-full rounded-[8px] border border-gray-200 px-3 text-sm font-bold text-gray-700 focus:border-indigo-400 focus:ring-indigo-100"
-                                />
-                            </label>
+                    <div className="rounded-[8px] border border-gray-100 bg-white p-4 shadow-sm">
+                        <div className="flex flex-wrap gap-2">
+                            {filters.map((filter) => (
+                                <button
+                                    key={filter.value}
+                                    type="button"
+                                    onClick={() => setActiveType(filter.value)}
+                                    className={`h-9 px-4 rounded-[8px] text-xs font-extrabold border transition-colors ${
+                                        activeType === filter.value
+                                            ? 'bg-indigo-600 text-white border-indigo-600'
+                                            : 'bg-white text-gray-500 border-gray-200 hover:border-gray-300 hover:text-gray-700'
+                                    }`}
+                                >
+                                    {filter.label}
+                                </button>
+                            ))}
                         </div>
-                        {(dateFrom || dateTo || searchTerm || activeType !== 'all') && (
-                            <button
-                                type="button"
-                                onClick={() => {
-                                    setActiveType('all');
-                                    setSearchTerm('');
-                                    setDateFrom('');
-                                    setDateTo('');
-                                }}
-                                className="h-10 w-full rounded-[8px] border border-gray-200 bg-white px-4 text-xs font-black text-gray-500 transition-colors hover:border-gray-300 hover:text-gray-700 md:w-auto"
-                            >
-                                Reset Filter
-                            </button>
-                        )}
+
+                        <div className="mt-4 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+                            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                                <label className="block">
+                                    <span className="text-[11px] font-black uppercase tracking-wider text-gray-400">Dari Tanggal</span>
+                                    <input
+                                        type="date"
+                                        value={dateFrom}
+                                        onChange={(event) => setDateFrom(event.target.value)}
+                                        className="mt-1 h-10 w-full rounded-[8px] border border-gray-200 px-3 text-sm font-bold text-gray-700 focus:border-indigo-400 focus:ring-indigo-100"
+                                    />
+                                </label>
+                                <label className="block">
+                                    <span className="text-[11px] font-black uppercase tracking-wider text-gray-400">Sampai Tanggal</span>
+                                    <input
+                                        type="date"
+                                        value={dateTo}
+                                        onChange={(event) => setDateTo(event.target.value)}
+                                        className="mt-1 h-10 w-full rounded-[8px] border border-gray-200 px-3 text-sm font-bold text-gray-700 focus:border-indigo-400 focus:ring-indigo-100"
+                                    />
+                                </label>
+                            </div>
+                            {(dateFrom || dateTo || searchTerm || activeType !== 'all') && (
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setActiveType('all');
+                                        setSearchTerm('');
+                                        setDateFrom('');
+                                        setDateTo('');
+                                    }}
+                                    className="h-10 w-full rounded-[8px] border border-gray-200 bg-white px-4 text-xs font-black text-gray-500 transition-colors hover:border-gray-300 hover:text-gray-700 md:w-auto"
+                                >
+                                    Reset Filter
+                                </button>
+                            )}
+                        </div>
                     </div>
 
-                    <div className="overflow-x-auto">
+                    <div className="overflow-x-auto rounded-[8px] border border-gray-100 bg-white shadow-sm">
                         <table className="w-full min-w-[1080px] text-left">
                             <thead>
                                 <tr className="bg-gray-50/70 text-[11px] font-black text-gray-400 uppercase tracking-wider">
                                     <th className="px-6 py-3">Dokumen</th>
                                     <th className="px-4 py-3">Tanggal</th>
-                                    <th className="px-4 py-3">Pihak / Sumber</th>
+                                    <th className="px-4 py-3">Asal / Tujuan</th>
                                     <th className="px-4 py-3">Gudang</th>
                                     <th className="px-4 py-3 text-right">Item</th>
-                                    <th className="px-4 py-3 text-right">Qty</th>
+                                    <th className="px-4 py-3 text-right">Jumlah</th>
                                     <th className="px-4 py-3">Operator</th>
                                     <th className="px-6 py-3 text-right">Aksi</th>
                                 </tr>
@@ -249,9 +244,9 @@ export default function WmsDocuments({ documents = [], stats = {} }) {
                                                 {document.url ? (
                                                     <Link
                                                         href={document.url}
-                                                        className="inline-flex items-center justify-center gap-2 h-9 px-3 rounded-[8px] bg-gray-900 text-white text-xs font-black hover:bg-gray-800 transition-colors"
+                                                        className="inline-flex items-center justify-center gap-2 h-9 px-3 rounded-[8px] bg-indigo-600 text-white text-xs font-black hover:bg-indigo-700 transition-colors"
                                                     >
-                                                        Detail
+                                                        Lihat
                                                         <ArrowIcon className="w-3.5 h-3.5" />
                                                     </Link>
                                                 ) : (
@@ -266,12 +261,12 @@ export default function WmsDocuments({ documents = [], stats = {} }) {
                     </div>
 
                     {filteredDocuments.length === 0 && (
-                        <div className="px-6 py-16 text-center">
+                        <div className="rounded-[8px] border border-gray-100 bg-white px-6 py-16 text-center shadow-sm">
                             <div className="mx-auto w-12 h-12 rounded-[8px] bg-gray-100 flex items-center justify-center">
                                 <DocumentIcon className="w-6 h-6 text-gray-400" />
                             </div>
                             <p className="mt-4 text-sm font-black text-gray-800">Dokumen tidak ditemukan</p>
-                            <p className="mt-1 text-sm text-gray-500">Coba ubah kata kunci pencarian atau filter jenis dokumen.</p>
+                            <p className="mt-1 text-sm text-gray-500">Coba ubah kata kunci pencarian, jenis dokumen, atau tanggal.</p>
                         </div>
                     )}
                 </section>

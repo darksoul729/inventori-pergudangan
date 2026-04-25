@@ -22,6 +22,18 @@ export default function Index({ purchaseOrders = [] }) {
     const isSupervisor = roleName.includes('supervisor') || roleName.includes('spv');
     const canCreatePurchaseOrder = isManager || isSupervisor;
 
+    const [searchTerm, setSearchTerm] = React.useState('');
+
+    const filteredPurchaseOrders = React.useMemo(() => {
+        if (!searchTerm) return purchaseOrders;
+        const lowerTerm = searchTerm.toLowerCase();
+        return purchaseOrders.filter(po => 
+            (po.po_number || '').toLowerCase().includes(lowerTerm) ||
+            (po.supplier?.name || '').toLowerCase().includes(lowerTerm) ||
+            (po.status || '').toLowerCase().includes(lowerTerm)
+        );
+    }, [purchaseOrders, searchTerm]);
+
     const getStatusColor = (status) => {
         switch (status) {
             case 'pending': return 'bg-amber-100 text-amber-700';
@@ -38,7 +50,11 @@ export default function Index({ purchaseOrders = [] }) {
     };
 
     return (
-        <DashboardLayout headerSearchPlaceholder="Cari pesanan pembelian...">
+        <DashboardLayout
+            headerSearchPlaceholder="Cari pesanan (PO, Pemasok, Status)..."
+            searchValue={searchTerm}
+            onSearch={setSearchTerm}
+        >
             <Head title="Pesanan Pembelian" />
 
             <div className="flex flex-col space-y-6 pb-12 w-full pt-2 min-w-[1000px] overflow-x-auto">
@@ -67,8 +83,8 @@ export default function Index({ purchaseOrders = [] }) {
                         </div>
 
                         <div className="divide-y divide-gray-50/80">
-                            {purchaseOrders.length > 0 ? (
-                                purchaseOrders.map((po) => (
+                            {filteredPurchaseOrders.length > 0 ? (
+                                filteredPurchaseOrders.map((po) => (
                                     <div key={po.id} className="grid grid-cols-12 gap-4 py-5 items-center hover:bg-gray-50/50 transition-colors">
                                         <div className="col-span-2 flex items-center space-x-4 pl-2">
                                             <div className="text-[13px] font-black text-[#1a202c]">{po.po_number}</div>
