@@ -1,102 +1,510 @@
 import { Head, Link } from '@inertiajs/react';
+import { 
+    Phone, Mail, MapPin, Clock, ArrowRight,
+    Package, Boxes, BarChart3, ShieldCheck
+} from 'lucide-react';
+import { useState, useEffect } from 'react';
 
-export default function Welcome({ auth, laravelVersion, phpVersion }) {
+const Facebook = ({ size = 24, className }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+);
+const Twitter = ({ size = 24, className }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"/></svg>
+);
+const Linkedin = ({ size = 24, className }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>
+);
+const Instagram = ({ size = 24, className }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+);
+const Youtube = ({ size = 24, className }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"/><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"/></svg>
+);
+
+export default function Welcome({ auth }) {
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [activeSection, setActiveSection] = useState('home');
+
+    useEffect(() => {
+        const sections = ['home', 'services', 'projects', 'about', 'contact'];
+        
+        const handleScroll = () => {
+            const scrollPosition = window.scrollY + 100; // Offset for navbar
+
+            for (const section of sections) {
+                const element = document.getElementById(section);
+                if (element) {
+                    const offsetTop = element.offsetTop;
+                    const height = element.offsetHeight;
+
+                    if (scrollPosition >= offsetTop && scrollPosition < offsetTop + height) {
+                        setActiveSection(section);
+                    }
+                }
+            }
+        };
+
+        window.addEventListener('scroll', handleScroll);
+        handleScroll(); // Check on mount
+
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
+
     return (
         <>
-            <Head title="Sistem Gudang" />
+            <Head title="Sistem Gudang - Petayu" />
 
-            <div className="min-h-screen bg-[linear-gradient(180deg,#f8fbff_0%,#eef5ff_100%)] text-slate-900">
-                <div className="mx-auto flex min-h-screen max-w-7xl flex-col px-6 py-8 lg:px-10">
-                    <header className="flex items-center justify-between py-4">
-                        <div>
-                            <p className="text-[11px] font-black uppercase tracking-[0.28em] text-blue-600">Operasional Gudang</p>
-                            <h1 className="mt-2 text-[26px] font-black tracking-tight text-slate-900">Sistem Inventori Pergudangan</h1>
+            <div className="min-h-screen bg-slate-50 font-sans text-slate-800">
+                {/* --- TOP BAR --- */}
+                <div className="hidden border-b border-slate-200 bg-white py-2 lg:block">
+                    <div className="mx-auto flex max-w-7xl items-center justify-between px-6 text-sm">
+                        <div className="flex gap-6 text-slate-600">
+                            <div className="flex items-center gap-2">
+                                <Phone size={16} className="text-violet-600" />
+                                <span>(406) 555-0120</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <Mail size={16} className="text-violet-600" />
+                                <span>example@gmail.com</span>
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                            <a href="#" className="text-slate-400 hover:text-violet-600"><Facebook size={16} /></a>
+                            <a href="#" className="text-slate-400 hover:text-violet-600"><Twitter size={16} /></a>
+                            <a href="#" className="text-slate-400 hover:text-violet-600"><Linkedin size={16} /></a>
+                            <a href="#" className="text-slate-400 hover:text-violet-600"><Instagram size={16} /></a>
+                            <a href="#" className="text-slate-400 hover:text-violet-600"><Youtube size={16} /></a>
+                        </div>
+                    </div>
+                </div>
+
+                {/* --- NAVBAR --- */}
+                <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/90 py-4 backdrop-blur-md">
+                    <div className="mx-auto flex max-w-7xl items-center justify-between px-6">
+                        <div className="flex items-center gap-2">
+                            <img src="/images/image.png" alt="Logo" className="h-10 w-auto" />
+                            <span className="text-2xl font-black tracking-tight text-[#2e1065]">Petayu<span className="text-cyan-500">.</span></span>
                         </div>
 
-                        <nav className="flex items-center gap-3">
+                        {/* Desktop Nav */}
+                        <nav className="hidden items-center gap-8 font-semibold text-[#2e1065] lg:flex">
+                            <a href="#home" className={`transition-colors hover:text-cyan-500 ${activeSection === 'home' ? 'text-cyan-500' : ''}`}>Beranda</a>
+                            <a href="#services" className={`transition-colors hover:text-cyan-500 ${activeSection === 'services' ? 'text-cyan-500' : ''}`}>Layanan</a>
+                            <a href="#projects" className={`transition-colors hover:text-cyan-500 ${activeSection === 'projects' ? 'text-cyan-500' : ''}`}>Statistik</a>
+                            <a href="#about" className={`transition-colors hover:text-cyan-500 ${activeSection === 'about' ? 'text-cyan-500' : ''}`}>Tentang Kami</a>
+                            <a href="#contact" className={`transition-colors hover:text-cyan-500 ${activeSection === 'contact' ? 'text-cyan-500' : ''}`}>Hubungi Kami</a>
+                        </nav>
+
+                        <div className="hidden lg:block">
                             {auth.user ? (
-                                <Link
-                                    href={route('dashboard')}
-                                    className="rounded-xl bg-blue-600 px-5 py-2.5 text-[13px] font-black text-white shadow-lg shadow-blue-100 transition hover:bg-blue-700"
-                                >
-                                    Masuk ke Dashboard
+                                <Link href={route('dashboard')} className="rounded-full bg-violet-600 px-6 py-2.5 font-bold text-white transition-colors hover:bg-violet-700">
+                                    Dashboard
                                 </Link>
                             ) : (
-                                <Link
-                                    href={route('login')}
-                                    className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-[13px] font-black text-slate-700 transition hover:border-slate-300 hover:bg-slate-50"
-                                >
-                                    Masuk
+                                <Link href={route('login')} className="rounded-full bg-violet-600 px-6 py-2.5 font-bold text-white transition-colors hover:bg-violet-700">
+                                    Login
                                 </Link>
                             )}
-                        </nav>
-                    </header>
+                        </div>
 
-                    <main className="flex flex-1 items-center">
-                        <div className="grid w-full gap-8 lg:grid-cols-[1.2fr_0.8fr]">
-                            <section className="rounded-[32px] border border-blue-100 bg-white/90 p-8 shadow-[0_20px_60px_rgba(37,99,235,0.08)] lg:p-12">
-                                <p className="text-[11px] font-black uppercase tracking-[0.3em] text-slate-400">Gudang Tunggal</p>
-                                <h2 className="mt-4 max-w-2xl text-[44px] font-black leading-[1.05] tracking-tight text-slate-900">
-                                    Satu tempat untuk stok, rak, mutasi barang, pemasok, dan laporan gudang.
-                                </h2>
-                                <p className="mt-6 max-w-2xl text-[16px] font-semibold leading-7 text-slate-500">
-                                    Aplikasi ini dirancang untuk operasional satu gudang yang rapi: barang masuk, barang keluar, penempatan rak, purchase order, pengiriman, dan pelaporan berjalan dalam alur yang saling terhubung.
+                        {/* Mobile Menu Toggle */}
+                        <button className="lg:hidden" onClick={() => setIsMenuOpen(!isMenuOpen)}>
+                            <div className="space-y-1.5">
+                                <span className="block h-0.5 w-6 bg-[#2e1065]"></span>
+                                <span className="block h-0.5 w-6 bg-[#2e1065]"></span>
+                                <span className="block h-0.5 w-6 bg-[#2e1065]"></span>
+                            </div>
+                        </button>
+                    </div>
+
+                    {/* Mobile Nav */}
+                    {isMenuOpen && (
+                        <div className="absolute left-0 top-full w-full border-b border-slate-200 bg-white px-6 py-4 lg:hidden">
+                            <nav className="flex flex-col gap-4 font-semibold text-[#2e1065]">
+                                <a href="#home" className={activeSection === 'home' ? 'text-cyan-500' : ''} onClick={() => setIsMenuOpen(false)}>Beranda</a>
+                                <a href="#services" className={activeSection === 'services' ? 'text-cyan-500' : ''} onClick={() => setIsMenuOpen(false)}>Layanan</a>
+                                <a href="#projects" className={activeSection === 'projects' ? 'text-cyan-500' : ''} onClick={() => setIsMenuOpen(false)}>Statistik</a>
+                                <a href="#about" className={activeSection === 'about' ? 'text-cyan-500' : ''} onClick={() => setIsMenuOpen(false)}>Tentang Kami</a>
+                                <a href="#contact" className={activeSection === 'contact' ? 'text-cyan-500' : ''} onClick={() => setIsMenuOpen(false)}>Hubungi Kami</a>
+                                {auth.user ? (
+                                    <Link href={route('dashboard')} className="inline-block rounded-full bg-violet-600 px-6 py-2.5 text-center font-bold text-white">Dashboard</Link>
+                                ) : (
+                                    <Link href={route('login')} className="inline-block rounded-full bg-violet-600 px-6 py-2.5 text-center font-bold text-white">Login</Link>
+                                )}
+                            </nav>
+                        </div>
+                    )}
+                </header>
+
+                <main>
+                    {/* --- HOME HERO --- */}
+                    <section id="home" className="relative flex min-h-[70vh] items-center bg-[#2e1065] py-20 lg:min-h-[80vh]">
+                        <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, rgba(255,255,255,0.15) 1px, transparent 0)', backgroundSize: '32px 32px' }}></div>
+                        <div className="mx-auto w-full max-w-7xl px-6 relative z-10 grid gap-12 lg:grid-cols-2 lg:gap-8 items-center">
+                            <div>
+                                <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-cyan-500/30 bg-cyan-500/10 px-3 py-1 text-sm font-bold text-cyan-400">
+                                    <span className="h-2 w-2 rounded-full bg-cyan-500"></span>
+                                    Manajemen Gudang Pintar
+                                </div>
+                                <h1 className="text-5xl font-black leading-[1.1] tracking-tight text-white lg:text-7xl">
+                                    Optimalkan Arus <span className="text-cyan-400">Inventori</span> Anda.
+                                </h1>
+                                <p className="mt-6 max-w-lg text-lg text-slate-300">
+                                    Sederhanakan pergerakan stok, kelola alokasi rak, dan hasilkan laporan komprehensif semuanya dari satu platform yang intuitif.
                                 </p>
-
-                                <div className="mt-8 flex flex-wrap gap-3">
-                                    <div className="rounded-full border border-blue-100 bg-blue-50 px-4 py-2 text-[12px] font-black uppercase tracking-[0.15em] text-blue-700">
-                                        Inventaris
-                                    </div>
-                                    <div className="rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-[12px] font-black uppercase tracking-[0.15em] text-slate-600">
-                                        Rack & Zona
-                                    </div>
-                                    <div className="rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-[12px] font-black uppercase tracking-[0.15em] text-slate-600">
-                                        Transaksi
-                                    </div>
-                                    <div className="rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-[12px] font-black uppercase tracking-[0.15em] text-slate-600">
-                                        Laporan
-                                    </div>
+                                <div className="mt-8 flex flex-wrap gap-4">
+                                    <a href="#services" className="rounded-full bg-violet-600 px-8 py-3.5 font-bold text-white hover:bg-violet-700 transition-colors">
+                                        Jelajahi Layanan
+                                    </a>
+                                    <a href="#about" className="rounded-full border border-slate-600 bg-transparent px-8 py-3.5 font-bold text-white hover:bg-slate-800 transition-colors">
+                                        Pelajari Lebih Lanjut
+                                    </a>
                                 </div>
+                            </div>
+                            <div className="hidden lg:flex justify-end">
+                                <img src="/images/image.png" alt="Logo" className="h-96 w-auto opacity-90 drop-shadow-2xl" />
+                            </div>
+                        </div>
+                    </section>
 
-                                <div className="mt-10 grid gap-4 sm:grid-cols-3">
-                                    <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
-                                        <div className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">Alur Masuk</div>
-                                        <p className="mt-3 text-[14px] font-bold leading-6 text-slate-700">PO, penerimaan barang, dan penambahan stok tercatat jelas.</p>
+                    {/* --- SERVICES --- */}
+                    <section id="services" className="py-24 bg-white">
+                        <div className="mx-auto max-w-7xl px-6">
+                            <div className="text-center">
+                                <p className="text-sm font-bold uppercase tracking-widest text-violet-600">Layanan Kami</p>
+                                <h2 className="mt-2 text-4xl font-black text-[#2e1065]">Kapabilitas Inti</h2>
+                            </div>
+                            <div className="mt-16 grid gap-8 md:grid-cols-2 lg:grid-cols-4">
+                                {[
+                                    { icon: <Package className="h-10 w-10 text-violet-600" />, title: "Pelacakan Inventori", desc: "Visibilitas real-time terhadap tingkat stok dan lokasi produk Anda." },
+                                    { icon: <Boxes className="h-10 w-10 text-violet-600" />, title: "Alokasi Rak", desc: "Optimalkan ruang gudang dengan pemetaan zona dan rak yang cerdas." },
+                                    { icon: <BarChart3 className="h-10 w-10 text-violet-600" />, title: "Laporan Lanjutan", desc: "Hasilkan laporan PDF dan Excel untuk wawasan bisnis yang dapat ditindaklanjuti." },
+                                    { icon: <ShieldCheck className="h-10 w-10 text-violet-600" />, title: "Operasi Aman", desc: "Kontrol akses berbasis peran yang memastikan integritas dan keamanan data." }
+                                ].map((srv, idx) => (
+                                    <div key={idx} className="rounded-2xl border border-slate-100 bg-slate-50 p-8 transition-shadow hover:shadow-xl">
+                                        <div className="mb-6 inline-block rounded-xl bg-violet-100 p-4">{srv.icon}</div>
+                                        <h3 className="text-xl font-bold text-[#2e1065]">{srv.title}</h3>
+                                        <p className="mt-4 leading-relaxed text-slate-600">{srv.desc}</p>
                                     </div>
-                                    <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
-                                        <div className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">Lokasi Fisik</div>
-                                        <p className="mt-3 text-[14px] font-bold leading-6 text-slate-700">Setiap barang dapat dikaitkan ke zona, rak, dan kapasitas aktual.</p>
-                                    </div>
-                                    <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
-                                        <div className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">Audit</div>
-                                        <p className="mt-3 text-[14px] font-bold leading-6 text-slate-700">Mutasi dan laporan memudahkan pengecekan operasional harian.</p>
-                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </section>
+
+                    {/* --- PROJECTS / STATS --- */}
+                    <section id="projects" className="bg-[#2e1065] py-20 text-white">
+                        <div className="mx-auto max-w-7xl px-6">
+                            <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4 text-center">
+                                <div>
+                                    <div className="text-5xl font-black text-violet-600">500+</div>
+                                    <div className="mt-2 text-lg font-semibold text-slate-300">Proyek Selesai</div>
                                 </div>
-                            </section>
+                                <div>
+                                    <div className="text-5xl font-black text-violet-600">12K</div>
+                                    <div className="mt-2 text-lg font-semibold text-slate-300">Item Dikelola</div>
+                                </div>
+                                <div>
+                                    <div className="text-5xl font-black text-violet-600">99%</div>
+                                    <div className="mt-2 text-lg font-semibold text-slate-300">Tingkat Akurasi</div>
+                                </div>
+                                <div>
+                                    <div className="text-5xl font-black text-violet-600">24/7</div>
+                                    <div className="mt-2 text-lg font-semibold text-slate-300">Ketersediaan Dukungan</div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
 
-                            <aside className="grid gap-4">
-                                <div className="rounded-[28px] border border-slate-200 bg-white p-7 shadow-[0_16px_40px_rgba(15,23,42,0.06)]">
-                                    <div className="text-[11px] font-black uppercase tracking-[0.25em] text-slate-400">Modul Utama</div>
-                                    <ul className="mt-5 space-y-3 text-[14px] font-bold text-slate-700">
-                                        <li>Dashboard ringkasan operasional gudang</li>
-                                        <li>Manajemen inventaris dan stok per rak</li>
-                                        <li>Riwayat transaksi barang masuk dan keluar</li>
-                                        <li>Supplier, purchase order, dan pengiriman</li>
-                                        <li>Laporan PDF, Excel, dan analisis inventaris</li>
+                    {/* --- ABOUT US --- */}
+                    <section id="about" className="py-24 bg-slate-50">
+                        <div className="mx-auto max-w-7xl px-6">
+                            <div className="mb-16 text-center max-w-3xl mx-auto">
+                                <p className="text-sm font-bold uppercase tracking-widest text-violet-600">About Us</p>
+                                <h2 className="mt-2 text-4xl font-black text-[#2e1065]">Sistem Inventori Terintegrasi</h2>
+                                <p className="mt-6 text-lg leading-relaxed text-slate-600">
+                                    Petayu didedikasikan untuk mengubah cara bisnis menangani aset fisik mereka. Platform kami terintegrasi secara mendalam dengan operasional harian untuk memberikan alur kerja yang mulus dari penerimaan hingga pengiriman barang.
+                                </p>
+                            </div>
+
+                            <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+                                <div className="rounded-2xl bg-white p-8 shadow-sm border border-slate-200 hover:shadow-md transition-shadow">
+                                    <h3 className="text-xl font-bold text-[#2e1065]">1. Manajemen Inventori</h3>
+                                    <ul className="mt-5 space-y-3 text-sm text-slate-600">
+                                        <li className="flex gap-3"><span className="text-violet-600 font-bold">•</span> <span><strong>Master Data:</strong> Kelola data produk dengan kategori, unit, dan gambar.</span></li>
+                                        <li className="flex gap-3"><span className="text-violet-600 font-bold">•</span> <span><strong>Stok Real-time:</strong> Pantau level stok global dan per gudang.</span></li>
+                                        <li className="flex gap-3"><span className="text-violet-600 font-bold">•</span> <span><strong>In & Out:</strong> Fitur Add Entry dan Record Outbound.</span></li>
+                                        <li className="flex gap-3"><span className="text-violet-600 font-bold">•</span> <span><strong>Low Stock:</strong> Peringatan otomatis batas minimum stok.</span></li>
                                     </ul>
                                 </div>
 
-                                <div className="rounded-[28px] border border-slate-200 bg-slate-900 p-7 text-white shadow-[0_20px_50px_rgba(15,23,42,0.16)]">
-                                    <div className="text-[11px] font-black uppercase tracking-[0.25em] text-blue-200">Info Sistem</div>
-                                    <div className="mt-5 space-y-4 text-[14px] font-bold text-slate-200">
-                                        <p>Framework aplikasi menggunakan Laravel v{laravelVersion} dan PHP v{phpVersion}.</p>
-                                        <p>Tampilan ini sudah diarahkan untuk kebutuhan gudang operasional dengan tema terang yang konsisten.</p>
+                                <div className="rounded-2xl bg-white p-8 shadow-sm border border-slate-200 hover:shadow-md transition-shadow">
+                                    <h3 className="text-xl font-bold text-[#2e1065]">2. Manajemen Gudang</h3>
+                                    <ul className="mt-5 space-y-3 text-sm text-slate-600">
+                                        <li className="flex gap-3"><span className="text-violet-600 font-bold">•</span> <span><strong>Hierarki Dinamis:</strong> Gudang → Zona → Rak.</span></li>
+                                        <li className="flex gap-3"><span className="text-violet-600 font-bold">•</span> <span><strong>Occupancy:</strong> Validasi otomatis cegah kelebihan kapasitas (Capacity Guard).</span></li>
+                                        <li className="flex gap-3"><span className="text-violet-600 font-bold">•</span> <span><strong>Tracking Fisik:</strong> Catat lokasi detail barang hingga rak.</span></li>
+                                    </ul>
+                                </div>
+
+                                <div className="rounded-2xl bg-white p-8 shadow-sm border border-slate-200 hover:shadow-md transition-shadow">
+                                    <h3 className="text-xl font-bold text-[#2e1065]">3. Transaksi & Logistik</h3>
+                                    <ul className="mt-5 space-y-3 text-sm text-slate-600">
+                                        <li className="flex gap-3"><span className="text-violet-600 font-bold">•</span> <span><strong>Purchase Order:</strong> Siklus pembuatan dan pantauan PO.</span></li>
+                                        <li className="flex gap-3"><span className="text-violet-600 font-bold">•</span> <span><strong>Shipment:</strong> Lacak pengiriman ke tujuan.</span></li>
+                                        <li className="flex gap-3"><span className="text-violet-600 font-bold">•</span> <span><strong>Logic Ketat:</strong> Sinkronisasi transaksi & stok fisik.</span></li>
+                                        <li className="flex gap-3"><span className="text-violet-600 font-bold">•</span> <span><strong>Stock Opname:</strong> Penyesuaian stok sistem & aktual.</span></li>
+                                    </ul>
+                                </div>
+
+                                <div className="rounded-2xl bg-white p-8 shadow-sm border border-slate-200 hover:shadow-md transition-shadow">
+                                    <h3 className="text-xl font-bold text-[#2e1065]">4. Integrasi Mobile</h3>
+                                    <ul className="mt-5 space-y-3 text-sm text-slate-600">
+                                        <li className="flex gap-3"><span className="text-violet-600 font-bold">•</span> <span><strong>Aplikasi Driver:</strong> Integrasi mobile melalui API.</span></li>
+                                        <li className="flex gap-3"><span className="text-violet-600 font-bold">•</span> <span><strong>Manajemen Tugas:</strong> Klaim & perbarui status pengiriman.</span></li>
+                                        <li className="flex gap-3"><span className="text-violet-600 font-bold">•</span> <span><strong>POD:</strong> Verifikasi bukti pengiriman yang sah.</span></li>
+                                    </ul>
+                                </div>
+
+                                <div className="rounded-2xl bg-white p-8 shadow-sm border border-slate-200 hover:shadow-md transition-shadow">
+                                    <h3 className="text-xl font-bold text-[#2e1065]">5. Supplier & Partner</h3>
+                                    <ul className="mt-5 space-y-3 text-sm text-slate-600">
+                                        <li className="flex gap-3"><span className="text-violet-600 font-bold">•</span> <span><strong>Direktori:</strong> Database sentral seluruh partner.</span></li>
+                                        <li className="flex gap-3"><span className="text-violet-600 font-bold">•</span> <span><strong>Analisis KPI:</strong> Penilaian performa berdasar transaksi & ketepatan.</span></li>
+                                    </ul>
+                                </div>
+
+                                <div className="rounded-2xl bg-gradient-to-br from-[#2e1065] to-violet-900 p-8 shadow-lg border border-violet-800 text-white relative overflow-hidden">
+                                    <div className="absolute top-0 right-0 p-4 opacity-20">
+                                        <svg width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"><path d="m12 14 4-4"/><path d="M3.34 19a10 10 0 1 1 17.32 0"/></svg>
+                                    </div>
+                                    <h3 className="text-xl font-bold mb-1 relative z-10">6. Aether AI <span className="inline-block ml-2 text-[10px] font-black uppercase tracking-wider bg-cyan-500 text-[#2e1065] px-2 py-0.5 rounded-full">Unggulan</span></h3>
+                                    <ul className="mt-5 space-y-3 text-sm text-violet-200 relative z-10">
+                                        <li className="flex gap-3"><span className="text-cyan-400 font-bold">•</span> <span><strong>Interaksi Alami:</strong> Bicara dengan sistem via Aether Orb.</span></li>
+                                        <li className="flex gap-3"><span className="text-cyan-400 font-bold">•</span> <span><strong>Insight & Saran:</strong> Rekomendasi stok & tata ruang.</span></li>
+                                        <li className="flex gap-3"><span className="text-cyan-400 font-bold">•</span> <span><strong>Suara Interaktif:</strong> Dukungan interruptible voice.</span></li>
+                                    </ul>
+                                </div>
+
+                                <div className="rounded-2xl bg-white p-8 shadow-sm border border-slate-200 hover:shadow-md transition-shadow lg:col-span-3">
+                                    <div className="grid md:grid-cols-2 gap-8 items-center">
+                                        <div>
+                                            <h3 className="text-xl font-bold text-[#2e1065]">7. Pelaporan & Keamanan</h3>
+                                            <ul className="mt-5 space-y-3 text-sm text-slate-600">
+                                                <li className="flex gap-3"><span className="text-violet-600 font-bold">•</span> <span><strong>Custom Report:</strong> Alat pembuat laporan PDF dinamis.</span></li>
+                                                <li className="flex gap-3"><span className="text-violet-600 font-bold">•</span> <span><strong>Export Data:</strong> Ekspor ke Excel dengan format audit rapi.</span></li>
+                                                <li className="flex gap-3"><span className="text-violet-600 font-bold">•</span> <span><strong>RBAC:</strong> Keamanan akses dengan 4 level: Manager, Supervisor, Staff, Driver.</span></li>
+                                            </ul>
+                                        </div>
+                                        <div className="hidden md:flex justify-end pr-8">
+                                            <div className="text-slate-200">
+                                                <ShieldCheck size={120} strokeWidth={1} />
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
-                            </aside>
+                            </div>
                         </div>
-                    </main>
-                </div>
+                    </section>
+
+
+
+                    {/* --- CONTACT US (EXACT MOCKUP MATCH) --- */}
+                    <section id="contact" className="bg-white py-16">
+                        <div className="mx-auto max-w-5xl px-6">
+                            {/* Header */}
+                            <div className="text-center mb-16">
+                                <h2 className="text-[40px] font-black text-[#2e1065]">Hubungi Kami</h2>
+                                <div className="mt-2 flex items-center justify-center gap-2 font-bold">
+                                    <span className="text-[#2e1065]">Beranda</span>
+                                    <span className="text-violet-600">/ Hubungi Kami</span>
+                                </div>
+                            </div>
+
+                            {/* Main Contact Container */}
+                            <div className="grid gap-12 lg:grid-cols-[1fr_0.6fr] items-start">
+                                {/* Left: Form */}
+                                <div>
+                                    <div className="flex items-center gap-4 text-violet-600 font-bold uppercase tracking-wider text-sm mb-4">
+                                        <div className="h-0.5 w-8 bg-violet-600"></div>
+                                        Hubungi Kami
+                                    </div>
+                                    <h3 className="text-4xl font-black text-[#2e1065] mb-2">Punya Ide Proyek?</h3>
+                                    <h3 className="text-4xl font-black text-violet-600 mb-8">Mari Berdiskusi!</h3>
+
+                                    <form className="grid gap-6 sm:grid-cols-2">
+                                        <div className="space-y-2">
+                                            <label className="text-sm font-bold text-[#2e1065]">Nama Depan *</label>
+                                            <input type="text" placeholder="Cth. Budi" className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3.5 text-sm placeholder:text-slate-400 focus:border-violet-600 focus:ring-1 focus:ring-violet-600" />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-sm font-bold text-[#2e1065]">Nama Belakang *</label>
+                                            <input type="text" placeholder="Cth. Santoso" className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3.5 text-sm placeholder:text-slate-400 focus:border-violet-600 focus:ring-1 focus:ring-violet-600" />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-sm font-bold text-[#2e1065]">Email *</label>
+                                            <input type="email" placeholder="contoh@gmail.com" className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3.5 text-sm placeholder:text-slate-400 focus:border-violet-600 focus:ring-1 focus:ring-violet-600" />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-sm font-bold text-[#2e1065]">Nomor Telepon *</label>
+                                            <input type="tel" placeholder="Masukkan Nomor Telepon" className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3.5 text-sm placeholder:text-slate-400 focus:border-violet-600 focus:ring-1 focus:ring-violet-600" />
+                                        </div>
+                                        <div className="space-y-2 sm:col-span-2">
+                                            <label className="text-sm font-bold text-[#2e1065]">Subjek *</label>
+                                            <input type="text" placeholder="Masukkan subjek di sini..." className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3.5 text-sm placeholder:text-slate-400 focus:border-violet-600 focus:ring-1 focus:ring-violet-600" />
+                                        </div>
+                                        <div className="space-y-2 sm:col-span-2">
+                                            <label className="text-sm font-bold text-[#2e1065]">Pesan Anda *</label>
+                                            <textarea rows={4} placeholder="Masukkan pesan di sini..." className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3.5 text-sm placeholder:text-slate-400 focus:border-violet-600 focus:ring-1 focus:ring-violet-600"></textarea>
+                                        </div>
+                                        <div className="sm:col-span-2 mt-2">
+                                            <button type="button" className="rounded-full bg-violet-600 px-8 py-3.5 font-bold text-white transition hover:bg-violet-700">
+                                                Kirim Pesan
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+
+                                {/* Right: Info Card */}
+                                <div className="rounded-[32px] bg-[#2e1065] p-10 text-white relative overflow-hidden">
+                                    <div className="absolute top-0 right-0 opacity-10">
+                                        <svg width="200" height="200" viewBox="0 0 100 100" fill="white"><rect width="100" height="100" rx="20" transform="rotate(45 50 50)" /></svg>
+                                    </div>
+                                    <div className="relative z-10 space-y-10">
+                                        <div>
+                                            <h4 className="text-xl font-bold mb-3">Alamat</h4>
+                                            <p className="text-slate-300 leading-relaxed max-w-[200px]">2464 Royal Ln. Mesa,<br/>New Jersey 45463</p>
+                                        </div>
+                                        <div>
+                                            <h4 className="text-xl font-bold mb-3">Kontak</h4>
+                                            <p className="text-slate-300 mb-1">Telepon : +(000) 000-0000</p>
+                                            <p className="text-slate-300">Email : contoh@gmail.com</p>
+                                        </div>
+                                        <div>
+                                            <h4 className="text-xl font-bold mb-3">Jam Operasional</h4>
+                                            <div className="flex gap-4 text-slate-300 mb-1">
+                                                <span className="w-32">Senin - Jumat</span>
+                                                <span>: 10:00 - 20:00</span>
+                                            </div>
+                                            <div className="flex gap-4 text-slate-300">
+                                                <span className="w-32">Sabtu - Minggu</span>
+                                                <span>: 11:00 - 18:00</span>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <h4 className="text-xl font-bold mb-4">Tetap Terhubung</h4>
+                                            <div className="flex gap-3">
+                                                <a href="#" className="flex h-10 w-10 items-center justify-center rounded-full bg-violet-600 text-white hover:bg-violet-700 transition-colors"><Facebook size={18} /></a>
+                                                <a href="#" className="flex h-10 w-10 items-center justify-center rounded-full bg-violet-600 text-white hover:bg-violet-700 transition-colors"><Twitter size={18} /></a>
+                                                <a href="#" className="flex h-10 w-10 items-center justify-center rounded-full bg-violet-600 text-white hover:bg-violet-700 transition-colors"><Linkedin size={18} /></a>
+                                                <a href="#" className="flex h-10 w-10 items-center justify-center rounded-full bg-violet-600 text-white hover:bg-violet-700 transition-colors"><Instagram size={18} /></a>
+                                                <a href="#" className="flex h-10 w-10 items-center justify-center rounded-full bg-violet-600 text-white hover:bg-violet-700 transition-colors"><Youtube size={18} /></a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    {/* --- MAP SECTION --- */}
+                    <div className="bg-white pb-24">
+                        <div className="mx-auto max-w-5xl px-6">
+                            <div className="h-[300px] w-full relative overflow-hidden rounded-[32px] border border-slate-100 shadow-sm">
+                                <img 
+                                    src="/images/map.png" 
+                                    alt="Location Map" 
+                                    className="w-full h-full object-cover grayscale opacity-90" 
+                                />
+                                <div className="absolute inset-0 bg-gradient-to-t from-[#2e1065]/5 to-transparent pointer-events-none"></div>
+                            </div>
+                        </div>
+                    </div>
+                </main>
+
+                {/* --- FOOTER --- */}
+                <footer className="bg-[#2e1065] pt-16">
+                    <div className="mx-auto max-w-7xl px-6">
+                        {/* CTA Top Bar */}
+                        <div className="flex flex-col md:flex-row items-center justify-between border-b border-slate-700/50 pb-12 mb-12">
+                            <h2 className="text-4xl font-black text-white mb-6 md:mb-0">
+                                Ayo <span className="text-violet-600">Terhubung</span> dengan kami
+                            </h2>
+                            <a href="#contact" className="rounded-full bg-violet-600 px-8 py-3.5 font-bold text-white transition hover:bg-violet-700">
+                                Hubungi Kami
+                            </a>
+                        </div>
+
+                        {/* Footer Grid */}
+                        <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-4 pb-16">
+                            {/* Col 1 */}
+                            <div>
+                                <div className="flex items-center gap-2 mb-6">
+                                    <img src="/images/image.png" alt="Logo" className="h-8 w-auto" />
+                                    <span className="text-2xl font-black tracking-tight text-white">Petayu<span className="text-cyan-500">.</span></span>
+                                </div>
+                                <p className="text-slate-400 leading-relaxed text-sm mb-6">
+                                    Sistem manajemen inventori dan gudang pintar yang dirancang untuk efisiensi maksimal dan transparansi operasional.
+                                </p>
+                                <div className="flex gap-3">
+                                    <a href="#" className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-800 text-white hover:bg-violet-600 transition-colors"><Facebook size={14} /></a>
+                                    <a href="#" className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-800 text-white hover:bg-violet-600 transition-colors"><Twitter size={14} /></a>
+                                    <a href="#" className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-800 text-white hover:bg-violet-600 transition-colors"><Linkedin size={14} /></a>
+                                    <a href="#" className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-800 text-white hover:bg-violet-600 transition-colors"><Instagram size={14} /></a>
+                                    <a href="#" className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-800 text-white hover:bg-violet-600 transition-colors"><Youtube size={14} /></a>
+                                </div>
+                            </div>
+
+                            {/* Col 2 */}
+                            <div>
+                                <h4 className="text-lg font-bold text-white mb-6">Navigasi</h4>
+                                <ul className="space-y-4 text-sm text-slate-400">
+                                    <li><a href="#" className="hover:text-violet-600">Tim Kami</a></li>
+                                    <li><a href="#contact" className="hover:text-violet-600">Hubungi Kami</a></li>
+                                    <li><a href="#about" className="hover:text-violet-600">Tentang Kami</a></li>
+                                    <li><a href="#" className="hover:text-violet-600">Testimoni</a></li>
+                                    <li><a href="#" className="hover:text-violet-600">FAQ</a></li>
+                                </ul>
+                            </div>
+
+                            {/* Col 3 */}
+                            <div>
+                                <h4 className="text-lg font-bold text-white mb-6">Kontak</h4>
+                                <ul className="space-y-4 text-sm text-slate-400">
+                                    <li>+(000) 000-0000</li>
+                                    <li>contoh@gmail.com</li>
+                                    <li className="leading-relaxed">2464 Royal Ln. Mesa,<br/>New Jersey 45463</li>
+                                </ul>
+                            </div>
+
+                            {/* Col 4 */}
+                            <div>
+                                <h4 className="text-lg font-bold text-white mb-6">Dapatkan Informasi Terbaru</h4>
+                                <form className="flex mt-4" onSubmit={(e) => e.preventDefault()}>
+                                    <input 
+                                        type="email" 
+                                        placeholder="Alamat email" 
+                                        className="w-full rounded-l-full border-none bg-slate-800/50 px-5 py-3 text-sm text-white placeholder:text-slate-500 focus:ring-1 focus:ring-violet-600" 
+                                    />
+                                    <button type="submit" className="rounded-r-full bg-violet-600 px-5 py-3 text-white transition hover:bg-violet-700">
+                                        <ArrowRight size={18} />
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Bottom Bar */}
+                    <div className="bg-[#1e0a45] py-6 border-t border-white/5">
+                        <div className="mx-auto max-w-7xl px-6 flex flex-col md:flex-row items-center justify-between text-sm font-medium text-white/90">
+                            <p>Hak Cipta © 2025 Petayu. Seluruh Hak Dilindungi.</p>
+                            <div className="flex gap-4 mt-2 md:mt-0">
+                                <a href="#" className="hover:text-white">Syarat & Ketentuan</a>
+                                <span>|</span>
+                                <a href="#" className="hover:text-white">Kebijakan Privasi</a>
+                            </div>
+                        </div>
+                    </div>
+                </footer>
             </div>
         </>
     );
