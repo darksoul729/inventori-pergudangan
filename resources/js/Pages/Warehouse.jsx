@@ -4,6 +4,7 @@ import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import TextInput from '@/Components/TextInput';
 import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
+import WarehouseFloorPlan from '@/Components/WarehouseFloorPlan';
 
 const ActivityIcon = ({ className }) => (
     <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -400,6 +401,15 @@ export default function Warehouse({
                         </div>
                     </div>
                 </div>
+
+                {/* Warehouse Visualization */}
+                <WarehouseFloorPlan
+                    zoneSummaries={zoneSummaries}
+                    rackSummaries={rackSummaries}
+                    selectedZone={selectedZone}
+                    selectedRack={selectedRack}
+                    warehouseName={warehouse?.name}
+                />
 
                 <div className="flex flex-wrap gap-3">
                     {workspaceTabs.map((tab) => (
