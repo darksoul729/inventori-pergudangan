@@ -8,15 +8,19 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('petayu_messages', function (Blueprint $table) {
-            $table->json('metadata')->nullable()->after('content');
-        });
+        if (Schema::hasTable('petayu_messages') && ! Schema::hasColumn('petayu_messages', 'metadata')) {
+            Schema::table('petayu_messages', function (Blueprint $table) {
+                $table->json('metadata')->nullable()->after('content');
+            });
+        }
     }
 
     public function down(): void
     {
-        Schema::table('petayu_messages', function (Blueprint $table) {
-            $table->dropColumn('metadata');
-        });
+        if (Schema::hasTable('petayu_messages') && Schema::hasColumn('petayu_messages', 'metadata')) {
+            Schema::table('petayu_messages', function (Blueprint $table) {
+                $table->dropColumn('metadata');
+            });
+        }
     }
 };
