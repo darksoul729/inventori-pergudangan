@@ -5,9 +5,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class AetherMessage extends Model
+class PetayuMessage extends Model
 {
-    protected $table = 'aether_messages';
+    protected $table = 'petayu_messages';
 
     protected $fillable = ['conversation_id', 'role', 'content', 'metadata'];
 
@@ -20,6 +20,6 @@ class AetherMessage extends Model
 
     public function conversation(): BelongsTo
     {
-        return $this->belongsTo(AetherConversation::class, 'conversation_id');
+        return $this->belongsTo(PetayuConversation::class, 'conversation_id');
     }
 }

@@ -19,6 +19,12 @@ class Product extends Model
         'lead_time_days',
         'is_active',
         'description',
+        'volume_entry_mode',
+        'dimension_unit',
+        'dimension_length',
+        'dimension_width',
+        'dimension_height',
+        'volume_m3_per_unit',
         'image',
     ];
 
@@ -28,6 +34,10 @@ class Product extends Model
             'is_active' => 'boolean',
             'purchase_price' => 'decimal:2',
             'selling_price' => 'decimal:2',
+            'dimension_length' => 'decimal:3',
+            'dimension_width' => 'decimal:3',
+            'dimension_height' => 'decimal:3',
+            'volume_m3_per_unit' => 'decimal:6',
         ];
     }
 

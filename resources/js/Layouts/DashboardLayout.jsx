@@ -20,12 +20,172 @@ import {
     ChevronLeft,
     Package,
     Sparkles,
-    LogOut
+    LogOut,
+    ChevronRight as BreadcrumbSeparator
 } from 'lucide-react';
 
 import Dropdown from '@/Components/Dropdown';
 import FloatingBubble from '@/Components/FloatingBubble';
 import Modal from '@/Components/Modal';
+
+// Breadcrumb mapping dari URL ke label
+const BREADCRUMB_MAP = {
+    '/dashboard': { label: 'Dasbor', parent: null },
+    '/petayu-ai': { label: 'PETAYU AI', parent: '/dashboard' },
+    '/warehouse': { label: 'Manajemen Gudang', parent: '/dashboard' },
+    '/rack-allocation': { label: 'Transfer Rack', parent: '/warehouse' },
+    '/stock-opname': { label: 'Stock Opname', parent: '/warehouse' },
+    '/inventory': { label: 'Inventaris', parent: '/dashboard' },
+    '/purchase-orders': { label: 'Pesanan Pembelian', parent: '/dashboard' },
+    '/supplier': { label: 'Pemasok', parent: '/purchase-orders' },
+    '/transaction': { label: 'Transaksi', parent: '/dashboard' },
+    '/wms-documents': { label: 'Dokumen WMS', parent: '/transaction' },
+    '/shipments': { label: 'Pengiriman', parent: '/dashboard' },
+    '/drivers': { label: 'Manajemen Driver', parent: '/shipments' },
+    '/drivers/create': { label: 'Buat Driver', parent: '/drivers' },
+    '/reports': { label: 'Laporan', parent: '/dashboard' },
+    '/settings': { label: 'Pengaturan', parent: '/dashboard' },
+    '/notifications': { label: 'Notifikasi', parent: '/dashboard' },
+    '/profile': { label: 'Profil', parent: '/dashboard' },
+    '/help': { label: 'Pusat Bantuan', parent: '/dashboard' },
+    '/help/live-support': { label: 'Bantuan Langsung', parent: '/help' },
+    '/help/documentation': { label: 'Dokumentasi', parent: '/help' },
+};
+
+function buildBreadcrumbs(url) {
+    const crumbs = [];
+    let current = url.split('?')[0]; // Remove query params
+
+    // Check exact match first
+    if (BREADCRUMB_MAP[current]) {
+        let item = BREADCRUMB_MAP[current];
+        crumbs.unshift({ label: item.label, href: current, isActive: true });
+
+        // Traverse up the parent chain
+        while (item.parent) {
+            const parentItem = BREADCRUMB_MAP[item.parent];
+            if (parentItem) {
+                crumbs.unshift({ label: parentItem.label, href: item.parent, isActive: false });
+                item = parentItem;
+                current = item.parent;
+            } else {
+                break;
+            }
+        }
+    } else {
+        // Fallback for dynamic routes (detail pages)
+        const basePath = current.split('/').slice(0, 2).join('/');
+        if (BREADCRUMB_MAP[basePath]) {
+            const parent = BREADCRUMB_MAP[basePath];
+            crumbs.push({ label: parent.label, href: basePath, isActive: false });
+
+            // Extract ID from URL for detail page
+            const idPart = current.split('/')[2];
+            if (idPart && !isNaN(parseInt(idPart))) {
+                crumbs.push({ label: `Detail #${idPart}`, href: current, isActive: true });
+            } else if (idPart) {
+                crumbs.push({ label: idPart.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase()), href: current, isActive: true });
+            }
+        }
+    }
+
+    return crumbs;
+}
+
+function Breadcrumb({ url }) {
+    const crumbs = buildBreadcrumbs(url);
+
+    if (crumbs.length <= 1) return null;
+
+    return (
+        <nav className="flex items-center space-x-2 text-[12px] font-semibold text-gray-500 px-10 py-3 bg-white border-b border-gray-100/50">
+            <Link
+                href="/dashboard"
+                className="flex items-center space-x-1 text-gray-400 hover:text-[#5932C9] transition-colors"
+            >
+                <LayoutDashboard className="w-4 h-4" />
+                <span>Beranda</span>
+            </Link>
+
+            {crumbs.map((crumb, index) => (
+                <React.Fragment key={index}>
+                    <BreadcrumbSeparator className="w-3.5 h-3.5 text-gray-300" />
+                    {crumb.isActive ? (
+                        <span className="text-[#5932C9] font-bold">{crumb.label}</span>
+                    ) : (
+                        <Link
+                            href={crumb.href}
+                            className="text-gray-500 hover:text-[#5932C9] transition-colors"
+                        >
+                            {crumb.label}
+                        </Link>
+                    )}
+                </React.Fragment>
+            ))}
+        </nav>
+    );
+}
+
+// Quick Actions Bar Component
+function QuickActionsBar({ url }) {
+    const actions = [
+        {
+            icon: Package,
+            label: 'Receiving',
+            href: '/inventory?mode=inbound',
+            color: 'bg-blue-50 text-blue-600 border-blue-100 hover:bg-blue-100',
+            show: ['/dashboard', '/warehouse', '/inventory', '/transaction'].some(p => url.startsWith(p))
+        },
+        {
+            icon: Truck,
+            label: 'Pengiriman',
+            href: '/shipments/create',
+            color: 'bg-emerald-50 text-emerald-600 border-emerald-100 hover:bg-emerald-100',
+            show: ['/dashboard', '/warehouse', '/shipments', '/inventory'].some(p => url.startsWith(p))
+        },
+        {
+            icon: ClipboardCheck,
+            label: 'Stock Opname',
+            href: '/stock-opname',
+            color: 'bg-amber-50 text-amber-600 border-amber-100 hover:bg-amber-100',
+            show: ['/dashboard', '/warehouse', '/inventory'].some(p => url.startsWith(p))
+        },
+        {
+            icon: BarChart3,
+            label: 'Laporan Stok',
+            href: '/reports?type=inventory',
+            color: 'bg-[#F8F7FF] text-[#5932C9] border-[#D4C8F5] hover:bg-[#EDE8FC]',
+            show: ['/dashboard', '/reports', '/inventory', '/warehouse'].some(p => url.startsWith(p))
+        },
+        {
+            icon: Bell,
+            label: 'Low Stock',
+            href: '/inventory?filter=low',
+            color: 'bg-rose-50 text-rose-600 border-rose-100 hover:bg-rose-100',
+            show: ['/dashboard', '/inventory', '/warehouse'].some(p => url.startsWith(p))
+        },
+    ].filter(a => a.show);
+
+    if (actions.length === 0) return null;
+
+    return (
+        <div className="px-10 py-3 bg-white border-b border-gray-100/50">
+            <div className="flex items-center space-x-3">
+                <span className="text-[10px] font-black text-gray-400 uppercase tracking-wider mr-1">Aksi Cepat:</span>
+                {actions.map((action, index) => (
+                    <Link
+                        key={index}
+                        href={action.href}
+                        className={`flex items-center space-x-2 px-3 py-2 rounded-lg border text-[11px] font-bold transition-all hover:scale-105 ${action.color}`}
+                    >
+                        <action.icon className="w-3.5 h-3.5" />
+                        <span>{action.label}</span>
+                    </Link>
+                ))}
+            </div>
+        </div>
+    );
+}
 
 export default function DashboardLayout({
     children,
@@ -39,12 +199,16 @@ export default function DashboardLayout({
     hideSearch = false,
 }) {
     const { url, props } = usePage();
-    const { auth } = props;
+    const { auth, pendingApprovals } = props;
     const userRole = normalizeRoleKey(auth?.user?.role_name || auth?.user?.role);
     const isManager = userRole === 'manager';
     const isSupervisor = userRole === 'supervisor';
     const canViewReports = isManager || isSupervisor;
     const canManageWarehouseOps = isManager || isSupervisor;
+
+    // Pending approval counts for sidebar badges
+    const pendingOpnameCount = pendingApprovals?.opnames || 0;
+    const pendingTransferCount = pendingApprovals?.transfers || 0;
 
     // Sidebar States (Persisted)
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
@@ -68,15 +232,15 @@ export default function DashboardLayout({
 
     const navMenus = [
         { title: 'Dasbor', url: '/dashboard', icon: LayoutDashboard, show: true },
-        { title: 'Aether AI', url: '/aether', icon: Sparkles, show: true },
+        { title: 'PETAYU AI', url: '/petayu-ai', icon: Sparkles, show: true },
         {
             title: 'Gudang & Operasional',
             icon: Home,
             show: true,
             items: [
                 { title: 'Manajemen Gudang', url: '/warehouse', show: true },
-                { title: 'Transfer Rack', url: '/rack-allocation', show: canManageWarehouseOps },
-                { title: 'Stock Opname', url: '/stock-opname', show: canManageWarehouseOps },
+                { title: 'Transfer Rack', url: '/rack-allocation', show: canManageWarehouseOps, badge: pendingTransferCount },
+                { title: 'Stock Opname', url: '/stock-opname', show: canManageWarehouseOps, badge: pendingOpnameCount },
             ]
         },
         { title: 'Inventaris', url: '/inventory', icon: Boxes, show: true },
@@ -239,25 +403,25 @@ export default function DashboardLayout({
     return (
         <div className="flex h-screen bg-[#f8f9fc] font-sans antialiased text-gray-900">
             {/* Sidebar */}
-            <div className={`h-screen overflow-visible bg-white flex flex-col justify-between flex-shrink-0 z-[250] shadow-[4px_0_24px_rgba(0,0,0,0.02)] relative border-r border-[#edf2f7] transition-all duration-300 ${isSidebarCollapsed ? 'w-[96px]' : 'w-[270px]'}`}>
+            <div className={`h-screen overflow-visible bg-white flex flex-col justify-between flex-shrink-0 z-[250] shadow-[4px_0_24px_rgba(0,0,0,0.02)] relative border-r border-[#EDE8FC] transition-all duration-300 ${isSidebarCollapsed ? 'w-[84px]' : 'w-[270px]'}`}>
                 {/* Collapse Toggle Button */}
                 <button
                     onClick={toggleSidebar}
-                    className="absolute -right-[16px] top-9 w-8 h-8 flex items-center justify-center bg-white border border-gray-200 text-gray-500 hover:text-[#3632c0] rounded-full shadow-sm hover:shadow-md transition-all z-[300] hover:scale-105"
+                    className="absolute -right-[16px] top-7 w-8 h-8 flex items-center justify-center bg-white border border-gray-200 text-gray-500 hover:text-[#5932C9] rounded-full shadow-sm hover:shadow-md transition-all z-[300] hover:scale-105"
                 >
                     <ChevronLeft className={`w-5 h-5 transition-transform duration-300 ${isSidebarCollapsed ? 'rotate-180' : ''}`} strokeWidth={2.5} />
                 </button>
 
                 <div className="flex min-h-0 flex-col h-full">
                     {/* Logo Area */}
-                    <div className={`px-5 py-7 border-b border-gray-50/50 flex ${isSidebarCollapsed ? 'justify-center items-center' : 'items-center space-x-3.5 mx-3'} transition-all`}>
-                        <div className="w-[42px] h-[42px] bg-[#3632c0] rounded-[14px] flex items-center justify-center flex-shrink-0 shadow-lg shadow-indigo-200/50">
-                            <Package className="w-[20px] h-[20px] text-white" />
+                    <div className={`h-[88px] flex items-center shrink-0 border-b border-gray-50/50 transition-all ${isSidebarCollapsed ? 'justify-center' : 'px-5 space-x-3.5'}`}>
+                        <div className="w-[42px] h-[42px] rounded-[14px] bg-white border border-[#EDE8FC] flex items-center justify-center flex-shrink-0 shadow-lg shadow-[#5932C9]/10 overflow-hidden">
+                            <img src="/images/brand-logo.png" alt="Logo PETAYU" className="w-[30px] h-[30px] object-contain" />
                         </div>
                         {!isSidebarCollapsed && (
                             <div className="overflow-hidden transition-all whitespace-nowrap">
-                                <h1 className="text-[17px] font-extrabold text-[#1a202c] tracking-tight leading-tight">Aether Logistix</h1>
-                                <p className="text-[9px] font-bold text-gray-500 tracking-wider mt-0.5 uppercase">Kinetic Architect V1.0</p>
+                                <h1 className="text-[17px] font-extrabold text-slate-900 tracking-tight leading-tight">PETAYU</h1>
+                                <p className="text-[9px] font-bold text-gray-500 tracking-wider mt-0.5 uppercase">SMART STORAGE, SMOOTH FLOW</p>
                             </div>
                         )}
                     </div>
@@ -266,7 +430,7 @@ export default function DashboardLayout({
                     <nav
                         ref={sidebarScrollRef}
                         onScroll={handleSidebarScroll}
-                        className="flex-1 min-h-0 overflow-y-auto overflow-x-visible scrollbar-none px-4 pt-6 pb-8 space-y-2"
+                        className={`flex-1 min-h-0 overflow-y-auto overflow-x-visible scrollbar-none pt-6 pb-8 space-y-2 ${isSidebarCollapsed ? 'px-0' : 'px-4'}`}
                     >
                         {navMenus.filter(menu => menu.show).map((menu, mIdx) => {
                             // Render Single Item
@@ -276,7 +440,7 @@ export default function DashboardLayout({
                                     <Link
                                         key={mIdx}
                                         href={menu.url}
-                                        className={`group relative flex items-center ${isSidebarCollapsed ? 'w-[44px] h-[44px] mx-auto justify-center rounded-[14px]' : 'w-full space-x-3 px-4 py-3 rounded-[12px]'} font-bold text-[13px] transition-all ${active ? 'bg-[#f4f3ff] text-[#3632c0]' : 'text-gray-500 hover:text-[#3632c0] hover:bg-gray-50'}`}
+                                        className={`group relative flex items-center ${isSidebarCollapsed ? 'w-[48px] h-[48px] mx-auto justify-center rounded-[16px]' : 'w-full space-x-3 px-4 py-3 rounded-[12px]'} font-bold text-[13px] transition-all ${active ? 'bg-[#F8F7FF] text-[#5932C9]' : 'text-gray-500 hover:text-[#5932C9] hover:bg-gray-50'}`}
                                     >
                                         <menu.icon className={`flex-shrink-0 transition-transform group-hover:scale-110 ${isSidebarCollapsed ? 'w-[22px] h-[22px]' : 'w-[18px] h-[18px]'}`} strokeWidth={active ? 2.5 : 2} />
                                         {!isSidebarCollapsed && (
@@ -284,9 +448,9 @@ export default function DashboardLayout({
                                         )}
                                         {/* Tooltip for collapsed mode */}
                                         {isSidebarCollapsed && (
-                                            <div className="absolute left-[56px] opacity-0 invisible group-hover:opacity-100 group-hover:visible bg-[#1a202c] text-white text-[12px] font-bold py-1.5 px-3 rounded-xl whitespace-nowrap z-[200] shadow-xl border border-gray-700/50 transition-all ml-1 pointer-events-none">
+                                            <div className="absolute left-[60px] opacity-0 invisible group-hover:opacity-100 group-hover:visible bg-[#28106F] text-white text-[12px] font-bold py-1.5 px-3 rounded-xl whitespace-nowrap z-[200] shadow-xl border border-gray-700/50 transition-all ml-1 pointer-events-none">
                                                 {menu.title}
-                                                <div className="absolute top-1/2 -left-1 -translate-y-1/2 w-2 h-2 bg-[#1a202c] rotate-45 border-b border-l border-gray-700/50"></div>
+                                                <div className="absolute top-1/2 -left-1 -translate-y-1/2 w-2 h-2 bg-[#28106F] rotate-45 border-b border-l border-gray-700/50"></div>
                                             </div>
                                         )}
                                     </Link>
@@ -304,7 +468,7 @@ export default function DashboardLayout({
                                 <div key={mIdx} className="w-full relative">
                                     <button
                                         onClick={() => isSidebarCollapsed ? toggleSidebar() : toggleMenu(menu.title)}
-                                        className={`group relative flex items-center ${isSidebarCollapsed ? 'w-[44px] h-[44px] mx-auto justify-center rounded-[14px]' : 'w-full justify-between px-4 py-3 rounded-[12px]'} font-bold text-[13px] transition-all ${hasActiveChild && !isOpen && isSidebarCollapsed ? 'bg-[#f4f3ff] text-[#3632c0]' : 'text-gray-500 hover:text-[#3632c0] hover:bg-gray-50'} ${(hasActiveChild || isOpen) && !isSidebarCollapsed ? 'text-[#3632c0]' : ''}`}
+                                        className={`group relative flex items-center ${isSidebarCollapsed ? 'w-[48px] h-[48px] mx-auto justify-center rounded-[16px]' : 'w-full justify-between px-4 py-3 rounded-[12px]'} font-bold text-[13px] transition-all ${hasActiveChild && !isOpen && isSidebarCollapsed ? 'bg-[#F8F7FF] text-[#5932C9]' : 'text-gray-500 hover:text-[#5932C9] hover:bg-gray-50'} ${(hasActiveChild || isOpen) && !isSidebarCollapsed ? 'text-[#5932C9]' : ''}`}
                                     >
                                         <div className={`flex items-center ${isSidebarCollapsed ? 'justify-center' : 'space-x-3'}`}>
                                             <menu.icon className={`flex-shrink-0 transition-transform group-hover:scale-110 ${isSidebarCollapsed ? 'w-[22px] h-[22px]' : 'w-[18px] h-[18px]'}`} strokeWidth={hasActiveChild ? 2.5 : 2} />
@@ -319,9 +483,9 @@ export default function DashboardLayout({
                                         )}
 
                                         {isSidebarCollapsed && (
-                                            <div className="absolute left-[56px] opacity-0 invisible group-hover:opacity-100 group-hover:visible bg-[#1a202c] text-white text-[12px] font-bold py-1.5 px-3 rounded-xl whitespace-nowrap z-[200] shadow-xl border border-gray-700/50 transition-all ml-1 pointer-events-none">
+                                            <div className="absolute left-[60px] opacity-0 invisible group-hover:opacity-100 group-hover:visible bg-[#28106F] text-white text-[12px] font-bold py-1.5 px-3 rounded-xl whitespace-nowrap z-[200] shadow-xl border border-gray-700/50 transition-all ml-1 pointer-events-none">
                                                 {menu.title}
-                                                <div className="absolute top-1/2 -left-1 -translate-y-1/2 w-2 h-2 bg-[#1a202c] rotate-45 border-b border-l border-gray-700/50"></div>
+                                                <div className="absolute top-1/2 -left-1 -translate-y-1/2 w-2 h-2 bg-[#28106F] rotate-45 border-b border-l border-gray-700/50"></div>
                                             </div>
                                         )}
                                     </button>
@@ -337,9 +501,14 @@ export default function DashboardLayout({
                                                     <Link
                                                         key={iIdx}
                                                         href={item.url}
-                                                        className={`block w-full text-left px-3 py-2 rounded-lg text-[13px] font-bold transition-all ${active ? 'text-[#3632c0] bg-indigo-50/50' : 'text-gray-400 hover:text-gray-700 hover:bg-gray-50'}`}
+                                                        className={`block w-full text-left px-3 py-2 rounded-lg text-[13px] font-bold transition-all ${active ? 'text-[#5932C9] bg-indigo-50/50' : 'text-gray-400 hover:text-gray-700 hover:bg-gray-50'}`}
                                                     >
-                                                        {item.title}
+                                                        <span className="flex items-center justify-between">
+                                                            {item.title}
+                                                            {item.badge > 0 && (
+                                                                <span className="ml-2 inline-flex items-center justify-center min-w-[18px] h-[18px] rounded-full bg-amber-500 text-white text-[9px] font-black px-1">{item.badge}</span>
+                                                            )}
+                                                        </span>
                                                     </Link>
                                                 );
                                             })}
@@ -348,35 +517,35 @@ export default function DashboardLayout({
                                 </div>
                             );
                         })}
-                        <div className={`mt-5 pt-5 border-t border-gray-50 ${isSidebarCollapsed ? 'flex justify-center' : ''}`}>
+                        <div className="mt-5 pt-5 border-t border-gray-50">
                             <button
                                 type="button"
                                 onClick={() => isSidebarCollapsed ? toggleSidebar() : setHelpMenuOpen((open) => !open)}
-                                className={`flex items-center ${isSidebarCollapsed ? 'w-[44px] h-[44px] justify-center rounded-[14px]' : 'w-full justify-between px-4 py-3 rounded-[12px]'} text-gray-500 hover:text-[#3632c0] hover:bg-gray-50 transition-all group relative`}
+                                className={`group relative flex items-center ${isSidebarCollapsed ? 'w-[48px] h-[48px] mx-auto justify-center rounded-[16px]' : 'w-full justify-between px-4 py-3 rounded-[12px]'} text-gray-500 hover:text-[#5932C9] hover:bg-gray-50 transition-all`}
                             >
-                                <span className={`flex items-center ${isSidebarCollapsed ? 'justify-center' : 'space-x-3'}`}>
-                                    <HelpCircle className={`w-[20px] h-[20px] transition-transform group-hover:scale-110 ${isActive('/help') ? 'text-[#3632c0]' : ''}`} />
+                                <div className={`flex items-center ${isSidebarCollapsed ? 'justify-center' : 'space-x-3'}`}>
+                                    <HelpCircle className={`w-[20px] h-[20px] transition-transform group-hover:scale-110 ${isActive('/help') ? 'text-[#5932C9]' : ''}`} />
                                     {!isSidebarCollapsed && (
-                                        <span className={`text-[12px] font-bold ${isActive('/help') ? 'text-[#3632c0]' : ''}`}>Pusat Bantuan</span>
+                                        <span className={`text-[12px] font-bold ${isActive('/help') ? 'text-[#5932C9]' : ''}`}>Pusat Bantuan</span>
                                     )}
-                                </span>
+                                </div>
                                 {!isSidebarCollapsed && (
                                     <ChevronRight className={`w-4 h-4 opacity-60 transition-transform duration-300 ${helpMenuOpen ? 'rotate-90' : ''}`} />
                                 )}
                                 {isSidebarCollapsed && (
-                                    <div className="absolute left-[56px] opacity-0 invisible group-hover:opacity-100 group-hover:visible bg-[#1a202c] text-white text-[12px] font-bold py-1.5 px-3 rounded-xl whitespace-nowrap z-[200] shadow-xl border border-gray-700/50 transition-all ml-1 pointer-events-none">
+                                    <div className="absolute left-[60px] opacity-0 invisible group-hover:opacity-100 group-hover:visible bg-[#28106F] text-white text-[12px] font-bold py-1.5 px-3 rounded-xl whitespace-nowrap z-[200] shadow-xl border border-gray-700/50 transition-all ml-1 pointer-events-none">
                                         Pusat Bantuan
-                                        <div className="absolute top-1/2 -left-1 -translate-y-1/2 w-2 h-2 bg-[#1a202c] rotate-45 border-b border-l border-gray-700/50"></div>
+                                        <div className="absolute top-1/2 -left-1 -translate-y-1/2 w-2 h-2 bg-[#28106F] rotate-45 border-b border-l border-gray-700/50"></div>
                                     </div>
                                 )}
                             </button>
 
                             <div className={`overflow-hidden transition-all duration-300 ease-in-out ${helpMenuOpen && !isSidebarCollapsed ? 'max-h-32 opacity-100 mt-1' : 'max-h-0 opacity-0'}`}>
                                 <div className="ml-6 pl-4 border-l-2 border-gray-100 space-y-1.5 py-1">
-                                    <Link href="/help/live-support" className={`block w-full text-left px-3 py-2 rounded-lg text-[13px] font-bold transition-all ${isActive('/help/live-support') ? 'text-[#3632c0] bg-indigo-50/50' : 'text-gray-400 hover:text-gray-700 hover:bg-gray-50'}`}>
+                                    <Link href="/help/live-support" className={`block w-full text-left px-3 py-2 rounded-lg text-[13px] font-bold transition-all ${isActive('/help/live-support') ? 'text-[#5932C9] bg-indigo-50/50' : 'text-gray-400 hover:text-gray-700 hover:bg-gray-50'}`}>
                                         Bantuan Langsung
                                     </Link>
-                                    <Link href="/help/documentation" className={`block w-full text-left px-3 py-2 rounded-lg text-[13px] font-bold transition-all ${isActive('/help/documentation') ? 'text-[#3632c0] bg-indigo-50/50' : 'text-gray-400 hover:text-gray-700 hover:bg-gray-50'}`}>
+                                    <Link href="/help/documentation" className={`block w-full text-left px-3 py-2 rounded-lg text-[13px] font-bold transition-all ${isActive('/help/documentation') ? 'text-[#5932C9] bg-indigo-50/50' : 'text-gray-400 hover:text-gray-700 hover:bg-gray-50'}`}>
                                         Dokumentasi Sistem
                                     </Link>
                                 </div>
@@ -413,7 +582,7 @@ export default function DashboardLayout({
                                         }`} />
                                     <div className="flex-1 min-w-0">
                                         <div className="text-[11px] font-black text-gray-400 uppercase tracking-[0.2em] mb-1">Realtime Alert</div>
-                                        <div className="text-[14px] font-black text-[#1a202c] leading-tight">{notif.title}</div>
+                                        <div className="text-[14px] font-black text-slate-900 leading-tight">{notif.title}</div>
                                         <div className="text-[12px] font-semibold text-gray-600 mt-1 leading-relaxed">{notif.message}</div>
                                     </div>
                                     <button
@@ -432,10 +601,10 @@ export default function DashboardLayout({
 
                 {/* Header */}
                 {!fullPage && (
-                <header className="h-[76px] flex items-center justify-between px-10 flex-shrink-0 z-[100] bg-white shadow-[0_2px_12px_rgba(0,0,0,0.015)] border-b border-[#edf2f7]">
+                <header className="h-[76px] flex items-center justify-between px-10 flex-shrink-0 z-[100] bg-white shadow-[0_2px_12px_rgba(0,0,0,0.015)] border-b border-[#EDE8FC]">
                     <div className="flex items-center space-x-4">
                         {headerTitle && (
-                            <h2 className="text-[18px] font-black text-[#1a202c] mr-4">{headerTitle}</h2>
+                            <h2 className="text-[18px] font-black text-slate-900 mr-4">{headerTitle}</h2>
                         )}
                         {(!hideSearch && !url.includes('/settings') && !url.includes('/rack-allocation')) ? (
                             <div className="flex-1 min-w-[380px] relative">
@@ -443,7 +612,7 @@ export default function DashboardLayout({
                                 <input
                                     type="text"
                                     placeholder={headerSearchPlaceholder || "Cari..."}
-                                    className="w-full bg-[#f4f5f9] text-[13px] text-gray-700 rounded-[12px] pl-11 pr-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-[#3632c0] border border-transparent transition-all font-bold placeholder-gray-400 shadow-[inset_0_2px_4px_rgba(0,0,0,0.01)]"
+                                    className="w-full bg-[#f4f5f9] text-[13px] text-gray-700 rounded-[12px] pl-11 pr-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-[#5932C9] border border-transparent transition-all font-bold placeholder-gray-400 shadow-[inset_0_2px_4px_rgba(0,0,0,0.01)]"
                                     value={searchValue || ''}
                                     onChange={(e) => onSearch && onSearch(e.target.value)}
                                 />
@@ -467,7 +636,7 @@ export default function DashboardLayout({
                             <>
                                 <div className="flex items-center space-x-6 text-gray-500">
                                     <Link href="/notifications" className="hover:text-gray-900 transition-all relative mt-1 group">
-                                        <div className="p-2.5 rounded-xl bg-gray-50 group-hover:bg-indigo-50 group-hover:text-[#3632c0] transition-colors">
+                                        <div className="p-2.5 rounded-xl bg-gray-50 group-hover:bg-indigo-50 group-hover:text-[#5932C9] transition-colors">
                                             <Bell className="w-[22px] h-[22px]" />
                                         </div>
                                         {activeNotifications.length > 0 && (
@@ -481,7 +650,7 @@ export default function DashboardLayout({
                                     </Link>
 
                                     <Link href="/help/live-support" className="hover:text-gray-900 transition-all mt-1 group">
-                                        <div className="p-2.5 rounded-xl bg-gray-50 group-hover:bg-indigo-50 group-hover:text-[#3632c0] transition-colors">
+                                        <div className="p-2.5 rounded-xl bg-gray-50 group-hover:bg-indigo-50 group-hover:text-[#5932C9] transition-colors">
                                             <HelpCircle className="w-[22px] h-[22px]" />
                                         </div>
                                     </Link>
@@ -493,14 +662,14 @@ export default function DashboardLayout({
                                     <Dropdown.Trigger>
                                         <div className="flex items-center space-x-3 pl-2 cursor-pointer group">
                                             <div className="flex flex-col text-right">
-                                                <span className="text-[13px] font-extrabold text-[#1a202c] group-hover:text-[#4f46e5] transition-colors leading-tight">
+                                                <span className="text-[13px] font-extrabold text-slate-900 group-hover:text-[#5932C9] transition-colors leading-tight">
                                                     {auth?.user?.name || 'Pengguna Sistem'}
                                                 </span>
                                                 <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
                                                     {formatRoleLabel(auth?.user?.role_name || auth?.user?.role)}
                                                 </span>
                                             </div>
-                                            <div className="w-[42px] h-[42px] rounded-full bg-[#f0f4f8] flex items-center justify-center flex-shrink-0 border-2 border-white shadow-sm overflow-hidden group-hover:border-indigo-100 transition-all text-[#1a202c] font-black text-xs uppercase">
+                                            <div className="w-[42px] h-[42px] rounded-full bg-[#f0f4f8] flex items-center justify-center flex-shrink-0 border-2 border-white shadow-sm overflow-hidden group-hover:border-indigo-100 transition-all text-slate-900 font-black text-xs uppercase">
                                                 {auth?.user?.profile_photo_url ? (
                                                     <img
                                                         src={auth.user.profile_photo_url}
@@ -531,8 +700,17 @@ export default function DashboardLayout({
                 </header>
                 )}
 
+                {/* Breadcrumb Navigation */}
+                {!fullPage && <Breadcrumb url={url} />}
+
+                {/* Quick Actions Bar */}
+                {!fullPage && <QuickActionsBar url={url} />}
+
                 {/* Dashboard Scrollable Area */}
-                <main className={`flex-1 min-h-0 overflow-x-hidden scroll-smooth ${fullPage ? 'p-0 overflow-y-hidden bg-white' : 'px-10 pt-8 pb-32 overflow-y-auto bg-[#f8f9fc]'}`}>
+                <main
+                    scroll-region="true"
+                    className={`flex-1 min-h-0 overflow-x-hidden scroll-smooth ${fullPage ? 'flex flex-col p-0 overflow-y-hidden bg-white' : 'px-10 pt-6 pb-32 overflow-y-auto bg-[#f8f9fc]'}`}
+                >
                     {fullPage ? (
                         children
                     ) : (
@@ -542,7 +720,7 @@ export default function DashboardLayout({
                     )}
                 </main>
             </div>
-            {url !== '/aether' && <FloatingBubble />}
+            {!url.startsWith('/petayu-ai') && <FloatingBubble />}
 
             <Modal show={confirmingLogout} maxWidth="md" onClose={() => setConfirmingLogout(false)}>
                 <div className="p-6">

@@ -27,9 +27,9 @@ const supportChannels = [
         icon: ShieldCheck,
     },
     {
-        title: 'Aether AI',
+        title: 'PETAYU AI',
         description: 'Untuk pertanyaan cepat tentang ringkasan stok, tren transaksi, penggunaan modul, atau analisis awal sebelum eskalasi.',
-        response: 'Tersedia dari menu Aether AI dan bubble bantuan di halaman sistem.',
+        response: 'Tersedia dari menu PETAYU AI dan bubble bantuan di halaman sistem.',
         icon: Sparkles,
     },
 ];
@@ -93,8 +93,8 @@ const contactByRole = {
         detail: 'Supervisor Gudang dapat eskalasi ke Manager Gudang untuk approval, data master, koreksi stok final, dan keputusan operasional lintas shift.',
     },
     manager: {
-        label: 'Aether AI dan Dokumentasi Sistem',
-        detail: 'Manager Gudang dapat memakai Aether AI untuk analisis awal, lalu memakai dokumentasi untuk memvalidasi alur sebelum mengambil keputusan.',
+        label: 'PETAYU AI dan Dokumentasi Sistem',
+        detail: 'Manager Gudang dapat memakai PETAYU AI untuk analisis awal, lalu memakai dokumentasi untuk memvalidasi alur sebelum mengambil keputusan.',
     },
     driver: {
         label: 'Supervisor Gudang',
@@ -134,7 +134,7 @@ export default function LiveSupport() {
                 <section className="pt-4 pb-8">
                     <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
                         <div>
-                            <p className="text-[11px] font-black uppercase tracking-[0.22em] text-[#3632c0]">Pusat Bantuan</p>
+                            <p className="text-[11px] font-black uppercase tracking-[0.22em] text-[#28106F]">Pusat Bantuan</p>
                             <h1 className="mt-3 text-[34px] font-black tracking-tight text-[#111827]">Bantuan Langsung Operasional</h1>
                             <p className="mt-3 max-w-3xl text-[14px] font-semibold leading-7 text-gray-500">
                                 Gunakan halaman ini untuk menentukan jalur bantuan saat terjadi kendala data, akses, dokumen, pengiriman, atau proses gudang.
@@ -142,7 +142,7 @@ export default function LiveSupport() {
                         </div>
                         <Link
                             href="/help/documentation"
-                            className="inline-flex items-center justify-center gap-2 rounded-[12px] bg-[#3632c0] px-5 py-3 text-[12px] font-black uppercase tracking-wider text-white shadow-lg shadow-indigo-100 transition-all hover:bg-[#28239d]"
+                            className="inline-flex items-center justify-center gap-2 rounded-[12px] bg-[#28106F] px-5 py-3 text-[12px] font-black uppercase tracking-wider text-white shadow-lg shadow-indigo-100 transition-all hover:bg-[#28239d]"
                         >
                             Dokumentasi Sistem
                             <ArrowRight className="h-4 w-4" />
@@ -153,11 +153,11 @@ export default function LiveSupport() {
                 <section className="mb-8 rounded-[8px] border border-indigo-100 bg-[#f4f3ff] p-6 shadow-sm">
                     <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                         <div>
-                            <p className="text-[11px] font-black uppercase tracking-[0.2em] text-[#3632c0]">Jalur Kontak Disarankan</p>
+                            <p className="text-[11px] font-black uppercase tracking-[0.2em] text-[#28106F]">Jalur Kontak Disarankan</p>
                             <h2 className="mt-2 text-[22px] font-black text-gray-900">{recommendedContact.label}</h2>
                             <p className="mt-2 max-w-4xl text-[13px] font-bold leading-6 text-gray-600">{recommendedContact.detail}</p>
                         </div>
-                        <div className="rounded-[8px] bg-white px-4 py-3 text-[12px] font-black uppercase tracking-wider text-[#3632c0] shadow-sm">
+                        <div className="rounded-[8px] bg-white px-4 py-3 text-[12px] font-black uppercase tracking-wider text-[#28106F] shadow-sm">
                             Role Saat Ini: {formatRoleLabel(currentRole)}
                         </div>
                     </div>
@@ -169,13 +169,13 @@ export default function LiveSupport() {
 
                         return (
                             <article key={channel.title} className="rounded-[8px] border border-gray-100 bg-white p-6 shadow-sm">
-                                <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-[8px] bg-[#f4f3ff] text-[#3632c0]">
+                                <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-[8px] bg-[#f4f3ff] text-[#28106F]">
                                     <Icon className="h-6 w-6" />
                                 </div>
                                 <h2 className="text-[18px] font-black text-gray-900">{channel.title}</h2>
                                 <p className="mt-3 text-[13px] font-semibold leading-6 text-gray-500">{channel.description}</p>
-                                <div className="mt-5 flex items-start gap-2 rounded-[8px] bg-[#f8fafc] p-4 text-[12px] font-bold leading-6 text-gray-600">
-                                    <Clock3 className="mt-0.5 h-4 w-4 flex-shrink-0 text-[#3632c0]" />
+                                <div className="mt-5 flex items-start gap-2 rounded-[8px] bg-[#F8F7FF] p-4 text-[12px] font-bold leading-6 text-gray-600">
+                                    <Clock3 className="mt-0.5 h-4 w-4 flex-shrink-0 text-[#28106F]" />
                                     <span>{channel.response}</span>
                                 </div>
                             </article>
@@ -196,10 +196,10 @@ export default function LiveSupport() {
                         </div>
                         <div className="grid gap-3 md:grid-cols-2">
                             {issueCategories.map((issue) => (
-                                <Link key={issue.title} href={issue.route} className="group rounded-[8px] border border-gray-100 bg-[#f8fafc] p-4 transition-all hover:border-indigo-100 hover:bg-white hover:shadow-sm">
+                                <Link key={issue.title} href={issue.route} className="group rounded-[8px] border border-gray-100 bg-[#F8F7FF] p-4 transition-all hover:border-indigo-100 hover:bg-white hover:shadow-sm">
                                     <div className="flex items-start justify-between gap-3">
-                                        <h3 className="text-[14px] font-black text-gray-900 group-hover:text-[#3632c0]">{issue.title}</h3>
-                                        <ArrowRight className="mt-0.5 h-4 w-4 flex-shrink-0 text-gray-300 group-hover:text-[#3632c0]" />
+                                        <h3 className="text-[14px] font-black text-gray-900 group-hover:text-[#28106F]">{issue.title}</h3>
+                                        <ArrowRight className="mt-0.5 h-4 w-4 flex-shrink-0 text-gray-300 group-hover:text-[#28106F]" />
                                     </div>
                                     <p className="mt-2 text-[12px] font-semibold leading-6 text-gray-500">{issue.detail}</p>
                                 </Link>
@@ -219,7 +219,7 @@ export default function LiveSupport() {
                         </div>
                         <div className="space-y-3">
                             {quickChecks.map((item) => (
-                                <div key={item} className="flex gap-3 rounded-[8px] bg-[#f8fafc] p-4 text-[13px] font-bold leading-6 text-gray-600">
+                                <div key={item} className="flex gap-3 rounded-[8px] bg-[#F8F7FF] p-4 text-[13px] font-bold leading-6 text-gray-600">
                                     <CheckCircle2 className="mt-0.5 h-4 w-4 flex-shrink-0 text-emerald-500" />
                                     <span>{item}</span>
                                 </div>
@@ -230,7 +230,7 @@ export default function LiveSupport() {
 
                 <section className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr]">
                     <div className="rounded-[8px] border border-gray-100 bg-white p-6 shadow-sm">
-                        <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-[8px] bg-indigo-50 text-[#3632c0]">
+                        <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-[8px] bg-indigo-50 text-[#28106F]">
                             <LifeBuoy className="h-6 w-6" />
                         </div>
                         <h2 className="text-[20px] font-black text-gray-900">Format Laporan Kendala</h2>
@@ -238,16 +238,16 @@ export default function LiveSupport() {
                             Saat menghubungi penanggung jawab gudang, sertakan data yang cukup agar masalah bisa ditelusuri tanpa bolak-balik klarifikasi.
                         </p>
                         <div className="mt-6 space-y-3 text-[13px] font-bold leading-6 text-gray-600">
-                            <div className="rounded-[8px] border border-gray-100 bg-[#f8fafc] p-4">Menu: contoh Inventaris, Pengiriman, Laporan</div>
-                            <div className="rounded-[8px] border border-gray-100 bg-[#f8fafc] p-4">Nomor dokumen: PO, Stock Out, Shipment, Opname, atau Adjustment</div>
-                            <div className="rounded-[8px] border border-gray-100 bg-[#f8fafc] p-4">Masalah: data tidak sesuai, akses ditolak, gagal submit, atau laporan tidak sinkron</div>
-                            <div className="rounded-[8px] border border-gray-100 bg-[#f8fafc] p-4">Bukti: screenshot, waktu kejadian, dan akun pengguna</div>
+                            <div className="rounded-[8px] border border-gray-100 bg-[#F8F7FF] p-4">Menu: contoh Inventaris, Pengiriman, Laporan</div>
+                            <div className="rounded-[8px] border border-gray-100 bg-[#F8F7FF] p-4">Nomor dokumen: PO, Stock Out, Shipment, Opname, atau Adjustment</div>
+                            <div className="rounded-[8px] border border-gray-100 bg-[#F8F7FF] p-4">Masalah: data tidak sesuai, akses ditolak, gagal submit, atau laporan tidak sinkron</div>
+                            <div className="rounded-[8px] border border-gray-100 bg-[#F8F7FF] p-4">Bukti: screenshot, waktu kejadian, dan akun pengguna</div>
                         </div>
                     </div>
 
                     <div className="rounded-[8px] border border-gray-100 bg-white p-6 shadow-sm">
                         <div className="mb-5 flex items-center gap-3">
-                            <div className="flex h-11 w-11 items-center justify-center rounded-[8px] bg-indigo-50 text-[#3632c0]">
+                            <div className="flex h-11 w-11 items-center justify-center rounded-[8px] bg-indigo-50 text-[#28106F]">
                                 <MessageSquare className="h-5 w-5" />
                             </div>
                             <div>
@@ -257,8 +257,8 @@ export default function LiveSupport() {
                         </div>
                         <div className="space-y-3">
                             {escalationSteps.map((step, index) => (
-                                <div key={step} className="flex gap-4 rounded-[8px] border border-gray-100 bg-[#f8fafc] p-4">
-                                    <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-[8px] bg-white text-[12px] font-black text-[#3632c0] shadow-sm">
+                                <div key={step} className="flex gap-4 rounded-[8px] border border-gray-100 bg-[#F8F7FF] p-4">
+                                    <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-[8px] bg-white text-[12px] font-black text-[#28106F] shadow-sm">
                                         {index + 1}
                                     </div>
                                     <p className="text-[13px] font-bold leading-6 text-gray-600">{step}</p>
@@ -266,13 +266,13 @@ export default function LiveSupport() {
                             ))}
                         </div>
                         <div className="mt-5 flex flex-col gap-3 sm:flex-row">
-                            <Link href="/help/documentation" className="inline-flex flex-1 items-center justify-center gap-2 rounded-[12px] border border-gray-200 bg-white px-4 py-3 text-[12px] font-black uppercase tracking-wider text-gray-700 transition-all hover:border-indigo-100 hover:text-[#3632c0]">
+                            <Link href="/help/documentation" className="inline-flex flex-1 items-center justify-center gap-2 rounded-[12px] border border-gray-200 bg-white px-4 py-3 text-[12px] font-black uppercase tracking-wider text-gray-700 transition-all hover:border-indigo-100 hover:text-[#28106F]">
                                 <FileText className="h-4 w-4" />
                                 Baca Dokumentasi
                             </Link>
-                            <Link href={`/aether?prompt=${encodeURIComponent('Saya butuh bantuan langsung. Jelaskan jalur eskalasi kendala sistem sesuai role saya dan data apa saja yang harus saya siapkan.')}`} className="inline-flex flex-1 items-center justify-center gap-2 rounded-[12px] bg-[#3632c0] px-4 py-3 text-[12px] font-black uppercase tracking-wider text-white transition-all hover:bg-[#28239d]">
+                            <Link href={`/petayu-ai?prompt=${encodeURIComponent('Saya butuh bantuan langsung. Jelaskan jalur eskalasi kendala sistem sesuai role saya dan data apa saja yang harus saya siapkan.')}`} className="inline-flex flex-1 items-center justify-center gap-2 rounded-[12px] bg-[#28106F] px-4 py-3 text-[12px] font-black uppercase tracking-wider text-white transition-all hover:bg-[#28239d]">
                                 <Sparkles className="h-4 w-4" />
-                                Tanya Aether AI
+                                Tanya PETAYU AI
                             </Link>
                         </div>
                     </div>

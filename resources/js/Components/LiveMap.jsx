@@ -47,15 +47,30 @@ function FocusMap({ focusedDriverId, drivers }) {
 export default function LiveMap({ onDriversLoad = () => {}, focusedDriverId = null, onMarkerClick = () => {} }) {
     const [drivers, setDrivers] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [hasFetchError, setHasFetchError] = useState(false);
+
+    const hasValidCoords = (driver) => {
+        const latRaw = driver?.latitude;
+        const lngRaw = driver?.longitude;
+        if (latRaw === null || latRaw === undefined || latRaw === '' || lngRaw === null || lngRaw === undefined || lngRaw === '') {
+            return false;
+        }
+        const lat = Number(latRaw);
+        const lng = Number(lngRaw);
+        return Number.isFinite(lat) && Number.isFinite(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180;
+    };
 
     const fetchLocations = async () => {
         try {
             const response = await axios.get(route('drivers.locations'));
             setDrivers(response.data);
             onDriversLoad(response.data);
-            setLoading(false);
+            setHasFetchError(false);
         } catch (error) {
             console.error('Error fetching driver locations:', error);
+            setHasFetchError(true);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -67,21 +82,21 @@ export default function LiveMap({ onDriversLoad = () => {}, focusedDriverId = nu
     }, []);
 
     const activeCoords = drivers
-        .filter(d => d.latitude && d.longitude)
+        .filter((d) => hasValidCoords(d))
         .map(d => ({ lat: parseFloat(d.latitude), lng: parseFloat(d.longitude) }));
 
     return (
-        <div className="h-full w-full rounded-[8px] overflow-hidden border border-[#edf2f7] shadow-sm relative bg-white">
+        <div className="h-full w-full rounded-[8px] overflow-hidden border border-[#EDE8FC] shadow-sm relative bg-white">
             {loading && (
                 <div className="absolute inset-0 z-[1000] bg-white/50 backdrop-blur-sm flex items-center justify-center">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#3632c0]"></div>
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#28106F]"></div>
                 </div>
             )}
             
             <MapContainer 
                 center={[-6.200000, 106.816666]} 
                 zoom={13} 
-                style={{ height: '100%', width: '100%', background: '#f8fafc' }}
+                style={{ height: '100%', width: '100%', background: '#F8F7FF' }}
                 className="z-10"
             >
                 <TileLayer
@@ -95,7 +110,7 @@ export default function LiveMap({ onDriversLoad = () => {}, focusedDriverId = nu
                 />
                 
                 {drivers.map((driver) => (
-                    driver.latitude && driver.longitude && (
+                    hasValidCoords(driver) && (
                         <Marker 
                             key={driver.id} 
                             position={[parseFloat(driver.latitude), parseFloat(driver.longitude)]}
@@ -105,7 +120,7 @@ export default function LiveMap({ onDriversLoad = () => {}, focusedDriverId = nu
                             icon={L.divIcon({
                                 className: 'custom-div-icon',
                                 html: `
-                                    <div class="truck-marker-container" style="--marker-color: ${driver.last_location_mock ? '#ef4444' : '#4338ca'};">
+                                    <div class="truck-marker-container" style="--marker-color: ${driver.last_location_mock ? '#ef4444' : '#28106F'};">
                                         <div class="truck-pulse"></div>
                                         <div class="truck-icon-bg">
                                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
@@ -120,9 +135,9 @@ export default function LiveMap({ onDriversLoad = () => {}, focusedDriverId = nu
                             })}
                         >
                             <Popup className="custom-map-popup">
-                                <div className="p-2 min-w-[150px]">
+                                    <div className="p-2 min-w-[150px]">
                                     <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Driver Aktif</div>
-                                    <div className="font-black text-[#1a202c] text-[15px] leading-tight mb-2">{driver.user.name}</div>
+                                    <div className="font-black text-[#28106F] text-[15px] leading-tight mb-2">{driver.user?.name || 'Driver'}</div>
                                     
                                     {driver.active_shipment_id ? (
                                         <div className="mb-3 p-2 bg-emerald-50 rounded-xl border border-emerald-100/50">
@@ -172,8 +187,10 @@ export default function LiveMap({ onDriversLoad = () => {}, focusedDriverId = nu
             </MapContainer>
 
             <div className="absolute bottom-6 left-6 z-[1000] bg-white px-4 py-2 rounded-[8px] shadow-lg border border-gray-100 flex items-center space-x-2">
-                <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
-                <span className="text-[11px] font-black text-gray-600 uppercase tracking-widest">Live Monitoring Aktif</span>
+                <div className={`w-2 h-2 rounded-full ${hasFetchError ? 'bg-rose-500' : 'bg-emerald-500 animate-pulse'}`}></div>
+                <span className={`text-[11px] font-black uppercase tracking-widest ${hasFetchError ? 'text-rose-600' : 'text-gray-600'}`}>
+                    {hasFetchError ? 'Sinkronisasi GPS Bermasalah' : 'Live Monitoring Aktif'}
+                </span>
             </div>
         </div>
     );

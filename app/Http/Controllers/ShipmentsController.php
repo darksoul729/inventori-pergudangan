@@ -3,14 +3,20 @@
 namespace App\Http\Controllers;
 
 use App\Models\Shipment;
+use App\Models\ShipmentItem;
+use App\Models\Product;
+use App\Traits\HandlesShipmentStock;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 
 class ShipmentsController extends Controller
 {
+    use HandlesShipmentStock;
     public function index(Request $request)
     {
         Gate::authorize('viewAny', Shipment::class);
@@ -18,7 +24,7 @@ class ShipmentsController extends Controller
         $perPage = max(5, min($request->integer('per_page', 10), 50));
         $search = $request->input('search');
 
-        $shipments = Shipment::with('driver.user')
+        $shipments = Shipment::with(['driver.user', 'items'])
             ->when($search, function ($query, $search) {
                 return $query->where(function ($q) use ($search) {
                     $q->where('shipment_id', 'like', "%{$search}%")
@@ -61,6 +67,15 @@ class ShipmentsController extends Controller
                     'driver_lng' => $this->nullableCoordinate($shipment->driver?->longitude),
                     'last_location_mock' => (bool) ($shipment->driver?->last_location_mock ?? false),
                     'last_location_at' => $this->lastLocationLabel($shipment),
+                    'items' => $shipment->items->map(fn ($item) => [
+                        'id' => $item->id,
+                        'product_name' => $item->product_name,
+                        'sku' => $item->sku,
+                        'quantity' => (float) $item->quantity,
+                        'unit' => $item->unit,
+                        'weight_kg' => $item->weight_kg ? (float) $item->weight_kg : null,
+                    ]),
+                    'items_summary' => $this->itemsSummary($shipment),
                     'alerts' => $alerts,
                 ];
             });
@@ -115,8 +130,25 @@ class ShipmentsController extends Controller
                 ];
             });
 
+        $products = Product::where('is_active', true)
+            ->orderBy('name')
+            ->get(['id', 'sku', 'name', 'unit_id'])
+            ->map(function ($p) {
+                $stock = $p->productStocks()->first();
+                return [
+                    'id' => $p->id,
+                    'sku' => $p->sku,
+                    'name' => $p->name,
+                    'unit' => $p->unit?->symbol ?? 'pcs',
+                    'available_stock' => $stock ? ($stock->current_stock - $stock->reserved_stock) : 0,
+                    'current_stock' => $stock?->current_stock ?? 0,
+                    'reserved_stock' => $stock?->reserved_stock ?? 0,
+                ];
+            });
+
         return Inertia::render('Shipments/Create', [
             'drivers' => $approvedDrivers,
+            'products' => $products,
         ]);
     }
 
@@ -125,7 +157,6 @@ class ShipmentsController extends Controller
         Gate::authorize('create', Shipment::class);
 
         $validated = $request->validate([
-            'shipment_id' => 'required|unique:shipments',
             'origin' => 'required|string',
             'origin_name' => 'required|string',
             'origin_lat' => 'nullable|numeric',
@@ -134,10 +165,18 @@ class ShipmentsController extends Controller
             'destination_name' => 'required|string',
             'dest_lat' => 'nullable|numeric',
             'dest_lng' => 'nullable|numeric',
-            'status' => 'required|in:on-time,delayed,in-transit,delivered',
+            'tracking_stage' => 'required|in:ready_for_pickup,picked_up,in_transit,arrived_at_destination',
             'estimated_arrival' => 'required|date',
             'load_type' => 'required|in:sea,air,ground',
             'driver_id' => 'nullable|exists:drivers,id',
+            'items' => 'nullable|array',
+            'items.*.product_name' => 'required|string|max:255',
+            'items.*.sku' => 'nullable|string|max:100',
+            'items.*.quantity' => 'required|numeric|min:1',
+            'items.*.unit' => 'nullable|string|max:50',
+            'items.*.weight_kg' => 'nullable|numeric|min:0',
+            'items.*.notes' => 'nullable|string|max:500',
+            'items.*.product_id' => 'nullable|exists:products,id',
         ]);
 
         if ($request->filled('driver_id')) {
@@ -147,17 +186,40 @@ class ShipmentsController extends Controller
             }
         }
 
-        $validated['tracking_stage'] = 'ready_for_pickup';
+        $validated['status'] = $this->mapTrackingStageToStatus($validated['tracking_stage']);
+        $validated['shipment_id'] = $this->generateShipmentId();
         $validated['claimed_at'] = $validated['driver_id'] ? now() : null;
-        $validated['last_tracking_note'] = $validated['driver_id']
-            ? 'Shipment sudah dijadwalkan ke driver.'
-            : 'Menunggu driver mengambil shipment.';
+        $validated['last_tracking_note'] = $this->trackingStageNote($validated['tracking_stage'], (bool) $validated['driver_id']);
 
-        Shipment::create($validated);
+        $itemsData = $validated['items'] ?? [];
+        unset($validated['items']);
+
+        DB::transaction(function () use ($validated, $itemsData) {
+            // Reserve stock for items that have product_id
+            $itemsWithProduct = array_filter($itemsData, fn($item) => !empty($item['product_id']));
+            if (!empty($itemsWithProduct)) {
+                $this->reserveShipmentStock($itemsWithProduct);
+            }
+
+            $shipment = Shipment::create($validated);
+
+            foreach ($itemsData as $item) {
+                $shipment->items()->create($item);
+            }
+        });
 
         return redirect()
             ->route('shipments.index', ['page' => $request->integer('page', 1)])
             ->with('success', 'Shipment created successfully.');
+    }
+
+    private function generateShipmentId(): string
+    {
+        do {
+            $candidate = 'TRK-'.now()->format('ymd').'-'.Str::upper(Str::random(4));
+        } while (Shipment::where('shipment_id', $candidate)->exists());
+
+        return $candidate;
     }
 
     public function edit(Shipment $shipment)
@@ -175,9 +237,54 @@ class ShipmentsController extends Controller
                 ];
             });
 
+        $products = Product::where('is_active', true)
+            ->orderBy('name')
+            ->get(['id', 'sku', 'name', 'unit_id'])
+            ->map(function ($p) {
+                $stock = $p->productStocks()->first();
+                return [
+                    'id' => $p->id,
+                    'sku' => $p->sku,
+                    'name' => $p->name,
+                    'unit' => $p->unit?->symbol ?? 'pcs',
+                    'available_stock' => $stock ? ($stock->current_stock - $stock->reserved_stock) : 0,
+                    'current_stock' => $stock?->current_stock ?? 0,
+                    'reserved_stock' => $stock?->reserved_stock ?? 0,
+                ];
+            });
+
+        $shipment->load('items');
+
         return Inertia::render('Shipments/Edit', [
-            'shipment' => $shipment,
+            'shipment' => [
+                'id' => $shipment->id,
+                'shipment_id' => $shipment->shipment_id,
+                'origin' => $shipment->origin,
+                'origin_name' => $shipment->origin_name,
+                'origin_lat' => $shipment->origin_lat,
+                'origin_lng' => $shipment->origin_lng,
+                'destination' => $shipment->destination,
+                'destination_name' => $shipment->destination_name,
+                'dest_lat' => $shipment->dest_lat,
+                'dest_lng' => $shipment->dest_lng,
+                'status' => $shipment->status,
+                'tracking_stage' => $shipment->tracking_stage,
+                'estimated_arrival' => $shipment->estimated_arrival?->format('Y-m-d\TH:i'),
+                'load_type' => $shipment->load_type,
+                'driver_id' => $shipment->driver_id,
+                'items' => $shipment->items->map(fn ($item) => [
+                    'id' => $item->id,
+                    'product_id' => $item->product_id,
+                    'product_name' => $item->product_name,
+                    'sku' => $item->sku,
+                    'quantity' => (float) $item->quantity,
+                    'unit' => $item->unit,
+                    'weight_kg' => $item->weight_kg ? (float) $item->weight_kg : null,
+                    'notes' => $item->notes,
+                ]),
+            ],
             'drivers' => $approvedDrivers,
+            'products' => $products,
         ]);
     }
 
@@ -194,11 +301,22 @@ class ShipmentsController extends Controller
             'destination_name' => 'required|string',
             'dest_lat' => 'nullable|numeric',
             'dest_lng' => 'nullable|numeric',
-            'status' => 'required|in:on-time,delayed,in-transit,delivered',
+            'tracking_stage' => 'required|in:ready_for_pickup,picked_up,in_transit,arrived_at_destination',
             'estimated_arrival' => 'required|date',
             'load_type' => 'required|in:sea,air,ground',
             'driver_id' => 'nullable|exists:drivers,id',
+            'items' => 'nullable|array',
+            'items.*.product_name' => 'required|string|max:255',
+            'items.*.sku' => 'nullable|string|max:100',
+            'items.*.quantity' => 'required|numeric|min:1',
+            'items.*.unit' => 'nullable|string|max:50',
+            'items.*.weight_kg' => 'nullable|numeric|min:0',
+            'items.*.notes' => 'nullable|string|max:500',
+            'items.*.product_id' => 'nullable|exists:products,id',
         ]);
+
+        $validated['status'] = $this->mapTrackingStageToStatus($validated['tracking_stage']);
+        $validated['last_tracking_note'] = $this->trackingStageNote($validated['tracking_stage'], (bool) $validated['driver_id']);
 
         if ($request->filled('driver_id') && $request->driver_id != $shipment->driver_id) {
             $driver = \App\Models\Driver::findOrFail($request->driver_id);
@@ -207,7 +325,35 @@ class ShipmentsController extends Controller
             }
         }
 
-        $shipment->update($validated);
+        $itemsData = $validated['items'] ?? [];
+        unset($validated['items']);
+
+        DB::transaction(function () use ($validated, $itemsData, $shipment) {
+            // Release old reserved stock
+            $oldItems = $shipment->items->filter(fn($i) => $i->product_id)->map(fn($i) => [
+                'product_id' => $i->product_id,
+                'quantity' => (int) $i->quantity,
+            ])->toArray();
+            if (!empty($oldItems)) {
+                $this->releaseShipmentStock($oldItems);
+            }
+
+            $shipment->fill($validated);
+            $shipment->syncTrackingTimestamps($validated['tracking_stage']);
+            $shipment->save();
+
+            // Sync items: delete old, create new
+            $shipment->items()->delete();
+            foreach ($itemsData as $item) {
+                $shipment->items()->create($item);
+            }
+
+            // Reserve new stock
+            $itemsWithProduct = array_filter($itemsData, fn($item) => !empty($item['product_id']));
+            if (!empty($itemsWithProduct)) {
+                $this->reserveShipmentStock($itemsWithProduct);
+            }
+        });
 
         return redirect()
             ->route('shipments.index', ['page' => $request->integer('page', 1)])
@@ -218,7 +364,18 @@ class ShipmentsController extends Controller
     {
         Gate::authorize('delete', $shipment);
 
-        $shipment->delete();
+        DB::transaction(function () use ($shipment) {
+            // Release reserved stock
+            $items = $shipment->items->filter(fn($i) => $i->product_id)->map(fn($i) => [
+                'product_id' => $i->product_id,
+                'quantity' => (int) $i->quantity,
+            ])->toArray();
+            if (!empty($items)) {
+                $this->releaseShipmentStock($items);
+            }
+
+            $shipment->delete();
+        });
 
         return redirect()
             ->route('shipments.index', ['page' => $request->integer('page', 1)])
@@ -229,7 +386,7 @@ class ShipmentsController extends Controller
     {
         Gate::authorize('view', $shipment);
 
-        $shipment->load('driver.user');
+        $shipment->load(['driver.user', 'items']);
         $routeMetrics = $this->buildRouteMetrics($shipment);
         $alerts = $this->buildAlerts($shipment, $routeMetrics);
 
@@ -266,6 +423,16 @@ class ShipmentsController extends Controller
                 'pod_verification_status' => $shipment->pod_verification_status,
                 'pod_verification_note' => $shipment->pod_verification_note,
                 'pod_verified_at' => $shipment->pod_verified_at?->format('F d, Y H:i'),
+                'items' => $shipment->items->map(fn ($item) => [
+                    'id' => $item->id,
+                    'product_name' => $item->product_name,
+                    'sku' => $item->sku,
+                    'quantity' => (float) $item->quantity,
+                    'unit' => $item->unit,
+                    'weight_kg' => $item->weight_kg ? (float) $item->weight_kg : null,
+                    'notes' => $item->notes,
+                ]),
+                'items_summary' => $this->itemsSummary($shipment),
                 'route_metrics' => $routeMetrics,
                 'alerts' => $alerts,
             ],
@@ -280,12 +447,18 @@ class ShipmentsController extends Controller
             'status' => 'required|in:on-time,delayed,in-transit,delivered',
         ]);
 
+        $wasDelivered = $shipment->status === 'delivered';
         $shipment->fill($validated);
 
         if ($validated['status'] === 'delivered') {
             $shipment->tracking_stage = 'delivered';
             $shipment->syncTrackingTimestamps('delivered');
             $shipment->requirePendingProofVerification();
+
+            // Deduct actual stock from warehouse when delivered
+            if (!$wasDelivered) {
+                $this->deductShipmentStock($shipment);
+            }
         }
 
         $shipment->save();
@@ -381,6 +554,45 @@ class ShipmentsController extends Controller
     private function nullableCoordinate(mixed $value): ?float
     {
         return $value === null || $value === '' ? null : (float) $value;
+    }
+
+    private function itemsSummary(Shipment $shipment): array
+    {
+        $items = $shipment->items;
+        $totalWeight = $items->sum('weight_kg');
+        $totalQty = $items->sum('quantity');
+        $uniqueProducts = $items->count();
+
+        $topItems = $items->sortByDesc('quantity')->take(3)->map(fn ($item) => [
+            'product_name' => $item->product_name,
+            'quantity' => (float) $item->quantity,
+            'unit' => $item->unit,
+        ])->values()->toArray();
+
+        return [
+            'total_items' => $uniqueProducts,
+            'total_quantity' => round($totalQty, 2),
+            'total_weight_kg' => $totalWeight ? round($totalWeight, 2) : null,
+            'top_items' => $topItems,
+        ];
+    }
+
+    private function mapTrackingStageToStatus(string $trackingStage): string
+    {
+        return $trackingStage === 'delivered' ? 'delivered' : 'in-transit';
+    }
+
+    private function trackingStageNote(string $trackingStage, bool $hasDriver): string
+    {
+        return match ($trackingStage) {
+            'ready_for_pickup' => $hasDriver
+                ? 'Shipment siap diambil oleh driver yang sudah dijadwalkan.'
+                : 'Menunggu driver mengambil shipment.',
+            'picked_up' => 'Barang sudah diambil driver dari gudang.',
+            'in_transit' => 'Shipment sedang dalam perjalanan ke tujuan.',
+            'arrived_at_destination' => 'Shipment sudah tiba di area tujuan dan menunggu finalisasi.',
+            default => 'Status shipment diperbarui.',
+        };
     }
 
     private function lastLocationLabel(Shipment $shipment): ?string

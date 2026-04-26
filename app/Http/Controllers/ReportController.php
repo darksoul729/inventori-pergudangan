@@ -7,6 +7,8 @@ use App\Models\StockMovement;
 use App\Models\Product;
 use App\Models\Rack;
 use App\Models\RackStock;
+use App\Models\ProductStock;
+use App\Models\Warehouse;
 use App\Models\Driver;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -18,10 +20,16 @@ use Carbon\CarbonPeriod;
 
 class ReportController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $statusFilter = $request->string('status')->toString();
+        if (!in_array($statusFilter, ['all', 'completed', 'pending'], true)) {
+            $statusFilter = 'all';
+        }
+
         $now = Carbon::now();
         $startDate = $now->copy()->startOfDay()->subDays(29);
+        $operationalWarehouse = Warehouse::orderBy('id')->firstOrFail();
 
         // 1. Throughput Trend (Last 30 Days)
         $movementTrendRows = StockMovement::select(
@@ -78,15 +86,23 @@ class ReportController extends Controller
                 'pct' => 100
             ]);
 
-        // 4. Efficiency Score (Rack occupancy)
-        $totalCapacity = Rack::sum('capacity');
-        $currentStock = RackStock::sum('quantity');
+        // 4. Efficiency Score (Rack occupancy — operational warehouse only)
+        $totalCapacity = (int) Rack::whereHas('zone', fn($q) => $q->where('warehouse_id', $operationalWarehouse->id))->sum('capacity');
+        $currentStock = (int) RackStock::whereHas('rack.zone', fn($q) => $q->where('warehouse_id', $operationalWarehouse->id))->sum('quantity');
+        $totalWarehouseStock = (int) ProductStock::where('warehouse_id', $operationalWarehouse->id)
+            ->sum('current_stock');
         $efficiencyScore = $totalCapacity > 0 ? round(($currentStock / $totalCapacity) * 100, 1) : 0;
 
-        // 5. Category Distribution (for Cost Analysis & Distribution viz)
+        // 5. Category Distribution (operational warehouse only)
         $distribution = DB::table('categories')
             ->leftJoin('products', 'categories.id', '=', 'products.category_id')
             ->leftJoin('rack_stocks', 'products.id', '=', 'rack_stocks.product_id')
+            ->leftJoin('racks', 'rack_stocks.rack_id', '=', 'racks.id')
+            ->leftJoin('warehouse_zones', 'racks.warehouse_zone_id', '=', 'warehouse_zones.id')
+            ->where(function ($q) use ($operationalWarehouse) {
+                $q->where('warehouse_zones.warehouse_id', $operationalWarehouse->id)
+                  ->orWhereNull('rack_stocks.id');
+            })
             ->select(
                 'categories.name',
                 DB::raw('SUM(COALESCE(rack_stocks.quantity, 0)) as total_qty'),
@@ -122,19 +138,27 @@ class ReportController extends Controller
             'trend' => $fleetTrend
         ];
 
-        // 7. Recent Reports
-        $reports = Report::with('user')
-            ->orderByDesc('created_at')
-            ->limit(10)
-            ->get()
-            ->map(fn($r) => [
+        // 7. Reports (server-side pagination + filter)
+        $reportsQuery = Report::with('user')
+            ->orderByDesc('created_at');
+
+        if ($statusFilter === 'completed') {
+            $reportsQuery->where('status', 'completed');
+        } elseif ($statusFilter === 'pending') {
+            $reportsQuery->where('status', '!=', 'completed');
+        }
+
+        $reports = $reportsQuery
+            ->paginate(8)
+            ->withQueryString()
+            ->through(fn($r) => [
                 'id' => $r->id,
                 'name' => $r->name,
                 'by' => $r->user->name,
                 'status' => strtoupper($r->status),
                 'date' => $r->created_at->format('M d, Y'),
                 'type' => $r->type,
-                'file_path' => $r->file_path
+                'file_path' => $r->file_path,
             ]);
 
         return Inertia::render('Reports', [
@@ -144,11 +168,14 @@ class ReportController extends Controller
                 'slow_moving' => $slowMoving,
                 'efficiency' => $efficiencyScore,
                 'total_products' => Product::count(),
-                'total_stock' => (int) $currentStock,
+                'total_stock' => $totalWarehouseStock,
                 'distribution' => $distribution,
                 'shipment_stats' => $shipmentStats,
             ],
-            'reports' => $reports
+            'reports' => $reports,
+            'filters' => [
+                'status' => $statusFilter,
+            ],
         ]);
     }
 
@@ -156,6 +183,7 @@ class ReportController extends Controller
     {
         $now = Carbon::now();
         $startDate = $now->copy()->subDays(29);
+        $operationalWarehouse = Warehouse::orderBy('id')->firstOrFail();
 
         // Data for PDF
         $products = Product::with('category', 'unit')
@@ -199,15 +227,21 @@ class ReportController extends Controller
                 ->where('movement_date', '>=', $startDate->toDateString())->sum('quantity'),
         ];
 
-        $totalCapacity = Rack::sum('capacity');
-        $currentStock  = RackStock::sum('quantity');
+        $totalCapacity = (int) Rack::whereHas('zone', fn($q) => $q->where('warehouse_id', $operationalWarehouse->id))->sum('capacity');
+        $currentStock  = (int) RackStock::whereHas('rack.zone', fn($q) => $q->where('warehouse_id', $operationalWarehouse->id))->sum('quantity');
+        $totalWarehouseStock = (int) ProductStock::where('warehouse_id', $operationalWarehouse->id)
+            ->sum('current_stock');
 
         $stats = [
-            'total_inventory'  => (int) $currentStock,
+            'total_inventory'  => $totalWarehouseStock,
             'total_products'   => Product::count(),
-            'total_value'      => Product::join('rack_stocks', 'products.id', '=', 'rack_stocks.product_id')
+            'total_value'      => (float) DB::table('rack_stocks')
+                ->join('products', 'rack_stocks.product_id', '=', 'products.id')
+                ->join('racks', 'rack_stocks.rack_id', '=', 'racks.id')
+                ->join('warehouse_zones', 'racks.warehouse_zone_id', '=', 'warehouse_zones.id')
+                ->where('warehouse_zones.warehouse_id', $operationalWarehouse->id)
                 ->sum(DB::raw('rack_stocks.quantity * products.purchase_price')),
-            'total_capacity'   => (int) $totalCapacity,
+            'total_capacity'   => $totalCapacity,
             'efficiency'       => $totalCapacity > 0
                 ? round(($currentStock / $totalCapacity) * 100, 1) : 0,
             'generated_at'     => $now->format('Y-m-d H:i:s'),

@@ -10,6 +10,7 @@ class ProductStock extends Model
         'product_id',
         'warehouse_id',
         'current_stock',
+        'rack_stock',
         'reserved_stock',
         'last_updated_at',
     ];

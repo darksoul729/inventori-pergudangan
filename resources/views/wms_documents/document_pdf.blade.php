@@ -12,13 +12,25 @@
         }
 
         .header {
-            border-bottom: 2px solid #111827;
+            border-bottom: 2px solid #28106F;
             padding-bottom: 12px;
             margin-bottom: 14px;
+            display: flex;
+            align-items: flex-start;
+        }
+        .header-logo {
+            width: 42px;
+            height: 42px;
+            object-fit: contain;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+        .header-content {
+            flex: 1;
         }
 
         .eyebrow {
-            color: #4f46e5;
+            color: #5932C9;
             font-size: 9px;
             font-weight: bold;
             letter-spacing: 1px;
@@ -95,13 +107,16 @@
 </head>
 <body>
     <div class="header">
-        <div class="eyebrow">Warehouse Management System</div>
-        <h1>{{ $document['title'] }}</h1>
-        <div class="muted">{{ $document['subtitle'] ?? 'Dokumen operasional gudang' }}</div>
-        <div style="margin-top: 8px;">
-            <strong>No. Dokumen:</strong> {{ $document['number'] }} |
-            <strong>Status:</strong> {{ $document['status'] ?? '-' }} |
-            <strong>Dibuat:</strong> {{ $generatedAt->format('d M Y H:i') }}
+        <img src="{{ public_path('images/logo 1.png') }}" class="header-logo" alt="Logo">
+        <div class="header-content">
+            <div class="eyebrow">PT. PETAYU INVENTORI PERGUDANGAN</div>
+            <h1>{{ $document['title'] }}</h1>
+            <div class="muted">{{ $document['subtitle'] ?? 'Dokumen operasional gudang' }}</div>
+            <div style="margin-top: 8px;">
+                <strong>No. Dokumen:</strong> {{ $document['number'] }} |
+                <strong>Status:</strong> {{ $document['status'] ?? '-' }} |
+                <strong>Dibuat:</strong> {{ $generatedAt->format('d M Y H:i') }}
+            </div>
         </div>
     </div>
 

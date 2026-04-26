@@ -22,11 +22,11 @@ class WarehouseManagementSeeder extends Seeder
         $admin = User::query()->where('email', 'admin@example.com')->firstOrFail();
 
         $warehouse = Warehouse::query()->updateOrCreate(
-            ['code' => 'WH-CH-A'],
+            ['code' => 'WH-SMD'],
             [
-                'name' => 'Central Hub A',
-                'location' => 'Makassar Distribution Corridor',
-                'description' => 'Main warehouse for inbound, picking, and cross-dock operations.',
+                'name' => 'Gudang Utama Samarinda',
+                'location' => 'Samarinda, Kalimantan Timur',
+                'description' => 'Gudang utama dan satu-satunya fasilitas penyimpanan di Samarinda, Kaltim. Melayani inbound, picking, cross-dock, dan outbound untuk seluruh wilayah Kalimantan dan pengiriman antar pulau.',
             ]
         );
 
@@ -53,7 +53,7 @@ class WarehouseManagementSeeder extends Seeder
                 'contact_person' => 'Rina Putri',
                 'phone' => '0811111111',
                 'email' => 'procurement@axis.test',
-                'city' => 'Makassar',
+                'city' => 'Samarinda',
                 'status' => 'active',
             ]
         );
@@ -65,7 +65,7 @@ class WarehouseManagementSeeder extends Seeder
                 'contact_person' => 'Andi Saputra',
                 'phone' => '0822222222',
                 'email' => 'sales@bulkchain.test',
-                'city' => 'Surabaya',
+                'city' => 'Balikpapan',
                 'status' => 'active',
             ]
         );
@@ -241,7 +241,7 @@ class WarehouseManagementSeeder extends Seeder
                 'contact_person' => 'Budi Kalla',
                 'phone' => '0833333333',
                 'email' => 'warehouse@ops.test',
-                'address' => 'Jl. Perintis, Makassar',
+                'address' => 'Jl. P. Diponegoro, Samarinda',
                 'updated_at' => now(),
                 'created_at' => now(),
             ]

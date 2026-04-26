@@ -31,6 +31,9 @@ class HandleInertiaRequests extends Middleware
     public function share(Request $request): array
     {
         $notifications = [];
+        $pendingOpnameCount = 0;
+        $pendingTransferCount = 0;
+        $pendingAdjustmentCount = 0;
         $user = $request->user()?->loadMissing('role');
         
         if ($user) {
@@ -58,6 +61,44 @@ class HandleInertiaRequests extends Middleware
                     'title' => 'PO Menunggu',
                     'message' => "Ada {$pendingPOCount} pesanan menunggu persetujuan.",
                     'link' => '/purchase-orders',
+                ];
+            }
+
+            // Pending Stock Opnames
+            $pendingOpnameCount = \App\Models\StockOpname::where('status', 'pending')->count();
+            if ($pendingOpnameCount > 0) {
+                $notifications[] = [
+                    'id' => 'pending-opname',
+                    'type' => 'info',
+                    'title' => 'Opname Menunggu',
+                    'message' => "Ada {$pendingOpnameCount} stock opname menunggu persetujuan.",
+                    'link' => '/stock-opname',
+                ];
+            }
+
+            // Pending Stock Transfers
+            $pendingTransferCount = \App\Models\StockTransfer::where('status', 'pending')->count();
+            if ($pendingTransferCount > 0) {
+                $notifications[] = [
+                    'id' => 'pending-transfer',
+                    'type' => 'info',
+                    'title' => 'Transfer Menunggu',
+                    'message' => "Ada {$pendingTransferCount} transfer rack menunggu persetujuan.",
+                    'link' => '/rack-allocation',
+                ];
+            }
+
+            // Pending Manual Stock Adjustments
+            $pendingAdjustmentCount = \App\Models\StockAdjustment::where('status', 'pending')
+                ->where('reason', 'manual_rack_stock')
+                ->count();
+            if ($pendingAdjustmentCount > 0) {
+                $notifications[] = [
+                    'id' => 'pending-adjustment',
+                    'type' => 'info',
+                    'title' => 'Adjustment Menunggu',
+                    'message' => "Ada {$pendingAdjustmentCount} koreksi stok manual menunggu persetujuan.",
+                    'link' => '/wms-documents',
                 ];
             }
 
@@ -121,12 +162,49 @@ class HandleInertiaRequests extends Middleware
                 ];
             }
 
+            // Expired / Expiring Stock Alerts
+            $operationalWarehouse = \App\Models\Warehouse::orderBy('id')->first();
+            if ($operationalWarehouse) {
+                $today = now()->toDateString();
+                $expiredCount = \App\Models\RackStock::whereHas('rack.zone', fn ($q) => $q->where('warehouse_id', $operationalWarehouse->id))
+                    ->whereNotNull('expired_date')
+                    ->where('expired_date', '<', $today)
+                    ->count();
+                $expiringCount = \App\Models\RackStock::whereHas('rack.zone', fn ($q) => $q->where('warehouse_id', $operationalWarehouse->id))
+                    ->whereNotNull('expired_date')
+                    ->where('expired_date', '>=', $today)
+                    ->where('expired_date', '<=', now()->addDays(30)->toDateString())
+                    ->count();
+
+                if ($expiredCount > 0) {
+                    $notifications[] = [
+                        'id' => 'expired-stock',
+                        'type' => 'error',
+                        'title' => 'Stok Kadaluarsa',
+                        'message' => "Ada {$expiredCount} produk sudah melewati tanggal kadaluarsa!",
+                        'link' => '/inventory',
+                    ];
+                }
+                if ($expiringCount > 0) {
+                    $notifications[] = [
+                        'id' => 'expiring-stock',
+                        'type' => 'warning',
+                        'title' => 'Stok Mendekati Kadaluarsa',
+                        'message' => "Ada {$expiringCount} produk akan kadaluarsa dalam 30 hari.",
+                        'link' => '/inventory',
+                    ];
+                }
+            }
+
             // Warehouse Capacity State (Add a "Realtime" feel)
             $warehouses = \App\Models\Warehouse::all();
             foreach($warehouses as $w) {
-                // Mock calculation for capacity if not in schema
                 $totalStock = \App\Models\ProductStock::where('warehouse_id', $w->id)->sum('current_stock');
-                $capacityPercent = min(100, round(($totalStock / 5000) * 100)); // Assuming 5000 is base capacity
+                $totalCapacity = \App\Models\Rack::whereHas('zone', fn ($q) => $q->where('warehouse_id', $w->id))
+                    ->sum('capacity');
+                $capacityPercent = $totalCapacity > 0
+                    ? min(100, round(($totalStock / $totalCapacity) * 100))
+                    : 0;
                 
                 if ($capacityPercent > 85) {
                     $notifications[] = [
@@ -166,6 +244,11 @@ class HandleInertiaRequests extends Middleware
                 ] : null,
             ],
             'notifications' => $notifications,
+            'pendingApprovals' => [
+                'opnames' => $pendingOpnameCount,
+                'transfers' => $pendingTransferCount,
+                'adjustments' => $pendingAdjustmentCount,
+            ],
         ];
     }
 

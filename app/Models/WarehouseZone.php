@@ -14,6 +14,11 @@ class WarehouseZone extends Model
         'capacity',
         'is_active',
         'description',
+        'pos_x',
+        'pos_y',
+        'width',
+        'height',
+        'rotation',
     ];
 
     protected function casts(): array

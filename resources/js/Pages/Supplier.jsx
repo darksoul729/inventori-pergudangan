@@ -82,7 +82,7 @@ const ChevronDownIcon = ({ className }) => (
 
 // Color palette for dynamic lines
 const supplierColors = [
-    '#4f46e5', // Indigo
+    '#5932C9', // Indigo
     '#f59e0b', // Amber
     '#ef4444', // Red
     '#10b981', // Emerald
@@ -234,7 +234,7 @@ export default function Supplier({ suppliers = [], stats = {}, chartData = [], a
                     {/* Header Row */}
                     <div className="flex justify-between items-center mb-2">
                         <div>
-                            <h1 className="text-[28px] font-black text-[#1a202c] tracking-tight">Performa Pemasok</h1>
+                            <h1 className="text-[28px] font-black text-[#28106F] tracking-tight">Performa Pemasok</h1>
                             <p className="text-[14px] font-bold text-gray-500 mt-1">Pantau ketepatan pengiriman, lead time, dan kualitas pemasok untuk gudang operasional.</p>
                         </div>
                         <div className="flex space-x-3">
@@ -245,7 +245,7 @@ export default function Supplier({ suppliers = [], stats = {}, chartData = [], a
                             )}
                             <button
                                 onClick={handleExportAudit}
-                                className="flex items-center space-x-2 px-6 py-3.5 bg-[#4f46e5] shadow-[#4f46e5]/30 shadow-lg hover:bg-indigo-700 text-white font-bold rounded-xl text-[14px] transition-colors"
+                                className="flex items-center space-x-2 px-6 py-3.5 bg-[#5932C9] shadow-[#5932C9]/30 shadow-lg hover:bg-indigo-700 text-white font-bold rounded-xl text-[14px] transition-colors"
                             >
                                 <DownloadIcon className="w-4 h-4" />
                                 <span>Ekspor Audit</span>
@@ -256,13 +256,13 @@ export default function Supplier({ suppliers = [], stats = {}, chartData = [], a
                     {/* 3 Stat Cards */}
                     <div className="grid grid-cols-3 gap-6">
                         {/* 1. Avg Lead Time */}
-                        <div className="bg-white rounded-[20px] p-6 shadow-[0_2px_16px_rgba(0,0,0,0.02)] border border-[#edf2f7] flex items-center space-x-5">
+                        <div className="bg-white rounded-[20px] p-6 shadow-[0_2px_16px_rgba(0,0,0,0.02)] border border-[#EDE8FC] flex items-center space-x-5">
                             <div className="w-12 h-12 rounded-[14px] bg-indigo-100 flex items-center justify-center text-indigo-600 flex-shrink-0">
                                 <ClockIcon className="w-6 h-6" />
                             </div>
                             <div>
                                 <h3 className="text-[12px] font-bold text-gray-500 tracking-wide mb-0.5">Rata-rata Lead Time</h3>
-                                <div className="text-[22px] font-black text-[#1a202c] leading-tight mb-0.5">{stats?.avgLeadTime?.value || '0.0'} Hari</div>
+                                <div className="text-[22px] font-black text-[#28106F] leading-tight mb-0.5">{stats?.avgLeadTime?.value || '0.0'} Hari</div>
                                 <div className={`flex items-center space-x-1 font-bold text-[10px] ${stats?.avgLeadTime?.direction === 'up' ? 'text-red-500' : 'text-emerald-500'}`}>
                                     {stats?.avgLeadTime?.direction === 'up' ? <TrendUpIcon className="w-3 h-3" /> : <TrendDownIcon className="w-3 h-3" />}
                                     <span>{stats?.avgLeadTime?.text || '-'}</span>
@@ -271,13 +271,13 @@ export default function Supplier({ suppliers = [], stats = {}, chartData = [], a
                         </div>
 
                         {/* 2. On-Time Delivery */}
-                        <div className="bg-white rounded-[20px] p-6 shadow-[0_2px_16px_rgba(0,0,0,0.02)] border border-[#edf2f7] flex items-center space-x-5">
+                        <div className="bg-white rounded-[20px] p-6 shadow-[0_2px_16px_rgba(0,0,0,0.02)] border border-[#EDE8FC] flex items-center space-x-5">
                             <div className="w-12 h-12 rounded-[14px] bg-blue-50 flex items-center justify-center text-blue-500 flex-shrink-0">
                                 <ShieldCheckIcon className="w-6 h-6" />
                             </div>
                             <div>
                                 <h3 className="text-[12px] font-bold text-gray-500 tracking-wide mb-0.5">Pengiriman Tepat Waktu</h3>
-                                <div className="text-[22px] font-black text-[#1a202c] leading-tight mb-0.5">{stats?.onTimeDelivery?.value || '0.0'}%</div>
+                                <div className="text-[22px] font-black text-[#28106F] leading-tight mb-0.5">{stats?.onTimeDelivery?.value || '0.0'}%</div>
                                 <div className={`flex items-center space-x-1 font-bold text-[10px] ${stats?.onTimeDelivery?.direction === 'up' ? 'text-emerald-500' : 'text-red-500'}`}>
                                     {stats?.onTimeDelivery?.direction === 'up' ? <TrendUpIcon className="w-3 h-3" /> : <TrendDownIcon className="w-3 h-3" />}
                                     <span>{stats?.onTimeDelivery?.text || '-'}</span>
@@ -286,13 +286,13 @@ export default function Supplier({ suppliers = [], stats = {}, chartData = [], a
                         </div>
 
                         {/* 3. Late Deliveries */}
-                        <div className="bg-white rounded-[20px] p-6 shadow-[0_2px_16px_rgba(0,0,0,0.02)] border border-[#edf2f7] flex items-center space-x-5">
+                        <div className="bg-white rounded-[20px] p-6 shadow-[0_2px_16px_rgba(0,0,0,0.02)] border border-[#EDE8FC] flex items-center space-x-5">
                             <div className="w-12 h-12 rounded-[14px] bg-red-50 flex items-center justify-center text-red-500 flex-shrink-0">
                                 <WarningIcon className="w-6 h-6" />
                             </div>
                             <div>
                                 <h3 className="text-[12px] font-bold text-gray-500 tracking-wide mb-0.5">Pengiriman Terlambat</h3>
-                                <div className="text-[22px] font-black text-[#1a202c] leading-tight mb-0.5">{stats?.lateDeliveries?.value || 0} Unit</div>
+                                <div className="text-[22px] font-black text-[#28106F] leading-tight mb-0.5">{stats?.lateDeliveries?.value || 0} Unit</div>
                                 <div className={`flex items-center space-x-1 font-bold text-[10px] ${stats?.lateDeliveries?.direction === 'up' ? 'text-red-500' : 'text-emerald-500'}`}>
                                     {stats?.lateDeliveries?.direction === 'up' ? <TrendUpIcon className="w-3 h-3" /> : <TrendDownIcon className="w-3 h-3" />}
                                     <span>{stats?.lateDeliveries?.text || '-'}</span>
@@ -302,9 +302,9 @@ export default function Supplier({ suppliers = [], stats = {}, chartData = [], a
                     </div>
 
                     {/* Performance Correlation Chart */}
-                    <div className="bg-white rounded-[24px] p-8 shadow-[0_2px_16px_rgba(0,0,0,0.02)] border border-[#edf2f7]">
+                    <div className="bg-white rounded-[24px] p-8 shadow-[0_2px_16px_rgba(0,0,0,0.02)] border border-[#EDE8FC]">
                         <div className="flex justify-between items-center mb-8">
-                            <h2 className="text-[18px] font-black text-[#1a202c]">Korelasi Performa</h2>
+                            <h2 className="text-[18px] font-black text-[#28106F]">Korelasi Performa</h2>
                             <div className="flex items-center space-x-6 text-[12px] font-bold text-gray-500">
 
                                 {/* Year Filter Dropdown */}
@@ -356,11 +356,11 @@ export default function Supplier({ suppliers = [], stats = {}, chartData = [], a
                     </div>
 
                     {/* Partner Directory */}
-                    <div className="bg-white rounded-[24px] p-8 shadow-[0_2px_16px_rgba(0,0,0,0.02)] border border-[#edf2f7]">
+                    <div className="bg-white rounded-[24px] p-8 shadow-[0_2px_16px_rgba(0,0,0,0.02)] border border-[#EDE8FC]">
 
                         {/* Header Row */}
                         <div className="flex justify-between items-center mb-8">
-                            <h2 className="text-[18px] font-black text-[#1a202c]">Direktori Mitra</h2>
+                            <h2 className="text-[18px] font-black text-[#28106F]">Direktori Mitra</h2>
                             <div className="flex items-center space-x-3">
                                 {/* Status Filter */}
                                 <div className="relative">
@@ -438,7 +438,7 @@ export default function Supplier({ suppliers = [], stats = {}, chartData = [], a
                                                     {supplier.code}
                                                 </div>
                                                 <div>
-                                                    <div className="text-[13px] font-black text-[#1a202c] mb-0.5">{supplier.name}</div>
+                                                    <div className="text-[13px] font-black text-[#28106F] mb-0.5">{supplier.name}</div>
                                                     <div className="text-[10px] font-bold text-gray-400">{supplier.category}</div>
                                                 </div>
                                             </div>
@@ -446,10 +446,10 @@ export default function Supplier({ suppliers = [], stats = {}, chartData = [], a
                                                 <div className="flex-1 h-[4px] bg-gray-100 rounded-full overflow-hidden">
                                                     <div className={`h-full rounded-full ${barColor}`} style={{ width: `${score}%` }}></div>
                                                 </div>
-                                                <span className="text-[14px] font-black text-[#1a202c]">{score}</span>
+                                                <span className="text-[14px] font-black text-[#28106F]">{score}</span>
                                             </div>
                                             <div className="col-span-2 flex flex-col justify-center">
-                                                <span className="text-[14px] font-black text-[#1a202c]">{leadTime}</span>
+                                                <span className="text-[14px] font-black text-[#28106F]">{leadTime}</span>
                                                 <span className="text-[11px] font-bold text-gray-500">Days</span>
                                             </div>
                                             <div className="col-span-2 flex justify-start pl-2">
@@ -473,7 +473,7 @@ export default function Supplier({ suppliers = [], stats = {}, chartData = [], a
 
         {/* Modal Add Partner */}
         <Transition appear show={isManager && isAddOpen} as={Fragment}>
-            <Dialog as="div" className="relative z-50" onClose={() => setIsAddOpen(false)}>
+            <Dialog as="div" className="relative z-[12000]" onClose={() => setIsAddOpen(false)}>
                 <Transition.Child
                     as={Fragment}
                     enter="ease-out duration-300"
@@ -483,7 +483,7 @@ export default function Supplier({ suppliers = [], stats = {}, chartData = [], a
                     leaveFrom="opacity-100"
                     leaveTo="opacity-0"
                 >
-                    <div className="fixed inset-0 bg-black bg-opacity-25 backdrop-blur-sm" />
+                    <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm" />
                 </Transition.Child>
 
                 <div className="fixed inset-0 overflow-y-auto">

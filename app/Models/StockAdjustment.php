@@ -11,6 +11,7 @@ class StockAdjustment extends Model
         'warehouse_id',
         'stock_opname_id',
         'adjustment_date',
+        'status',
         'reason',
         'notes',
         'created_by',

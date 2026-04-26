@@ -26,23 +26,25 @@ export default function NotificationsShow() {
 
     if (!notification) {
         return (
-            <DashboardLayout headerTitle="Detail Notifikasi" hideSearch={true} contentClassName="max-w-[980px] mx-auto">
+            <DashboardLayout headerTitle="Detail Notifikasi" hideSearch={true} contentClassName="w-full max-w-none">
                 <Head title="Detail Notifikasi" />
-                <div className="rounded-[8px] border border-gray-200 bg-white px-8 py-20 text-center shadow-sm">
-                    <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-[8px] bg-gray-50 text-gray-400">
-                        <MailOpen className="h-8 w-8" />
+                <div className="w-full px-5 py-8 md:px-8">
+                    <div className="rounded-xl border border-gray-200 bg-white px-8 py-20 text-center shadow-sm">
+                        <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-[8px] bg-gray-50 text-gray-400">
+                            <MailOpen className="h-8 w-8" />
+                        </div>
+                        <h1 className="text-[24px] font-black text-gray-900">Notifikasi Tidak Ditemukan</h1>
+                        <p className="mt-3 text-[14px] font-semibold text-gray-500">
+                            Notifikasi ini mungkin sudah tidak aktif atau datanya berubah.
+                        </p>
+                        <Link
+                            href="/notifications"
+                            className="mt-7 inline-flex items-center justify-center gap-2 rounded-[10px] bg-[#28106F] px-5 py-3 text-[12px] font-black uppercase tracking-wider text-white transition-all hover:bg-[#28239d]"
+                        >
+                            <ArrowLeft className="h-4 w-4" />
+                            Kembali ke Inbox
+                        </Link>
                     </div>
-                    <h1 className="text-[24px] font-black text-gray-900">Notifikasi Tidak Ditemukan</h1>
-                    <p className="mt-3 text-[14px] font-semibold text-gray-500">
-                        Notifikasi ini mungkin sudah tidak aktif atau datanya berubah.
-                    </p>
-                    <Link
-                        href="/notifications"
-                        className="mt-7 inline-flex items-center justify-center gap-2 rounded-[10px] bg-[#3632c0] px-5 py-3 text-[12px] font-black uppercase tracking-wider text-white transition-all hover:bg-[#28239d]"
-                    >
-                        <ArrowLeft className="h-4 w-4" />
-                        Kembali ke Inbox
-                    </Link>
                 </div>
             </DashboardLayout>
         );
@@ -54,14 +56,14 @@ export default function NotificationsShow() {
     const isRead = readIds.includes(notification.id);
 
     return (
-        <DashboardLayout headerTitle="Detail Notifikasi" hideSearch={true} contentClassName="max-w-[980px] mx-auto">
+        <DashboardLayout headerTitle="Detail Notifikasi" hideSearch={true} contentClassName="w-full max-w-none">
             <Head title={notification.title} />
 
-            <div className="pb-12">
+            <div className="w-full px-5 pb-10 pt-1 md:px-8">
                 <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <Link
                         href="/notifications"
-                        className="inline-flex items-center gap-2 text-[12px] font-black uppercase tracking-wider text-gray-500 transition-colors hover:text-[#3632c0]"
+                        className="inline-flex items-center gap-2 text-[12px] font-black uppercase tracking-wider text-gray-500 transition-colors hover:text-[#28106F]"
                     >
                         <ArrowLeft className="h-4 w-4" />
                         Kembali ke Inbox
@@ -71,7 +73,7 @@ export default function NotificationsShow() {
                         <button
                             type="button"
                             onClick={() => markAsRead(notification.id)}
-                            className="inline-flex items-center justify-center gap-2 rounded-[10px] border border-gray-200 bg-white px-4 py-3 text-[11px] font-black uppercase tracking-wider text-gray-700 shadow-sm transition-all hover:border-indigo-100 hover:text-[#3632c0]"
+                            className="inline-flex items-center justify-center gap-2 rounded-[10px] border border-gray-200 bg-white px-4 py-3 text-[11px] font-black uppercase tracking-wider text-gray-700 shadow-sm transition-all hover:border-indigo-100 hover:text-[#28106F]"
                         >
                             <MailOpen className="h-4 w-4" />
                             Tandai Dibaca
@@ -79,7 +81,7 @@ export default function NotificationsShow() {
                     )}
                 </div>
 
-                <article className="overflow-hidden rounded-[8px] border border-gray-200 bg-white shadow-sm">
+                <article className="min-h-[calc(100vh-260px)] overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
                     <header className="border-b border-gray-100 px-7 py-7">
                         <div className="flex flex-col gap-5 sm:flex-row sm:items-start">
                             <div className={`flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-[8px] ${style.icon}`}>
@@ -95,7 +97,7 @@ export default function NotificationsShow() {
                                         {meta.label}
                                     </span>
                                     {!isRead && (
-                                        <span className="rounded-full bg-[#f4f3ff] px-3 py-1 text-[10px] font-black uppercase tracking-wider text-[#3632c0]">
+                                        <span className="rounded-full bg-[#f4f3ff] px-3 py-1 text-[10px] font-black uppercase tracking-wider text-[#28106F]">
                                             Baru
                                         </span>
                                     )}
@@ -125,7 +127,7 @@ export default function NotificationsShow() {
                             <Link
                                 href={notification.link}
                                 onClick={() => markAsRead(notification.id)}
-                                className="inline-flex items-center justify-center gap-2 rounded-[10px] bg-[#3632c0] px-5 py-3 text-[12px] font-black uppercase tracking-wider text-white transition-all hover:bg-[#28239d]"
+                                className="inline-flex items-center justify-center gap-2 rounded-[10px] bg-[#28106F] px-5 py-3 text-[12px] font-black uppercase tracking-wider text-white transition-all hover:bg-[#28239d]"
                             >
                                 {meta.action}
                                 <ArrowRight className="h-4 w-4" />
@@ -134,7 +136,7 @@ export default function NotificationsShow() {
                     </div>
                 </article>
 
-                <div className="mt-5 rounded-[8px] border border-emerald-100 bg-emerald-50 px-5 py-4 text-[13px] font-bold leading-6 text-emerald-700">
+                <div className="mt-5 rounded-xl border border-emerald-100 bg-emerald-50 px-5 py-4 text-[13px] font-bold leading-6 text-emerald-700">
                     <CheckCircle2 className="mr-2 inline h-4 w-4" />
                     Status sistem saat ini tetap operational selama tidak ada notifikasi kritis baru.
                 </div>

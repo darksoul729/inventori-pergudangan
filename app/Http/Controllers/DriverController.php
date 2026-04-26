@@ -14,6 +14,11 @@ use Inertia\Inertia;
 
 class DriverController extends Controller
 {
+    public function create()
+    {
+        return Inertia::render('Drivers/Create');
+    }
+
     public function index()
     {
         return Inertia::render('Drivers', [
@@ -98,10 +103,15 @@ class DriverController extends Controller
             'status' => 'required|in:approved,suspended,pending',
         ]);
 
-        $driver->update(['status' => $request->status]);
+        $isActive = $request->status === 'approved';
+
+        $driver->update([
+            'status' => $request->status,
+            'is_active' => $isActive,
+        ]);
 
         // If approved, also activate the associated user account
-        if ($request->status === 'approved') {
+        if ($isActive) {
             $driver->user->update(['status' => 'active']);
         } else {
             $driver->user->update(['status' => 'inactive']);
@@ -159,7 +169,9 @@ class DriverController extends Controller
                                     ->orWhere('pod_verification_status', '!=', 'approved');
                             });
                     })
-                    ->select('id', 'shipment_id', 'driver_id', 'tracking_stage', 'origin_name', 'destination_name');
+                    ->orderByRaw("CASE WHEN tracking_stage != 'ready_for_pickup' THEN 0 ELSE 1 END")
+                    ->orderByDesc('updated_at')
+                    ->select('id', 'shipment_id', 'driver_id', 'tracking_stage', 'origin_name', 'destination_name', 'updated_at');
             }
         ])
             ->where('status', 'approved')

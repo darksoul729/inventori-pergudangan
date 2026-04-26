@@ -4,9 +4,9 @@ use App\Http\Controllers\Api\DriverApiController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-Route::post('/driver/login', [DriverApiController::class, 'login']);
+Route::post('/driver/login', [DriverApiController::class, 'login'])->middleware('throttle:5,1');
 
-Route::middleware(['auth:sanctum', 'role:driver'])->group(function () {
+Route::middleware(['auth:sanctum', 'role:driver', 'throttle:30,1'])->group(function () {
     Route::get('/driver/user', function (Request $request) {
         return $request->user();
     });

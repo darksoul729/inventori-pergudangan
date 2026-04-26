@@ -10,6 +10,7 @@ class StockOpname extends Model
         'opname_number',
         'warehouse_id',
         'opname_date',
+        'status',
         'notes',
         'created_by',
         'approved_by',

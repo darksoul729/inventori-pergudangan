@@ -12,6 +12,8 @@ class PurchaseOrderItem extends Model
         'quantity',
         'unit_price',
         'subtotal',
+        'batch_number',
+        'expired_date',
     ];
 
     /**

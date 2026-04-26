@@ -30,12 +30,12 @@ trait HandlesStockSync
     }
 
     /**
-     * Synchronize product stocks summary for a specific warehouse based on its rack stocks.
+     * Synchronize product stocks summary for a specific warehouse based on its rack stocks + floating stock.
      */
     protected function syncProductStock(int $warehouseId, int $productId): void
     {
         // Aggregate all rack stocks for this product in this warehouse
-        $totalQuantity = \App\Models\RackStock::where('product_id', $productId)
+        $totalRackQuantity = \App\Models\RackStock::where('product_id', $productId)
             ->whereHas('rack.zone', function ($query) use ($warehouseId) {
                 $query->where('warehouse_id', $warehouseId);
             })
@@ -47,17 +47,34 @@ trait HandlesStockSync
             })
             ->sum('reserved_quantity');
 
+        // Preserve floating stock (stock received but not yet placed on rack)
+        $existing = ProductStock::where('warehouse_id', $warehouseId)
+            ->where('product_id', $productId)
+            ->first();
+        $floatingStock = $existing ? max(0, (int) $existing->current_stock - (int) ($existing->rack_stock ?? 0)) : 0;
+
+        $totalQuantity = $totalRackQuantity + $floatingStock;
+
+        // Cleanup orphan RackStock records with quantity <= 0
+        \App\Models\RackStock::where('product_id', $productId)
+            ->whereHas('rack.zone', function ($query) use ($warehouseId) {
+                $query->where('warehouse_id', $warehouseId);
+            })
+            ->where('quantity', '<=', 0)
+            ->delete();
+
         if ($totalQuantity > 0) {
             ProductStock::updateOrCreate(
                 ['warehouse_id' => $warehouseId, 'product_id' => $productId],
                 [
                     'current_stock' => $totalQuantity,
+                    'rack_stock' => $totalRackQuantity,
                     'reserved_stock' => $totalReserved,
                     'last_updated_at' => now(),
                 ]
             );
         } else {
-            // Remove summary if no stock left in any rack of this warehouse
+            // Remove summary if no stock left at all
             ProductStock::where('warehouse_id', $warehouseId)
                 ->where('product_id', $productId)
                 ->delete();

@@ -2,6 +2,23 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+    --brand-primary: #5b3fd3;
+    --brand-secondary: #6f56e8;
+    --brand-accent: #59bdd9;
+    --brand-soft: #f3f0ff;
+}
+
+@layer base {
+    body {
+        background-color: #f8f9fc;
+    }
+
+    ::selection {
+        background: rgba(91, 63, 211, 0.2);
+    }
+}
+
 @layer utilities {
     .custom-scrollbar::-webkit-scrollbar {
         width: 4px;

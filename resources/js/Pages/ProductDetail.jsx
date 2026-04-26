@@ -67,9 +67,9 @@ export default function ProductDetail({ product, stats, distribution, movements 
                         <div>
                             <div className="flex items-center space-x-2 mb-2">
                                 <span className="px-3 py-1 bg-[#f1f5f9] text-gray-600 text-[10px] font-black tracking-widest rounded-lg uppercase">SKU: {product.sku}</span>
-                                <span className="px-3 py-1 bg-[#eef2ff] text-[#4f46e5] text-[10px] font-black tracking-widest rounded-lg uppercase">{product.category}</span>
+                                <span className="px-3 py-1 bg-[#eef2ff] text-[#5932C9] text-[10px] font-black tracking-widest rounded-lg uppercase">{product.category}</span>
                             </div>
-                            <h1 className="text-[32px] font-black text-[#1a202c] leading-none mb-2 tracking-tight">{product.name}</h1>
+                            <h1 className="text-[32px] font-black text-[#28106F] leading-none mb-2 tracking-tight">{product.name}</h1>
                             <div className="flex items-center space-x-1.5">
                                 <div className={`w-2 h-2 rounded-full ${stats.status === 'Healthy' ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)]'}`}></div>
                                 <span className={`text-[13px] font-bold ${stats.status === 'Healthy' ? 'text-emerald-600' : 'text-red-600'}`}>{stats.status}</span>
@@ -79,14 +79,14 @@ export default function ProductDetail({ product, stats, distribution, movements 
                     <div className="flex items-center space-x-3 mt-4">
                         <Link
                             href={route('inventory')}
-                            className="px-6 py-2.5 bg-white border border-[#edf2f7] hover:bg-gray-50 text-gray-600 font-bold rounded-xl text-[13px] shadow-[0_2px_10px_rgba(0,0,0,0.02)] transition-colors"
+                            className="px-6 py-2.5 bg-white border border-[#EDE8FC] hover:bg-gray-50 text-gray-600 font-bold rounded-xl text-[13px] shadow-[0_2px_10px_rgba(0,0,0,0.02)] transition-colors"
                         >
                             Kembali ke Daftar
                         </Link>
                         {isManager && (
                             <Link
                                 href={route('inventory.edit', product.id)}
-                                className="px-6 py-2.5 bg-[#4f46e5] shadow-[0_4px_14px_rgba(79,70,229,0.3)] hover:bg-indigo-700 text-white font-bold rounded-xl text-[13px] transition-colors"
+                                className="px-6 py-2.5 bg-[#5932C9] shadow-[0_4px_14px_rgba(89,50,201,0.3)] hover:bg-indigo-700 text-white font-bold rounded-xl text-[13px] transition-colors"
                             >
                                 Edit Entri
                             </Link>
@@ -96,30 +96,30 @@ export default function ProductDetail({ product, stats, distribution, movements 
 
                 {/* 3 Top Stat Cards */}
                 <div className="grid grid-cols-3 gap-6 mb-6">
-                    <div className="bg-white rounded-[24px] p-7 shadow-[0_2px_16px_rgba(0,0,0,0.02)] border border-[#edf2f7] animate-in fade-in slide-in-from-bottom-2 duration-700 delay-100">
+                    <div className="bg-white rounded-[24px] p-7 shadow-[0_2px_16px_rgba(0,0,0,0.02)] border border-[#EDE8FC] animate-in fade-in slide-in-from-bottom-2 duration-700 delay-100">
                         <div className="text-[11px] font-extrabold text-gray-400 tracking-widest uppercase mb-3">TOTAL STOK</div>
                         <div className="flex items-baseline space-x-1.5 mb-4">
-                            <span className="text-[36px] font-black text-[#1a202c] leading-none">{stats.current_stock.toLocaleString('id-ID')}</span>
+                            <span className="text-[36px] font-black text-[#28106F] leading-none">{stats.current_stock.toLocaleString('id-ID')}</span>
                             <span className="text-[14px] font-bold text-gray-400">Unit</span>
                         </div>
-                        <div className="flex items-center space-x-2 text-[#4f46e5]">
+                        <div className="flex items-center space-x-2 text-[#5932C9]">
                             <TrendUpIcon className="w-4 h-4" />
                             <span className="text-[12px] font-bold">Tersebar di {distribution.length} Lokasi Rak</span>
                         </div>
                     </div>
-                    <div className="bg-white rounded-[24px] p-7 shadow-[0_2px_16px_rgba(0,0,0,0.02)] border border-[#edf2f7] animate-in fade-in slide-in-from-bottom-2 duration-700 delay-200">
+                    <div className="bg-white rounded-[24px] p-7 shadow-[0_2px_16px_rgba(0,0,0,0.02)] border border-[#EDE8FC] animate-in fade-in slide-in-from-bottom-2 duration-700 delay-200">
                         <div className="text-[11px] font-extrabold text-gray-400 tracking-widest uppercase mb-3">VALUASI UNIT</div>
                         <div className="flex items-baseline space-x-1.5 mb-4">
-                            <span className="text-[36px] font-black text-[#1a202c] leading-none">Rp {(parseFloat(product.purchase_price)).toLocaleString('id-ID')}</span>
+                            <span className="text-[36px] font-black text-[#28106F] leading-none">Rp {(parseFloat(product.purchase_price)).toLocaleString('id-ID')}</span>
                         </div>
                         <div className="text-[12px] font-bold text-gray-500 italic">
                             Harga beli satuan terkini
                         </div>
                     </div>
-                    <div className="bg-white rounded-[24px] p-7 shadow-[0_2px_16px_rgba(0,0,0,0.02)] border border-[#edf2f7] animate-in fade-in slide-in-from-bottom-2 duration-700 delay-300">
+                    <div className="bg-white rounded-[24px] p-7 shadow-[0_2px_16px_rgba(0,0,0,0.02)] border border-[#EDE8FC] animate-in fade-in slide-in-from-bottom-2 duration-700 delay-300">
                         <div className="text-[11px] font-extrabold text-gray-400 tracking-widest uppercase mb-3">STOK MAKSIMUM</div>
                         <div className="flex items-baseline space-x-1.5 mb-4">
-                            <span className="text-[36px] font-black text-[#1a202c] leading-none">{stats.max_stock.toLocaleString('id-ID')}</span>
+                            <span className="text-[36px] font-black text-[#28106F] leading-none">{stats.max_stock.toLocaleString('id-ID')}</span>
                             <span className="text-[14px] font-bold text-gray-400">Unit</span>
                         </div>
                         <div className="flex items-center space-x-2 text-gray-500">
@@ -132,22 +132,22 @@ export default function ProductDetail({ product, stats, distribution, movements 
                 {/* 2 Middle Cards */}
                 <div className="grid grid-cols-2 gap-6 mb-6">
                     {/* Warehouse Distribution Mapping Visual */}
-                    <div className="bg-white rounded-[24px] p-7 shadow-[0_2px_16px_rgba(0,0,0,0.02)] border border-[#edf2f7] animate-in fade-in slide-in-from-left-4 duration-700">
+                    <div className="bg-white rounded-[24px] p-7 shadow-[0_2px_16px_rgba(0,0,0,0.02)] border border-[#EDE8FC] animate-in fade-in slide-in-from-left-4 duration-700">
                         <div className="flex justify-between items-center mb-6">
-                            <h3 className="text-[16px] font-black text-[#1a202c]">Distribusi Gudang</h3>
+                            <h3 className="text-[16px] font-black text-[#28106F]">Distribusi Gudang</h3>
                             <span className="px-3 py-1 bg-[#f8f9fb] text-gray-600 border border-gray-100 text-[10px] font-bold rounded-lg tracking-wide uppercase">{stats.status}</span>
                         </div>
                         <div className="w-full bg-[#f8f9fb] h-[280px] rounded-2xl relative overflow-hidden flex flex-col p-6 border border-gray-100 space-y-4">
-                            <div className="absolute inset-0 opacity-[0.03] bg-[radial-gradient(#1a202c_1px,transparent_1px)] [background-size:16px_16px]"></div>
+                            <div className="absolute inset-0 opacity-[0.03] bg-[radial-gradient(#28106F_1px,transparent_1px)] [background-size:16px_16px]"></div>
 
                             {distribution.slice(0, 3).map((dist, idx) => (
                                 <div key={idx} className="relative z-10 bg-white/80 backdrop-blur-sm border border-gray-100 p-4 rounded-xl shadow-sm flex justify-between items-center group hover:border-indigo-300 transition-colors">
                                     <div>
                                         <div className="text-[10px] font-black text-indigo-500 tracking-widest uppercase mb-1">{dist.zone_name}</div>
-                                        <div className="text-[16px] font-black text-[#1a202c]">{dist.rack_code}</div>
+                                        <div className="text-[16px] font-black text-[#28106F]">{dist.rack_code}</div>
                                     </div>
                                     <div className="text-right">
-                                        <div className="text-[18px] font-black text-[#1a202c]">{dist.quantity} <span className="text-[11px] text-gray-400 font-bold">UNIT</span></div>
+                                        <div className="text-[18px] font-black text-[#28106F]">{dist.quantity} <span className="text-[11px] text-gray-400 font-bold">UNIT</span></div>
                                         <div className="text-[9px] font-bold text-gray-400 uppercase">Kapasitas: {dist.capacity}</div>
                                     </div>
                                 </div>
@@ -168,9 +168,9 @@ export default function ProductDetail({ product, stats, distribution, movements 
                     </div>
 
                     {/* Stock Efficiency visualization */}
-                    <div className="bg-white rounded-[24px] p-7 shadow-[0_2px_16px_rgba(0,0,0,0.02)] border border-[#edf2f7] animate-in fade-in slide-in-from-right-4 duration-700">
+                    <div className="bg-white rounded-[24px] p-7 shadow-[0_2px_16px_rgba(0,0,0,0.02)] border border-[#EDE8FC] animate-in fade-in slide-in-from-right-4 duration-700">
                         <div className="mb-8">
-                            <h3 className="text-[16px] font-black text-[#1a202c]">Efisiensi Stok & Kapasitas</h3>
+                            <h3 className="text-[16px] font-black text-[#28106F]">Efisiensi Stok & Kapasitas</h3>
                         </div>
 
                         <div className="flex-1 flex flex-col justify-center items-center px-4 pb-6">
@@ -181,12 +181,12 @@ export default function ProductDetail({ product, stats, distribution, movements 
                                     <circle cx="96" cy="96" r="88" stroke="currentColor" strokeWidth="12" fill="transparent"
                                         strokeDasharray={552}
                                         strokeDashoffset={552 - (552 * stats.percentage) / 100}
-                                        className="text-[#4f46e5] transition-all duration-1000 ease-out"
+                                        className="text-[#5932C9] transition-all duration-1000 ease-out"
                                         strokeLinecap="round"
                                     />
                                 </svg>
                                 <div className="absolute inset-0 flex flex-col items-center justify-center">
-                                    <span className="text-[42px] font-black text-[#1a202c] leading-none">{stats.percentage}%</span>
+                                    <span className="text-[42px] font-black text-[#28106F] leading-none">{stats.percentage}%</span>
                                     <span className="text-[10px] font-bold text-gray-400 tracking-widest uppercase mt-2">Terisi</span>
                                 </div>
                             </div>
@@ -194,11 +194,11 @@ export default function ProductDetail({ product, stats, distribution, movements 
                             <div className="w-full grid grid-cols-2 gap-4">
                                 <div className="bg-indigo-50/50 rounded-xl p-4 border border-indigo-100/50">
                                     <div className="text-[9px] font-black text-indigo-500 uppercase tracking-widest mb-1">STOK SAAT INI</div>
-                                    <div className="text-[18px] font-black text-[#1a202c]">{stats.current_stock} <span className="text-[10px] font-bold text-gray-400 uppercase">Unit</span></div>
+                                    <div className="text-[18px] font-black text-[#28106F]">{stats.current_stock} <span className="text-[10px] font-bold text-gray-400 uppercase">Unit</span></div>
                                 </div>
                                 <div className="bg-gray-50/50 rounded-xl p-4 border border-gray-100">
                                     <div className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">KAPASITAS TOTAL</div>
-                                    <div className="text-[18px] font-black text-[#1a202c]">{stats.max_stock} <span className="text-[10px] font-bold text-gray-400 uppercase">Unit</span></div>
+                                    <div className="text-[18px] font-black text-[#28106F]">{stats.max_stock} <span className="text-[10px] font-bold text-gray-400 uppercase">Unit</span></div>
                                 </div>
                             </div>
                         </div>
@@ -206,10 +206,10 @@ export default function ProductDetail({ product, stats, distribution, movements 
                 </div>
 
                 {/* Table Bottom Section */}
-                <div className="bg-white rounded-[24px] overflow-hidden shadow-[0_2px_16px_rgba(0,0,0,0.02)] border border-[#edf2f7] animate-in fade-in slide-in-from-bottom-6 duration-700 delay-200">
+                <div className="bg-white rounded-[24px] overflow-hidden shadow-[0_2px_16px_rgba(0,0,0,0.02)] border border-[#EDE8FC] animate-in fade-in slide-in-from-bottom-6 duration-700 delay-200">
                     <div className="flex justify-between items-center p-8 border-b border-gray-100">
-                        <h3 className="text-[16px] font-black text-[#1a202c]">Riwayat Pergerakan</h3>
-                        <button className="flex items-center space-x-2 text-[12px] font-black text-[#4f46e5] hover:text-indigo-700 transition-colors">
+                        <h3 className="text-[16px] font-black text-[#28106F]">Riwayat Pergerakan</h3>
+                        <button className="flex items-center space-x-2 text-[12px] font-black text-[#5932C9] hover:text-indigo-700 transition-colors">
                             <span>Ekspor Riwayat</span>
                             <DownloadIcon className="w-4 h-4" />
                         </button>
@@ -231,11 +231,11 @@ export default function ProductDetail({ product, stats, distribution, movements 
                                 {movements.map((move) => (
                                     <tr key={move.id} className="hover:bg-gray-50/50 transition-colors group">
                                         <td className="px-8 py-6">
-                                            <div className="text-[13px] font-black text-[#1a202c]">{move.date}</div>
+                                            <div className="text-[13px] font-black text-[#28106F]">{move.date}</div>
                                             <div className="text-[11px] font-bold text-gray-400 mt-1">{move.time}</div>
                                         </td>
                                         <td className="px-8 py-6">
-                                            <div className="text-[13px] font-bold text-[#1a202c]">{move.type}</div>
+                                            <div className="text-[13px] font-bold text-[#28106F]">{move.type}</div>
                                             <div className="text-[11px] font-semibold text-gray-400 mt-1">{move.reference}</div>
                                         </td>
                                         <td className={`px-8 py-6 text-[14px] font-black ${move.type === 'Restok Masuk' ? 'text-[#10b981]' : 'text-[#ef4444]'}`}>

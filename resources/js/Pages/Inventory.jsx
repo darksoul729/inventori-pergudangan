@@ -228,29 +228,29 @@ export default function Inventory({ products, stats, categories, units, supplier
 
                     {/* Header Row */}
                     <div className="flex justify-between items-center mb-2">
-                        <h1 className="text-[28px] font-black text-[#1a202c] tracking-tight">Manajemen Inventaris</h1>
+                        <h1 className="text-[28px] font-black text-[#28106F] tracking-tight">Manajemen Inventaris</h1>
 
                         <div className="flex items-center space-x-4">
                             {isManager && (
                                 <Link
                                     href={route('settings', { active: 'categories' })}
-                                    className="flex items-center space-x-2 px-6 py-3 border border-[#edf2f7] bg-white hover:bg-indigo-50 text-[#4f46e5] font-bold rounded-xl text-[14px] transition-all"
+                                    className="flex items-center space-x-2 px-6 py-3 border border-[#EDE8FC] bg-white hover:bg-indigo-50 text-[#5932C9] font-bold rounded-xl text-[14px] transition-all"
                                 >
                                     <TagIcon className="w-4 h-4" />
                                     <span>Kelola Kategori</span>
                                 </Link>
                             )}
                             <Link
-                                href={route('inventory.outbound.view')}
+                                href={route('shipments.create')}
                                 className="flex items-center space-x-2 px-6 py-3 border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 font-bold rounded-xl text-[14px] transition-colors"
                             >
                                 <RegistryIcon2 className="w-4 h-4 text-gray-400" />
-                                <span>Barang Keluar</span>
+                                <span>Pengiriman Barang</span>
                             </Link>
                             {canAuditStock && (
                                 <Link
                                     href={route('stock-opname.index')}
-                                    className="flex items-center space-x-2 px-6 py-3 border border-[#edf2f7] bg-white hover:bg-indigo-50 text-[#4f46e5] font-bold rounded-xl text-[14px] transition-all"
+                                    className="flex items-center space-x-2 px-6 py-3 border border-[#EDE8FC] bg-white hover:bg-indigo-50 text-[#5932C9] font-bold rounded-xl text-[14px] transition-all"
                                 >
                                     <AuditIcon className="w-4 h-4" />
                                     <span>Stock Opname</span>
@@ -259,7 +259,7 @@ export default function Inventory({ products, stats, categories, units, supplier
                             {isManager && (
                                 <Link
                                     href={route('inventory.create')}
-                                    className="flex items-center space-x-2 px-6 py-3 bg-[#4f46e5] shadow-[0_4px_14px_rgba(79,70,229,0.3)] hover:bg-indigo-700 text-white font-bold rounded-xl text-[14px] transition-colors"
+                                    className="flex items-center space-x-2 px-6 py-3 bg-[#5932C9] shadow-[0_4px_14px_rgba(89,50,201,0.3)] hover:bg-indigo-700 text-white font-bold rounded-xl text-[14px] transition-colors"
                                 >
                                     <span className="text-lg leading-none font-medium">+</span>
                                     <span>Tambah Entri Baru</span>
@@ -271,57 +271,63 @@ export default function Inventory({ products, stats, categories, units, supplier
                     {/* 4 Stat Cards */}
                     <div className="grid grid-cols-4 gap-4">
                         {/* 1. Total SKUs */}
-                        <div className="bg-white rounded-[20px] p-5 shadow-[0_2px_16px_rgba(0,0,0,0.02)] border border-[#edf2f7]">
+                        <div className="bg-white rounded-[20px] p-5 shadow-[0_2px_16px_rgba(0,0,0,0.02)] border border-[#EDE8FC]">
                             <div className="flex items-center space-x-2 mb-3">
                                 <BoxIcon2 className="w-4 h-4 text-indigo-500" />
                                 <span className="text-[12px] font-extrabold text-gray-500 tracking-wide">Total SKU</span>
                             </div>
                             <div className="flex items-baseline space-x-3">
-                                <span className="text-[26px] font-black text-[#1a202c]">{stats.total_skus.toLocaleString()}</span>
+                                <span className="text-[26px] font-black text-[#28106F]">{stats.total_skus.toLocaleString()}</span>
                                 <span className="text-[10px] font-extrabold text-emerald-500 bg-emerald-50 px-1.5 py-0.5 rounded tracking-wide">+0%</span>
                             </div>
                         </div>
 
                         {/* 2. Out of Stock */}
-                        <div className="bg-white rounded-[20px] p-5 shadow-[0_2px_16px_rgba(0,0,0,0.02)] border border-[#edf2f7]">
+                        <div className="bg-white rounded-[20px] p-5 shadow-[0_2px_16px_rgba(0,0,0,0.02)] border border-[#EDE8FC]">
                             <div className="flex items-center space-x-2 mb-3">
                                 <OutOfStockIcon className="w-4 h-4 text-red-400" />
                                 <span className="text-[12px] font-extrabold text-gray-500 tracking-wide">Stok Habis</span>
                             </div>
                             <div className="flex items-baseline space-x-3">
-                                <span className="text-[26px] font-black text-[#1a202c]">{stats.out_of_stock}</span>
+                                <span className="text-[26px] font-black text-[#28106F]">{stats.out_of_stock}</span>
                                 <span className="text-[10px] font-extrabold text-red-500 bg-red-50 px-1.5 py-0.5 rounded tracking-wide">-0%</span>
                             </div>
                         </div>
 
                         {/* 3. Low Stock Alerts */}
-                        <div className="bg-white rounded-[20px] p-5 shadow-[0_2px_16px_rgba(0,0,0,0.02)] border border-[#edf2f7]">
+                        <div className="bg-white rounded-[20px] p-5 shadow-[0_2px_16px_rgba(0,0,0,0.02)] border border-[#EDE8FC]">
                             <div className="flex items-center space-x-2 mb-3">
                                 <WarningIcon className="w-4 h-4 text-amber-500" />
                                 <span className="text-[12px] font-extrabold text-gray-500 tracking-wide">Peringatan Stok Menipis</span>
                             </div>
                             <div className="flex items-baseline space-x-3 mt-1">
-                                <span className="text-[26px] font-black text-[#1a202c] leading-none">{stats.low_stock}</span>
+                                <span className="text-[26px] font-black text-[#28106F] leading-none">{stats.low_stock}</span>
                                 <span className="text-[9px] font-black text-amber-600 bg-amber-100 px-2 py-0.5 rounded uppercase tracking-wider">Kritis</span>
                             </div>
                         </div>
 
                         {/* 4. Storage Efficiency */}
-                        <div className="bg-gradient-to-br from-[#6366f1] to-[#4338ca] rounded-[20px] p-5 shadow-[0_8px_20px_rgba(79,70,229,0.25)] relative overflow-hidden text-white flex flex-col justify-between">
+                        <div className="bg-gradient-to-br from-[#5932C9] to-[#28106F] rounded-[20px] p-5 shadow-[0_8px_20px_rgba(89,50,201,0.25)] relative overflow-hidden text-white flex flex-col justify-between">
                             <RocketIcon className="w-24 h-24 absolute -right-4 -bottom-4 text-white opacity-10" />
                             <div className="relative z-10 text-[12px] font-bold text-indigo-100/90 tracking-wide mb-2">Efisiensi Penyimpanan</div>
                             <div className="relative z-10">
                                 <div className="text-[26px] font-black leading-none mb-1.5">{stats.storage_efficiency}%</div>
                                 <div className="flex items-center space-x-1">
                                     <div className="w-[5px] h-[5px] bg-white rounded-full"></div>
-                                    <span className="text-[10px] font-bold text-indigo-200">{stats.occupied_storage || 0} / {stats.total_storage_capacity || 0} kapasitas</span>
+                                    <span className="text-[10px] font-bold text-indigo-200">{stats.occupied_storage || 0} / {stats.total_storage_capacity || 0} di rack</span>
                                 </div>
+                                {(stats.unplaced_stock > 0 || stats.warehouse_utilization > stats.storage_efficiency) && (
+                                    <div className="flex items-center space-x-1 mt-1">
+                                        <div className="w-[5px] h-[5px] bg-amber-300 rounded-full"></div>
+                                        <span className="text-[10px] font-bold text-amber-200">{stats.unplaced_stock || 0} belum di-rack ({stats.warehouse_utilization || 0}% utilisasi)</span>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>
 
                     {/* Filters & Product List Container */}
-                    <div className="bg-white rounded-[24px] p-8 shadow-[0_2px_16px_rgba(0,0,0,0.02)] border border-[#edf2f7] flex-1">
+                    <div className="bg-white rounded-[24px] p-8 shadow-[0_2px_16px_rgba(0,0,0,0.02)] border border-[#EDE8FC] flex-1">
 
                         {/* Filters Row */}
                         <div className="flex justify-between items-center mb-8">
@@ -465,7 +471,7 @@ export default function Inventory({ products, stats, categories, units, supplier
                                                     <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" />
                                                 ) : (
                                                     <div className="w-full h-full bg-gradient-to-tr from-cyan-600 to-sky-400 p-0.5">
-                                                        <div className="w-full h-full bg-[#1a202c] rounded-[10px] flex items-center justify-center relative">
+                                                        <div className="w-full h-full bg-[#28106F] rounded-[10px] flex items-center justify-center relative">
                                                             <div className="absolute inset-x-0 bottom-0 h-1/2 bg-blue-500/20 blur-md"></div>
                                                             <div className="w-8 h-6 bg-cyan-400 rounded-sm shadow-[0_0_10px_rgba(34,211,238,0.4)] border border-cyan-200 z-10"></div>
                                                         </div>
@@ -473,17 +479,17 @@ export default function Inventory({ products, stats, categories, units, supplier
                                                 )}
                                             </div>
                                             <div>
-                                                <div className="text-[14px] font-black text-[#1a202c] mb-1">{item.name}</div>
+                                                <div className="text-[14px] font-black text-[#28106F] mb-1">{item.name}</div>
                                                 <div className="text-[11px] font-bold text-gray-400 tracking-wide">SKU: {item.sku}</div>
                                             </div>
                                         </div>
                                         <div className="col-span-4 flex flex-col justify-center pr-8">
                                             <div className="flex justify-between items-end mb-1.5">
-                                                <span className="text-[11px] font-bold text-[#1a202c]">{item.current_stock} <span className="text-gray-400 font-semibold">/ {item.max_stock}</span></span>
+                                                <span className="text-[11px] font-bold text-[#28106F]">{item.current_stock} <span className="text-gray-400 font-semibold">/ {item.max_stock}</span></span>
                                                 <span className="text-[11px] font-black text-gray-700">{item.percentage}%</span>
                                             </div>
                                             <div className="w-full h-[5px] bg-gray-100 rounded-full overflow-hidden">
-                                                <div className="h-full bg-[#4f46e5] rounded-full" style={{ width: `${item.percentage}%` }}></div>
+                                                <div className="h-full bg-[#5932C9] rounded-full" style={{ width: `${item.percentage}%` }}></div>
                                             </div>
                                         </div>
                                         <div className="col-span-3 flex justify-between items-center pr-2">

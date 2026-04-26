@@ -1,6 +1,6 @@
 import DashboardLayout from '@/Layouts/DashboardLayout';
 import { Head, Link, usePage } from '@inertiajs/react';
-import { ArrowRight, CheckCircle2, Inbox, MailOpen, Search } from 'lucide-react';
+import { ArrowRight, CheckCheck, MailOpen, Search, SlidersHorizontal } from 'lucide-react';
 import React, { useMemo, useState } from 'react';
 import { filters, getNotificationMeta, typeStyle } from './notificationConfig';
 
@@ -19,6 +19,11 @@ export default function NotificationsIndex() {
     const unreadCount = useMemo(
         () => notifications.filter((notification) => !readIds.includes(notification.id)).length,
         [notifications, readIds],
+    );
+
+    const priorityCount = useMemo(
+        () => notifications.filter((item) => item.type === 'warning' || item.type === 'error').length,
+        [notifications],
     );
 
     const visibleNotifications = useMemo(() => {
@@ -49,63 +54,72 @@ export default function NotificationsIndex() {
     };
 
     return (
-        <DashboardLayout headerTitle="Notifikasi Sistem" hideSearch={true} contentClassName="max-w-[1180px] mx-auto">
+        <DashboardLayout headerTitle="Notifikasi Sistem" hideSearch={true} contentClassName="w-full max-w-none">
             <Head title="Notifikasi Sistem" />
 
-            <div className="pb-12">
-                <section className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-                    <div>
-                        <p className="text-[11px] font-black uppercase tracking-[0.22em] text-[#3632c0]">Realtime Alert</p>
-                        <h1 className="mt-3 text-[32px] font-black tracking-tight text-[#111827]">Kotak Masuk Notifikasi</h1>
-                        <p className="mt-3 max-w-3xl text-[14px] font-semibold leading-7 text-gray-500">
-                            Pilih notifikasi untuk membuka halaman detailnya. Daftar ini hanya menampilkan ringkasan operasional.
-                        </p>
+            <div className="w-full px-5 pb-10 pt-1 md:px-8">
+                <section className="mb-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm md:p-6">
+                    <div className="mb-5 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+                        <div>
+                            <p className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-400">Notification Center</p>
+                            <h1 className="mt-2 text-[30px] font-black tracking-tight text-slate-900">Inbox Notifikasi</h1>
+                            <p className="mt-2 max-w-3xl text-[14px] font-semibold text-slate-500">
+                                Pantau alert operasional harian, tandai baca, dan buka modul terkait dari satu halaman.
+                            </p>
+                        </div>
+                        <button
+                            type="button"
+                            onClick={markAllAsRead}
+                            className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-[12px] font-black uppercase tracking-[0.12em] text-slate-700 transition hover:border-indigo-200 hover:text-indigo-700"
+                        >
+                            <CheckCheck className="h-4 w-4" />
+                            Tandai Semua
+                        </button>
                     </div>
-                    <button
-                        type="button"
-                        onClick={markAllAsRead}
-                        className="inline-flex items-center justify-center gap-2 rounded-[10px] border border-gray-200 bg-white px-5 py-3 text-[12px] font-black uppercase tracking-wider text-gray-700 shadow-sm transition-all hover:border-indigo-100 hover:text-[#3632c0]"
-                    >
-                        <CheckCircle2 className="h-4 w-4" />
-                        Tandai Semua Dibaca
-                    </button>
+
+                    <div className="grid gap-3 md:grid-cols-3">
+                        <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+                            <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">Total</p>
+                            <p className="mt-1 text-[24px] font-black tracking-tight text-slate-900">{notifications.length}</p>
+                        </div>
+                        <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+                            <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">Belum Dibaca</p>
+                            <p className="mt-1 text-[24px] font-black tracking-tight text-indigo-700">{unreadCount}</p>
+                        </div>
+                        <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+                            <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">Prioritas</p>
+                            <p className="mt-1 text-[24px] font-black tracking-tight text-amber-600">{priorityCount}</p>
+                        </div>
+                    </div>
                 </section>
 
-                <section className="overflow-hidden rounded-[8px] border border-gray-200 bg-white shadow-sm">
-                    <div className="border-b border-gray-100 p-5">
-                        <div className="mb-5 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-                            <div className="flex items-center gap-3">
-                                <div className="flex h-11 w-11 items-center justify-center rounded-[8px] bg-[#f4f3ff] text-[#3632c0]">
-                                    <Inbox className="h-5 w-5" />
-                                </div>
-                                <div>
-                                    <h2 className="text-[17px] font-black text-gray-900">Inbox Operasional</h2>
-                                    <p className="text-[12px] font-bold text-gray-400">
-                                        {notifications.length} total, {unreadCount} belum dibaca
-                                    </p>
-                                </div>
+                <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+                    <div className="border-b border-slate-100 px-5 py-4 md:px-6">
+                        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                            <div className="inline-flex items-center gap-2 rounded-lg bg-slate-50 px-3 py-2 text-[11px] font-black uppercase tracking-[0.12em] text-slate-500">
+                                <SlidersHorizontal className="h-4 w-4" />
+                                Filter & Pencarian
                             </div>
-
-                            <div className="relative w-full lg:max-w-[420px]">
-                                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                            <div className="relative w-full lg:max-w-[440px]">
+                                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                                 <input
                                     value={query}
                                     onChange={(event) => setQuery(event.target.value)}
-                                    placeholder="Cari notifikasi..."
-                                    className="h-11 w-full rounded-[8px] border border-gray-200 bg-gray-50 pl-10 pr-3 text-[13px] font-bold text-gray-700 outline-none transition-all placeholder:text-gray-400 focus:border-indigo-200 focus:bg-white focus:ring-2 focus:ring-indigo-50"
+                                    placeholder="Cari judul, pesan, atau kategori..."
+                                    className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 pl-10 pr-3 text-[13px] font-semibold text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-indigo-200 focus:bg-white focus:ring-2 focus:ring-indigo-50"
                                 />
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-3 gap-2">
+                        <div className="mt-4 grid grid-cols-3 gap-2 md:max-w-[460px]">
                             {filters.map((item) => (
                                 <button
                                     key={item.key}
                                     type="button"
                                     onClick={() => setFilter(item.key)}
-                                    className={`h-10 rounded-[8px] text-[11px] font-black transition-all ${filter === item.key
-                                        ? 'bg-[#3632c0] text-white shadow-sm'
-                                        : 'bg-gray-50 text-gray-500 hover:bg-gray-100 hover:text-gray-800'
+                                    className={`h-10 rounded-lg border text-[11px] font-black uppercase tracking-[0.12em] transition ${filter === item.key
+                                        ? 'border-indigo-200 bg-indigo-50 text-indigo-700'
+                                        : 'border-slate-200 bg-white text-slate-500 hover:bg-slate-50'
                                         }`}
                                 >
                                     {item.label}
@@ -114,7 +128,7 @@ export default function NotificationsIndex() {
                         </div>
                     </div>
 
-                    <div>
+                    <div className="divide-y divide-slate-100">
                         {visibleNotifications.length > 0 ? (
                             visibleNotifications.map((notification) => {
                                 const meta = getNotificationMeta(notification);
@@ -127,44 +141,42 @@ export default function NotificationsIndex() {
                                         key={notification.id}
                                         href={`/notifications/${notification.id}`}
                                         onClick={() => markAsRead(notification.id)}
-                                        className={`group flex border-l-4 border-b border-gray-100 px-5 py-5 text-left transition-all last:border-b-0 ${style.row} ${isRead ? 'bg-white hover:bg-gray-50' : 'bg-indigo-50/40 hover:bg-indigo-50/70'}`}
+                                        className={`group flex items-start gap-4 px-5 py-5 transition md:px-6 ${isRead ? 'bg-white hover:bg-slate-50' : 'bg-indigo-50/30 hover:bg-indigo-50/50'}`}
                                     >
-                                        <div className={`mr-4 mt-1 flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-[8px] ${style.icon}`}>
+                                        <div className={`mt-0.5 flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-lg ${style.icon}`}>
                                             <Icon className="h-5 w-5" />
                                         </div>
                                         <div className="min-w-0 flex-1">
-                                            <div className="mb-1 flex items-center gap-2">
-                                                {!isRead && <span className={`h-2 w-2 flex-shrink-0 rounded-full ${style.dot}`} />}
-                                                <h3 className={`truncate text-[15px] ${isRead ? 'font-bold text-gray-700' : 'font-black text-gray-950'}`}>
+                                            <div className="mb-2 flex flex-wrap items-center gap-2">
+                                                {!isRead && <span className={`h-2 w-2 rounded-full ${style.dot}`} />}
+                                                <h3 className={`truncate text-[15px] ${isRead ? 'font-bold text-slate-700' : 'font-black text-slate-900'}`}>
                                                     {notification.title}
                                                 </h3>
-                                            </div>
-                                            <p className="line-clamp-2 text-[13px] font-semibold leading-6 text-gray-500">
-                                                {notification.message}
-                                            </p>
-                                            <div className="mt-3 flex flex-wrap items-center gap-2">
-                                                <span className={`rounded-full border px-2.5 py-1 text-[9px] font-black uppercase tracking-wider ${style.badge}`}>
+                                                <span className={`rounded-full border px-2.5 py-1 text-[9px] font-black uppercase tracking-[0.1em] ${style.badge}`}>
                                                     {style.label}
                                                 </span>
-                                                <span className="rounded-full bg-white/80 px-2.5 py-1 text-[9px] font-black uppercase tracking-wider text-gray-400 ring-1 ring-gray-100">
+                                                <span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[9px] font-black uppercase tracking-[0.1em] text-slate-500">
                                                     {meta.label}
                                                 </span>
                                             </div>
+                                            <p className="line-clamp-2 text-[13px] font-semibold leading-6 text-slate-500">
+                                                {notification.message}
+                                            </p>
                                         </div>
-                                        <div className="ml-4 hidden flex-shrink-0 items-center text-gray-300 transition-colors group-hover:text-[#3632c0] sm:flex">
+                                        <div className="hidden flex-shrink-0 items-center text-slate-300 transition group-hover:text-indigo-600 sm:flex">
                                             <ArrowRight className="h-5 w-5" />
                                         </div>
                                     </Link>
                                 );
                             })
                         ) : (
-                            <div className="flex min-h-[360px] flex-col items-center justify-center px-8 text-center">
-                                <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-[8px] bg-gray-50 text-gray-400">
+                            <div className="flex min-h-[340px] flex-col items-center justify-center px-8 text-center">
+                                <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-lg bg-slate-50 text-slate-400">
                                     <MailOpen className="h-7 w-7" />
                                 </div>
-                                <h3 className="text-[18px] font-black text-gray-900">Tidak ada notifikasi</h3>
-                                <p className="mt-2 text-[13px] font-semibold leading-6 text-gray-500">
-                                    Filter atau kata pencarian tidak menemukan notifikasi yang cocok.
+                                <h3 className="text-[18px] font-black text-slate-900">Tidak ada notifikasi</h3>
+                                <p className="mt-2 text-[13px] font-semibold leading-6 text-slate-500">
+                                    Tidak ada data yang cocok dengan filter atau kata pencarian saat ini.
                                 </p>
                             </div>
                         )}

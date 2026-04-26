@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\AetherConversation;
-use App\Models\AetherMessage;
+use App\Models\PetayuConversation;
+use App\Models\PetayuMessage;
 use App\Models\Product;
 use App\Models\Rack;
 use App\Models\RackStock;
@@ -21,12 +21,12 @@ use Symfony\Component\Process\Process;
 use Inertia\Inertia;
 
 
-class AetherAIController extends Controller
+class PetayuAIController extends Controller
 {
     public function index()
     {
-        return Inertia::render('AetherAI', [
-            'conversations' => AetherConversation::where('user_id', Auth::id())
+        return Inertia::render('PetayuAI', [
+            'conversations' => PetayuConversation::where('user_id', Auth::id())
                 ->orderByDesc('updated_at')
                 ->limit(50)
                 ->get(['id', 'title', 'updated_at']),
@@ -41,22 +41,22 @@ class AetherAIController extends Controller
         }
 
         if ($request->boolean('refresh')) {
-            Cache::forget('aether_dashboard_insight');
+            Cache::forget('petayu_dashboard_insight');
         }
 
-        $insight = Cache::remember('aether_dashboard_insight', 1800, function () use ($groqKey) {
+        $insight = Cache::remember('petayu_dashboard_insight', 1800, function () use ($groqKey) {
             $totalProducts = Product::where('is_active', true)->count();
             $totalStock = RackStock::sum('quantity');
             $alerts = Rack::whereHas('rackStocks')->withSum('rackStocks as total_qty', 'quantity')->get()->filter(function ($r) {
                 return $r->total_qty > ($r->capacity * 0.9);
             })->count();
             
-            $prompt = "Anda adalah AI analitik gudang (Aether). Berikan maksimal 2 kalimat pendek (ukuran sekitar 20-25 kata total) berisi insight cepat atau prediksi operasional untuk pengguna dashboard WMS kami. Data: Total produk: {$totalProducts}, Total stok: {$totalStock}, peringatan rak hampir penuh: {$alerts}. Berbicaralah seperti asisten eksekutif modern, langsung to the point tanpa menyapa.";
+            $prompt = "Anda adalah AI analitik gudang (PETAYU AI). Berikan maksimal 2 kalimat pendek (ukuran sekitar 20-25 kata total) berisi insight cepat atau prediksi operasional untuk pengguna dashboard WMS kami. Data: Total produk: {$totalProducts}, Total stok: {$totalStock}, peringatan rak hampir penuh: {$alerts}. Berbicaralah seperti asisten eksekutif modern, langsung to the point tanpa menyapa.";
             
             try {
                 return $this->callGroqApi($groqKey, $prompt, []);
             } catch (\Exception $e) {
-                Log::error('Aether Dashboard Insight fail', ['msg' => $e->getMessage()]);
+                Log::error('PETAYU AI Dashboard Insight fail', ['msg' => $e->getMessage()]);
                 return 'Sistem Prediksi AI saat ini aktif dalam mode pemantauan lokal rutin.';
             }
         });
@@ -72,11 +72,15 @@ class AetherAIController extends Controller
     private const INTENT_TOP_OUTBOUND_PRODUCTS = 'top_outbound_products';
     private const INTENT_STOCK_FORECAST = 'stock_forecast';
     private const INTENT_PRODUCT_LOOKUP = 'product_lookup';
+    private const INTENT_OUT_OF_SCOPE = 'out_of_scope';
+    private const INTENT_HELP_GUIDE = 'help_guide';
+    private const INTENT_ROLE_INFO = 'role_info';
+    private const INTENT_EXPIRED_STOCK = 'expired_stock';
 
     // ─── List Conversations ─────────────────────────────────────────────────────
     public function conversations()
     {
-        $conversations = AetherConversation::where('user_id', Auth::id())
+        $conversations = PetayuConversation::where('user_id', Auth::id())
             ->orderByDesc('updated_at')
             ->limit(30)
             ->get(['id', 'title', 'created_at', 'updated_at']);
@@ -88,9 +92,9 @@ class AetherAIController extends Controller
     public function messages($id)
     {
         try {
-            $conversation = AetherConversation::findOrFail($id);
+            $conversation = PetayuConversation::findOrFail($id);
 
-            Log::info('Aether: Fetching messages', [
+            Log::info('PETAYU AI: Fetching messages', [
                 'conversation_id' => $conversation->id,
                 'user_id' => Auth::id(),
                 'owner_id' => $conversation->user_id
@@ -105,7 +109,7 @@ class AetherAIController extends Controller
 
             return response()->json($messages);
         } catch (\Exception $e) {
-            Log::error('Aether: Failed to load messages', [
+            Log::error('PETAYU AI: Failed to load messages', [
                 'id' => $id,
                 'error' => $e->getMessage()
             ]);
@@ -116,7 +120,7 @@ class AetherAIController extends Controller
     // ─── Create New Conversation ─────────────────────────────────────────────────
     public function newConversation()
     {
-        $conversation = AetherConversation::create([
+        $conversation = PetayuConversation::create([
             'user_id' => Auth::id(),
             'title'   => 'Percakapan Baru',
         ]);
@@ -127,7 +131,7 @@ class AetherAIController extends Controller
     // ─── Delete Conversation ─────────────────────────────────────────────────────
     public function deleteConversation($id)
     {
-        $conversation = AetherConversation::findOrFail($id);
+        $conversation = PetayuConversation::findOrFail($id);
         Gate::authorize('delete', $conversation);
         $conversation->delete();
 
@@ -137,7 +141,7 @@ class AetherAIController extends Controller
     // ─── Delete Untitled/Failed New Conversations ───────────────────────────────
     public function deleteUntitledConversations()
     {
-        $conversations = AetherConversation::where('user_id', Auth::id())
+        $conversations = PetayuConversation::where('user_id', Auth::id())
             ->where('title', 'Percakapan Baru')
             ->withCount('messages')
             ->get();
@@ -171,13 +175,13 @@ class AetherAIController extends Controller
             return response()->json(['ok' => true, 'saved' => false]);
         }
 
-        $conversation = AetherConversation::create([
+        $conversation = PetayuConversation::create([
             'user_id' => Auth::id(),
             'title' => 'Panggilan Live ' . now()->format('d/m H:i'),
         ]);
 
         if ($userText !== '') {
-            AetherMessage::create([
+            PetayuMessage::create([
                 'conversation_id' => $conversation->id,
                 'role' => 'user',
                 'content' => $userText,
@@ -185,7 +189,7 @@ class AetherAIController extends Controller
         }
 
         if ($aiText !== '') {
-            AetherMessage::create([
+            PetayuMessage::create([
                 'conversation_id' => $conversation->id,
                 'role' => 'model',
                 'content' => $aiText,
@@ -208,7 +212,7 @@ class AetherAIController extends Controller
         ]);
 
         $text = mb_strimwidth(strip_tags($request->text), 0, 1000, '');
-        $tmpAudio = tempnam(storage_path('app/public'), 'aether-piper-') . '.wav';
+        $tmpAudio = tempnam(storage_path('app/public'), 'petayu-piper-') . '.wav';
 
         try {
             $piper = '/home/panzek/.local/bin/piper';
@@ -265,7 +269,7 @@ class AetherAIController extends Controller
         }
 
         $audio = $request->file('audio');
-        $filename = $audio->getClientOriginalName() ?: 'aether-voice.webm';
+        $filename = $audio->getClientOriginalName() ?: 'petayu-voice.webm';
 
         try {
             $response = Http::withToken($apiKey)
@@ -309,7 +313,7 @@ class AetherAIController extends Controller
     {
         $request->validate([
             'message'         => 'required|string|max:4000',
-            'conversation_id' => 'nullable|integer|exists:aether_conversations,id',
+            'conversation_id' => 'nullable|integer|exists:petayu_conversations,id',
         ]);
 
         $requestStartedAt = microtime(true);
@@ -318,11 +322,11 @@ class AetherAIController extends Controller
         // ── Resolve or create conversation ──────────────────────────────────────
         $createdConversation = false;
         if ($request->conversation_id) {
-            $conversation = AetherConversation::where('id', $request->conversation_id)
+            $conversation = PetayuConversation::where('id', $request->conversation_id)
                 ->where('user_id', $user->id)
                 ->firstOrFail();
         } else {
-            $conversation = AetherConversation::create([
+            $conversation = PetayuConversation::create([
                 'user_id' => $user->id,
                 'title'   => 'Percakapan Baru',
             ]);
@@ -330,7 +334,7 @@ class AetherAIController extends Controller
         }
 
         // ── Save user message ────────────────────────────────────────────────────
-        $userMessage = AetherMessage::create([
+        $userMessage = PetayuMessage::create([
             'conversation_id' => $conversation->id,
             'role'            => 'user',
             'content'         => $request->message,
@@ -349,7 +353,7 @@ class AetherAIController extends Controller
             $aiText = $this->handleLocalIntent($localIntent, $request->message, $user);
             $latencyMs = $this->elapsedMs($requestStartedAt);
 
-            Log::info('Aether chat handled locally', [
+            Log::info('PETAYU AI chat handled locally', [
                 'conversation_id' => $conversation->id,
                 'user_id' => $user->id,
                 'intent' => $localIntent,
@@ -393,7 +397,7 @@ class AetherAIController extends Controller
             else $userMessage->delete();
 
             $latencyMs = $this->elapsedMs($requestStartedAt);
-            Log::warning('Aether Groq connection timeout/failure', [
+            Log::warning('PETAYU AI Groq connection timeout/failure', [
                 'conversation_id' => $conversation->id,
                 'user_id' => $user->id,
                 'latency_ms' => $latencyMs,
@@ -409,7 +413,7 @@ class AetherAIController extends Controller
             else $userMessage->delete();
 
             $latencyMs = $this->elapsedMs($requestStartedAt);
-            Log::error('Aether Groq request failed', [
+            Log::error('PETAYU AI Groq request failed', [
                 'conversation_id' => $conversation->id,
                 'user_id' => $user->id,
                 'latency_ms' => $latencyMs,
@@ -423,7 +427,7 @@ class AetherAIController extends Controller
         }
 
         $latencyMs = $this->elapsedMs($requestStartedAt);
-        Log::info('Aether chat completed via Groq', [
+        Log::info('PETAYU AI chat completed via Groq', [
             'conversation_id' => $conversation->id,
             'user_id' => $user->id,
             'model' => config('services.groq.model', 'llama-3.3-70b-versatile'),
@@ -533,8 +537,24 @@ class AetherAIController extends Controller
             return self::INTENT_PRODUCT_LOOKUP;
         }
 
+        if ($this->isExpiredStockRequest($message)) {
+            return self::INTENT_EXPIRED_STOCK;
+        }
+
+        if ($this->isHelpGuideRequest($message)) {
+            return self::INTENT_HELP_GUIDE;
+        }
+
+        if ($this->isRoleInfoRequest($message)) {
+            return self::INTENT_ROLE_INFO;
+        }
+
         if ($this->isCasualGreeting($message)) {
             return self::INTENT_CASUAL_GREETING;
+        }
+
+        if ($this->isOutOfScope($message)) {
+            return self::INTENT_OUT_OF_SCOPE;
         }
 
         return null;
@@ -553,7 +573,11 @@ class AetherAIController extends Controller
                     'Saya belum menemukan produk yang cocok. Coba pakai nama produk atau SKU yang lebih persis.',
                     ['items' => []]
                 ),
+            self::INTENT_EXPIRED_STOCK => $this->expiredStockReply(),
+            self::INTENT_HELP_GUIDE => $this->helpGuideReply($message),
+            self::INTENT_ROLE_INFO => $this->roleInfoReply($user),
             self::INTENT_CASUAL_GREETING => $this->casualGreetingReply($user),
+            self::INTENT_OUT_OF_SCOPE => $this->outOfScopeReply(),
             default => throw new \RuntimeException("Intent lokal tidak dikenal: {$intent}"),
         };
     }
@@ -579,7 +603,7 @@ class AetherAIController extends Controller
             'content'         => $aiText,
         ];
 
-        if ($type && Schema::hasColumn('aether_messages', 'metadata')) {
+        if ($type && Schema::hasColumn('petayu_messages', 'metadata')) {
             $messagePayload['metadata'] = [
                 'type' => $type,
                 'data' => $data,
@@ -588,7 +612,7 @@ class AetherAIController extends Controller
             ];
         }
 
-        $aiMessage = AetherMessage::create($messagePayload);
+        $aiMessage = PetayuMessage::create($messagePayload);
 
         if ($conversation->title === 'Percakapan Baru' && $history->count() <= 2) {
             $conversation->update(['title' => mb_strimwidth($userMessage, 0, 50, '...')]);
@@ -621,7 +645,7 @@ class AetherAIController extends Controller
         return response()->json($payload);
     }
 
-    private function formatMessagePayload(AetherMessage $message): array
+    private function formatMessagePayload(PetayuMessage $message): array
     {
         $metadata = $message->metadata ?? [];
         $payload = [
@@ -1176,6 +1200,237 @@ class AetherAIController extends Controller
         return $this->localReply(self::INTENT_STOCK_FORECAST, implode("\n\n", $lines), $forecastData);
     }
 
+    // ─── Out-of-Scope Detection ────────────────────────────────────────────────
+    private function isOutOfScope(string $message): bool
+    {
+        $normalized = mb_strtolower(trim($message));
+        $normalized = preg_replace('/[^\p{L}\p{N}\s]+/u', ' ', $normalized);
+        $normalized = preg_replace('/\s+/u', ' ', $normalized);
+
+        // WMS-related keywords — if any present, it's NOT out of scope
+        $wmsKeywords = [
+            'stok', 'stock', 'gudang', 'warehouse', 'rak', 'rack', 'inventaris', 'inventory',
+            'produk', 'product', 'barang', 'item', 'sku', 'batch', 'kadaluarsa', 'expired',
+            'supplier', 'pemasok', 'customer', 'pelanggan', 'driver', 'pengiriman', 'shipment',
+            'outbound', 'inbound', 'restok', 'restock', 'mutasi', 'movement', 'opname',
+            'transfer', 'adjustment', 'koreksi', 'penerimaan', 'receipt', 'keluar',
+            'po', 'purchase order', 'pesanan', 'order', 'approval', 'approve', 'reject',
+            'dashboard', 'laporan', 'report', 'analisis', 'analysis', 'prediksi', 'forecast',
+            'role', 'hak akses', 'akses', 'bantuan', 'help', 'cara', 'panduan', 'dokumentasi',
+            'zona', 'zone', 'kapasitas', 'capacity', 'efisiensi', 'utilization',
+            'nilai', 'aset', 'asset', 'harga', 'beli', 'jual', 'minimum', 'menipis',
+            'rendah', 'habis', 'reorder', 'feko', 'fife', 'petayu', 'petayu',
+            'selisih', 'fisik', 'sistem', 'wms', 'scan', 'barcode', 'label',
+            'dokumen', 'document', 'gr', 'goods receipt', 'stock out', 'stock opname',
+        ];
+
+        foreach ($wmsKeywords as $keyword) {
+            if (preg_match('/\b' . preg_quote($keyword, '/') . '\b/u', $normalized)) {
+                return false;
+            }
+        }
+
+        // Common out-of-scope patterns
+        $outOfScopePatterns = [
+            '/\b(resep|masak|memasak|recipe|cooking)\b/u',
+            '/\b(film|movie|musik|music|lagu|game|main)\b/u',
+            '/\b(cuaca|weather|ramalan)\b/u',
+            '/\b(kode|program|coding|python|javascript|html|css)\b/u',
+            '/\b(matematika|fisika|kimia|biologi|sains)\b/u',
+            '/\b(sejarah|politik|agama|filosofi)\b/u',
+            '/\b(kesehatan|obat|dokter|sakit|penyakit)\b/u',
+            '/\b(berita|news|hoax)\b/u',
+            '/\b(tugas|pr|sekolah|ujian|belajar|kuliah)\b/u',
+            '/\b(cerita|dongeng|joke|lelucon|humor)\b/u',
+            '/\b(tips|trik|hack|lifehack)\b/u',
+            '/\b(traveling|wisata|liburan|hotel|tiket)\b/u',
+            '/\b(belanja|online|shop|marketplace|e-commerce)\b/u',
+            '/\b(cripto|crypto|bitcoin|saham|investasi|trading)\b/u',
+            '/\b(who is|what is|tell me about|explain|define|jelaskan|ceritakan|artinya)\b.*\b(presiden|negara|kota|orang|hewan|tumbuhan|planet)\b/u',
+        ];
+
+        foreach ($outOfScopePatterns as $pattern) {
+            if (preg_match($pattern, $normalized)) {
+                return true;
+            }
+        }
+
+        // If message is very short and doesn't match any WMS keyword, likely out of scope
+        $wordCount = str_word_count($normalized);
+        if ($wordCount >= 4) {
+            // Longer messages with no WMS keywords at all — likely out of scope
+            return true;
+        }
+
+        return false;
+    }
+
+    private function outOfScopeReply(): array
+    {
+        $replies = [
+            'Maaf, saya adalah **PETAYU AI** — asisten khusus sistem manajemen gudang. Saya hanya bisa membantu pertanyaan seputar inventaris, stok, pengiriman, rak, supplier, dan operasional gudang. Coba tanyakan sesuatu tentang gudang ya!',
+            'Pertanyaan itu di luar cakupan saya. Sebagai PETAYU AI, fokus saya hanya pada operasional gudang — stok, produk, pengiriman, dan sejenisnya. Ada yang ingin ditanyakan tentang gudang?',
+            'Saya tidak bisa menjawab itu karena bukan terkait gudang. Tapi saya bisa bantu cek stok, prediksi kebutuhan, cari produk, atau lihat status pengiriman. Mau coba?',
+        ];
+
+        return $this->localReply(
+            self::INTENT_OUT_OF_SCOPE,
+            $replies[array_rand($replies)],
+            []
+        );
+    }
+
+    // ─── Expired Stock Intent ──────────────────────────────────────────────────
+    private function isExpiredStockRequest(string $message): bool
+    {
+        $normalized = mb_strtolower(trim($message));
+        $normalized = preg_replace('/[^\p{L}\p{N}\s]+/u', ' ', $normalized);
+        $normalized = preg_replace('/\s+/u', ' ', $normalized);
+
+        $asksExpired = preg_match('/\b(kadaluarsa|expired|kedaluwarsa|expir|exp\s*date|tanggal\s*(exp|kadaluarsa))\b/u', $normalized);
+        $asksStock = preg_match('/\b(stok|stock|produk|barang|item|rak)\b/u', $normalized);
+
+        return (bool) ($asksExpired || ($asksExpired === false && preg_match('/\bkadaluarsa\b/u', $normalized)));
+    }
+
+    private function expiredStockReply(): array
+    {
+        $today = now()->toDateString();
+        $soonDate = now()->addDays(30)->toDateString();
+
+        $expired = RackStock::with(['product', 'rack.zone'])
+            ->whereNotNull('expired_date')
+            ->where('expired_date', '<', $today)
+            ->orderBy('expired_date')
+            ->limit(8)
+            ->get();
+
+        $expiringSoon = RackStock::with(['product', 'rack.zone'])
+            ->whereNotNull('expired_date')
+            ->where('expired_date', '>=', $today)
+            ->where('expired_date', '<=', $soonDate)
+            ->orderBy('expired_date')
+            ->limit(8)
+            ->get();
+
+        $lines = [];
+
+        if ($expired->isNotEmpty()) {
+            $lines[] = '**Sudah Kadaluarsa:**';
+            foreach ($expired as $index => $rs) {
+                $lines[] = sprintf(
+                    "%d. **%s** (Batch: %s) di Rak %s — kadaluarsa %s, sisa %s unit.",
+                    $index + 1,
+                    $rs->product?->name ?? '-',
+                    $rs->batch_number ?? '-',
+                    $rs->rack?->code ?? '-',
+                    $rs->expired_date,
+                    number_format($rs->quantity, 0, ',', '.')
+                );
+            }
+        }
+
+        if ($expiringSoon->isNotEmpty()) {
+            $lines[] = '';
+            $lines[] = '**Akan Kadaluarsa (≤30 hari):**';
+            foreach ($expiringSoon as $index => $rs) {
+                $daysLeft = now()->diffInDays(carbon\Carbon::parse($rs->expired_date), false);
+                $lines[] = sprintf(
+                    "%d. **%s** (Batch: %s) di Rak %s — kadaluarsa %s (%d hari lagi), sisa %s unit.",
+                    $index + 1,
+                    $rs->product?->name ?? '-',
+                    $rs->batch_number ?? '-',
+                    $rs->rack?->code ?? '-',
+                    $rs->expired_date,
+                    max(0, (int) $daysLeft),
+                    number_format($rs->quantity, 0, ',', '.')
+                );
+            }
+        }
+
+        if (empty($lines)) {
+            $lines[] = 'Tidak ada stok yang sudah atau akan kadaluarsa dalam 30 hari ke depan. Semua aman!';
+        }
+
+        return $this->localReply(self::INTENT_EXPIRED_STOCK, implode("\n\n", $lines), [
+            'expired_count' => $expired->count(),
+            'expiring_soon_count' => $expiringSoon->count(),
+        ]);
+    }
+
+    // ─── Help Guide Intent ─────────────────────────────────────────────────────
+    private function isHelpGuideRequest(string $message): bool
+    {
+        $normalized = mb_strtolower(trim($message));
+        $normalized = preg_replace('/[^\p{L}\p{N}\s]+/u', ' ', $normalized);
+        $normalized = preg_replace('/\s+/u', ' ', $normalized);
+
+        return (bool) preg_match('/\b(bantuan|help|panduan|cara\s*(pakai|gunakan|buat|input|create|approve|reject|receive|transfer|opname|keluar|masuk|cari)|tutorial|petunjuk|panduan\s*sistem|dokumentasi)\b/u', $normalized);
+    }
+
+    private function helpGuideReply(string $message): array
+    {
+        $normalized = mb_strtolower(trim($message));
+
+        $guides = [
+            'po' => "📋 **Purchase Order (PO):**\n- Manager & Supervisor bisa buat PO di menu Purchase Order → Buat PO\n- Isi supplier, produk, jumlah, harga, batch, dan tanggal kedaluarsa\n- PO butuh approval Manager sebelum bisa di-receive\n- Supervisor/Manager bisa confirm receive setelah PO disetujui\n- Goods Receipt otomatis dibuat saat receive",
+            'receive' => "📦 **Receive PO:**\n- Pastikan PO sudah di-approve Manager\n- Buka detail PO → klik 'Confirm Received'\n- Stok otomatis masuk ke gudang dan Goods Receipt dibuat\n- Batch & expired date dari PO item akan diteruskan",
+            'opname' => "📝 **Stock Opname:**\n- Supervisor/Staff bisa buat opname di menu Stock Opname\n- Catat stok fisik vs sistem per produk\n- Manager auto-approve saat buat, Staff butuh approval Manager\n- Selisih otomatis dikoreksi setelah approval",
+            'transfer' => "🔄 **Transfer Rak:**\n- Supervisor/Staff bisa buat transfer di menu Rack Allocation\n- Pilih rak asal, rak tujuan, produk, dan jumlah\n- Manager auto-approve, lainnya butuh approval\n- Stok otomatis berpindah setelah approval",
+            'outbound' => "📤 **Barang Keluar (Stock Out):**\n- Bisa dibuat di menu Stock Out\n- Pilih produk, jumlah, tujuan/customer, dan tujuan pengeluaran\n- Sistem otomatis mengambil stok berdasarkan FEFO (First Expired First Out)\n- Stok berkurang otomatis setelah dibuat",
+            'approve' => "✅ **Approval:**\n- Hanya Manager yang bisa approve/reject PO, Stock Opname, dan Transfer\n- Tombol approve/reject muncul di halaman detail dokumen\n- Manager tidak bisa approve dokumen yang dibuat sendiri (anti self-approval)",
+            'default' => "🆘 **Pusat Bantuan PETAYU:**\n\nSaya bisa membantu dengan:\n- **Ringkasan stok** — ketik `ringkasan stok`\n- **Produk rendah stok** — ketik `stok menipis`\n- **Cari produk** — ketik nama/SKU produk\n- **Prediksi stok** — ketik `prediksi stok [nama] 7 hari`\n- **Stok kadaluarsa** — ketik `stok kadaluarsa`\n- **Produk keluar terbanyak** — ketik `produk keluar terbanyak`\n- **Cara pakai fitur** — ketik `cara [fitur]` (contoh: `cara receive PO`)\n- **Hak akses role** — ketik `hak akses` atau `role`\n\nAtau eskalasi ke atasan sesuai alur:\n- Staff → Supervisor → Manager",
+        ];
+
+        if (preg_match('/\b(po|purchase|pesanan)\b/u', $normalized)) {
+            return $this->localReply(self::INTENT_HELP_GUIDE, $guides['po']);
+        }
+        if (preg_match('/\b(receive|terima|penerimaan)\b/u', $normalized)) {
+            return $this->localReply(self::INTENT_HELP_GUIDE, $guides['receive']);
+        }
+        if (preg_match('/\b(opname|audit)\b/u', $normalized)) {
+            return $this->localReply(self::INTENT_HELP_GUIDE, $guides['opname']);
+        }
+        if (preg_match('/\b(transfer|pindah)\b/u', $normalized)) {
+            return $this->localReply(self::INTENT_HELP_GUIDE, $guides['transfer']);
+        }
+        if (preg_match('/\b(outbound|keluar|stock\s*out)\b/u', $normalized)) {
+            return $this->localReply(self::INTENT_HELP_GUIDE, $guides['outbound']);
+        }
+        if (preg_match('/\b(approve|approval|setuju|tolak|reject)\b/u', $normalized)) {
+            return $this->localReply(self::INTENT_HELP_GUIDE, $guides['approve']);
+        }
+
+        return $this->localReply(self::INTENT_HELP_GUIDE, $guides['default']);
+    }
+
+    // ─── Role Info Intent ──────────────────────────────────────────────────────
+    private function isRoleInfoRequest(string $message): bool
+    {
+        $normalized = mb_strtolower(trim($message));
+        $normalized = preg_replace('/[^\p{L}\p{N}\s]+/u', ' ', $normalized);
+        $normalized = preg_replace('/\s+/u', ' ', $normalized);
+
+        return (bool) preg_match('/\b(role|hak\s*akses|akses|izin|permission|siapa\s*(bisa|boleh)|apa\s*(tugas|peran|jobdesk))\b/u', $normalized);
+    }
+
+    private function roleInfoReply($user): array
+    {
+        $roleName = strtolower((string) ($user->role?->name ?? 'staff'));
+        $role = ucfirst($user->role?->name ?? 'Staff');
+
+        $text = "🔐 **Hak Akses Role di PETAYU:**\n\n"
+            . "- **Manager Gudang**: Akses penuh — master data, pengaturan, driver, approval PO/Opname/Transfer, laporan, koreksi stok final, semua fitur dashboard & analitik.\n"
+            . "- **Supervisor Gudang**: Validasi transaksi, laporan, Dokumen WMS, pengiriman, receive PO (setelah approval Manager), Transfer Rack, Stock Opname.\n"
+            . "- **Staff Operasional**: Dashboard, inventory view, outbound, transaksi harian, supplier/PO view, shipment view, input operasional (tanpa approval).\n"
+            . "- **Driver**: Mobile/API — shipment assigned, claim, update status, POD, lokasi, history.\n\n"
+            . "Role Anda saat ini: **{$role}**";
+
+        return $this->localReply(self::INTENT_ROLE_INFO, $text, [
+            'user_role' => $roleName,
+        ]);
+    }
+
     private function buildSystemPrompt($user): string
     {
         // ── Inventory snapshot ──────────────────────────────────────────────────
@@ -1256,11 +1511,11 @@ class AetherAIController extends Controller
         $role  = ucfirst($user->role ?? 'staff');
 
         return <<<PROMPT
- Kamu adalah **Aether**, asisten AI cerdas milik sistem manajemen gudang **PT. Aether Inventori Pergudangan**.
+ Kamu adalah **PETAYU AI**, asisten AI cerdas milik sistem manajemen gudang **PETAYU**.
  Kamu menggunakan Groq AI dan memiliki akses real-time ke seluruh data operasional gudang.
  
  ## Identitas & Kepribadian
- - Nama: **Aether**
+ - Nama: **PETAYU AI**
  - Gaya Bicara: **Hangat, ramah, dan sangat percakapan (seperti asisten manusia yang lincah)**. Hindari gaya bicara robotik atau kaku.
  - Nada: Energetik, membantu, dan bersahabat. Gunakan kalimat pembuka dan penutup yang alami.
  - Kemampuan: Menganalisis data gudang, memberikan rekomendasi, menjawab pertanyaan operasional dengan cerdas.
@@ -1305,12 +1560,24 @@ class AetherAIController extends Controller
  3. Jika pengguna meminta data operasional, gunakan data aktual di atas dan berikan angka yang relevan.
  4. Jika ada data yang mengkhawatirkan (stok rendah atau rak penuh), sebutkan hanya ketika relevan dengan pertanyaan.
  5. Ringkas, percakapan, dan dinamis. Format markdown boleh dipakai untuk daftar/data, tapi jangan berlebihan.
- 6. BATASAN KONTEKS (SANGAT PENTING): Kamu HANYA boleh menjawab pertanyaan yang berkaitan dengan operasional gudang, inventaris, logistik, stok, driver, pengiriman, dan manajemen WMS (Warehouse Management System). 
+ 6. BATASAN KONTEKS (SANGAT PENTING — WAJIB DIPATUHI TANPA PENGEUALIAN):
+    Kamu HANYA boleh menjawab pertanyaan yang berkaitan dengan:
+    - Operasional gudang, inventaris, logistik, stok, driver, pengiriman
+    - Manajemen WMS (Warehouse Management System) PETAYU
+    - Data produk, supplier, customer, rak, zona, kapasitas
+    - Purchase Order, Goods Receipt, Stock Out, Stock Opname, Stock Transfer, Stock Adjustment
+    - Dashboard, laporan, analisis, prediksi stok
+    - Hak akses role, alur kerja, dan cara pakai fitur sistem PETAYU
+
+    Jika pertanyaan BUKAN tentang hal-hal di atas, kamu WAJIB menolak dengan sopan. Contoh penolakan:
+    "Maaf, saya adalah PETAYU AI yang khusus membantu operasional gudang. Saya tidak bisa menjawab pertanyaan di luar itu. Coba tanyakan tentang stok, produk, atau pengiriman ya!"
+
+    JANGAN PERNAH mencoba menjawab pertanyaan tentang: coding/program, resep masak, cuaca, film/musik, matematika/sains, kesehatan, politik, crypto/saham, traveling, atau topik umum lainnya.
  7. Kamu BOLEH menjawab pertanyaan tentang Pusat Bantuan, Bantuan Langsung, Dokumentasi Sistem, hak akses role, dan alur eskalasi kendala sistem karena itu bagian dari operasional WMS.
  8. Aturan Bantuan Langsung:
     - Staff Operasional melapor dulu ke Supervisor Gudang untuk kendala input, transaksi harian, stock opname, pengiriman, atau data operasional.
     - Supervisor Gudang eskalasi ke Manager Gudang untuk approval, data master, koreksi stok final, PO, dan keputusan lintas shift.
-    - Manager Gudang memakai Aether AI dan Dokumentasi Sistem untuk analisis awal, validasi alur, dan keputusan operasional.
+    - Manager Gudang memakai PETAYU AI dan Dokumentasi Sistem untuk analisis awal, validasi alur, dan keputusan operasional.
     - Driver melapor ke Supervisor Gudang untuk kendala shipment, status pengiriman, proof of delivery, atau lokasi.
     - Format laporan kendala yang baik: menu terkait, nomor dokumen, nama produk/rack/supplier/driver/shipment, deskripsi masalah, screenshot, waktu kejadian, dan akun pengguna.
  9. Hak akses standar:
@@ -1318,7 +1585,7 @@ class AetherAIController extends Controller
     - Supervisor Gudang: validasi transaksi, laporan, Dokumen WMS, pengiriman, receive PO setelah approval Manager, Transfer Rack, dan Stock Opname.
     - Staff Operasional: dashboard, inventory view, outbound, transaksi, supplier/PO view, shipment view, dan input operasional non-approval.
     - Driver: mobile/API untuk shipment assigned/claim/status/POD/location/history.
- 10. Jika pengguna menanyakan hal di luar urusan gudang (seperti membuat kode program, pertanyaan umum, matematika murni, sains, atau tips gaya hidup yang tidak relevan dengan gudang), kamu WAJIB menjawab bahwa kamu tidak bisa menjawab pertanyaan tersebut karena fokus utama kamu hanya pada manajemen sistem gudang PT. Aether. 
+ 10. Jika pengguna menanyakan hal di luar urusan gudang (seperti membuat kode program, pertanyaan umum, matematika murni, sains, atau tips gaya hidup yang tidak relevan dengan gudang), kamu WAJIB menjawab bahwa kamu tidak bisa menjawab pertanyaan tersebut karena fokus utama kamu hanya pada manajemen sistem gudang PETAYU. 
  
  Ingat, kamu adalah asisten spesialis gudang yang handal bagi {$user->name}, bukan asisten umum!
 PROMPT;

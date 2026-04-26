@@ -69,8 +69,31 @@
 
         .letterhead {
             padding-bottom: 8px;
-            border-bottom: 2px solid #000000;
+            border-bottom: 2px solid #28106F;
             margin-bottom: 10px;
+        }
+
+        .letterhead-table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: auto;
+            margin: 0;
+        }
+
+        .letterhead-table td {
+            border: none;
+            padding: 0;
+            vertical-align: top;
+        }
+
+        .letterhead-company-cell {
+            padding-right: 14px;
+        }
+
+        .letterhead-doc-cell {
+            width: 255px;
+            text-align: right;
+            vertical-align: middle;
         }
 
         .company-name {
@@ -241,7 +264,7 @@
 <body>
     <header>
         <div class="row">
-            <div class="cell">Aether Logistix - Bukti Transaksi</div>
+            <div class="cell">PETAYU - Bukti Transaksi</div>
             <div class="cell right">{{ $documentNumber }}</div>
         </div>
     </header>
@@ -254,21 +277,23 @@
     </footer>
 
     <div class="letterhead">
-        <div class="row">
-            <div class="cell">
-                <h2 class="company-name">Aether Logistix</h2>
-                <p class="company-sub">Sistem Inventori Pergudangan</p>
-                <p class="company-sub">Dokumen Administrasi Mutasi Stok Barang</p>
-                <p class="company-detail">Jl. Operasional Gudang No. 01, Makassar, Sulawesi Selatan</p>
-                <p class="company-detail">Telp. (0411) 000-0000 - Email: admin@aetherlogistix.local</p>
-            </div>
-            <div class="cell right doc-code">
-                <div><strong>No. Dokumen:</strong> {{ $documentNumber }}</div>
-                <div><strong>No. Transaksi:</strong> {{ $transactionNumber }}</div>
-                <div><strong>Tanggal:</strong> {{ $transaction->movement_date->format('d/m/Y H:i') }}</div>
-                <div><strong>Referensi:</strong> {{ $referenceNumber }}</div>
-            </div>
-        </div>
+        <table class="letterhead-table">
+            <tr>
+                <td class="letterhead-company-cell">
+                    <h2 class="company-name">PT. PETAYU INVENTORI PERGUDANGAN</h2>
+                    <p class="company-sub">Sistem Inventori Pergudangan</p>
+                    <p class="company-sub">Dokumen Administrasi Mutasi Stok Barang</p>
+                    <p class="company-detail">Jl. Operasional Gudang No. 01, Makassar, Sulawesi Selatan</p>
+                    <p class="company-detail">Telp. (0411) 000-0000 - Email: admin@petayu.id</p>
+                </td>
+                <td class="letterhead-doc-cell doc-code">
+                    <div><strong>No. Dokumen:</strong> {{ $documentNumber }}</div>
+                    <div><strong>No. Transaksi:</strong> {{ $transactionNumber }}</div>
+                    <div><strong>Tanggal:</strong> {{ $transaction->movement_date->format('d/m/Y H:i') }}</div>
+                    <div><strong>Referensi:</strong> {{ $referenceNumber }}</div>
+                </td>
+            </tr>
+        </table>
     </div>
 
     <div class="document-title">
@@ -417,7 +442,7 @@
                 <td>
                     <div class="bold">Cap Perusahaan,</div>
                     <div class="stamp-box">Stempel</div>
-                    <div class="small">Aether Logistix</div>
+                    <div class="small">PETAYU</div>
                 </td>
             </tr>
         </tbody>

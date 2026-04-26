@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Supplier;
 use App\Models\SupplierPerformance;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 
 class SupplierController extends Controller
@@ -128,6 +129,7 @@ class SupplierController extends Controller
 
     public function store(Request $request)
     {
+        Gate::authorize('create-supplier');
         $validated = $request->validate([
             'code' => 'required|string|max:30|unique:suppliers,code',
             'name' => 'required|string|max:100',
@@ -161,6 +163,7 @@ class SupplierController extends Controller
 
     public function storePerformance(Request $request, Supplier $supplier)
     {
+        Gate::authorize('create-supplierPerformance');
         $validated = $request->validate([
             'period_month' => 'required|integer|min:1|max:12',
             'period_year' => 'required|integer|min:2000|max:' . (now()->year + 1),

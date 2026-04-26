@@ -59,16 +59,16 @@ const formatCoordinate = (value) => {
 };
 
 const DetailRow = ({ label, value }) => (
-    <div className="grid grid-cols-1 gap-1 border-b border-[#edf2f7] py-3 last:border-b-0 sm:grid-cols-[170px_1fr]">
+    <div className="grid grid-cols-1 gap-1 border-b border-[#EDE8FC] py-3 last:border-b-0 sm:grid-cols-[170px_1fr]">
         <dt className="text-[11px] font-black uppercase tracking-[0.14em] text-gray-400">{label}</dt>
-        <dd className="text-[14px] font-bold text-[#1a202c]">{value || '-'}</dd>
+        <dd className="text-[14px] font-bold text-[#28106F]">{value || '-'}</dd>
     </div>
 );
 
 const StatCard = ({ label, value }) => (
-    <div className="rounded-[8px] border border-[#edf2f7] bg-white px-5 py-4 shadow-sm">
+    <div className="rounded-[8px] border border-[#EDE8FC] bg-white px-5 py-4 shadow-sm">
         <div className="text-[10px] font-black uppercase tracking-[0.16em] text-gray-400">{label}</div>
-        <div className="mt-1 text-[22px] font-black text-[#1a202c]">{value}</div>
+        <div className="mt-1 text-[22px] font-black text-[#28106F]">{value}</div>
     </div>
 );
 
@@ -98,13 +98,13 @@ export default function DriverDetail({ driver }) {
                         <Link
                             href={route('drivers.index')}
                             aria-label="Kembali ke daftar driver"
-                            className="flex h-11 w-11 items-center justify-center rounded-xl border border-[#dbe4f0] bg-white text-slate-500 shadow-[0_2px_12px_rgba(0,0,0,0.02)] transition hover:border-[#4338ca] hover:text-[#4338ca]"
+                            className="flex h-11 w-11 items-center justify-center rounded-xl border border-[#dbe4f0] bg-white text-slate-500 shadow-[0_2px_12px_rgba(0,0,0,0.02)] transition hover:border-[#28106F] hover:text-[#28106F]"
                         >
                             <BackIcon className="h-5 w-5" />
                         </Link>
                         <div>
                             <p className="text-[12px] font-bold uppercase tracking-[0.16em] text-slate-500">Detail Driver</p>
-                            <h1 className="text-2xl font-black tracking-tight text-[#1a202c]">{driver.name || 'Driver'}</h1>
+                            <h1 className="text-2xl font-black tracking-tight text-[#28106F]">{driver.name || 'Driver'}</h1>
                         </div>
                     </div>
 
@@ -132,16 +132,16 @@ export default function DriverDetail({ driver }) {
                 </div>
 
                 <article className="w-full">
-                    <header className="border-b border-[#edf2f7] pb-6">
+                    <header className="border-b border-[#EDE8FC] pb-6">
                         <div className="grid gap-6 xl:grid-cols-[420px_1fr]">
-                            <section className="rounded-[8px] border border-[#edf2f7] bg-white p-6 shadow-sm">
+                            <section className="rounded-[8px] border border-[#EDE8FC] bg-white p-6 shadow-sm">
                                 <div className="flex items-center gap-5">
-                                    <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-[24px] bg-[#4338ca] text-3xl font-black text-white shadow-lg shadow-indigo-200">
+                                    <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-[24px] bg-[#28106F] text-3xl font-black text-white shadow-lg shadow-indigo-200">
                                         {initials(driver.name)}
                                     </div>
                                     <div className="min-w-0">
                                         <p className="text-[11px] font-black uppercase tracking-[0.16em] text-gray-400">Profil Driver</p>
-                                        <h2 className="mt-1 truncate text-[22px] font-black text-[#1a202c]">{driver.name || '-'}</h2>
+                                        <h2 className="mt-1 truncate text-[22px] font-black text-[#28106F]">{driver.name || '-'}</h2>
                                         <p className="mt-1 text-[13px] font-bold text-gray-500">{driver.email || '-'}</p>
                                         <div className="mt-3 flex flex-wrap gap-2">
                                             <span className="rounded-lg bg-indigo-50 px-3 py-1 text-[11px] font-black text-indigo-700">SIM {driver.license_number || '-'}</span>
@@ -162,11 +162,11 @@ export default function DriverDetail({ driver }) {
                     <main className="grid gap-7 py-7 xl:grid-cols-[1fr_0.8fr]">
                         <section className="space-y-7">
                             <section>
-                                <h2 className="mb-4 flex items-center gap-3 text-[13px] font-black uppercase tracking-[0.14em] text-[#1a202c]">
-                                    <ShieldIcon className="h-5 w-5 text-[#4338ca]" />
+                                <h2 className="mb-4 flex items-center gap-3 text-[13px] font-black uppercase tracking-[0.14em] text-[#28106F]">
+                                    <ShieldIcon className="h-5 w-5 text-[#28106F]" />
                                     Identitas Driver
                                 </h2>
-                                <dl className="rounded-xl border border-[#edf2f7] bg-white px-5 shadow-sm">
+                                <dl className="rounded-xl border border-[#EDE8FC] bg-white px-5 shadow-sm">
                                     <DetailRow label="Nama Lengkap" value={driver.name} />
                                     <DetailRow label="Email Login" value={driver.email} />
                                     <DetailRow label="Nomor Telepon" value={driver.phone} />
@@ -177,9 +177,9 @@ export default function DriverDetail({ driver }) {
                             </section>
 
                             <section>
-                                <h2 className="mb-4 text-[13px] font-black uppercase tracking-[0.14em] text-[#1a202c]">Foto ID Karyawan / KTP</h2>
+                                <h2 className="mb-4 text-[13px] font-black uppercase tracking-[0.14em] text-[#28106F]">Foto ID Karyawan / KTP</h2>
                                 {driver.photo_id_card ? (
-                                    <div className="rounded-xl border border-[#edf2f7] bg-white p-4 shadow-sm">
+                                    <div className="rounded-xl border border-[#EDE8FC] bg-white p-4 shadow-sm">
                                         <img
                                             src={`/storage/${driver.photo_id_card}`}
                                             alt="Foto ID driver"
@@ -191,7 +191,7 @@ export default function DriverDetail({ driver }) {
                                         <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-indigo-50 text-xl font-black text-indigo-600">
                                             {initials(driver.name)}
                                         </div>
-                                        <p className="mt-4 text-[14px] font-black text-[#1a202c]">Foto ID belum diunggah</p>
+                                        <p className="mt-4 text-[14px] font-black text-[#28106F]">Foto ID belum diunggah</p>
                                         <p className="mt-1 text-[13px] font-semibold text-gray-500">Sementara sistem menampilkan profil default berdasarkan inisial driver.</p>
                                     </div>
                                 )}
@@ -200,11 +200,11 @@ export default function DriverDetail({ driver }) {
 
                         <aside className="space-y-7">
                             <section>
-                                <h2 className="mb-4 flex items-center gap-3 text-[13px] font-black uppercase tracking-[0.14em] text-[#1a202c]">
-                                    <RouteIcon className="h-5 w-5 text-[#4338ca]" />
+                                <h2 className="mb-4 flex items-center gap-3 text-[13px] font-black uppercase tracking-[0.14em] text-[#28106F]">
+                                    <RouteIcon className="h-5 w-5 text-[#28106F]" />
                                     Lokasi & Tugas Aktif
                                 </h2>
-                                <dl className="rounded-xl border border-[#edf2f7] bg-white px-5 shadow-sm">
+                                <dl className="rounded-xl border border-[#EDE8FC] bg-white px-5 shadow-sm">
                                     <DetailRow label="Latitude" value={formatCoordinate(driver.latitude)} />
                                     <DetailRow label="Longitude" value={formatCoordinate(driver.longitude)} />
                                     <DetailRow label="Update Terakhir" value={driver.updated_at ? new Date(driver.updated_at).toLocaleString('id-ID') : '-'} />
@@ -212,23 +212,23 @@ export default function DriverDetail({ driver }) {
                                 </dl>
                             </section>
 
-                            <section className="rounded-xl border border-[#edf2f7] bg-white p-5 shadow-sm">
+                            <section className="rounded-xl border border-[#EDE8FC] bg-white p-5 shadow-sm">
                                 <p className="text-[11px] font-black uppercase tracking-[0.16em] text-gray-400">Tugas Aktif</p>
                                 {activeShipment ? (
                                     <div className="mt-4 space-y-4">
                                         <div>
-                                            <p className="text-[18px] font-black text-[#1a202c]">{activeShipment.shipment_id}</p>
+                                            <p className="text-[18px] font-black text-[#28106F]">{activeShipment.shipment_id}</p>
                                             <p className="mt-1 text-[13px] font-bold text-gray-500">{stageLabels[activeShipment.tracking_stage] || activeShipment.tracking_stage}</p>
                                         </div>
                                         <div className="rounded-xl bg-[#f8f9fb] p-4">
                                             <div className="text-[12px] font-bold text-gray-500">{activeShipment.origin_name || '-'}</div>
                                             <div className="my-2 h-px bg-[#dbe4f0]" />
-                                            <div className="text-[13px] font-black text-[#1a202c]">{activeShipment.destination_name || '-'}</div>
+                                            <div className="text-[13px] font-black text-[#28106F]">{activeShipment.destination_name || '-'}</div>
                                         </div>
                                         <DetailRow label="Estimasi Tiba" value={activeShipment.estimated_arrival} />
                                         <Link
                                             href={route('shipments.show', activeShipment.shipment_id)}
-                                            className="inline-flex h-10 items-center justify-center rounded-xl bg-[#4338ca] px-4 text-[12px] font-black text-white transition hover:bg-[#3730a3]"
+                                            className="inline-flex h-10 items-center justify-center rounded-xl bg-[#28106F] px-4 text-[12px] font-black text-white transition hover:bg-[#3730a3]"
                                         >
                                             Lihat Pengiriman
                                         </Link>
@@ -241,8 +241,8 @@ export default function DriverDetail({ driver }) {
                     </main>
 
                     <section>
-                        <h2 className="mb-4 text-[13px] font-black uppercase tracking-[0.14em] text-[#1a202c]">Riwayat Pengiriman Terbaru</h2>
-                        <div className="overflow-x-auto rounded-xl border border-[#edf2f7] bg-white shadow-sm">
+                        <h2 className="mb-4 text-[13px] font-black uppercase tracking-[0.14em] text-[#28106F]">Riwayat Pengiriman Terbaru</h2>
+                        <div className="overflow-x-auto rounded-xl border border-[#EDE8FC] bg-white shadow-sm">
                             <table className="w-full min-w-[900px] text-left text-sm">
                                 <thead className="bg-[#f8f9fb] text-[11px] uppercase tracking-[0.12em] text-gray-400">
                                     <tr>
@@ -253,15 +253,15 @@ export default function DriverDetail({ driver }) {
                                         <th className="px-4 py-3 text-right font-black">Aksi</th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-[#edf2f7]">
+                                <tbody className="divide-y divide-[#EDE8FC]">
                                     {driver.shipments?.map((shipment) => (
                                         <tr key={shipment.id}>
-                                            <td className="px-4 py-4 font-black text-[#1a202c]">{shipment.shipment_id}</td>
+                                            <td className="px-4 py-4 font-black text-[#28106F]">{shipment.shipment_id}</td>
                                             <td className="px-4 py-4 font-semibold text-gray-600">{shipment.origin_name || '-'} ke {shipment.destination_name || '-'}</td>
                                             <td className="px-4 py-4 font-bold text-gray-600">{stageLabels[shipment.tracking_stage] || shipment.tracking_stage || '-'}</td>
                                             <td className="px-4 py-4 font-semibold text-gray-500">{shipment.estimated_arrival || '-'}</td>
                                             <td className="px-4 py-4 text-right">
-                                                <Link href={shipment.url} className="text-[12px] font-black text-[#4338ca] hover:text-[#3730a3]">
+                                                <Link href={shipment.url} className="text-[12px] font-black text-[#28106F] hover:text-[#3730a3]">
                                                     Lihat
                                                 </Link>
                                             </td>

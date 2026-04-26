@@ -15,6 +15,12 @@ const EyeIcon = ({ className }) => (
     </svg>
 );
 
+const DownloadIcon = ({ className }) => (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v12m0 0l4-4m-4 4l-4-4M5 21h14" />
+    </svg>
+);
+
 export default function Index({ purchaseOrders = [] }) {
     const { props } = usePage();
     const roleName = String(props.auth?.user?.role_name || props.auth?.user?.role || '').toLowerCase();
@@ -57,66 +63,70 @@ export default function Index({ purchaseOrders = [] }) {
         >
             <Head title="Pesanan Pembelian" />
 
-            <div className="flex flex-col space-y-6 pb-12 w-full pt-2 min-w-[1000px] overflow-x-auto">
+            <div className="flex w-full flex-col space-y-6 pb-12 pt-2">
                 <div className="flex justify-between items-start mb-4">
                     <div>
-                        <h1 className="text-[28px] font-black text-[#1a202c] tracking-tight">Pesanan Pembelian</h1>
+                        <h1 className="text-[28px] font-black text-[#28106F] tracking-tight">Pesanan Pembelian</h1>
                         <p className="text-[14px] font-bold text-gray-500 mt-1">Kelola pemesanan stok dari pemasok untuk gudang operasional.</p>
                     </div>
                     {canCreatePurchaseOrder && (
-                        <Link href={route('purchase-orders.create')} className="flex items-center space-x-2 px-6 py-3.5 bg-[#4f46e5] shadow-[#4f46e5]/30 shadow-lg hover:bg-indigo-700 text-white font-bold rounded-xl text-[14px] transition-colors">
+                        <Link href={route('purchase-orders.create')} className="flex items-center space-x-2 px-6 py-3.5 bg-[#5932C9] shadow-[#5932C9]/30 shadow-lg hover:bg-indigo-700 text-white font-bold rounded-xl text-[14px] transition-colors">
                             <PlusIcon className="w-4 h-4" />
                             <span>Buat PO Baru</span>
                         </Link>
                     )}
                 </div>
 
-                <div className="bg-white rounded-[24px] p-8 shadow-[0_2px_16px_rgba(0,0,0,0.02)] border border-[#edf2f7]">
-                    <div className="w-full">
-                        <div className="grid grid-cols-12 gap-4 pb-4 border-b border-gray-100 text-[10px] font-black text-gray-400 tracking-[0.1em] uppercase">
-                            <div className="col-span-2 pl-2">Nomor PO</div>
-                            <div className="col-span-3">Pemasok</div>
-                            <div className="col-span-2">Tanggal</div>
-                            <div className="col-span-2">Nilai</div>
-                            <div className="col-span-2">Status</div>
-                            <div className="col-span-1 text-right pr-4">Aksi</div>
-                        </div>
-
-                        <div className="divide-y divide-gray-50/80">
-                            {filteredPurchaseOrders.length > 0 ? (
-                                filteredPurchaseOrders.map((po) => (
-                                    <div key={po.id} className="grid grid-cols-12 gap-4 py-5 items-center hover:bg-gray-50/50 transition-colors">
-                                        <div className="col-span-2 flex items-center space-x-4 pl-2">
-                                            <div className="text-[13px] font-black text-[#1a202c]">{po.po_number}</div>
-                                        </div>
-                                        <div className="col-span-3">
-                                            <div className="text-[14px] font-black text-[#1a202c]">{po.supplier?.name}</div>
-                                            <div className="text-[11px] font-bold text-gray-400 capitalize">{po.supplier?.category}</div>
-                                        </div>
-                                        <div className="col-span-2">
-                                            <div className="text-[13px] font-bold text-gray-500">{new Date(po.order_date).toLocaleDateString()}</div>
-                                        </div>
-                                        <div className="col-span-2">
-                                            <div className="text-[14px] font-black text-[#1a202c]">{formatCurrency(po.total_amount)}</div>
-                                        </div>
-                                        <div className="col-span-2 flex items-center">
-                                            <span className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider ${getStatusColor(po.status)}`}>
-                                                {po.status === 'pending' ? 'Menunggu' : po.status === 'approved' ? 'Disetujui' : po.status === 'received' ? 'Diterima' : po.status === 'cancelled' ? 'Dibatalkan' : po.status === 'rejected' ? 'Ditolak' : po.status}
-                                            </span>
-                                        </div>
-                                        <div className="col-span-1 flex justify-end pr-4">
-                                            <Link href={route('purchase-orders.show', po.id)} className="w-8 h-8 flex items-center justify-center text-indigo-500 hover:bg-indigo-50 rounded-lg transition-colors">
-                                                <EyeIcon className="w-4 h-4" />
-                                            </Link>
-                                        </div>
-                                    </div>
-                                ))
-                            ) : (
-                                <div className="py-12 text-center text-[14px] font-bold text-gray-400">
-                                    Belum ada pesanan pembelian. Mulai dengan membuat PO pertama.
-                                </div>
-                            )}
-                        </div>
+                <div className="rounded-[24px] border border-[#EDE8FC] bg-white p-6 shadow-[0_2px_16px_rgba(0,0,0,0.02)] md:p-8">
+                    <div className="w-full overflow-x-auto">
+                        <table className="min-w-[920px] w-full">
+                            <thead>
+                                <tr className="border-b border-gray-100 text-[10px] font-black uppercase tracking-[0.1em] text-gray-400">
+                                    <th className="px-2 pb-4 text-left">Nomor PO</th>
+                                    <th className="px-2 pb-4 text-left">Pemasok</th>
+                                    <th className="px-2 pb-4 text-left">Tanggal</th>
+                                    <th className="px-2 pb-4 text-left">Nilai</th>
+                                    <th className="px-2 pb-4 text-left">Status</th>
+                                    <th className="px-2 pb-4 text-right">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-50/80">
+                                {filteredPurchaseOrders.length > 0 ? (
+                                    filteredPurchaseOrders.map((po) => (
+                                        <tr key={po.id} className="transition-colors hover:bg-gray-50/50">
+                                            <td className="px-2 py-4 text-[13px] font-black text-[#28106F]">{po.po_number}</td>
+                                            <td className="px-2 py-4">
+                                                <div className="text-[14px] font-black text-[#28106F]">{po.supplier?.name}</div>
+                                                <div className="text-[11px] font-bold capitalize text-gray-400">{po.supplier?.category}</div>
+                                            </td>
+                                            <td className="px-2 py-4 text-[13px] font-bold text-gray-500">{new Date(po.order_date).toLocaleDateString('id-ID')}</td>
+                                            <td className="px-2 py-4 text-[14px] font-black text-[#28106F]">{formatCurrency(po.total_amount)}</td>
+                                            <td className="px-2 py-4">
+                                                <span className={`rounded-lg px-2.5 py-1 text-[10px] font-black uppercase tracking-wider ${getStatusColor(po.status)}`}>
+                                                    {po.status === 'pending' ? 'Menunggu' : po.status === 'approved' ? 'Disetujui' : po.status === 'received' ? 'Diterima' : po.status === 'cancelled' ? 'Dibatalkan' : po.status === 'rejected' ? 'Ditolak' : po.status}
+                                                </span>
+                                            </td>
+                                            <td className="px-2 py-4 text-right">
+                                                <div className="inline-flex items-center gap-1">
+                                                    <a href={route('purchase-orders.pdf', po.id)} download className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 transition-colors hover:bg-slate-100" title="Download PDF">
+                                                        <DownloadIcon className="w-4 h-4" />
+                                                    </a>
+                                                    <Link href={route('purchase-orders.show', po.id)} className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-indigo-500 transition-colors hover:bg-indigo-50" title="Lihat Detail">
+                                                        <EyeIcon className="w-4 h-4" />
+                                                    </Link>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))
+                                ) : (
+                                    <tr>
+                                        <td colSpan={6} className="py-12 text-center text-[14px] font-bold text-gray-400">
+                                            Belum ada pesanan pembelian. Mulai dengan membuat PO pertama.
+                                        </td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>

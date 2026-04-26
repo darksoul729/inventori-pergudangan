@@ -67,6 +67,12 @@ export default function Create({ categories, units, suppliers, warehouses, opera
         purchase_price: product?.purchase_price || 0,
         selling_price: product?.selling_price || 0,
         minimum_stock: product?.minimum_stock || 10,
+        volume_entry_mode: product?.volume_entry_mode || 'none',
+        dimension_unit: product?.dimension_unit || 'mm',
+        dimension_length: product?.dimension_length || '',
+        dimension_width: product?.dimension_width || '',
+        dimension_height: product?.dimension_height || '',
+        volume_m3_per_unit: product?.volume_m3_per_unit || '',
         warehouse_id: operationalWarehouse?.id ? String(operationalWarehouse.id) : '',
         rack_id: '',
         description: product?.description || '',
@@ -83,6 +89,12 @@ export default function Create({ categories, units, suppliers, warehouses, opera
         selling_price: data.selling_price,
         minimum_stock: data.minimum_stock,
         description: data.description,
+        volume_entry_mode: data.volume_entry_mode,
+        dimension_unit: data.dimension_unit,
+        dimension_length: data.dimension_length,
+        dimension_width: data.dimension_width,
+        dimension_height: data.dimension_height,
+        volume_m3_per_unit: data.volume_m3_per_unit,
         ...(data.image ? { image: data.image } : {}),
     });
 
@@ -119,6 +131,15 @@ export default function Create({ categories, units, suppliers, warehouses, opera
     const selectedCategory = categories.find((item) => String(item.id) === String(addProductForm.data.category_id));
     const selectedUnit = units.find((item) => String(item.id) === String(addProductForm.data.unit_id));
     const hasErrors = Object.keys(addProductForm.errors).length > 0;
+    const isAutoVolume = addProductForm.data.volume_entry_mode === 'auto';
+    const isManualVolume = addProductForm.data.volume_entry_mode === 'manual';
+    const lengthValue = Number(addProductForm.data.dimension_length || 0);
+    const widthValue = Number(addProductForm.data.dimension_width || 0);
+    const heightValue = Number(addProductForm.data.dimension_height || 0);
+    const unitDivisor = addProductForm.data.dimension_unit === 'mm' ? 1000000000 : (addProductForm.data.dimension_unit === 'cm' ? 1000000 : 1);
+    const autoVolumePreview = isAutoVolume && lengthValue > 0 && widthValue > 0 && heightValue > 0
+        ? ((lengthValue * widthValue * heightValue) / unitDivisor)
+        : null;
 
     return (
         <DashboardLayout
@@ -312,6 +333,103 @@ export default function Create({ categories, units, suppliers, warehouses, opera
                             </div>
                         </Section>
 
+                        <Section
+                            title="Profil Volume (Opsional)"
+                            description="Dipakai untuk perhitungan volume m3 per unit. Cocok untuk kayu, box, pallet, dan barang non-kayu yang butuh analitik ruang."
+                        >
+                            <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
+                                <Field label="Mode Input Volume" error={addProductForm.errors.volume_entry_mode} className="lg:col-span-2">
+                                    <div className="relative">
+                                        <select
+                                            className={selectClass}
+                                            value={addProductForm.data.volume_entry_mode}
+                                            onChange={(e) => addProductForm.setData('volume_entry_mode', e.target.value)}
+                                        >
+                                            <option value="none">Tidak dipakai</option>
+                                            <option value="auto">Hitung otomatis dari dimensi</option>
+                                            <option value="manual">Input manual (m3 per unit)</option>
+                                        </select>
+                                        <ChevronDownIcon className="pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
+                                    </div>
+                                </Field>
+
+                                {isAutoVolume && (
+                                    <>
+                                        <Field label="Satuan Dimensi" error={addProductForm.errors.dimension_unit}>
+                                            <div className="relative">
+                                                <select
+                                                    className={selectClass}
+                                                    value={addProductForm.data.dimension_unit}
+                                                    onChange={(e) => addProductForm.setData('dimension_unit', e.target.value)}
+                                                >
+                                                    <option value="mm">Millimeter (mm)</option>
+                                                    <option value="cm">Centimeter (cm)</option>
+                                                    <option value="m">Meter (m)</option>
+                                                </select>
+                                                <ChevronDownIcon className="pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
+                                            </div>
+                                        </Field>
+
+                                        <Field label="Panjang" error={addProductForm.errors.dimension_length}>
+                                            <input
+                                                type="number"
+                                                min="0"
+                                                step="0.001"
+                                                className={inputClass}
+                                                value={addProductForm.data.dimension_length}
+                                                onChange={(e) => addProductForm.setData('dimension_length', e.target.value)}
+                                                placeholder={`contoh: ${addProductForm.data.dimension_unit === 'mm' ? '4000' : '4'}`}
+                                            />
+                                        </Field>
+
+                                        <Field label="Lebar" error={addProductForm.errors.dimension_width}>
+                                            <input
+                                                type="number"
+                                                min="0"
+                                                step="0.001"
+                                                className={inputClass}
+                                                value={addProductForm.data.dimension_width}
+                                                onChange={(e) => addProductForm.setData('dimension_width', e.target.value)}
+                                                placeholder={`contoh: ${addProductForm.data.dimension_unit === 'mm' ? '50' : '0.05'}`}
+                                            />
+                                        </Field>
+
+                                        <Field label="Tinggi / Tebal" error={addProductForm.errors.dimension_height}>
+                                            <input
+                                                type="number"
+                                                min="0"
+                                                step="0.001"
+                                                className={inputClass}
+                                                value={addProductForm.data.dimension_height}
+                                                onChange={(e) => addProductForm.setData('dimension_height', e.target.value)}
+                                                placeholder={`contoh: ${addProductForm.data.dimension_unit === 'mm' ? '25' : '0.025'}`}
+                                            />
+                                        </Field>
+
+                                        <Field label="Preview Volume m3 / Unit" className="lg:col-span-2">
+                                            <div className="flex h-11 items-center rounded-[8px] border border-slate-200 bg-slate-50 px-3.5 text-[14px] font-black text-slate-700">
+                                                {autoVolumePreview !== null ? `${autoVolumePreview.toFixed(6)} m3` : 'Isi dimensi valid untuk melihat hasil'}
+                                            </div>
+                                        </Field>
+                                    </>
+                                )}
+
+                                {isManualVolume && (
+                                    <Field label="Volume m3 per Unit" error={addProductForm.errors.volume_m3_per_unit} className="lg:col-span-2">
+                                        <input
+                                            type="number"
+                                            min="0"
+                                            step="0.000001"
+                                            className={inputClass}
+                                            value={addProductForm.data.volume_m3_per_unit}
+                                            onChange={(e) => addProductForm.setData('volume_m3_per_unit', e.target.value)}
+                                            placeholder="contoh: 0.012500"
+                                        />
+                                    </Field>
+                                )}
+                            </div>
+                        </Section>
+
                         {!isEdit && (
                             <Section
                                 title="Penempatan Awal"
@@ -431,6 +549,16 @@ export default function Create({ categories, units, suppliers, warehouses, opera
                                 <div className="flex justify-between gap-4">
                                     <dt className="font-bold text-slate-500">Stok Fisik</dt>
                                     <dd className="max-w-[190px] truncate text-right font-black text-slate-900">{isEdit ? 'Tidak berubah' : `${addProductForm.data.initial_stock || 0} unit`}</dd>
+                                </div>
+                                <div className="flex justify-between gap-4">
+                                    <dt className="font-bold text-slate-500">Volume m3/Unit</dt>
+                                    <dd className="max-w-[190px] truncate text-right font-black text-slate-900">
+                                        {addProductForm.data.volume_entry_mode === 'none'
+                                            ? '-'
+                                            : (isAutoVolume
+                                                ? (autoVolumePreview !== null ? `${autoVolumePreview.toFixed(6)} m3` : '-')
+                                                : (addProductForm.data.volume_m3_per_unit ? `${Number(addProductForm.data.volume_m3_per_unit).toFixed(6)} m3` : '-'))}
+                                    </dd>
                                 </div>
                             </dl>
                         </div>

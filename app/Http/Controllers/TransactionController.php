@@ -10,6 +10,7 @@ use App\Models\StockOut;
 use App\Models\StockAdjustment;
 use App\Models\StockTransfer;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
 use Illuminate\Support\Facades\DB;
@@ -138,6 +139,7 @@ class TransactionController extends Controller
 
     public function verify(Request $request, StockMovement $transaction)
     {
+        Gate::authorize('update-stockMovement');
         // Only adjustments and opnames can be verified (others are auto-verified)
         if (!in_array($transaction->movement_type, ['adjustment', 'opname'])) {
             return back()->withErrors(['message' => 'Transaksi ini tidak memerlukan verifikasi manual.']);

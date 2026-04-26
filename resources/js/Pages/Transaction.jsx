@@ -252,7 +252,7 @@ export default function Transaction({ movements, stats, filters }) {
         >
             <Head title="Riwayat Transaksi" />
 
-            <div className="flex flex-row gap-8 pb-12 w-full pt-4 min-w-[1000px] overflow-x-auto bg-[#f8fafc]">
+            <div className="flex flex-row gap-8 pb-12 w-full pt-4 min-w-[1000px] overflow-x-auto bg-[#F8F7FF]">
                 {/* Left Column - Main Content */}
                 <div className="flex-1 flex flex-col space-y-8">
 
@@ -268,7 +268,7 @@ export default function Transaction({ movements, stats, filters }) {
                     {/* 3 Metric Cards */}
                     <div className="grid grid-cols-3 gap-6">
                         {/* 1. Inbound Units */}
-                        <div className="bg-white rounded-[20px] p-6 shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-[#edf2f7] relative overflow-hidden">
+                        <div className="bg-white rounded-[20px] p-6 shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-[#EDE8FC] relative overflow-hidden">
                             <div className="absolute inset-x-0 bottom-0 h-1 bg-indigo-600"></div>
                             <div className="flex justify-between items-start mb-6">
                                 <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600">
@@ -280,12 +280,12 @@ export default function Transaction({ movements, stats, filters }) {
                             </div>
                             <div>
                                 <h3 className="text-[12px] font-extrabold text-gray-500 mb-1">Barang Masuk 24 Jam</h3>
-                                <div className="text-[28px] font-black text-[#1a202c]">{stats.inbound_24h.toLocaleString()}</div>
+                                <div className="text-[28px] font-black text-[#28106F]">{stats.inbound_24h.toLocaleString()}</div>
                             </div>
                         </div>
 
                         {/* 2. Outbound Units */}
-                        <div className="bg-white rounded-[20px] p-6 shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-[#edf2f7] relative overflow-hidden">
+                        <div className="bg-white rounded-[20px] p-6 shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-[#EDE8FC] relative overflow-hidden">
                             <div className="absolute inset-x-0 bottom-0 h-1 bg-emerald-500"></div>
                             <div className="flex justify-between items-start mb-6">
                                 <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-500">
@@ -297,12 +297,12 @@ export default function Transaction({ movements, stats, filters }) {
                             </div>
                             <div>
                                 <h3 className="text-[12px] font-extrabold text-gray-500 mb-1">Barang Keluar 24 Jam</h3>
-                                <div className="text-[28px] font-black text-[#1a202c]">{stats.outbound_24h.toLocaleString()}</div>
+                                <div className="text-[28px] font-black text-[#28106F]">{stats.outbound_24h.toLocaleString()}</div>
                             </div>
                         </div>
 
                         {/* 3. Pending Audits */}
-                        <div className="bg-white rounded-[20px] p-6 shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-[#edf2f7] relative overflow-hidden">
+                        <div className="bg-white rounded-[20px] p-6 shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-[#EDE8FC] relative overflow-hidden">
                             <div className="absolute inset-x-0 bottom-0 h-1 bg-amber-500"></div>
                             <div className="flex justify-between items-start mb-6">
                                 <div className="relative">
@@ -319,13 +319,13 @@ export default function Transaction({ movements, stats, filters }) {
                             </div>
                             <div>
                                 <h3 className="text-[12px] font-extrabold text-gray-500 mb-1">Perlu Verifikasi</h3>
-                                <div className="text-[28px] font-black text-[#1a202c]">{stats.pending_audits}</div>
+                                <div className="text-[28px] font-black text-[#28106F]">{stats.pending_audits}</div>
                             </div>
                         </div>
                     </div>
 
                     {/* Table Section */}
-                    <div className="bg-white rounded-[24px] p-8 shadow-[0_4px_24px_rgba(0,0,0,0.02)] border border-[#edf2f7] flex-1 flex flex-col">
+                    <div className="bg-white rounded-[24px] p-8 shadow-[0_4px_24px_rgba(0,0,0,0.02)] border border-[#EDE8FC] flex-1 flex flex-col">
 
                         {/* Table Header Row */}
                         <div className="flex justify-between items-center mb-8">
@@ -383,10 +383,10 @@ export default function Transaction({ movements, stats, filters }) {
                                             className="grid grid-cols-12 gap-4 py-5 items-center hover:bg-indigo-50/50 transition-colors group cursor-pointer"
                                         >
                                             <div className="col-span-1">
-                                                <span className="text-[12px] font-black text-[#4f46e5]">#{m.id.toString().padStart(6, '0')}</span>
+                                                <span className="text-[12px] font-black text-[#5932C9]">#{m.id.toString().padStart(6, '0')}</span>
                                             </div>
                                             <div className="col-span-3 flex flex-col">
-                                                <span className="text-[13px] font-black text-[#1a202c] leading-tight truncate">
+                                                <span className="text-[13px] font-black text-[#28106F] leading-tight truncate">
                                                     {m.product?.name || 'Barang Tidak Dikenal'}
                                                 </span>
                                                 <span className="text-[10px] font-bold text-gray-400 mt-0.5">
@@ -400,7 +400,7 @@ export default function Transaction({ movements, stats, filters }) {
                                             </div>
                                             <div className="col-span-2 flex items-center space-x-2">
                                                 {getMovementIcon(m.movement_type)}
-                                                <span className="text-[12px] font-bold text-[#1a202c] capitalize">{m.movement_type === 'in' ? 'Masuk' : m.movement_type === 'out' ? 'Keluar' : m.movement_type === 'transfer' ? 'Transfer' : m.movement_type === 'adjustment' ? 'Penyesuaian' : 'Opname'}</span>
+                                                <span className="text-[12px] font-bold text-[#28106F] capitalize">{m.movement_type === 'in' ? 'Masuk' : m.movement_type === 'out' ? 'Keluar' : m.movement_type === 'transfer' ? 'Transfer' : m.movement_type === 'adjustment' ? 'Penyesuaian' : 'Opname'}</span>
                                             </div>
                                             <div className="col-span-2 flex flex-col justify-center text-center">
                                                 <span className="text-[11px] font-bold text-gray-500">
@@ -411,7 +411,7 @@ export default function Transaction({ movements, stats, filters }) {
                                                 </span>
                                             </div>
                                             <div className="col-span-2 text-right pr-4">
-                                                <span className="text-[14px] font-black text-[#1a202c]">{m.quantity.toLocaleString()}</span>
+                                                <span className="text-[14px] font-black text-[#28106F]">{m.quantity.toLocaleString()}</span>
                                             </div>
                                             <div className="col-span-2 text-right flex justify-end">
                                                 <span className={`${status.color} text-[8px] font-black px-2 py-1 rounded-full uppercase tracking-widest text-center whitespace-nowrap`}>
