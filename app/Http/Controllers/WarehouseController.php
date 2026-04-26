@@ -2,14 +2,19 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\LayoutSnapshot;
 use App\Models\Product;
 use App\Models\Rack;
 use App\Models\RackStock;
+use App\Models\StockAdjustment;
+use App\Models\StockAdjustmentItem;
 use App\Models\StockMovement;
 use App\Models\Warehouse;
+use App\Models\WarehouseLayoutElement;
 use App\Models\WarehouseZone;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
@@ -84,6 +89,36 @@ class WarehouseController extends Controller
                 : 0,
         ];
 
+        $savedLayout = null;
+        $latestSnapshot = LayoutSnapshot::where('warehouse_id', $warehouse->id)->latest()->first();
+        if ($latestSnapshot) {
+            $savedLayout = [
+                'zones' => $latestSnapshot->snapshot_data['zones'] ?? [],
+                'racks' => $latestSnapshot->snapshot_data['racks'] ?? [],
+                'elements' => $latestSnapshot->snapshot_data['elements'] ?? [],
+                'canvas' => $latestSnapshot->snapshot_data['canvas'] ?? null,
+            ];
+        }
+
+        $pendingManualAdjustments = StockAdjustment::query()
+            ->with(['creator:id,name,email', 'items:id,stock_adjustment_id,quantity'])
+            ->where('warehouse_id', $warehouse->id)
+            ->where('status', 'pending')
+            ->where('reason', 'manual_rack_stock')
+            ->latest('created_at')
+            ->limit(10)
+            ->get()
+            ->map(fn (StockAdjustment $adjustment) => [
+                'id' => $adjustment->id,
+                'number' => $adjustment->adjustment_number,
+                'date_label' => $adjustment->adjustment_date?->format('d M Y') ?? $adjustment->created_at?->format('d M Y'),
+                'created_at_label' => $adjustment->created_at?->format('d M Y H:i'),
+                'operator' => $adjustment->creator?->name ?? 'System',
+                'items_count' => $adjustment->items->count(),
+                'total_quantity' => (int) $adjustment->items->sum('quantity'),
+            ])
+            ->values();
+
         return Inertia::render('Warehouse', [
             'warehouse' => $warehouseSummary,
             'zoneSummaries' => $zoneSummaries,
@@ -106,6 +141,8 @@ class WarehouseController extends Controller
                     'label' => $product->sku.' - '.$product->name,
                 ]),
             'status' => session('status'),
+            'savedLayout' => $savedLayout,
+            'pendingManualAdjustments' => $pendingManualAdjustments,
         ]);
     }
 
@@ -248,42 +285,30 @@ class WarehouseController extends Controller
             ->first();
 
         $this->ensureRackCapacity($rack, (int) $data['quantity'], (int) $data['product_id']);
-
-        $rackStock = RackStock::query()->updateOrCreate(
-            ['rack_id' => $data['rack_id'], 'product_id' => $data['product_id']],
-            [
-                'quantity' => $data['quantity'],
-                'reserved_quantity' => $data['reserved_quantity'],
-                'batch_number' => $data['batch_number'] ?? null,
-                'expired_date' => $data['expired_date'] ?? null,
-                'last_updated_at' => now(),
-            ]
-        );
-
-        $stockBefore = $rack->zone->warehouse->productStocks()
-            ->where('product_id', (int) $data['product_id'])
-            ->value('current_stock') ?? 0;
         $delta = (int) $data['quantity'] - (int) ($existingRackStock?->quantity ?? 0);
+        if ($delta === 0) {
+            return redirect()->route('warehouse', [
+                'zone' => $rack->warehouse_zone_id,
+                'rack' => $rack->id,
+            ])->with('status', 'Tidak ada perubahan qty untuk disimpan.');
+        }
 
-        $this->recordMovement(
+        $this->createPendingRackStockAdjustment(
             request: $request,
+            rack: $rack,
             productId: (int) $data['product_id'],
-            warehouseId: (int) $rack->zone->warehouse_id,
-            type: 'adjustment',
-            referenceType: Str::lower(str_replace(' ', '_', $rack->code)),
-            referenceId: $rack->id,
-            quantity: abs($delta),
-            stockBefore: $stockBefore,
-            stockAfter: $stockBefore + $delta,
-            notes: 'Rack stock assigned to '.$rack->code,
+            fromQuantity: (int) ($existingRackStock?->quantity ?? 0),
+            toQuantity: (int) $data['quantity'],
+            reservedQuantity: (int) $data['reserved_quantity'],
+            batchNumber: $data['batch_number'] ?? null,
+            expiredDate: $data['expired_date'] ?? null,
+            action: 'set',
         );
-
-        $this->syncProductStock((int) $rack->zone->warehouse_id, (int) $data['product_id']);
 
         return redirect()->route('warehouse', [
             'zone' => $rack->warehouse_zone_id,
             'rack' => $rack->id,
-        ])->with('status', 'Rack stock saved.');
+        ])->with('status', 'Permintaan koreksi stok dibuat dan menunggu persetujuan.');
     }
 
     public function updateRackStock(Request $request, RackStock $rackStock): RedirectResponse
@@ -298,39 +323,30 @@ class WarehouseController extends Controller
         $rackStock->loadMissing('rack.rackStocks');
         $this->ensureRackCapacity($rackStock->rack, (int) $data['quantity'], (int) $rackStock->product_id);
         $previousQuantity = (int) $rackStock->quantity;
-
-        $rackStock->update([
-            'quantity' => $data['quantity'],
-            'reserved_quantity' => $data['reserved_quantity'],
-            'batch_number' => $data['batch_number'] ?? null,
-            'expired_date' => $data['expired_date'] ?? null,
-            'last_updated_at' => now(),
-        ]);
-
-        $stockBefore = $rackStock->rack->zone->warehouse->productStocks()
-            ->where('product_id', (int) $rackStock->product_id)
-            ->value('current_stock') ?? 0;
         $delta = (int) $data['quantity'] - $previousQuantity;
+        if ($delta === 0) {
+            return redirect()->route('warehouse', [
+                'zone' => $rackStock->rack->warehouse_zone_id,
+                'rack' => $rackStock->rack_id,
+            ])->with('status', 'Tidak ada perubahan qty untuk disimpan.');
+        }
 
-        $this->recordMovement(
+        $this->createPendingRackStockAdjustment(
             request: $request,
+            rack: $rackStock->rack,
             productId: (int) $rackStock->product_id,
-            warehouseId: (int) $rackStock->rack->zone->warehouse_id,
-            type: 'adjustment',
-            referenceType: Str::lower(str_replace(' ', '_', $rackStock->rack->code)),
-            referenceId: $rackStock->rack->id,
-            quantity: abs($delta),
-            stockBefore: $stockBefore,
-            stockAfter: $stockBefore + $delta,
-            notes: 'Rack stock updated on '.$rackStock->rack->code,
+            fromQuantity: $previousQuantity,
+            toQuantity: (int) $data['quantity'],
+            reservedQuantity: (int) $data['reserved_quantity'],
+            batchNumber: $data['batch_number'] ?? null,
+            expiredDate: $data['expired_date'] ?? null,
+            action: 'set',
         );
-
-        $this->syncProductStock((int) $rackStock->rack->zone->warehouse_id, (int) $rackStock->product_id);
 
         return redirect()->route('warehouse', [
             'zone' => $rackStock->rack->warehouse_zone_id,
             'rack' => $rackStock->rack_id,
-        ])->with('status', 'Rack stock updated.');
+        ])->with('status', 'Permintaan koreksi stok dibuat dan menunggu persetujuan.');
     }
 
     public function destroyRackStock(RackStock $rackStock): RedirectResponse
@@ -340,28 +356,79 @@ class WarehouseController extends Controller
         $rackId = $rack->id;
         $productId = (int) $rackStock->product_id;
         $previousQuantity = (int) $rackStock->quantity;
-        $rackStock->delete();
+        if ($previousQuantity <= 0) {
+            return redirect()->route('warehouse', ['zone' => $zoneId, 'rack' => $rackId])->with('status', 'Rack stock sudah kosong.');
+        }
 
-        $stockBefore = $rack->zone->warehouse->productStocks()
-            ->where('product_id', $productId)
-            ->value('current_stock') ?? 0;
-        $delta = 0 - $previousQuantity;
-
-        $this->recordMovement(
+        $this->createPendingRackStockAdjustment(
             request: request(),
+            rack: $rack,
             productId: $productId,
-            warehouseId: (int) $rack->zone->warehouse_id,
-            type: 'adjustment',
-            referenceType: Str::lower(str_replace(' ', '_', $rack->code)),
-            referenceId: $rack->id,
-            quantity: abs($delta),
-            stockBefore: $stockBefore,
-            stockAfter: $stockBefore + $delta,
-            notes: 'Rack stock removed from '.$rack->code,
+            fromQuantity: $previousQuantity,
+            toQuantity: 0,
+            reservedQuantity: 0,
+            batchNumber: $rackStock->batch_number,
+            expiredDate: $rackStock->expired_date?->format('Y-m-d'),
+            action: 'delete',
         );
-        $this->syncProductStock((int) $rack->zone->warehouse_id, $productId);
 
-        return redirect()->route('warehouse', ['zone' => $zoneId, 'rack' => $rackId])->with('status', 'Rack stock deleted.');
+        return redirect()->route('warehouse', ['zone' => $zoneId, 'rack' => $rackId])->with('status', 'Permintaan penghapusan stok dikirim untuk persetujuan.');
+    }
+
+    private function createPendingRackStockAdjustment(
+        Request $request,
+        Rack $rack,
+        int $productId,
+        int $fromQuantity,
+        int $toQuantity,
+        int $reservedQuantity,
+        ?string $batchNumber,
+        ?string $expiredDate,
+        string $action = 'set',
+    ): void {
+        DB::transaction(function () use (
+            $request,
+            $rack,
+            $productId,
+            $fromQuantity,
+            $toQuantity,
+            $reservedQuantity,
+            $batchNumber,
+            $expiredDate,
+            $action,
+        ) {
+            $delta = $toQuantity - $fromQuantity;
+
+            $adjustment = StockAdjustment::create([
+                'adjustment_number' => 'ADJ-' . now()->format('Ymd-His') . '-' . strtoupper(Str::random(4)),
+                'warehouse_id' => (int) $rack->zone->warehouse_id,
+                'adjustment_date' => now()->toDateString(),
+                'status' => 'pending',
+                'reason' => 'manual_rack_stock',
+                'notes' => 'Pending manual rack stock correction on '.$rack->code,
+                'created_by' => $request->user()->id,
+            ]);
+
+            $meta = [
+                'source' => 'manual_rack_stock',
+                'action' => $action,
+                'rack_id' => (int) $rack->id,
+                'product_id' => $productId,
+                'from_quantity' => $fromQuantity,
+                'to_quantity' => $toQuantity,
+                'reserved_quantity' => max(0, min($reservedQuantity, $toQuantity)),
+                'batch_number' => $batchNumber,
+                'expired_date' => $expiredDate,
+            ];
+
+            StockAdjustmentItem::create([
+                'stock_adjustment_id' => $adjustment->id,
+                'product_id' => $productId,
+                'adjustment_type' => $delta >= 0 ? 'in' : 'out',
+                'quantity' => abs($delta),
+                'note' => 'MANUAL_RACK_STOCK::'.json_encode($meta),
+            ]);
+        });
     }
 
     private function mapZoneSummary(WarehouseZone $zone, int $index): array
@@ -470,15 +537,15 @@ class WarehouseController extends Controller
     private function zoneAccent(string $type, int $index): array
     {
         $palettes = [
-            'high_pick' => ['text' => 'text-[#4338ca]', 'badge' => 'bg-[#eef2ff] text-[#4338ca]', 'bar' => '#4338ca'],
-            'bulk_storage' => ['text' => 'text-[#1a202c]', 'badge' => 'bg-[#f1f5f9] text-gray-500', 'bar' => '#93c5fd'],
-            'electronics' => ['text' => 'text-[#1a202c]', 'badge' => 'bg-[#f1f5f9] text-gray-500', 'bar' => '#4f46e5'],
-            'cross_dock' => ['text' => 'text-[#1a202c]', 'badge' => 'bg-[#f1f5f9] text-gray-500', 'bar' => '#cbd5e1'],
+            'high_pick' => ['text' => 'text-[#28106F]', 'badge' => 'bg-[#EDE8FC] text-[#28106F]', 'bar' => '#28106F'],
+            'bulk_storage' => ['text' => 'text-[#28106F]', 'badge' => 'bg-[#f1f5f9] text-gray-500', 'bar' => '#93c5fd'],
+            'electronics' => ['text' => 'text-[#28106F]', 'badge' => 'bg-[#f1f5f9] text-gray-500', 'bar' => '#5932C9'],
+            'cross_dock' => ['text' => 'text-[#28106F]', 'badge' => 'bg-[#f1f5f9] text-gray-500', 'bar' => '#cbd5e1'],
             'hazmat' => ['text' => 'text-[#ef4444]', 'badge' => 'bg-[#fef2f2] text-[#ef4444]', 'bar' => '#ef4444'],
         ];
 
         $fallbacks = [
-            ['text' => 'text-[#4338ca]', 'badge' => 'bg-[#eef2ff] text-[#4338ca]', 'bar' => '#4338ca'],
+            ['text' => 'text-[#28106F]', 'badge' => 'bg-[#EDE8FC] text-[#28106F]', 'bar' => '#28106F'],
             ['text' => 'text-[#0f766e]', 'badge' => 'bg-[#ecfeff] text-[#0f766e]', 'bar' => '#14b8a6'],
             ['text' => 'text-[#9a3412]', 'badge' => 'bg-[#fff7ed] text-[#9a3412]', 'bar' => '#f97316'],
         ];

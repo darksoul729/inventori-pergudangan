@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import DashboardLayout from '@/Layouts/DashboardLayout';
 import { Head, useForm, router, usePage } from '@inertiajs/react';
+import Modal from '@/Components/Modal';
 
 // Icons
 const BuildingIcon = ({ className }) => (
@@ -41,6 +42,12 @@ const TrashIcon = ({ className }) => (
 const EditIcon = ({ className }) => (
     <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+    </svg>
+);
+
+const XIcon = ({ className }) => (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
     </svg>
 );
 
@@ -117,6 +124,12 @@ export default function Settings({ auth, categories, units, warehouse, staffUser
         }
     };
 
+    const closeCategoryModal = () => {
+        setShowCategoryModal(false);
+        setEditingCategory(null);
+        categoryForm.reset();
+    };
+
     // Unit Form
     const unitForm = useForm({
         name: '',
@@ -158,6 +171,12 @@ export default function Settings({ auth, categories, units, warehouse, staffUser
         }
     };
 
+    const closeUnitModal = () => {
+        setShowUnitModal(false);
+        setEditingUnit(null);
+        unitForm.reset();
+    };
+
     const staffForm = useForm({
         name: '',
         email: '',
@@ -178,6 +197,11 @@ export default function Settings({ auth, categories, units, warehouse, staffUser
         });
     };
 
+    const closeStaffModal = () => {
+        setShowStaffModal(false);
+        staffForm.reset();
+    };
+
     const updateStaffStatus = (user, status) => {
         router.put(route('settings.staff.status', user.id), { status }, {
             preserveScroll: true,
@@ -189,7 +213,7 @@ export default function Settings({ auth, categories, units, warehouse, staffUser
         <DashboardLayout headerTitle="Pengaturan Sistem" hideSearch={true}>
             <Head title="Pengaturan" />
 
-            <div className="flex flex-row gap-8 pb-12 w-full pt-4 min-w-[1000px] overflow-x-auto bg-[#f8fafc] animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="flex flex-row gap-8 pb-12 w-full pt-4 min-w-[1000px] overflow-x-auto bg-[#F8F7FF] animate-in fade-in slide-in-from-bottom-4 duration-500">
                 
                 {/* Sidebar Navigation for Settings */}
                 <div className="w-[280px] flex-shrink-0 flex flex-col space-y-2">
@@ -197,20 +221,20 @@ export default function Settings({ auth, categories, units, warehouse, staffUser
                     
                     <button 
                         onClick={() => setActiveTab('warehouse')}
-                        className={`w-full flex items-center space-x-3 px-5 py-4 rounded-2xl font-bold text-[14px] transition-all text-left ${activeTab === 'warehouse' ? 'bg-white text-[#4f46e5] shadow-[0_4px_15px_rgba(0,0,0,0.03)] border border-gray-100' : 'text-gray-500 hover:bg-white/60 hover:text-gray-900 border border-transparent'}`}
+                        className={`w-full flex items-center space-x-3 px-5 py-4 rounded-2xl font-bold text-[14px] transition-all text-left ${activeTab === 'warehouse' ? 'bg-white text-[#5932C9] shadow-[0_4px_15px_rgba(0,0,0,0.03)] border border-gray-100' : 'text-gray-500 hover:bg-white/60 hover:text-gray-900 border border-transparent'}`}
                     >
                         <div className={`p-2 rounded-xl flex-shrink-0 ${activeTab === 'warehouse' ? 'bg-indigo-50 text-indigo-500' : 'bg-gray-100 text-gray-400'}`}>
                             <BuildingIcon className="w-5 h-5" />
                         </div>
                         <div>
-                            <div className="mb-0.5">Profil Gudang</div>
-                            <div className={`text-[11px] font-semibold ${activeTab === 'warehouse' ? 'text-indigo-400' : 'text-gray-400'}`}>Identitas & Lokasi Dasar</div>
+                            <div className="mb-0.5">Gudang Utama</div>
+                            <div className={`text-[11px] font-semibold ${activeTab === 'warehouse' ? 'text-indigo-400' : 'text-gray-400'}`}>Profil & Lokasi Samarinda</div>
                         </div>
                     </button>
 
                     <button 
                         onClick={() => setActiveTab('categories')}
-                        className={`w-full flex items-center space-x-3 px-5 py-4 rounded-2xl font-bold text-[14px] transition-all text-left ${activeTab === 'categories' ? 'bg-white text-[#4f46e5] shadow-[0_4px_15px_rgba(0,0,0,0.03)] border border-gray-100' : 'text-gray-500 hover:bg-white/60 hover:text-gray-900 border border-transparent'}`}
+                        className={`w-full flex items-center space-x-3 px-5 py-4 rounded-2xl font-bold text-[14px] transition-all text-left ${activeTab === 'categories' ? 'bg-white text-[#5932C9] shadow-[0_4px_15px_rgba(0,0,0,0.03)] border border-gray-100' : 'text-gray-500 hover:bg-white/60 hover:text-gray-900 border border-transparent'}`}
                     >
                         <div className={`p-2 rounded-xl flex-shrink-0 ${activeTab === 'categories' ? 'bg-indigo-50 text-indigo-500' : 'bg-gray-100 text-gray-400'}`}>
                             <TagIcon className="w-5 h-5" />
@@ -223,7 +247,7 @@ export default function Settings({ auth, categories, units, warehouse, staffUser
 
                     <button 
                         onClick={() => setActiveTab('units')}
-                        className={`w-full flex items-center space-x-3 px-5 py-4 rounded-2xl font-bold text-[14px] transition-all text-left ${activeTab === 'units' ? 'bg-white text-[#4f46e5] shadow-[0_4px_15px_rgba(0,0,0,0.03)] border border-gray-100' : 'text-gray-500 hover:bg-white/60 hover:text-gray-900 border border-transparent'}`}
+                        className={`w-full flex items-center space-x-3 px-5 py-4 rounded-2xl font-bold text-[14px] transition-all text-left ${activeTab === 'units' ? 'bg-white text-[#5932C9] shadow-[0_4px_15px_rgba(0,0,0,0.03)] border border-gray-100' : 'text-gray-500 hover:bg-white/60 hover:text-gray-900 border border-transparent'}`}
                     >
                         <div className={`p-2 rounded-xl flex-shrink-0 ${activeTab === 'units' ? 'bg-indigo-50 text-indigo-500' : 'bg-gray-100 text-gray-400'}`}>
                             <ScaleIcon className="w-5 h-5" />
@@ -236,7 +260,7 @@ export default function Settings({ auth, categories, units, warehouse, staffUser
 
                     <button 
                         onClick={() => setActiveTab('staff')}
-                        className={`w-full flex items-center space-x-3 px-5 py-4 rounded-2xl font-bold text-[14px] transition-all text-left ${activeTab === 'staff' ? 'bg-white text-[#4f46e5] shadow-[0_4px_15px_rgba(0,0,0,0.03)] border border-gray-100' : 'text-gray-500 hover:bg-white/60 hover:text-gray-900 border border-transparent'}`}
+                        className={`w-full flex items-center space-x-3 px-5 py-4 rounded-2xl font-bold text-[14px] transition-all text-left ${activeTab === 'staff' ? 'bg-white text-[#5932C9] shadow-[0_4px_15px_rgba(0,0,0,0.03)] border border-gray-100' : 'text-gray-500 hover:bg-white/60 hover:text-gray-900 border border-transparent'}`}
                     >
                         <div className={`p-2 rounded-xl flex-shrink-0 ${activeTab === 'staff' ? 'bg-indigo-50 text-indigo-500' : 'bg-gray-100 text-gray-400'}`}>
                             <UsersIcon className="w-5 h-5" />
@@ -264,16 +288,19 @@ export default function Settings({ auth, categories, units, warehouse, staffUser
 
                     {/* WAREHOUSE TAB */}
                     {activeTab === 'warehouse' && (
-                        <div className="bg-white rounded-[24px] p-8 shadow-[0_2px_16px_rgba(0,0,0,0.02)] border border-[#edf2f7]">
-                            <h2 className="text-[20px] font-black text-[#1a202c] mb-2">Konfigurasi Gudang Aktif</h2>
-                            <p className="text-[13px] font-semibold text-gray-400 mb-8">Atur identitas utama dari gudang yang dikelola pada sesi aktif ini.</p>
+                        <div className="bg-white rounded-[24px] p-8 shadow-[0_2px_16px_rgba(0,0,0,0.02)] border border-[#EDE8FC]">
+                            <div className="flex items-center justify-between mb-2">
+                                <h2 className="text-[20px] font-black text-[#28106F]">Gudang Utama</h2>
+                                <span className="rounded-full bg-emerald-50 border border-emerald-200 px-3 py-1 text-[10px] font-black text-emerald-700 uppercase tracking-wider">Single Warehouse</span>
+                            </div>
+                            <p className="text-[13px] font-semibold text-gray-400 mb-8">Sistem ini beroperasi dengan 1 gudang utama di Samarinda, Kalimantan Timur. Semua pengiriman berasal dari gudang ini.</p>
 
                             <form onSubmit={submitWarehouse} className="space-y-6 max-w-2xl">
                                 <div>
                                     <label className="block text-[10px] font-extrabold text-gray-500 tracking-wider uppercase mb-2">NAMA GUDANG</label>
                                     <input 
                                         type="text" 
-                                        className="bg-[#f8f9fb] border border-transparent focus:border-[#4f46e5] focus:ring-1 focus:ring-[#4f46e5] block w-full px-4 py-3 sm:text-[14px] rounded-xl font-bold text-gray-800 shadow-[inset_0_2px_4px_rgba(0,0,0,0.01)]" 
+                                        className="bg-[#f8f9fb] border border-transparent focus:border-[#5932C9] focus:ring-1 focus:ring-[#5932C9] block w-full px-4 py-3 sm:text-[14px] rounded-xl font-bold text-gray-800 shadow-[inset_0_2px_4px_rgba(0,0,0,0.01)]" 
                                         value={warehouseForm.data.name}
                                         onChange={e => warehouseForm.setData('name', e.target.value)}
                                         required
@@ -285,7 +312,7 @@ export default function Settings({ auth, categories, units, warehouse, staffUser
                                     <label className="block text-[10px] font-extrabold text-gray-500 tracking-wider uppercase mb-2">LOKASI / ALAMAT</label>
                                     <input 
                                         type="text" 
-                                        className="bg-[#f8f9fb] border border-transparent focus:border-[#4f46e5] focus:ring-1 focus:ring-[#4f46e5] block w-full px-4 py-3 sm:text-[14px] rounded-xl font-bold text-gray-800 shadow-[inset_0_2px_4px_rgba(0,0,0,0.01)]" 
+                                        className="bg-[#f8f9fb] border border-transparent focus:border-[#5932C9] focus:ring-1 focus:ring-[#5932C9] block w-full px-4 py-3 sm:text-[14px] rounded-xl font-bold text-gray-800 shadow-[inset_0_2px_4px_rgba(0,0,0,0.01)]" 
                                         value={warehouseForm.data.location}
                                         onChange={e => warehouseForm.setData('location', e.target.value)}
                                         required
@@ -297,7 +324,7 @@ export default function Settings({ auth, categories, units, warehouse, staffUser
                                     <label className="block text-[10px] font-extrabold text-gray-500 tracking-wider uppercase mb-2">DESKRIPSI (ОPSIONAL)</label>
                                     <textarea 
                                         rows="3"
-                                        className="bg-[#f8f9fb] border border-transparent focus:border-[#4f46e5] focus:ring-1 focus:ring-[#4f46e5] block w-full px-4 py-3 sm:text-[14px] rounded-xl font-medium text-gray-600 shadow-[inset_0_2px_4px_rgba(0,0,0,0.01)] resize-none" 
+                                        className="bg-[#f8f9fb] border border-transparent focus:border-[#5932C9] focus:ring-1 focus:ring-[#5932C9] block w-full px-4 py-3 sm:text-[14px] rounded-xl font-medium text-gray-600 shadow-[inset_0_2px_4px_rgba(0,0,0,0.01)] resize-none" 
                                         value={warehouseForm.data.description}
                                         onChange={e => warehouseForm.setData('description', e.target.value)}
                                     ></textarea>
@@ -307,7 +334,7 @@ export default function Settings({ auth, categories, units, warehouse, staffUser
                                     <button 
                                         type="submit" 
                                         disabled={warehouseForm.processing}
-                                        className="px-6 py-3 bg-[#4f46e5] hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg shadow-indigo-200 transition-all"
+                                        className="px-6 py-3 bg-[#5932C9] hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg shadow-indigo-200 transition-all"
                                     >
                                         Simpan Perubahan
                                     </button>
@@ -318,25 +345,25 @@ export default function Settings({ auth, categories, units, warehouse, staffUser
 
                     {/* CATEGORIES TAB */}
                     {activeTab === 'categories' && (
-                        <div className="bg-white rounded-[24px] p-8 shadow-[0_2px_16px_rgba(0,0,0,0.02)] border border-[#edf2f7]">
+                        <div className="bg-white rounded-[24px] p-8 shadow-[0_2px_16px_rgba(0,0,0,0.02)] border border-[#EDE8FC]">
                             <div className="flex justify-between items-center mb-8">
                                 <div>
-                                    <h2 className="text-[20px] font-black text-[#1a202c] mb-1">Manajemen Kategori Barang</h2>
+                                    <h2 className="text-[20px] font-black text-[#28106F] mb-1">Manajemen Kategori Barang</h2>
                                     <p className="text-[13px] font-semibold text-gray-400">Klasifikasi produk mempermudah perhitungan dan reporting.</p>
                                 </div>
                                 <button 
                                     onClick={() => setShowCategoryModal(true)}
-                                    className="px-5 py-2.5 bg-[#1a202c] hover:bg-[#2d3748] text-white font-bold rounded-xl transition-colors flex items-center space-x-2 text-[13px]"
+                                    className="px-5 py-2.5 bg-[#28106F] hover:bg-[#2d3748] text-white font-bold rounded-xl transition-colors flex items-center space-x-2 text-[13px]"
                                 >
                                     <PlusIcon className="w-4 h-4" />
                                     <span>Tambah Kategori</span>
                                 </button>
                             </div>
 
-                            <div className="overflow-hidden border border-[#edf2f7] rounded-2xl relative bg-[#f8f9fb]">
+                            <div className="overflow-hidden border border-[#EDE8FC] rounded-2xl relative bg-[#f8f9fb]">
                                 <table className="w-full text-left border-collapse">
                                     <thead>
-                                        <tr className="bg-[#f8f9fb] border-b border-[#edf2f7]">
+                                        <tr className="bg-[#f8f9fb] border-b border-[#EDE8FC]">
                                             <th className="px-6 py-4 text-[10px] font-extrabold text-gray-400 uppercase tracking-widest w-16 text-center">ID</th>
                                             <th className="px-6 py-4 text-[10px] font-extrabold text-gray-400 uppercase tracking-widest">Nama Kategori</th>
                                             <th className="px-6 py-4 text-[10px] font-extrabold text-gray-400 uppercase tracking-widest">Deskripsi</th>
@@ -351,7 +378,7 @@ export default function Settings({ auth, categories, units, warehouse, staffUser
                                                     <span className="text-[11px] font-bold text-gray-400">#{cat.id}</span>
                                                 </td>
                                                 <td className="px-6 py-4">
-                                                    <span className="text-[14px] font-bold text-[#1a202c]">{cat.name}</span>
+                                                    <span className="text-[14px] font-bold text-[#28106F]">{cat.name}</span>
                                                 </td>
                                                 <td className="px-6 py-4">
                                                     <span className="text-[13px] font-medium text-gray-500 line-clamp-1">{cat.description || '-'}</span>
@@ -398,25 +425,25 @@ export default function Settings({ auth, categories, units, warehouse, staffUser
 
                     {/* UNITS TAB */}
                     {activeTab === 'units' && (
-                        <div className="bg-white rounded-[24px] p-8 shadow-[0_2px_16px_rgba(0,0,0,0.02)] border border-[#edf2f7]">
+                        <div className="bg-white rounded-[24px] p-8 shadow-[0_2px_16px_rgba(0,0,0,0.02)] border border-[#EDE8FC]">
                             <div className="flex justify-between items-center mb-8">
                                 <div>
-                                    <h2 className="text-[20px] font-black text-[#1a202c] mb-1">Satuan Metrik (Units)</h2>
+                                    <h2 className="text-[20px] font-black text-[#28106F] mb-1">Satuan Metrik (Units)</h2>
                                     <p className="text-[13px] font-semibold text-gray-400">Kelola master data satuan pengukuran inventaris fisik.</p>
                                 </div>
                                 <button 
                                     onClick={() => setShowUnitModal(true)}
-                                    className="px-5 py-2.5 bg-[#1a202c] hover:bg-[#2d3748] text-white font-bold rounded-xl transition-colors flex items-center space-x-2 text-[13px]"
+                                    className="px-5 py-2.5 bg-[#28106F] hover:bg-[#2d3748] text-white font-bold rounded-xl transition-colors flex items-center space-x-2 text-[13px]"
                                 >
                                     <PlusIcon className="w-4 h-4" />
                                     <span>Tambah Satuan</span>
                                 </button>
                             </div>
 
-                            <div className="overflow-hidden border border-[#edf2f7] rounded-2xl relative bg-[#f8f9fb]">
+                            <div className="overflow-hidden border border-[#EDE8FC] rounded-2xl relative bg-[#f8f9fb]">
                                 <table className="w-full text-left border-collapse">
                                     <thead>
-                                        <tr className="bg-[#f8f9fb] border-b border-[#edf2f7]">
+                                        <tr className="bg-[#f8f9fb] border-b border-[#EDE8FC]">
                                             <th className="px-6 py-4 text-[10px] font-extrabold text-gray-400 uppercase tracking-widest w-16 text-center">ID</th>
                                             <th className="px-6 py-4 text-[10px] font-extrabold text-gray-400 uppercase tracking-widest">Nama Lengkap</th>
                                             <th className="px-6 py-4 text-[10px] font-extrabold text-gray-400 uppercase tracking-widest text-center">Simbol</th>
@@ -431,10 +458,10 @@ export default function Settings({ auth, categories, units, warehouse, staffUser
                                                     <span className="text-[11px] font-bold text-gray-400">#{u.id}</span>
                                                 </td>
                                                 <td className="px-6 py-4">
-                                                    <span className="text-[14px] font-bold text-[#1a202c]">{u.name}</span>
+                                                    <span className="text-[14px] font-bold text-[#28106F]">{u.name}</span>
                                                 </td>
                                                 <td className="px-6 py-4 text-center">
-                                                    <span className="inline-flex items-center justify-center px-3 py-1 bg-gray-100 text-[#1a202c] rounded-md text-[13px] font-black border border-gray-200">
+                                                    <span className="inline-flex items-center justify-center px-3 py-1 bg-gray-100 text-[#28106F] rounded-md text-[13px] font-black border border-gray-200">
                                                         {u.symbol}
                                                     </span>
                                                 </td>
@@ -479,25 +506,25 @@ export default function Settings({ auth, categories, units, warehouse, staffUser
                     )}
 
                     {activeTab === 'staff' && (
-                        <div className="bg-white rounded-[24px] p-8 shadow-[0_2px_16px_rgba(0,0,0,0.02)] border border-[#edf2f7]">
+                        <div className="bg-white rounded-[24px] p-8 shadow-[0_2px_16px_rgba(0,0,0,0.02)] border border-[#EDE8FC]">
                             <div className="flex justify-between items-center mb-8">
                                 <div>
-                                    <h2 className="text-[20px] font-black text-[#1a202c] mb-1">Manajemen Akun Operasional</h2>
+                                    <h2 className="text-[20px] font-black text-[#28106F] mb-1">Manajemen Akun Operasional</h2>
                                     <p className="text-[13px] font-semibold text-gray-400">Manager Gudang dapat membuat akun Supervisor Gudang untuk approval harian dan Staff Operasional untuk input operasional.</p>
                                 </div>
                                 <button 
                                     onClick={() => setShowStaffModal(true)}
-                                    className="px-5 py-2.5 bg-[#1a202c] hover:bg-[#2d3748] text-white font-bold rounded-xl transition-colors flex items-center space-x-2 text-[13px]"
+                                    className="px-5 py-2.5 bg-[#28106F] hover:bg-[#2d3748] text-white font-bold rounded-xl transition-colors flex items-center space-x-2 text-[13px]"
                                 >
                                     <PlusIcon className="w-4 h-4" />
                                     <span>Buat Akun</span>
                                 </button>
                             </div>
 
-                            <div className="overflow-hidden border border-[#edf2f7] rounded-2xl relative bg-[#f8f9fb]">
+                            <div className="overflow-hidden border border-[#EDE8FC] rounded-2xl relative bg-[#f8f9fb]">
                                 <table className="w-full text-left border-collapse">
                                     <thead>
-                                        <tr className="bg-[#f8f9fb] border-b border-[#edf2f7]">
+                                        <tr className="bg-[#f8f9fb] border-b border-[#EDE8FC]">
                                             <th className="px-6 py-4 text-[10px] font-extrabold text-gray-400 uppercase tracking-widest">Nama</th>
                                             <th className="px-6 py-4 text-[10px] font-extrabold text-gray-400 uppercase tracking-widest">Role</th>
                                             <th className="px-6 py-4 text-[10px] font-extrabold text-gray-400 uppercase tracking-widest">Email</th>
@@ -510,7 +537,7 @@ export default function Settings({ auth, categories, units, warehouse, staffUser
                                         {staffUsers.length > 0 ? staffUsers.map((user) => (
                                             <tr key={user.id} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
                                                 <td className="px-6 py-4">
-                                                    <div className="text-[14px] font-bold text-[#1a202c]">{user.name}</div>
+                                                    <div className="text-[14px] font-bold text-[#28106F]">{user.name}</div>
                                                     <div className="text-[11px] font-bold text-gray-400">Dibuat {user.created_at || '-'}</div>
                                                 </td>
                                                 <td className="px-6 py-4">
@@ -562,151 +589,125 @@ export default function Settings({ auth, categories, units, warehouse, staffUser
             </div>
 
             {/* MODALS */}
-            {/* Add Category Modal */}
-            {showCategoryModal && (
-                <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-gray-900/40 backdrop-blur-sm">
-                    <div className="bg-white rounded-3xl w-full max-w-lg shadow-[0_20px_60px_rgba(0,0,0,0.15)] overflow-hidden animate-in zoom-in-95 duration-200">
-                        <div className="px-8 py-6 border-b border-gray-50 flex justify-between items-center bg-[#f8f9fb]">
-                            <div className="flex items-center space-x-3">
-                                <div className="p-2 bg-indigo-100 rounded-xl">
-                                    <TagIcon className="w-5 h-5 text-indigo-600" />
-                                </div>
-                                <h3 className="text-[18px] font-black text-[#1a202c]">
-                                    {editingCategory ? 'Edit Kategori' : 'Kategori Baru'}
-                                </h3>
+            <Modal show={showCategoryModal} onClose={closeCategoryModal} maxWidth="xl">
+                <div className="overflow-hidden rounded-[24px] bg-white">
+                    <div className="flex items-center justify-between border-b border-gray-100 bg-slate-50/70 px-7 py-5">
+                        <div className="flex items-center space-x-3">
+                            <div className="rounded-xl bg-indigo-100 p-2">
+                                <TagIcon className="h-5 w-5 text-indigo-600" />
                             </div>
-                            <button 
-                                onClick={() => {
-                                    setShowCategoryModal(false);
-                                    setEditingCategory(null);
-                                    categoryForm.reset();
-                                }} 
-                                className="text-gray-400 hover:text-gray-600"
-                            >
-                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                </svg>
+                            <h3 className="text-[18px] font-black text-[#28106F]">
+                                {editingCategory ? 'Edit Kategori' : 'Kategori Baru'}
+                            </h3>
+                        </div>
+                        <button onClick={closeCategoryModal} className="rounded-lg p-1 text-gray-400 transition hover:bg-white hover:text-gray-600">
+                            <XIcon className="h-5 w-5" />
+                        </button>
+                    </div>
+                    <form onSubmit={submitCategory} className="space-y-5 px-7 py-6">
+                        <div>
+                            <label className="mb-2 block text-[10px] font-extrabold uppercase tracking-wider text-gray-500">NAMA KATEGORI</label>
+                            <input
+                                type="text"
+                                className="block w-full rounded-xl border border-gray-200 bg-slate-50 px-4 py-3 text-[14px] font-bold text-gray-800 focus:border-[#5932C9] focus:ring-1 focus:ring-[#5932C9]"
+                                value={categoryForm.data.name}
+                                onChange={e => categoryForm.setData('name', e.target.value)}
+                                placeholder="misal: Komponen Elektronik"
+                                required
+                                autoFocus
+                            />
+                            {categoryForm.errors.name && <div className="mt-1 text-xs font-bold text-red-500">{categoryForm.errors.name}</div>}
+                        </div>
+                        <div>
+                            <label className="mb-2 block text-[10px] font-extrabold uppercase tracking-wider text-gray-500">DESKRIPSI (OPSIONAL)</label>
+                            <input
+                                type="text"
+                                className="block w-full rounded-xl border border-gray-200 bg-slate-50 px-4 py-3 text-[14px] font-semibold text-gray-700 focus:border-[#5932C9] focus:ring-1 focus:ring-[#5932C9]"
+                                value={categoryForm.data.description}
+                                onChange={e => categoryForm.setData('description', e.target.value)}
+                                placeholder="Penjelasan ringkas kategori..."
+                            />
+                        </div>
+                        <div className="flex justify-end gap-3 border-t border-gray-100 pt-5">
+                            <button type="button" onClick={closeCategoryModal} className="rounded-xl border border-gray-200 px-5 py-3 font-bold text-gray-600 transition-colors hover:bg-gray-50">Batal</button>
+                            <button type="submit" disabled={categoryForm.processing} className="rounded-xl bg-[#5932C9] px-6 py-3 font-bold text-white transition-all hover:bg-indigo-700 disabled:opacity-50">
+                                {editingCategory ? 'Perbarui Kategori' : 'Simpan Klasifikasi'}
                             </button>
                         </div>
-                        <form onSubmit={submitCategory} className="p-8 space-y-6">
-                            <div>
-                                <label className="block text-[10px] font-extrabold text-gray-500 tracking-wider uppercase mb-2">NAMA KATEGORI</label>
-                                <input 
-                                    type="text" 
-                                    className="bg-[#f8f9fb] border border-transparent focus:border-[#4f46e5] focus:ring-1 focus:ring-[#4f46e5] block w-full px-4 py-3 sm:text-[14px] rounded-xl font-bold text-gray-800" 
-                                    value={categoryForm.data.name}
-                                    onChange={e => categoryForm.setData('name', e.target.value)}
-                                    placeholder="misal: Komponen Elektronik"
-                                    required autoFocus
-                                />
-                                {categoryForm.errors.name && <div className="text-red-500 text-xs mt-1 font-bold">{categoryForm.errors.name}</div>}
-                            </div>
-                            <div>
-                                <label className="block text-[10px] font-extrabold text-gray-500 tracking-wider uppercase mb-2">DESKRIPSI (OPSIONAL)</label>
-                                <input 
-                                    type="text" 
-                                    className="bg-[#f8f9fb] border border-transparent focus:border-[#4f46e5] focus:ring-1 focus:ring-[#4f46e5] block w-full px-4 py-3 sm:text-[14px] rounded-xl font-semibold text-gray-600" 
-                                    value={categoryForm.data.description}
-                                    onChange={e => categoryForm.setData('description', e.target.value)}
-                                    placeholder="Penjelasan ringkas kategori..."
-                                />
-                            </div>
-                            <div className="pt-4 flex justify-end gap-3">
-                                <button type="button" onClick={() => { setShowCategoryModal(false); setEditingCategory(null); categoryForm.reset(); }} className="px-5 py-3 hover:bg-gray-50 border border-gray-100 text-gray-600 font-bold rounded-xl transition-colors">Batal</button>
-                                <button type="submit" disabled={categoryForm.processing} className="px-6 py-3 bg-[#4f46e5] hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg shadow-indigo-200 transition-all">
-                                    {editingCategory ? 'Perbarui Kategori' : 'Simpan Klasifikasi'}
-                                </button>
-                            </div>
-                        </form>
-                    </div>
+                    </form>
                 </div>
-            )}
+            </Modal>
 
-            {/* Add Unit Modal */}
-            {showUnitModal && (
-                <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-gray-900/40 backdrop-blur-sm">
-                    <div className="bg-white rounded-3xl w-full max-w-lg shadow-[0_20px_60px_rgba(0,0,0,0.15)] overflow-hidden animate-in zoom-in-95 duration-200">
-                        <div className="px-8 py-6 border-b border-gray-50 flex justify-between items-center bg-[#f8f9fb]">
-                            <h3 className="text-[18px] font-black text-[#1a202c]">
+            <Modal show={showUnitModal} onClose={closeUnitModal} maxWidth="xl">
+                <div className="overflow-hidden rounded-[24px] bg-white">
+                    <div className="flex items-center justify-between border-b border-gray-100 bg-slate-50/70 px-7 py-5">
+                        <div className="flex items-center space-x-3">
+                            <div className="rounded-xl bg-indigo-100 p-2">
+                                <ScaleIcon className="h-5 w-5 text-indigo-600" />
+                            </div>
+                            <h3 className="text-[18px] font-black text-[#28106F]">
                                 {editingUnit ? 'Edit Satuan / Unit' : 'Satuan / Unit Baru'}
                             </h3>
-                            <button 
-                                onClick={() => {
-                                    setShowUnitModal(false);
-                                    setEditingUnit(null);
-                                    unitForm.reset();
-                                }} 
-                                className="text-gray-400 hover:text-gray-600"
-                            >
-                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                </svg>
-                            </button>
                         </div>
-                        <form onSubmit={submitUnit} className="p-8 space-y-6">
-                            <div>
-                                <label className="block text-[10px] font-extrabold text-gray-500 tracking-wider uppercase mb-2">NAMA LENGKAP</label>
-                                <input 
-                                    type="text" 
-                                    className="bg-[#f8f9fb] border border-transparent focus:border-[#4f46e5] focus:ring-1 focus:ring-[#4f46e5] block w-full px-4 py-3 sm:text-[14px] rounded-xl font-bold text-gray-800" 
-                                    value={unitForm.data.name}
-                                    onChange={e => unitForm.setData('name', e.target.value)}
-                                    placeholder="misal: Milimeter, Kilogram, Kotak"
-                                    required autoFocus
-                                />
-                                {unitForm.errors.name && <div className="text-red-500 text-xs mt-1 font-bold">{unitForm.errors.name}</div>}
-                            </div>
-                            <div>
-                                <label className="block text-[10px] font-extrabold text-gray-500 tracking-wider uppercase mb-2">SIMBOL</label>
-                                <input 
-                                    type="text" 
-                                    className="bg-[#f8f9fb] border border-transparent focus:border-[#4f46e5] focus:ring-1 focus:ring-[#4f46e5] block w-full px-4 py-3 sm:text-[14px] rounded-xl font-black text-gray-800" 
-                                    value={unitForm.data.symbol}
-                                    onChange={e => unitForm.setData('symbol', e.target.value)}
-                                    placeholder="misal: mm, kg, box"
-                                    required
-                                />
-                                {unitForm.errors.symbol && <div className="text-red-500 text-xs mt-1 font-bold">{unitForm.errors.symbol}</div>}
-                            </div>
-                            <div className="pt-4 flex justify-end gap-3">
-                                <button type="button" onClick={() => { setShowUnitModal(false); setEditingUnit(null); unitForm.reset(); }} className="px-5 py-3 hover:bg-gray-50 border border-gray-100 text-gray-600 font-bold rounded-xl transition-colors">Batal</button>
-                                <button type="submit" disabled={unitForm.processing} className="px-6 py-3 bg-[#4f46e5] hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg shadow-indigo-200 transition-all">
-                                    {editingUnit ? 'Perbarui Satuan' : 'Simpan Satuan'}
-                                </button>
-                            </div>
-                        </form>
+                        <button onClick={closeUnitModal} className="rounded-lg p-1 text-gray-400 transition hover:bg-white hover:text-gray-600">
+                            <XIcon className="h-5 w-5" />
+                        </button>
                     </div>
-                </div>
-            )}
-
-            {showStaffModal && (
-                <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-gray-900/40 backdrop-blur-sm">
-                    <div className="bg-white rounded-3xl w-full max-w-lg shadow-[0_20px_60px_rgba(0,0,0,0.15)] overflow-hidden animate-in zoom-in-95 duration-200">
-                        <div className="px-8 py-6 border-b border-gray-50 flex justify-between items-center bg-[#f8f9fb]">
-                            <div className="flex items-center space-x-3">
-                                <div className="p-2 bg-indigo-100 rounded-xl">
-                                    <UsersIcon className="w-5 h-5 text-indigo-600" />
-                                </div>
-                                <h3 className="text-[18px] font-black text-[#1a202c]">Akun Operasional Baru</h3>
-                            </div>
-                            <button
-                                onClick={() => {
-                                    setShowStaffModal(false);
-                                    staffForm.reset();
-                                }}
-                                className="text-gray-400 hover:text-gray-600"
-                            >
-                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                </svg>
+                    <form onSubmit={submitUnit} className="space-y-5 px-7 py-6">
+                        <div>
+                            <label className="mb-2 block text-[10px] font-extrabold uppercase tracking-wider text-gray-500">NAMA LENGKAP</label>
+                            <input
+                                type="text"
+                                className="block w-full rounded-xl border border-gray-200 bg-slate-50 px-4 py-3 text-[14px] font-bold text-gray-800 focus:border-[#5932C9] focus:ring-1 focus:ring-[#5932C9]"
+                                value={unitForm.data.name}
+                                onChange={e => unitForm.setData('name', e.target.value)}
+                                placeholder="misal: Milimeter, Kilogram, Kotak"
+                                required
+                                autoFocus
+                            />
+                            {unitForm.errors.name && <div className="mt-1 text-xs font-bold text-red-500">{unitForm.errors.name}</div>}
+                        </div>
+                        <div>
+                            <label className="mb-2 block text-[10px] font-extrabold uppercase tracking-wider text-gray-500">SIMBOL</label>
+                            <input
+                                type="text"
+                                className="block w-full rounded-xl border border-gray-200 bg-slate-50 px-4 py-3 text-[14px] font-black text-gray-800 focus:border-[#5932C9] focus:ring-1 focus:ring-[#5932C9]"
+                                value={unitForm.data.symbol}
+                                onChange={e => unitForm.setData('symbol', e.target.value)}
+                                placeholder="misal: mm, kg, box"
+                                required
+                            />
+                            {unitForm.errors.symbol && <div className="mt-1 text-xs font-bold text-red-500">{unitForm.errors.symbol}</div>}
+                        </div>
+                        <div className="flex justify-end gap-3 border-t border-gray-100 pt-5">
+                            <button type="button" onClick={closeUnitModal} className="rounded-xl border border-gray-200 px-5 py-3 font-bold text-gray-600 transition-colors hover:bg-gray-50">Batal</button>
+                            <button type="submit" disabled={unitForm.processing} className="rounded-xl bg-[#5932C9] px-6 py-3 font-bold text-white transition-all hover:bg-indigo-700 disabled:opacity-50">
+                                {editingUnit ? 'Perbarui Satuan' : 'Simpan Satuan'}
                             </button>
                         </div>
-                        <form onSubmit={submitStaff} className="p-8 space-y-5">
+                    </form>
+                </div>
+            </Modal>
+
+            <Modal show={showStaffModal} onClose={closeStaffModal} maxWidth="xl">
+                <div className="overflow-hidden rounded-[24px] bg-white">
+                    <div className="flex items-center justify-between border-b border-gray-100 bg-slate-50/70 px-7 py-5">
+                        <div className="flex items-center space-x-3">
+                            <div className="rounded-xl bg-indigo-100 p-2">
+                                <UsersIcon className="h-5 w-5 text-indigo-600" />
+                            </div>
+                            <h3 className="text-[18px] font-black text-[#28106F]">Akun Operasional Baru</h3>
+                        </div>
+                        <button onClick={closeStaffModal} className="rounded-lg p-1 text-gray-400 transition hover:bg-white hover:text-gray-600">
+                            <XIcon className="h-5 w-5" />
+                        </button>
+                    </div>
+                    <form onSubmit={submitStaff} className="space-y-5 px-7 py-6">
                             <div>
                                 <label className="block text-[10px] font-extrabold text-gray-500 tracking-wider uppercase mb-2">NAMA PENGGUNA OPERASIONAL</label>
                                 <input
                                     type="text"
-                                    className="bg-[#f8f9fb] border border-transparent focus:border-[#4f46e5] focus:ring-1 focus:ring-[#4f46e5] block w-full px-4 py-3 sm:text-[14px] rounded-xl font-bold text-gray-800"
+                                    className="bg-[#f8f9fb] border border-transparent focus:border-[#5932C9] focus:ring-1 focus:ring-[#5932C9] block w-full px-4 py-3 sm:text-[14px] rounded-xl font-bold text-gray-800"
                                     value={staffForm.data.name}
                                     onChange={e => staffForm.setData('name', e.target.value)}
                                     required
@@ -717,7 +718,7 @@ export default function Settings({ auth, categories, units, warehouse, staffUser
                             <div>
                                 <label className="block text-[10px] font-extrabold text-gray-500 tracking-wider uppercase mb-2">ROLE AKUN</label>
                                 <select
-                                    className="bg-[#f8f9fb] border border-transparent focus:border-[#4f46e5] focus:ring-1 focus:ring-[#4f46e5] block w-full px-4 py-3 sm:text-[14px] rounded-xl font-bold text-gray-800"
+                                    className="bg-[#f8f9fb] border border-transparent focus:border-[#5932C9] focus:ring-1 focus:ring-[#5932C9] block w-full px-4 py-3 sm:text-[14px] rounded-xl font-bold text-gray-800"
                                     value={staffForm.data.role}
                                     onChange={e => staffForm.setData('role', e.target.value)}
                                     required
@@ -731,7 +732,7 @@ export default function Settings({ auth, categories, units, warehouse, staffUser
                                 <label className="block text-[10px] font-extrabold text-gray-500 tracking-wider uppercase mb-2">EMAIL LOGIN</label>
                                 <input
                                     type="email"
-                                    className="bg-[#f8f9fb] border border-transparent focus:border-[#4f46e5] focus:ring-1 focus:ring-[#4f46e5] block w-full px-4 py-3 sm:text-[14px] rounded-xl font-bold text-gray-800"
+                                    className="bg-[#f8f9fb] border border-transparent focus:border-[#5932C9] focus:ring-1 focus:ring-[#5932C9] block w-full px-4 py-3 sm:text-[14px] rounded-xl font-bold text-gray-800"
                                     value={staffForm.data.email}
                                     onChange={e => staffForm.setData('email', e.target.value)}
                                     required
@@ -742,7 +743,7 @@ export default function Settings({ auth, categories, units, warehouse, staffUser
                                 <label className="block text-[10px] font-extrabold text-gray-500 tracking-wider uppercase mb-2">TELEPON</label>
                                 <input
                                     type="text"
-                                    className="bg-[#f8f9fb] border border-transparent focus:border-[#4f46e5] focus:ring-1 focus:ring-[#4f46e5] block w-full px-4 py-3 sm:text-[14px] rounded-xl font-semibold text-gray-600"
+                                    className="bg-[#f8f9fb] border border-transparent focus:border-[#5932C9] focus:ring-1 focus:ring-[#5932C9] block w-full px-4 py-3 sm:text-[14px] rounded-xl font-semibold text-gray-600"
                                     value={staffForm.data.phone}
                                     onChange={e => staffForm.setData('phone', e.target.value)}
                                 />
@@ -753,7 +754,7 @@ export default function Settings({ auth, categories, units, warehouse, staffUser
                                     <label className="block text-[10px] font-extrabold text-gray-500 tracking-wider uppercase mb-2">PASSWORD</label>
                                     <input
                                         type="password"
-                                        className="bg-[#f8f9fb] border border-transparent focus:border-[#4f46e5] focus:ring-1 focus:ring-[#4f46e5] block w-full px-4 py-3 sm:text-[14px] rounded-xl font-bold text-gray-800"
+                                        className="bg-[#f8f9fb] border border-transparent focus:border-[#5932C9] focus:ring-1 focus:ring-[#5932C9] block w-full px-4 py-3 sm:text-[14px] rounded-xl font-bold text-gray-800"
                                         value={staffForm.data.password}
                                         onChange={e => staffForm.setData('password', e.target.value)}
                                         required
@@ -764,23 +765,22 @@ export default function Settings({ auth, categories, units, warehouse, staffUser
                                     <label className="block text-[10px] font-extrabold text-gray-500 tracking-wider uppercase mb-2">KONFIRMASI</label>
                                     <input
                                         type="password"
-                                        className="bg-[#f8f9fb] border border-transparent focus:border-[#4f46e5] focus:ring-1 focus:ring-[#4f46e5] block w-full px-4 py-3 sm:text-[14px] rounded-xl font-bold text-gray-800"
+                                        className="bg-[#f8f9fb] border border-transparent focus:border-[#5932C9] focus:ring-1 focus:ring-[#5932C9] block w-full px-4 py-3 sm:text-[14px] rounded-xl font-bold text-gray-800"
                                         value={staffForm.data.password_confirmation}
                                         onChange={e => staffForm.setData('password_confirmation', e.target.value)}
                                         required
                                     />
                                 </div>
                             </div>
-                            <div className="pt-4 flex justify-end gap-3">
-                                <button type="button" onClick={() => { setShowStaffModal(false); staffForm.reset(); }} className="px-5 py-3 hover:bg-gray-50 border border-gray-100 text-gray-600 font-bold rounded-xl transition-colors">Batal</button>
-                                <button type="submit" disabled={staffForm.processing} className="px-6 py-3 bg-[#4f46e5] hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg shadow-indigo-200 transition-all">
+                            <div className="flex justify-end gap-3 border-t border-gray-100 pt-5">
+                                <button type="button" onClick={closeStaffModal} className="rounded-xl border border-gray-200 px-5 py-3 font-bold text-gray-600 transition-colors hover:bg-gray-50">Batal</button>
+                                <button type="submit" disabled={staffForm.processing} className="rounded-xl bg-[#5932C9] px-6 py-3 font-bold text-white transition-all hover:bg-indigo-700 disabled:opacity-50">
                                     Buat Akun
                                 </button>
                             </div>
                         </form>
-                    </div>
                 </div>
-            )}
+            </Modal>
         </DashboardLayout>
     );
 }

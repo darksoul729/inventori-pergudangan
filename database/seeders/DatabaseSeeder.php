@@ -72,31 +72,31 @@ class DatabaseSeeder extends Seeder
             [
                 'email' => 'driver@example.com',
                 'name' => 'Test Driver',
-                'license' => 'D-12345-BT',
+                'license' => 'KT-12345-AB',
                 'phone' => '08123456788',
             ],
             [
                 'email' => 'driver2@example.com',
                 'name' => 'Driver Budi',
-                'license' => 'D-67890-JB',
+                'license' => 'KT-67890-CD',
                 'phone' => '08123456789',
             ],
             [
                 'email' => 'driver3@example.com',
                 'name' => 'Driver Andi',
-                'license' => 'D-11223-KT',
+                'license' => 'KT-11223-EF',
                 'phone' => '08123456790',
             ],
             [
                 'email' => 'driver4@example.com',
                 'name' => 'Driver Citra',
-                'license' => 'D-44556-LP',
+                'license' => 'KT-44556-GH',
                 'phone' => '08123456791',
             ],
             [
                 'email' => 'driver5@example.com',
                 'name' => 'Driver Eko',
-                'license' => 'D-77889-MN',
+                'license' => 'KT-77889-IJ',
                 'phone' => '08123456792',
             ],
         ];
@@ -129,5 +129,6 @@ class DatabaseSeeder extends Seeder
         $this->call(WarehouseManagementSeeder::class);
         $this->call(SupplierSeeder::class);
         $this->call(ShipmentsSeeder::class);
+        $this->call(KayuInventorySeeder::class);
     }
 }

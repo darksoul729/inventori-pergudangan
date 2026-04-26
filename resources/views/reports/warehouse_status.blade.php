@@ -13,7 +13,7 @@
             left: 0;
             right: 0;
             height: 45px;
-            border-bottom: 2.5px solid #1e293b;
+            border-bottom: 2.5px solid #28106F;
             display: table;
             width: 100%;
         }
@@ -22,7 +22,7 @@
             vertical-align: middle;
             font-size: 8.5pt;
             font-weight: bold;
-            color: #1e293b;
+            color: #28106F;
         }
         .header-right {
             display: table-cell;
@@ -61,13 +61,13 @@
         body {
             font-family: 'DejaVu Sans', Arial, sans-serif;
             font-size: 10pt;
-            color: #1e293b;
+            color: #28106F;
             line-height: 1.5;
         }
 
         /* ─── Letterhead ─── */
         .letterhead {
-            border-bottom: 3px double #1e293b;
+            border-bottom: 3px double #28106F;
             padding-bottom: 16px;
             margin-bottom: 20px;
         }
@@ -83,14 +83,14 @@
         .lh-logo-box {
             width: 54px;
             height: 54px;
-            background-color: #1e293b;
             border-radius: 8px;
             text-align: center;
-            line-height: 54px;
-            font-size: 22pt;
-            font-weight: 900;
-            color: #ffffff;
-            letter-spacing: -2px;
+            overflow: hidden;
+        }
+        .lh-logo-box img {
+            width: 54px;
+            height: 54px;
+            object-fit: contain;
         }
         .lh-text-col {
             display: table-cell;
@@ -100,7 +100,7 @@
         .lh-company {
             font-size: 16pt;
             font-weight: bold;
-            color: #0f172a;
+            color: #28106F;
             margin: 0;
             letter-spacing: 0.5px;
         }
@@ -129,9 +129,9 @@
 
         /* ─── Report Title Block ─── */
         .report-title-block {
-            background-color: #f8fafc;
+            background-color: #F8F7FF;
             border: 1px solid #e2e8f0;
-            border-left: 5px solid #1e293b;
+            border-left: 5px solid #28106F;
             padding: 12px 16px;
             margin-bottom: 12px;
         }
@@ -139,7 +139,7 @@
             margin: 0 0 4px;
             font-size: 14pt;
             font-weight: bold;
-            color: #0f172a;
+            color: #28106F;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
@@ -159,7 +159,7 @@
 
         /* ─── Section Title ─── */
         .section-title {
-            background-color: #1e293b;
+            background-color: #28106F;
             color: #ffffff;
             padding: 6px 12px;
             font-size: 10.5pt;
@@ -190,7 +190,7 @@
             vertical-align: top;
         }
         .kpi-cell.shaded {
-            background-color: #f8fafc;
+            background-color: #F8F7FF;
         }
         .kpi-label {
             font-size: 7.5pt;
@@ -204,7 +204,7 @@
         .kpi-value {
             font-size: 15pt;
             font-weight: bold;
-            color: #0f172a;
+            color: #28106F;
             line-height: 1.1;
         }
         .kpi-note {
@@ -229,7 +229,7 @@
             margin-top: 4px;
         }
         .progress-inner {
-            background-color: #1e293b;
+            background-color: #28106F;
             height: 8px;
         }
 
@@ -241,7 +241,7 @@
             font-size: 9pt;
         }
         thead tr {
-            background-color: #1e293b;
+            background-color: #28106F;
             color: #ffffff;
         }
         th {
@@ -250,7 +250,7 @@
             font-size: 8.5pt;
             font-weight: bold;
             letter-spacing: 0.3px;
-            border: 1px solid #1e293b;
+            border: 1px solid #28106F;
         }
         td {
             border: 1px solid #e2e8f0;
@@ -258,12 +258,12 @@
             font-size: 9pt;
         }
         tr.even td {
-            background-color: #f8fafc;
+            background-color: #F8F7FF;
         }
         td.center { text-align: center; }
         td.right  { text-align: right; }
         td.bold   { font-weight: bold; }
-        td.total  { font-weight: bold; background-color: #f1f5f9; }
+        td.total  { font-weight: bold; background-color: #EDE8FC; }
 
         /* ─── Status Badges ─── */
         .badge-in     { color: #16a34a; font-weight: bold; }
@@ -291,7 +291,7 @@
         }
         .signature-line {
             margin: 54px auto 6px;
-            border-top: 1px solid #0f172a;
+            border-top: 1px solid #28106F;
             width: 180px;
         }
         .sig-title {
@@ -323,7 +323,7 @@
 
 {{-- Fixed Header --}}
 <header>
-    <div class="header-left">SISTEM INFORMASI MANAJEMEN GUDANG — AETHER</div>
+    <div class="header-left">SISTEM INFORMASI MANAJEMEN GUDANG — PETAYU</div>
     <div class="header-right">No. Ref: LPG/{{ date('Ymd') }}/{{ str_pad(rand(1,999), 3, '0', STR_PAD_LEFT) }}</div>
 </header>
 
@@ -338,12 +338,12 @@
 <div class="letterhead">
     <div class="lh-inner">
         <div class="lh-logo-col">
-            <div class="lh-logo-box">A</div>
+            <div class="lh-logo-box"><img src="{{ public_path('images/logo 1.png') }}" alt="Logo"></div>
         </div>
         <div class="lh-text-col">
-            <p class="lh-company">PT. AETHER INVENTORI PERGUDANGAN</p>
+            <p class="lh-company">PT. PETAYU INVENTORI PERGUDANGAN</p>
             <p class="lh-sub">Jl. Kawasan Industri Strategis No. 12, Jakarta Utara, DKI Jakarta 14350</p>
-            <p class="lh-sub">Telp: (021) 1234-5678 &nbsp;|&nbsp; Email: admin@aether-logistik.id &nbsp;|&nbsp; www.aether-logistik.id</p>
+            <p class="lh-sub">Telp: (021) 1234-5678 &nbsp;|&nbsp; Email: admin@petayu.id &nbsp;|&nbsp; www.petayu.id</p>
         </div>
         <div class="lh-badge-col">
             <span class="confidential-badge">Rahasia</span>
@@ -596,7 +596,7 @@
 <div class="section-title">VI. Pengesahan Laporan</div>
 
 <p class="desc">
-    Laporan ini telah dibuat secara otomatis oleh Sistem Informasi Manajemen Gudang (SIMAG) — Aether,
+    Laporan ini telah dibuat secara otomatis oleh Sistem Informasi Manajemen Gudang (SIMAG) — PETAYU,
     dan disahkan oleh pihak yang bertanda tangan di bawah ini.
 </p>
 
@@ -616,7 +616,7 @@
 </div>
 
 <div class="end-line">
-    ─── AKHIR DOKUMEN ─── Dicetak oleh Sistem SIMAG Aether pada {{ $stats['generated_at'] }} WIB ───
+    ─── AKHIR DOKUMEN ─── Dicetak oleh Sistem PETAYU pada {{ $stats['generated_at'] }} WIB ───
 </div>
 
 </body>

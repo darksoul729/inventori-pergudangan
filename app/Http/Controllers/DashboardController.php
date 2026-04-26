@@ -10,6 +10,7 @@ use App\Models\StockAdjustment;
 use App\Models\StockMovement;
 use App\Models\StockOpname;
 use App\Models\StockOut;
+use App\Models\StockTransfer;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -29,8 +30,10 @@ class DashboardController extends Controller
         $canViewOperationalDocs = str_contains($roleName, 'manager')
             || str_contains($roleName, 'supervisor');
 
-        // 1. TOTAL INVENTORY
-        $totalInventory = (int) RackStock::sum('quantity');
+        $operationalWarehouse = \App\Models\Warehouse::orderBy('id')->firstOrFail();
+
+        // 1. TOTAL INVENTORY (operational warehouse stock, including unplaced)
+        $totalInventory = (int) \App\Models\ProductStock::where('warehouse_id', $operationalWarehouse->id)->sum('current_stock');
 
         // 2. OUTBOUND RATE (Average per hour for last 24h)
         $outboundLast24h = StockMovement::where('movement_type', 'out')
@@ -39,12 +42,16 @@ class DashboardController extends Controller
         $outboundRate = round($outboundLast24h / 24, 1);
 
         // 3. SYSTEM ALERTS
-        // Low stock count
+        // Low stock count (operational warehouse)
+        $warehouseId = $operationalWarehouse->id;
         $lowStockCount = DB::table('products')
-            ->leftJoin('rack_stocks', 'products.id', '=', 'rack_stocks.product_id')
+            ->leftJoin('product_stocks', function ($join) use ($warehouseId) {
+                $join->on('products.id', '=', 'product_stocks.product_id')
+                    ->where('product_stocks.warehouse_id', '=', $warehouseId);
+            })
             ->select('products.id')
             ->groupBy('products.id', 'products.minimum_stock')
-            ->havingRaw('SUM(COALESCE(rack_stocks.quantity, 0)) < products.minimum_stock')
+            ->havingRaw('COALESCE(SUM(product_stocks.current_stock), 0) < products.minimum_stock')
             ->get()
             ->count();
         
@@ -55,11 +62,12 @@ class DashboardController extends Controller
         
         $systemAlerts = $lowStockCount + $recentAuditCount;
 
-        // 4. ACTIVE NODES
-        $activeNodes = Rack::count();
+        // 4. ACTIVE NODES (operational warehouse)
+        $activeNodes = Rack::whereHas('zone', fn ($q) => $q->where('warehouse_id', $operationalWarehouse->id))->count();
 
-        // Rack Visualization Data
+        // Rack Visualization Data (operational warehouse only)
         $racks = Rack::with(['zone'])
+            ->whereHas('zone', fn ($q) => $q->where('warehouse_id', $operationalWarehouse->id))
             ->withSum('rackStocks as total_qty', 'quantity')
             ->get()
             ->map(fn($r) => [
@@ -98,12 +106,15 @@ class DashboardController extends Controller
             ];
         }
 
-        // Efficiency Score (Simulated based on rack occupancy)
-        $totalRacks = Rack::count();
-        $occupiedRacks = RackStock::distinct('rack_id')->count();
+        // Efficiency Score (rack occupancy vs capacity — operational warehouse only)
+        $totalRacks = Rack::whereHas('zone', fn ($q) => $q->where('warehouse_id', $operationalWarehouse->id))->count();
+        $occupiedRacks = RackStock::whereHas('rack.zone', fn ($q) => $q->where('warehouse_id', $operationalWarehouse->id))->distinct('rack_id')->count();
         $efficiencyScore = $totalRacks > 0 ? round(($occupiedRacks / $totalRacks) * 100, 1) : 0;
-        $rackCapacity = (int) Rack::sum('capacity');
-        $rackUtilization = $rackCapacity > 0 ? round(($totalInventory / $rackCapacity) * 100, 1) : 0;
+        $rackCapacity = (int) Rack::whereHas('zone', fn ($q) => $q->where('warehouse_id', $operationalWarehouse->id))->sum('capacity');
+        $rackOccupiedStock = (int) RackStock::whereHas('rack.zone', fn ($q) => $q->where('warehouse_id', $operationalWarehouse->id))->sum('quantity');
+        $rackUtilization = $rackCapacity > 0 ? round(($rackOccupiedStock / $rackCapacity) * 100, 1) : 0;
+        $warehouseUtilization = $rackCapacity > 0 ? round(($totalInventory / $rackCapacity) * 100, 1) : 0;
+        $unplacedStock = max(0, $totalInventory - $rackOccupiedStock);
         $todayInbound = (int) StockMovement::where('movement_type', 'in')
             ->whereDate('movement_date', $today)
             ->sum('quantity');
@@ -126,7 +137,10 @@ class DashboardController extends Controller
             'today_variance' => $todayVariance,
             'today_documents' => $todayDocuments,
             'rack_utilization' => $rackUtilization,
+            'warehouse_utilization' => $warehouseUtilization,
             'rack_capacity' => $rackCapacity,
+            'rack_occupied_stock' => $rackOccupiedStock,
+            'unplaced_stock' => $unplacedStock,
             'empty_racks' => max($totalRacks - $occupiedRacks, 0),
             'near_full_racks' => $racks->where('has_alert', true)->count(),
             'audit_queue' => StockMovement::whereIn('movement_type', ['adjustment', 'opname'])
@@ -134,6 +148,17 @@ class DashboardController extends Controller
                 ->count(),
             'can_view_wms_documents' => $canViewOperationalDocs,
             'latest_documents' => $this->latestWmsDocuments($canViewOperationalDocs),
+            'pending_opnames' => StockOpname::where('status', 'pending')->count(),
+            'pending_transfers' => StockTransfer::where('status', 'pending')->count(),
+            'expiring_soon' => RackStock::whereHas('rack.zone', fn ($q) => $q->where('warehouse_id', $operationalWarehouse->id))
+                ->whereNotNull('expired_date')
+                ->where('expired_date', '<=', $now->copy()->addDays(30)->toDateString())
+                ->where('expired_date', '>=', $today)
+                ->count(),
+            'expired_stock' => RackStock::whereHas('rack.zone', fn ($q) => $q->where('warehouse_id', $operationalWarehouse->id))
+                ->whereNotNull('expired_date')
+                ->where('expired_date', '<', $today)
+                ->count(),
         ];
 
         // Trends for KPI Cards (percentage change)

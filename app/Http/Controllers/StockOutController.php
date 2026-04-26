@@ -15,6 +15,7 @@ class StockOutController extends Controller
             'warehouse:id,name,location',
             'customer:id,code,name,contact_person,email,phone,address',
             'items.product:id,sku,name',
+            'items.rack:id,code,name',
             'creator:id,name,email',
         ]);
 
@@ -35,6 +36,9 @@ class StockOutController extends Controller
                     'product_id' => $item->product_id,
                     'sku' => $item->product?->sku,
                     'name' => $item->product?->name,
+                    'rack_code' => $item->rack?->code,
+                    'batch_number' => $item->batch_number,
+                    'expired_date' => $item->expired_date?->format('Y-m-d'),
                     'quantity' => $item->quantity,
                     'unit_price' => $item->unit_price,
                     'subtotal' => $item->subtotal,
@@ -63,6 +67,7 @@ class StockOutController extends Controller
             'warehouse:id,name,location',
             'customer:id,code,name,contact_person,email,phone,address',
             'items.product:id,sku,name',
+            'items.rack:id,code,name',
             'creator:id,name,email',
         ]);
 
@@ -89,6 +94,9 @@ class StockOutController extends Controller
                 ['key' => 'product', 'label' => 'Produk'],
                 ['key' => 'sku', 'label' => 'SKU'],
                 ['key' => 'quantity', 'label' => 'Jumlah', 'align' => 'right'],
+                ['key' => 'rack', 'label' => 'Rack'],
+                ['key' => 'batch', 'label' => 'Batch'],
+                ['key' => 'expired_date', 'label' => 'Exp Date'],
                 ['key' => 'unit_price', 'label' => 'Harga', 'align' => 'right'],
                 ['key' => 'subtotal', 'label' => 'Subtotal', 'align' => 'right'],
             ],
@@ -96,6 +104,9 @@ class StockOutController extends Controller
                 'product' => $item->product?->name,
                 'sku' => $item->product?->sku,
                 'quantity' => number_format((float) $item->quantity, 0, ',', '.'),
+                'rack' => $item->rack?->code ?: '-',
+                'batch' => $item->batch_number ?: '-',
+                'expired_date' => $item->expired_date?->format('Y-m-d') ?: '-',
                 'unit_price' => 'Rp '.number_format((float) $item->unit_price, 0, ',', '.'),
                 'subtotal' => 'Rp '.number_format((float) $item->subtotal, 0, ',', '.'),
             ])->all(),

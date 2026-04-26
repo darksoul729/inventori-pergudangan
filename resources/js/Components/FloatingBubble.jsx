@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import AetherAIModal from './AetherAIModal';
+import PetayuAIModal from './PetayuAIModal';
 import { Sparkles, X } from 'lucide-react';
 
 const BUBBLE_SIZE = 64;
@@ -7,7 +7,7 @@ const EDGE_PADDING = 20;
 const DRAG_THRESHOLD = 8;
 
 // ─── Matching External-styled AI SVG Icon ───────────────────────────────────
-const AetherIcon = ({ className = "w-6 h-6" }) => (
+const PetayuIcon = ({ className = "w-6 h-6" }) => (
     <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
         <path d="M12 2L14.85 9.15L22 12L14.85 14.85L12 22L9.15 14.85L2 12L9.15 9.15L12 2Z" fill="white" fillOpacity="0.9" />
         <circle cx="12" cy="12" r="3" fill="white" />
@@ -18,7 +18,7 @@ const AetherIcon = ({ className = "w-6 h-6" }) => (
 export default function FloatingBubble() {
     const [position, setPosition] = useState(() => {
         try {
-            const saved = localStorage.getItem('aether_bubble_pos');
+            const saved = localStorage.getItem('petayu_bubble_pos');
             return saved ? JSON.parse(saved) : { x: typeof window !== 'undefined' ? window.innerWidth - 90 : 0, y: typeof window !== 'undefined' ? window.innerHeight - 100 : 0 };
         } catch {
             return { x: window.innerWidth - 90, y: window.innerHeight - 100 };
@@ -125,7 +125,7 @@ export default function FloatingBubble() {
 
                 const finalPosition = { x: snapX, y: snapY };
                 setPosition(finalPosition);
-                localStorage.setItem('aether_bubble_pos', JSON.stringify(finalPosition));
+                localStorage.setItem('petayu_bubble_pos', JSON.stringify(finalPosition));
             }
         };
 
@@ -203,7 +203,7 @@ export default function FloatingBubble() {
                 onClick={handleClick}
                 role="button"
                 tabIndex={0}
-                aria-label="Buka Aether Intelligence"
+                aria-label="Buka PETAYU AI"
                 onKeyDown={(event) => {
                     if (event.key === 'Enter' || event.key === ' ') {
                         event.preventDefault();
@@ -224,13 +224,13 @@ export default function FloatingBubble() {
 
                     {/* Main Bubble */}
                     <div 
-                        className="sm:w-16 sm:h-16 w-14 h-14 rounded-full flex items-center justify-center shadow-[0_10px_40px_rgba(99,102,241,0.25)] relative overflow-hidden bg-white border border-slate-100"
+                        className="sm:w-16 sm:h-16 w-14 h-14 rounded-full flex items-center justify-center shadow-[0_10px_40px_rgba(89,50,201,0.25)] relative overflow-hidden bg-white border border-slate-100"
                         style={transformStyle}
                     >
                         {/* Gradient Layer */}
                         <div className="absolute inset-0 bg-gradient-to-br from-indigo-600 to-blue-700 opacity-90" />
 
-                        <AetherIcon 
+                        <PetayuIcon 
                             className="sm:w-8 sm:h-8 w-7 h-7 text-white relative z-10 drop-shadow-lg" 
                             style={innerTransformStyle}
                         />
@@ -250,13 +250,13 @@ export default function FloatingBubble() {
                     {/* Tooltip Note: Hides dynamically based on position so it doesn't overflow screen end */}
                     {!isDragging && (
                         <div className={`hidden sm:block absolute ${position.x > window.innerWidth / 2 ? 'right-full mr-4' : 'left-full ml-4'} top-1/2 -translate-y-1/2 bg-white/95 backdrop-blur-md shadow-[0_8px_30px_rgba(0,0,0,0.12)] text-slate-800 text-[11px] font-black uppercase tracking-[0.15em] px-4 py-2.5 rounded-2xl opacity-0 group-hover:opacity-100 transition-all duration-300 ${position.x > window.innerWidth / 2 ? 'translate-x-4 group-hover:translate-x-0' : '-translate-x-4 group-hover:translate-x-0'} pointer-events-none whitespace-nowrap border border-slate-100`}>
-                            <span className="text-indigo-600 mr-2">✦</span> Aether AI
+                            <span className="text-indigo-600 mr-2">✦</span> PETAYU AI
                         </div>
                     )}
                 </div>
             </div>
 
-            <AetherAIModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+            <PetayuAIModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
         </>
     );
 }

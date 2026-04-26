@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Head, usePage, router } from '@inertiajs/react';
 import DashboardLayout from '@/Layouts/DashboardLayout';
-import AetherAIModal from '@/Components/AetherAIModal';
+import PetayuAIModal from '@/Components/PetayuAIModal';
 import {
     X, Send, Plus, Trash2, MessageSquare, Sparkles,
     ChevronRight, Loader2, AlertCircle, Bot, User,
@@ -11,7 +11,7 @@ import {
 } from 'lucide-react';
 
 // ─── Custom External-styled AI SVG Icon ─────────────────────────────────────
-const AetherIcon = ({ className = "w-6 h-6" }) => (
+const PetayuIcon = ({ className = "w-6 h-6" }) => (
     <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
         <path d="M12 2L14.85 9.15L22 12L14.85 14.85L12 22L9.15 14.85L2 12L9.15 9.15L12 2Z" fill="currentColor" />
         <circle cx="12" cy="12" r="3" fill="white" />
@@ -23,7 +23,7 @@ const AetherIcon = ({ className = "w-6 h-6" }) => (
 function MarkdownContent({ content }) {
     const lines = stripStructuredMetadata(content).split('\n');
     return (
-        <div className="prose-aether space-y-4">
+        <div className="prose-petayu space-y-4">
             {lines.map((line, i) => {
                 const cleanLine = line.trim();
                 if (cleanLine.startsWith('# ')) return <h1 key={i} className="text-2xl font-black text-slate-900 mb-4">{cleanLine.slice(2)}</h1>;
@@ -59,11 +59,11 @@ function MarkdownContent({ content }) {
 }
 
 function stripStructuredMetadata(text = '') {
-    return text.replace(/\n*\[\[AETHER_FORECAST:[\s\S]*?\]\]\s*/g, '').trim();
+    return text.replace(/\n*\[\[PETAYU_FORECAST:[\s\S]*?\]\]\s*/g, '').trim();
 }
 
 function parseForecastMetadata(content = '') {
-    const match = content.match(/\[\[AETHER_FORECAST:([\s\S]*?)\]\]/);
+    const match = content.match(/\[\[PETAYU_FORECAST:([\s\S]*?)\]\]/);
     if (!match) return null;
     try { return JSON.parse(match[1]); } catch { return null; }
 }
@@ -182,7 +182,7 @@ function ForecastSummary({ data }) {
     );
 }
 
-export default function AetherAI() {
+export default function PetayuAI() {
     const { props } = usePage();
     const [conversations, setConversations] = useState(props.conversations || []);
     const [searchQuery, setSearchQuery] = useState('');
@@ -257,7 +257,7 @@ export default function AetherAI() {
 
     const loadConversations = async () => {
         try {
-            const res = await fetch('/aether/conversations', { headers: { 'Accept': 'application/json' } });
+            const res = await fetch('/petayu-ai/conversations', { headers: { 'Accept': 'application/json' } });
             if (res.ok) setConversations(await res.json());
         } catch { }
     };
@@ -267,7 +267,7 @@ export default function AetherAI() {
         setActiveId(id);
         setError(null);
         try {
-            const res = await fetch(`/aether/conversations/${id}/messages`, { headers: { 'Accept': 'application/json' } });
+            const res = await fetch(`/petayu-ai/conversations/${id}/messages`, { headers: { 'Accept': 'application/json' } });
             if (!res.ok) throw new Error('Gagal memuat riwayat');
             setMessages(await res.json());
         } catch (e) { setError(e.message); }
@@ -285,7 +285,7 @@ export default function AetherAI() {
         setMessages(prev => [...prev, { id: tempId, role: 'user', content: text }]);
 
         try {
-            const res = await fetch('/aether/chat', {
+            const res = await fetch('/petayu-ai/chat', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -324,7 +324,7 @@ export default function AetherAI() {
 
     const deleteChat = async (id) => {
         try {
-            await fetch(`/aether/conversations/${id}`, {
+            await fetch(`/petayu-ai/conversations/${id}`, {
                 method: 'DELETE',
                 headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content }
             });
@@ -338,7 +338,7 @@ export default function AetherAI() {
             fullPage={true}
             contentClassName="max-w-none w-full h-full"
         >
-            <Head title="Aether AI Assistant" />
+            <Head title="PETAYU AI Assistant" />
 
             <div className="flex h-full min-h-0 w-full box-border bg-white overflow-hidden relative pt-24">
                 
@@ -379,7 +379,7 @@ export default function AetherAI() {
                             <div 
                                 key={conv.id}
                                 onClick={() => loadMessages(conv.id)}
-                                className={`group flex items-center gap-4 px-5 py-4 rounded-[22px] cursor-pointer transition-all duration-300 ${activeId === conv.id ? 'bg-white shadow-[0_8px_30px_rgba(79,70,229,0.08)] border border-indigo-50 border-1 scale-[1.02]' : 'hover:bg-white/60 hover:shadow-sm'}`}
+                                className={`group flex items-center gap-4 px-5 py-4 rounded-[22px] cursor-pointer transition-all duration-300 ${activeId === conv.id ? 'bg-white shadow-[0_8px_30px_rgba(89,50,201,0.08)] border border-indigo-50 border-1 scale-[1.02]' : 'hover:bg-white/60 hover:shadow-sm'}`}
                             >
                                 <div className={`shrink-0 w-10 h-10 rounded-2xl flex items-center justify-center transition-colors ${activeId === conv.id ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-400 group-hover:bg-indigo-50 group-hover:text-indigo-400'}`}>
                                     <MessageSquare className="w-5 h-5" />
@@ -425,10 +425,10 @@ export default function AetherAI() {
                     <div className="h-[72px] border-b border-slate-50 flex items-center justify-between px-8 shrink-0 bg-white/80 backdrop-blur-md z-10">
                         <div className="flex items-center gap-5">
                             <div className="w-12 h-12 rounded-[20px] bg-gradient-to-br from-indigo-600 to-blue-700 flex items-center justify-center shadow-lg shadow-indigo-100">
-                                <AetherIcon className="text-white w-7 h-7" />
+                                <PetayuIcon className="text-white w-7 h-7" />
                             </div>
                             <div>
-                                <h3 className="text-lg font-black text-slate-900 tracking-tight">Aether Knowledge Interface</h3>
+                                <h3 className="text-lg font-black text-slate-900 tracking-tight">PETAYU AI Interface</h3>
                                 <div className="flex items-center gap-2 mt-0.5">
                                     <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                                     <span className="text-[11px] font-black uppercase tracking-[0.2em] text-emerald-600">Model: Kinetic V1.0-IND-GROQ</span>
@@ -453,7 +453,7 @@ export default function AetherAI() {
                                 type="button"
                                 onClick={() => setIsCallModalOpen(true)}
                                 className="flex h-11 items-center gap-2 rounded-[18px] bg-indigo-600 px-5 text-xs font-black uppercase tracking-widest text-white shadow-lg shadow-indigo-100 transition-all hover:bg-indigo-700"
-                                title="Mulai panggilan suara Aether"
+                                title="Mulai panggilan suara PETAYU AI"
                             >
                                 <Phone className="h-4 w-4" />
                                 Call
@@ -468,7 +468,7 @@ export default function AetherAI() {
                                 <div className="w-24 h-24 rounded-[32px] bg-indigo-50 flex items-center justify-center mb-8 rotate-12">
                                     <Sparkles className="w-12 h-12 text-indigo-600" />
                                 </div>
-                                <h1 className="text-3xl font-black text-slate-900 mb-4 uppercase tracking-tighter">Halo, Saya Aether.</h1>
+                                <h1 className="text-3xl font-black text-slate-900 mb-4 uppercase tracking-tighter">Halo, Saya PETAYU AI.</h1>
                                 <p className="text-slate-400 font-semibold leading-relaxed text-lg">Asisten pintar yang siap membantu pengelolaan gudang secara real-time. Tanyakan apa saja tentang stok, mutasi, atau efisiensi gudang hari ini.</p>
                                 
                                 <div className="grid grid-cols-2 gap-4 mt-12 w-full">
@@ -500,7 +500,7 @@ export default function AetherAI() {
                                     <div className={`p-8 rounded-[32px] ${m.role === 'user' ? 'bg-[#f4f7ff] text-slate-800 border border-indigo-100/50 rounded-tr-none' : 'bg-white border border-slate-100 shadow-sm rounded-tl-none'}`}>
                                         <div className="mb-2 flex items-center gap-3">
                                             <span className={`text-[10px] font-black uppercase tracking-[0.2em] ${m.role === 'user' ? 'text-slate-400' : 'text-indigo-500'}`}>
-                                                {m.role === 'user' ? 'Pengguna Operasional' : 'Aether Intelligence'}
+                                                {m.role === 'user' ? 'Pengguna Operasional' : 'PETAYU AI'}
                                             </span>
                                             {m.role !== 'user' && (
                                                 <div className="px-2 py-0.5 rounded-lg bg-indigo-50 text-[9px] font-black text-indigo-600 uppercase tracking-widest border border-indigo-100">Certified</div>
@@ -554,7 +554,7 @@ export default function AetherAI() {
                                     value={inputText}
                                     onChange={(e) => setInputText(e.target.value)}
                                     onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
-                                    placeholder="Tanyakan analisis gudang ke Aether..."
+                                    placeholder="Tanyakan analisis gudang ke PETAYU AI..."
                                     className="flex-1 bg-transparent border-none focus:ring-0 text-slate-900 placeholder-slate-300 font-bold py-4 text-base"
                                 />
                                 
@@ -578,7 +578,7 @@ export default function AetherAI() {
                     </div>
                 </div>
             </div>
-            <AetherAIModal
+            <PetayuAIModal
                 isOpen={isCallModalOpen}
                 onClose={() => setIsCallModalOpen(false)}
                 startInCall={true}

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\GoodsReceipt;
+use App\Models\Shipment;
 use App\Models\StockAdjustment;
 use App\Models\StockOpname;
 use App\Models\StockOut;
@@ -29,6 +30,7 @@ class WmsDocumentController extends Controller
                 'stock_transfer' => $documents->where('type', 'stock_transfer')->count(),
                 'stock_opname' => $documents->where('type', 'stock_opname')->count(),
                 'stock_adjustment' => $documents->where('type', 'stock_adjustment')->count(),
+                'shipment' => $documents->where('type', 'shipment')->count(),
             ],
         ]);
     }
@@ -109,6 +111,7 @@ class WmsDocumentController extends Controller
             ->merge($this->stockTransfers())
             ->merge($this->stockOpnames())
             ->merge($this->stockAdjustments())
+            ->merge($this->shipments())
             ->sortByDesc('sort_date')
             ->values()
             ->take(120)
@@ -124,7 +127,12 @@ class WmsDocumentController extends Controller
 
         return $documents
             ->filter(function (array $document) use ($type, $search, $dateFrom, $dateTo) {
-                $matchesType = $type === 'all' || $document['type'] === $type;
+                $matchesType = match ($type) {
+                    'all' => true,
+                    'manual_rack_stock' => ($document['type'] ?? null) === 'stock_adjustment'
+                        && ($document['adjustment_mode'] ?? null) === 'manual_rack_stock',
+                    default => ($document['type'] ?? null) === $type,
+                };
                 $matchesDateFrom = ! $dateFrom || ($document['date'] ?? '') >= $dateFrom;
                 $matchesDateTo = ! $dateTo || ($document['date'] ?? '') <= $dateTo;
                 $haystack = strtolower(implode(' ', array_filter([
@@ -276,22 +284,66 @@ class WmsDocumentController extends Controller
                 'id' => 'stock_adjustment-'.$adjustment->id,
                 'type' => 'stock_adjustment',
                 'type_label' => 'Koreksi Stok',
+                'adjustment_mode' => $adjustment->reason === 'manual_rack_stock'
+                    ? 'manual_rack_stock'
+                    : ($adjustment->reason === 'stock_opname' ? 'stock_opname' : 'other'),
                 'number' => $adjustment->adjustment_number,
                 'date' => optional($adjustment->adjustment_date)->format('Y-m-d') ?? optional($adjustment->created_at)->format('Y-m-d'),
                 'date_label' => optional($adjustment->adjustment_date)->format('d M Y') ?? optional($adjustment->created_at)->format('d M Y'),
                 'sort_date' => $adjustment->adjustment_date ?? $adjustment->created_at,
-                'status' => $this->statusLabel($adjustment->reason ?? 'adjustment'),
+                'status' => $this->statusLabel($adjustment->status ?? 'completed'),
                 'party' => $hasStockOpnameColumn && $adjustment->stockOpname?->opname_number
                     ? 'Dari '.$adjustment->stockOpname->opname_number
+                    : ($adjustment->reason === 'manual_rack_stock' ? 'Koreksi manual rack stock' : 'Koreksi stok'),
+                'summary' => $adjustment->reason === 'manual_rack_stock'
+                    ? 'Permintaan koreksi rack stock manual'
                     : 'Koreksi stok',
                 'warehouse' => $adjustment->warehouse?->name ?? 'Gudang utama',
                 'operator' => $adjustment->creator?->name ?? 'Sistem',
                 'item_count' => $adjustment->items->count(),
                 'total_quantity' => (float) $adjustment->items->sum('quantity'),
-                'summary' => 'Koreksi stok otomatis atau manual',
                 'url' => route('stock-adjustments.show', $adjustment),
                 'pdf_url' => route('stock-adjustments.pdf', $adjustment),
             ]);
+    }
+
+    private function shipments(): Collection
+    {
+        return Shipment::query()
+            ->with(['driver.user', 'items'])
+            ->latest('created_at')
+            ->latest('id')
+            ->limit(40)
+            ->get()
+            ->map(fn (Shipment $shipment) => [
+                'id' => 'shipment-'.$shipment->id,
+                'type' => 'shipment',
+                'type_label' => 'Pengiriman',
+                'number' => $shipment->shipment_id,
+                'date' => optional($shipment->created_at)->format('Y-m-d'),
+                'date_label' => optional($shipment->created_at)->format('d M Y'),
+                'sort_date' => $shipment->created_at,
+                'status' => $this->shipmentStatusLabel($shipment->status),
+                'party' => $shipment->driver?->user?->name ?? 'Belum ada driver',
+                'warehouse' => $shipment->origin_name ?? 'Gudang Utama Samarinda',
+                'operator' => $shipment->driver?->user?->name ?? 'Sistem',
+                'item_count' => $shipment->items->count(),
+                'total_quantity' => (float) $shipment->items->sum('quantity'),
+                'summary' => $shipment->origin_name.' → '.$shipment->destination_name.' ('.ucfirst($shipment->load_type).')',
+                'url' => route('shipments.show', $shipment),
+                'pdf_url' => null,
+            ]);
+    }
+
+    private function shipmentStatusLabel(?string $status): string
+    {
+        return match (strtolower((string) $status)) {
+            'in-transit' => 'Dalam Perjalanan',
+            'on-time' => 'Tepat Waktu',
+            'delayed' => 'Terlambat',
+            'delivered' => 'Sampai Tujuan',
+            default => trim((string) $status) !== '' ? ucfirst((string) $status) : 'Menunggu',
+        };
     }
 
     private function statusLabel(?string $status): string
@@ -315,6 +367,7 @@ class WmsDocumentController extends Controller
     {
         return match (strtolower((string) $purpose)) {
             'delivery' => 'Pengiriman barang',
+            'shipment' => 'Pengiriman shipment',
             'sales', 'sale' => 'Penjualan',
             'return' => 'Retur',
             'damage', 'damaged' => 'Barang rusak',

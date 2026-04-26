@@ -17,6 +17,7 @@ use App\Models\Warehouse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -136,8 +137,14 @@ class InventoryController extends Controller
             ->sum('capacity');
         $occupiedRackStock = (int) RackStock::whereHas('rack.zone', fn($query) => $query->where('warehouse_id', $operationalWarehouse->id))
             ->sum('quantity');
+        $totalWarehouseStock = (int) ProductStock::where('warehouse_id', $operationalWarehouse->id)
+            ->sum('current_stock');
+        $unplacedStock = max(0, $totalWarehouseStock - $occupiedRackStock);
         $storageEfficiency = $totalRackCapacity > 0
             ? min(round(($occupiedRackStock / $totalRackCapacity) * 100, 1), 100)
+            : 0;
+        $warehouseUtilization = $totalRackCapacity > 0
+            ? round(($totalWarehouseStock / $totalRackCapacity) * 100, 1)
             : 0;
 
         $stats = [
@@ -156,8 +163,11 @@ class InventoryController extends Controller
                 ) !== 'Healthy')
                 ->count(),
             'storage_efficiency' => $storageEfficiency,
+            'warehouse_utilization' => $warehouseUtilization,
             'occupied_storage' => $occupiedRackStock,
             'total_storage_capacity' => $totalRackCapacity,
+            'total_warehouse_stock' => $totalWarehouseStock,
+            'unplaced_stock' => $unplacedStock,
         ];
 
         return Inertia::render('Inventory', [
@@ -218,6 +228,12 @@ class InventoryController extends Controller
                 'selling_price' => $product->selling_price,
                 'minimum_stock' => $product->minimum_stock,
                 'description' => $product->description,
+                'volume_entry_mode' => $product->volume_entry_mode ?? 'none',
+                'dimension_unit' => $product->dimension_unit,
+                'dimension_length' => $product->dimension_length,
+                'dimension_width' => $product->dimension_width,
+                'dimension_height' => $product->dimension_height,
+                'volume_m3_per_unit' => $product->volume_m3_per_unit,
                 'image_url' => $product->image ? Storage::url($product->image) : null,
             ],
             'isEdit' => true,
@@ -235,34 +251,11 @@ class InventoryController extends Controller
 
     public function outbound(): Response
     {
-        $operationalWarehouse = Warehouse::orderBy('id')->firstOrFail();
-
-        $products = Product::whereHas('productStocks', function ($q) use ($operationalWarehouse) {
-            $q->where('warehouse_id', $operationalWarehouse->id)->where('current_stock', '>', 0);
-        })
-            ->with(['productStocks' => fn($q) => $q->where('warehouse_id', $operationalWarehouse->id)])
-            ->get(['id', 'sku', 'name', 'minimum_stock'])
-            ->map(function ($product) {
-                return [
-                    'id' => $product->id,
-                    'sku' => $product->sku,
-                    'name' => $product->name,
-                    'minimum_stock' => $product->minimum_stock,
-                    'current_stock' => $product->productStocks->sum('current_stock')
-                ];
-            });
-
-        return Inertia::render('Inventory/Outbound', [
-            'products' => $products,
-            'warehouses' => [$operationalWarehouse],
-            'operationalWarehouse' => [
-                'id' => $operationalWarehouse->id,
-                'name' => $operationalWarehouse->name,
-            ],
-        ]);
+        return Inertia::render('Inventory/Outbound');
     }
     public function store(Request $request): RedirectResponse
     {
+        Gate::authorize('create-product');
         $operationalWarehouse = Warehouse::orderBy('id')->firstOrFail();
 
         $validated = $request->validate([
@@ -275,12 +268,19 @@ class InventoryController extends Controller
             'selling_price' => 'nullable|numeric',
             'minimum_stock' => 'required|integer|min:0',
             'description' => 'nullable|string',
+            'volume_entry_mode' => 'nullable|in:none,auto,manual',
+            'dimension_unit' => 'nullable|in:mm,cm,m',
+            'dimension_length' => 'nullable|numeric|min:0',
+            'dimension_width' => 'nullable|numeric|min:0',
+            'dimension_height' => 'nullable|numeric|min:0',
+            'volume_m3_per_unit' => 'nullable|numeric|min:0',
             // Initial stock fields - only require locations if stock is > 0
             'initial_stock' => 'nullable|integer|min:0',
             'warehouse_id' => 'nullable|exists:warehouses,id',
             'rack_id' => 'required_unless:initial_stock,0|exists:racks,id',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
+        $volumePayload = $this->resolveVolumePayload($validated);
 
         $validated['warehouse_id'] = $validated['warehouse_id'] ?? $operationalWarehouse->id;
 
@@ -300,6 +300,7 @@ class InventoryController extends Controller
                 'selling_price' => $validated['selling_price'] ?? 0,
                 'minimum_stock' => $validated['minimum_stock'],
                 'description' => $validated['description'],
+                ...$volumePayload,
                 'image' => $imagePath,
                 'is_active' => true,
             ]);
@@ -343,6 +344,7 @@ class InventoryController extends Controller
 
     public function update(Request $request, Product $product): RedirectResponse
     {
+        Gate::authorize('update-product');
         $validated = $request->validate([
             'sku' => 'required|string|unique:products,sku,' . $product->id,
             'name' => 'required|string',
@@ -353,8 +355,15 @@ class InventoryController extends Controller
             'selling_price' => 'nullable|numeric',
             'minimum_stock' => 'required|integer|min:0',
             'description' => 'nullable|string',
+            'volume_entry_mode' => 'nullable|in:none,auto,manual',
+            'dimension_unit' => 'nullable|in:mm,cm,m',
+            'dimension_length' => 'nullable|numeric|min:0',
+            'dimension_width' => 'nullable|numeric|min:0',
+            'dimension_height' => 'nullable|numeric|min:0',
+            'volume_m3_per_unit' => 'nullable|numeric|min:0',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
+        $volumePayload = $this->resolveVolumePayload($validated);
 
         if ($request->hasFile('image')) {
             if ($product->image) {
@@ -376,6 +385,7 @@ class InventoryController extends Controller
             'selling_price' => $validated['selling_price'] ?? 0,
             'minimum_stock' => $validated['minimum_stock'],
             'description' => $validated['description'] ?? null,
+            ...$volumePayload,
             ...array_intersect_key($validated, ['image' => true]),
         ]);
 
@@ -386,6 +396,7 @@ class InventoryController extends Controller
 
     public function recordOutbound(Request $request): RedirectResponse
     {
+        Gate::authorize('create-stockOut');
         $operationalWarehouse = Warehouse::orderBy('id')->firstOrFail();
 
         $validated = $request->validate([
@@ -410,6 +421,13 @@ class InventoryController extends Controller
                 ]);
             }
 
+            $availableStock = (int) $productStock->current_stock - (int) ($productStock->reserved_stock ?? 0);
+            if ($availableStock < $validated['quantity']) {
+                throw ValidationException::withMessages([
+                    'quantity' => "Insufficient available stock (reserved: {$productStock->reserved_stock}). Available: {$availableStock} units."
+                ]);
+            }
+
             $customer = $this->resolveOutboundCustomer($validated['destination'] ?? null);
             $stockOut = StockOut::create([
                 'stock_out_number' => 'SO-' . now()->format('Ymd-His') . '-' . strtoupper(Str::random(4)),
@@ -422,37 +440,56 @@ class InventoryController extends Controller
                 'created_by' => $request->user()->id,
             ]);
 
-            StockOutItem::create([
-                'stock_out_id' => $stockOut->id,
-                'product_id' => $product->id,
-                'quantity' => $validated['quantity'],
-                'unit_price' => $product->selling_price ?? 0,
-                'subtotal' => $validated['quantity'] * (float) ($product->selling_price ?? 0),
-            ]);
-
-            // Find racks with stock for this product in this warehouse
-            $racks = Rack::whereHas('zone', function ($q) use ($validated) {
-                $q->where('warehouse_id', $validated['warehouse_id']);
-            })->whereHas('rackStocks', function ($q) use ($validated) {
-                $q->where('product_id', $validated['product_id'])->where('quantity', '>', 0);
-            })->with([
-                        'rackStocks' => function ($q) use ($validated) {
-                            $q->where('product_id', $validated['product_id']);
-                        }
-                    ])->get();
+            // Find rack stocks for this product (FEFO: prioritize items expiring soonest)
+            $rackStocks = RackStock::where('product_id', $validated['product_id'])
+                ->whereHas('rack.zone', fn ($q) => $q->where('warehouse_id', $validated['warehouse_id']))
+                ->where('quantity', '>', 0)
+                ->orderByRaw('CASE WHEN expired_date IS NULL THEN 1 ELSE 0 END')
+                ->orderBy('expired_date', 'asc')
+                ->get();
 
             $remainingToReduce = $validated['quantity'];
             $stockBefore = $productStock->current_stock;
+            $pickedDetails = [];
 
-            foreach ($racks as $rack) {
+            foreach ($rackStocks as $rackStock) {
                 if ($remainingToReduce <= 0)
                     break;
 
-                $rackStock = $rack->rackStocks->first();
-                $reduction = min($rackStock->quantity, $remainingToReduce);
+                $available = max(0, (int) $rackStock->quantity - (int) ($rackStock->reserved_quantity ?? 0));
+                $reduction = min($available, $remainingToReduce);
+
+                if ($reduction <= 0)
+                    continue;
 
                 $rackStock->decrement('quantity', $reduction);
+                $rackStock->forceFill(['last_updated_at' => now()])->save();
                 $remainingToReduce -= $reduction;
+                $pickedDetails[] = [
+                    'rack_id' => $rackStock->rack_id,
+                    'batch_number' => $rackStock->batch_number,
+                    'expired_date' => $rackStock->expired_date,
+                    'quantity' => $reduction,
+                ];
+            }
+
+            if ($remainingToReduce > 0) {
+                throw ValidationException::withMessages([
+                    'quantity' => "Unable to fulfill outbound — part of the stock is reserved for shipment. Unfulfilled: {$remainingToReduce} units."
+                ]);
+            }
+
+            foreach ($pickedDetails as $picked) {
+                StockOutItem::create([
+                    'stock_out_id' => $stockOut->id,
+                    'product_id' => $product->id,
+                    'rack_id' => $picked['rack_id'],
+                    'batch_number' => $picked['batch_number'],
+                    'expired_date' => $picked['expired_date'],
+                    'quantity' => $picked['quantity'],
+                    'unit_price' => $product->selling_price ?? 0,
+                    'subtotal' => $picked['quantity'] * (float) ($product->selling_price ?? 0),
+                ]);
             }
 
             // 2. Sync ProductStock (Warehouse Summary)
@@ -490,6 +527,75 @@ class InventoryController extends Controller
                 'address' => $name !== '' ? $name : null,
             ]
         );
+    }
+
+    private function resolveVolumePayload(array $validated): array
+    {
+        $mode = $validated['volume_entry_mode'] ?? 'none';
+
+        if ($mode === 'none') {
+            return [
+                'volume_entry_mode' => 'none',
+                'dimension_unit' => null,
+                'dimension_length' => null,
+                'dimension_width' => null,
+                'dimension_height' => null,
+                'volume_m3_per_unit' => null,
+            ];
+        }
+
+        if ($mode === 'manual') {
+            $volume = isset($validated['volume_m3_per_unit']) ? (float) $validated['volume_m3_per_unit'] : 0.0;
+
+            if ($volume <= 0) {
+                throw ValidationException::withMessages([
+                    'volume_m3_per_unit' => 'Volume manual harus lebih besar dari 0.',
+                ]);
+            }
+
+            return [
+                'volume_entry_mode' => 'manual',
+                'dimension_unit' => null,
+                'dimension_length' => null,
+                'dimension_width' => null,
+                'dimension_height' => null,
+                'volume_m3_per_unit' => round($volume, 6),
+            ];
+        }
+
+        $unit = $validated['dimension_unit'] ?? null;
+        $length = isset($validated['dimension_length']) ? (float) $validated['dimension_length'] : 0.0;
+        $width = isset($validated['dimension_width']) ? (float) $validated['dimension_width'] : 0.0;
+        $height = isset($validated['dimension_height']) ? (float) $validated['dimension_height'] : 0.0;
+
+        if (!$unit || $length <= 0 || $width <= 0 || $height <= 0) {
+            throw ValidationException::withMessages([
+                'dimension_length' => 'Mode otomatis butuh panjang, lebar, tinggi, dan satuan dimensi yang valid.',
+            ]);
+        }
+
+        $divisor = match ($unit) {
+            'mm' => 1_000_000_000,
+            'cm' => 1_000_000,
+            default => 1,
+        };
+
+        $volume = ($length * $width * $height) / $divisor;
+
+        if ($volume <= 0) {
+            throw ValidationException::withMessages([
+                'dimension_length' => 'Volume hasil perhitungan harus lebih besar dari 0.',
+            ]);
+        }
+
+        return [
+            'volume_entry_mode' => 'auto',
+            'dimension_unit' => $unit,
+            'dimension_length' => round($length, 3),
+            'dimension_width' => round($width, 3),
+            'dimension_height' => round($height, 3),
+            'volume_m3_per_unit' => round($volume, 6),
+        ];
     }
 
     private function getStockStatus(int $current, int $min, ?int $maxStock = null): string
@@ -554,6 +660,8 @@ class InventoryController extends Controller
                 'warehouse_name' => $rs->rack->zone->warehouse->name,
                 'quantity' => $rs->quantity,
                 'capacity' => $rs->rack->capacity,
+                'batch_number' => $rs->batch_number,
+                'expired_date' => $rs->expired_date,
             ];
         });
 
@@ -603,6 +711,12 @@ class InventoryController extends Controller
                 'description' => $product->description,
                 'purchase_price' => $product->purchase_price,
                 'selling_price' => $product->selling_price,
+                'volume_entry_mode' => $product->volume_entry_mode,
+                'dimension_unit' => $product->dimension_unit,
+                'dimension_length' => $product->dimension_length,
+                'dimension_width' => $product->dimension_width,
+                'dimension_height' => $product->dimension_height,
+                'volume_m3_per_unit' => $product->volume_m3_per_unit,
                 'image_url' => $product->image ? Storage::url($product->image) : null,
             ],
             'stats' => $stats,

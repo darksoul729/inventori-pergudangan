@@ -133,7 +133,7 @@ export default function UpdatePasswordForm({ className = '' }) {
                 <div className="flex items-center gap-4">
                     <PrimaryButton
                         disabled={processing}
-                        className="rounded-[10px] bg-[#3632c0] px-5 py-3 text-xs font-black uppercase tracking-[0.14em] hover:bg-[#2f2aa8] focus:bg-[#2f2aa8]"
+                        className="rounded-[10px] bg-[#28106F] px-5 py-3 text-xs font-black uppercase tracking-[0.14em] hover:bg-[#2f2aa8] focus:bg-[#2f2aa8]"
                     >
                         Perbarui Kata Sandi
                     </PrimaryButton>

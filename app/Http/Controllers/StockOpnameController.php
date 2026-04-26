@@ -17,6 +17,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
@@ -64,6 +65,8 @@ class StockOpnameController extends Controller
                 'id' => $opname->id,
                 'number' => $opname->opname_number,
                 'date' => $opname->opname_date?->format('d M Y'),
+                'status' => $opname->status ?? 'completed',
+                'created_by' => $opname->created_by,
                 'operator' => $opname->creator?->name ?? 'System',
                 'notes' => $opname->notes,
                 'items_count' => $opname->items->count(),
@@ -79,12 +82,15 @@ class StockOpnameController extends Controller
             ],
             'products' => $products,
             'recentOpnames' => $recentOpnames,
+            'can_create' => Gate::check('create-stockOpname'),
+            'can_approve' => Gate::check('approve-stockOpname'),
             'status' => session('status'),
         ]);
     }
 
     public function store(Request $request): RedirectResponse
     {
+        Gate::authorize('create-stockOpname');
         $warehouse = Warehouse::orderBy('id')->firstOrFail();
 
         $data = $request->validate([
@@ -95,17 +101,22 @@ class StockOpnameController extends Controller
             'items.*.note' => ['nullable', 'string', 'max:255'],
         ]);
 
-        DB::transaction(function () use ($request, $warehouse, $data) {
+        $isManager = in_array(true, [
+            str_contains(strtolower($request->user()?->role?->name ?? ''), 'manager'),
+            str_contains(strtolower($request->user()?->role?->name ?? ''), 'admin gudang'),
+            str_contains(strtolower($request->user()?->role?->name ?? ''), 'manajer'),
+        ]);
+
+        DB::transaction(function () use ($request, $warehouse, $data, $isManager) {
             $opname = StockOpname::create([
                 'opname_number' => 'OPN-' . now()->format('Ymd-His') . '-' . strtoupper(Str::random(4)),
                 'warehouse_id' => $warehouse->id,
                 'opname_date' => now()->toDateString(),
+                'status' => $isManager ? 'completed' : 'pending',
                 'notes' => $data['notes'] ?? null,
                 'created_by' => $request->user()->id,
-                'approved_by' => $request->user()->id,
+                'approved_by' => $isManager ? $request->user()->id : null,
             ]);
-
-            $adjustment = null;
 
             foreach ($data['items'] as $itemData) {
                 $productId = (int) $itemData['product_id'];
@@ -123,60 +134,64 @@ class StockOpnameController extends Controller
                     'difference' => $difference,
                     'note' => $itemData['note'] ?? null,
                 ]);
+            }
 
-                if ($difference === 0) {
-                    continue;
-                }
-
-                if (! $adjustment) {
-                    $adjustmentData = [
-                        'adjustment_number' => 'ADJ-' . now()->format('Ymd-His') . '-' . strtoupper(Str::random(4)),
-                        'warehouse_id' => $warehouse->id,
-                        'adjustment_date' => now()->toDateString(),
-                        'reason' => 'stock_opname',
-                        'notes' => 'Auto adjustment from '.$opname->opname_number,
-                        'created_by' => $request->user()->id,
-                    ];
-
-                    if (Schema::hasColumn('stock_adjustments', 'stock_opname_id')) {
-                        $adjustmentData['stock_opname_id'] = $opname->id;
-                    }
-
-                    $adjustment = StockAdjustment::create($adjustmentData);
-                }
-
-                StockAdjustmentItem::create([
-                    'stock_adjustment_id' => $adjustment->id,
-                    'product_id' => $productId,
-                    'adjustment_type' => $difference > 0 ? 'in' : 'out',
-                    'quantity' => abs($difference),
-                    'note' => $itemData['note'] ?? 'Adjustment from stock opname',
-                ]);
-
-                if ($difference > 0) {
-                    $this->increasePhysicalStock($warehouse->id, $productId, $difference);
-                } else {
-                    $this->decreasePhysicalStock($warehouse->id, $productId, abs($difference));
-                }
-
-                $this->syncProductStock($warehouse->id, $productId);
-
-                $this->recordMovement(
-                    request: $request,
-                    productId: $productId,
-                    warehouseId: $warehouse->id,
-                    type: 'adjustment',
-                    referenceType: 'stock_adjustment',
-                    referenceId: $adjustment->id,
-                    quantity: abs($difference),
-                    stockBefore: $systemStock,
-                    stockAfter: $physicalStock,
-                    notes: 'Stock opname '.$opname->opname_number.' variance '.($difference > 0 ? '+' : '').$difference,
-                );
+            // Auto-apply adjustments for manager-created opnames
+            if ($isManager) {
+                $this->applyOpnameAdjustments($opname, $warehouse, $request);
             }
         });
 
-        return redirect()->route('stock-opname.index')->with('status', 'Stock opname saved and adjustments applied.');
+        $statusMsg = $isManager ? 'Stock opname disimpan dan adjustment diterapkan.' : 'Stock opname disimpan. Menunggu persetujuan supervisor/manager.';
+        return redirect()->route('stock-opname.index')->with('status', $statusMsg);
+    }
+
+    public function approve(Request $request, StockOpname $stockOpname): RedirectResponse
+    {
+        Gate::authorize('approve-stockOpname');
+
+        $roleName = strtolower((string) ($request->user()?->role?->name ?? ''));
+        $isManager = str_contains($roleName, 'manager') || str_contains($roleName, 'manajer') || str_contains($roleName, 'admin gudang');
+
+        if (! $isManager && $stockOpname->created_by === $request->user()->id) {
+            throw ValidationException::withMessages([
+                'status' => 'Anda tidak dapat menyetujui opname yang Anda sendiri buat. Harus disetujui oleh supervisor/manager lain.',
+            ]);
+        }
+
+        if ($stockOpname->status !== 'pending') {
+            throw ValidationException::withMessages([
+                'status' => 'Opname sudah diproses sebelumnya.',
+            ]);
+        }
+
+        $warehouse = Warehouse::findOrFail($stockOpname->warehouse_id);
+
+        DB::transaction(function () use ($request, $stockOpname, $warehouse) {
+            $stockOpname->update([
+                'status' => 'completed',
+                'approved_by' => $request->user()->id,
+            ]);
+
+            $this->applyOpnameAdjustments($stockOpname, $warehouse, $request);
+        });
+
+        return redirect()->route('stock-opname.index')->with('status', 'Stock opname disetujui dan adjustment diterapkan.');
+    }
+
+    public function reject(Request $request, StockOpname $stockOpname): RedirectResponse
+    {
+        Gate::authorize('approve-stockOpname');
+
+        if ($stockOpname->status !== 'pending') {
+            throw ValidationException::withMessages([
+                'status' => 'Opname sudah diproses sebelumnya.',
+            ]);
+        }
+
+        $stockOpname->update(['status' => 'rejected']);
+
+        return redirect()->route('stock-opname.index')->with('status', 'Stock opname ditolak.');
     }
 
     public function show(StockOpname $stockOpname): Response
@@ -207,6 +222,8 @@ class StockOpnameController extends Controller
                 'number' => $stockOpname->opname_number,
                 'date' => $stockOpname->opname_date?->format('Y-m-d'),
                 'date_label' => $stockOpname->opname_date?->format('d M Y'),
+                'status' => $stockOpname->status ?? 'completed',
+                'created_by' => $stockOpname->created_by,
                 'notes' => $stockOpname->notes,
                 'warehouse' => $stockOpname->warehouse,
                 'operator' => $stockOpname->creator,
@@ -242,6 +259,7 @@ class StockOpnameController extends Controller
                     'note' => $item->note,
                 ]),
             ] : null,
+            'can_approve' => Gate::check('approve-stockOpname'),
         ]);
     }
 
@@ -382,5 +400,66 @@ class StockOpnameController extends Controller
                     return false;
                 }
             });
+    }
+
+    protected function applyOpnameAdjustments(StockOpname $stockOpname, Warehouse $warehouse, Request $request): void
+    {
+        $adjustment = null;
+
+        foreach ($stockOpname->items as $item) {
+            $productId = (int) $item->product_id;
+            $difference = (int) $item->difference;
+
+            if ($difference === 0) {
+                continue;
+            }
+
+            if (! $adjustment) {
+                $adjustmentData = [
+                    'adjustment_number' => 'ADJ-' . now()->format('Ymd-His') . '-' . strtoupper(Str::random(4)),
+                    'warehouse_id' => $warehouse->id,
+                    'adjustment_date' => now()->toDateString(),
+                    'status' => 'completed',
+                    'reason' => 'stock_opname',
+                    'notes' => 'Auto adjustment from '.$stockOpname->opname_number,
+                    'created_by' => $request->user()->id,
+                ];
+
+                if (Schema::hasColumn('stock_adjustments', 'stock_opname_id')) {
+                    $adjustmentData['stock_opname_id'] = $stockOpname->id;
+                }
+
+                $adjustment = StockAdjustment::create($adjustmentData);
+            }
+
+            StockAdjustmentItem::create([
+                'stock_adjustment_id' => $adjustment->id,
+                'product_id' => $productId,
+                'adjustment_type' => $difference > 0 ? 'in' : 'out',
+                'quantity' => abs($difference),
+                'note' => $item->note ?? 'Adjustment from stock opname',
+            ]);
+
+            if ($difference > 0) {
+                $this->increasePhysicalStock($warehouse->id, $productId, $difference);
+            } else {
+                $this->decreasePhysicalStock($warehouse->id, $productId, abs($difference));
+            }
+
+            $this->syncProductStock($warehouse->id, $productId);
+
+            $this->recordMovement(
+                request: $request,
+                productId: $productId,
+                warehouseId: $warehouse->id,
+                type: 'adjustment',
+                referenceType: 'stock_adjustment',
+                referenceId: $adjustment->id,
+                quantity: abs($difference),
+                stockBefore: (int) $item->system_stock,
+                stockAfter: (int) $item->physical_stock,
+                notes: 'Stock opname '.$stockOpname->opname_number.' variance '.($difference > 0 ? '+' : '').$difference,
+            );
+        }
     }
 }

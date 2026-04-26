@@ -12,13 +12,25 @@
         }
 
         .header {
-            border-bottom: 2px solid #111827;
+            border-bottom: 2px solid #28106F;
             padding-bottom: 12px;
             margin-bottom: 16px;
+            display: flex;
+            align-items: flex-start;
+        }
+        .header-logo {
+            width: 42px;
+            height: 42px;
+            object-fit: contain;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+        .header-content {
+            flex: 1;
         }
 
         .eyebrow {
-            color: #4f46e5;
+            color: #5932C9;
             font-size: 9px;
             font-weight: bold;
             text-transform: uppercase;
@@ -83,15 +95,18 @@
 </head>
 <body>
     <div class="header">
-        <div class="eyebrow">Warehouse Document Center</div>
-        <h1>Rekap Dokumen WMS</h1>
-        <div class="muted">Goods Receipt, Stock Out, Transfer Rack, Stock Opname, dan Stock Adjustment.</div>
-        <div class="meta">
-            Dibuat: {{ $generatedAt->format('d M Y H:i') }} |
-            Filter jenis: {{ $filters['type'] ?: 'all' }} |
-            Tanggal: {{ $filters['date_from'] ?: 'awal' }} sampai {{ $filters['date_to'] ?: 'akhir' }} |
-            Pencarian: {{ $filters['search'] ?: '-' }} |
-            Total: {{ number_format($documents->count(), 0, ',', '.') }} dokumen
+        <img src="{{ public_path('images/logo 1.png') }}" class="header-logo" alt="Logo">
+        <div class="header-content">
+            <div class="eyebrow">PT. PETAYU INVENTORI PERGUDANGAN</div>
+            <h1>Rekap Dokumen WMS</h1>
+            <div class="muted">Goods Receipt, Stock Out, Transfer Rack, Stock Opname, dan Stock Adjustment.</div>
+            <div class="meta">
+                Dibuat: {{ $generatedAt->format('d M Y H:i') }} |
+                Filter jenis: {{ $filters['type'] ?: 'all' }} |
+                Tanggal: {{ $filters['date_from'] ?: 'awal' }} sampai {{ $filters['date_to'] ?: 'akhir' }} |
+                Pencarian: {{ $filters['search'] ?: '-' }} |
+                Total: {{ number_format($documents->count(), 0, ',', '.') }} dokumen
+            </div>
         </div>
     </div>
 

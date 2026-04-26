@@ -23,12 +23,12 @@ export default function Create({ suppliers, products, autoPoNumber, operationalW
         expected_date: '',
         notes: '',
         items: [
-            { product_id: '', quantity: 1, unit_price: 0 }
+            { product_id: '', quantity: 1, unit_price: 0, batch_number: '', expired_date: '' }
         ]
     });
 
     const addItem = () => {
-        setData('items', [...data.items, { product_id: '', quantity: 1, unit_price: 0 }]);
+        setData('items', [...data.items, { product_id: '', quantity: 1, unit_price: 0, batch_number: '', expired_date: '' }]);
     };
 
     const removeItem = (index) => {
@@ -61,13 +61,13 @@ export default function Create({ suppliers, products, autoPoNumber, operationalW
                         <ArrowLeftIcon className="w-5 h-5" />
                     </Link>
                     <div>
-                        <h1 className="text-[28px] font-black text-[#1a202c] tracking-tight">Buat Pesanan Pembelian</h1>
+                        <h1 className="text-[28px] font-black text-[#28106F] tracking-tight">Buat Pesanan Pembelian</h1>
                         <p className="text-[14px] font-bold text-gray-500 mt-1">Buat pesanan stok untuk gudang operasional.</p>
                     </div>
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-6">
-                    <div className="bg-white rounded-[24px] p-8 shadow-[0_2px_16px_rgba(0,0,0,0.02)] border border-[#edf2f7]">
+                    <div className="bg-white rounded-[24px] p-8 shadow-[0_2px_16px_rgba(0,0,0,0.02)] border border-[#EDE8FC]">
                         <div className="grid grid-cols-3 gap-8 mb-8">
                             <div className="space-y-4">
                                 <div>
@@ -76,7 +76,7 @@ export default function Create({ suppliers, products, autoPoNumber, operationalW
                                         type="text" 
                                         value={data.po_number} 
                                         onChange={e => setData('po_number', e.target.value)}
-                                        className="w-full rounded-xl bg-gray-50 border-gray-200 text-[14px] font-bold focus:ring-[#4f46e5] focus:border-[#4f46e5]" 
+                                        className="w-full rounded-xl bg-gray-50 border-gray-200 text-[14px] font-bold focus:ring-[#5932C9] focus:border-[#5932C9]" 
                                     />
                                     {errors.po_number && <p className="text-red-500 text-xs mt-1">{errors.po_number}</p>}
                                 </div>
@@ -85,7 +85,7 @@ export default function Create({ suppliers, products, autoPoNumber, operationalW
                                     <select 
                                         value={data.supplier_id} 
                                         onChange={e => setData('supplier_id', e.target.value)}
-                                        className="w-full rounded-xl bg-gray-50 border-gray-200 text-[14px] font-bold focus:ring-[#4f46e5] focus:border-[#4f46e5]"
+                                        className="w-full rounded-xl bg-gray-50 border-gray-200 text-[14px] font-bold focus:ring-[#5932C9] focus:border-[#5932C9]"
                                     >
                                         <option value="">Pilih Pemasok</option>
                                         {suppliers.map(s => <option key={s.id} value={s.id}>{s.name} ({s.code})</option>)}
@@ -113,7 +113,7 @@ export default function Create({ suppliers, products, autoPoNumber, operationalW
                                         type="date" 
                                         value={data.order_date} 
                                         onChange={e => setData('order_date', e.target.value)}
-                                        className="w-full rounded-xl bg-gray-50 border-gray-200 text-[14px] font-bold focus:ring-[#4f46e5] focus:border-[#4f46e5]"
+                                        className="w-full rounded-xl bg-gray-50 border-gray-200 text-[14px] font-bold focus:ring-[#5932C9] focus:border-[#5932C9]"
                                     />
                                 </div>
                             </div>
@@ -125,7 +125,7 @@ export default function Create({ suppliers, products, autoPoNumber, operationalW
                                         type="date" 
                                         value={data.expected_date} 
                                         onChange={e => setData('expected_date', e.target.value)}
-                                        className="w-full rounded-xl bg-gray-50 border-gray-200 text-[14px] font-bold focus:ring-[#4f46e5] focus:border-[#4f46e5]"
+                                        className="w-full rounded-xl bg-gray-50 border-gray-200 text-[14px] font-bold focus:ring-[#5932C9] focus:border-[#5932C9]"
                                     />
                                     {errors.expected_date && <p className="text-red-500 text-xs mt-1">{errors.expected_date}</p>}
                                 </div>
@@ -134,7 +134,7 @@ export default function Create({ suppliers, products, autoPoNumber, operationalW
                                     <textarea 
                                         value={data.notes} 
                                         onChange={e => setData('notes', e.target.value)}
-                                        className="w-full rounded-xl bg-gray-50 border-gray-200 text-[14px] font-bold focus:ring-[#4f46e5] focus:border-[#4f46e5] h-[42px]"
+                                        className="w-full rounded-xl bg-gray-50 border-gray-200 text-[14px] font-bold focus:ring-[#5932C9] focus:border-[#5932C9] h-[42px]"
                                     />
                                 </div>
                             </div>
@@ -142,11 +142,11 @@ export default function Create({ suppliers, products, autoPoNumber, operationalW
 
                         <div className="border-t border-gray-50 pt-8 mt-8">
                             <div className="flex justify-between items-center mb-6">
-                                <h3 className="text-[16px] font-black text-[#1a202c]">Item Pesanan</h3>
+                                <h3 className="text-[16px] font-black text-[#28106F]">Item Pesanan</h3>
                                 <button 
                                     type="button" 
                                     onClick={addItem}
-                                    className="text-[12px] font-black text-[#4f46e5] hover:text-indigo-700 underline"
+                                    className="text-[12px] font-black text-[#5932C9] hover:text-indigo-700 underline"
                                 >
                                     + Tambah Baris Item
                                 </button>
@@ -154,45 +154,64 @@ export default function Create({ suppliers, products, autoPoNumber, operationalW
 
                             <div className="space-y-4">
                                 {data.items.map((item, index) => (
-                                    <div key={index} className="grid grid-cols-12 gap-4 items-center bg-gray-50/50 p-4 rounded-2xl border border-gray-100">
-                                        <div className="col-span-5">
+                                    <div key={index} className="grid grid-cols-[4fr_2fr_2fr_1fr_2fr_2fr_1fr] gap-3 items-center bg-gray-50/50 p-4 rounded-2xl border border-gray-100">
+                                        <div>
                                             <label className="block text-[9px] font-black tracking-wider text-gray-400 uppercase mb-1">Produk</label>
                                             <select 
                                                 value={item.product_id} 
                                                 onChange={e => updateItem(index, 'product_id', e.target.value)}
-                                                className="w-full rounded-xl bg-white border-gray-200 text-[13px] font-bold focus:ring-[#4f46e5] focus:border-[#4f46e5]"
+                                                className="w-full rounded-xl bg-white border-gray-200 text-[13px] font-bold focus:ring-[#5932C9] focus:border-[#5932C9]"
                                             >
                                                 <option value="">Pilih Produk</option>
                                                 {products.map(p => <option key={p.id} value={p.id}>{p.name} ({p.sku})</option>)}
                                             </select>
                                         </div>
-                                        <div className="col-span-2">
+                                        <div>
                                             <label className="block text-[9px] font-black tracking-wider text-gray-400 uppercase mb-1">Jumlah</label>
                                             <input 
                                                 type="number" 
                                                 min="1"
                                                 value={item.quantity} 
                                                 onChange={e => updateItem(index, 'quantity', parseInt(e.target.value) || 0)}
-                                                className="w-full rounded-xl bg-white border-gray-200 text-[13px] font-bold focus:ring-[#4f46e5] focus:border-[#4f46e5]"
+                                                className="w-full rounded-xl bg-white border-gray-200 text-[13px] font-bold focus:ring-[#5932C9] focus:border-[#5932C9]"
                                             />
                                         </div>
-                                        <div className="col-span-3">
+                                        <div>
                                             <label className="block text-[9px] font-black tracking-wider text-gray-400 uppercase mb-1">Harga Satuan</label>
                                             <input 
                                                 type="number" 
                                                 min="0"
                                                 value={item.unit_price} 
                                                 onChange={e => updateItem(index, 'unit_price', parseFloat(e.target.value) || 0)}
-                                                className="w-full rounded-xl bg-white border-gray-200 text-[13px] font-bold focus:ring-[#4f46e5] focus:border-[#4f46e5]"
+                                                className="w-full rounded-xl bg-white border-gray-200 text-[13px] font-bold focus:ring-[#5932C9] focus:border-[#5932C9]"
                                             />
                                         </div>
-                                        <div className="col-span-1">
+                                        <div>
                                             <label className="block text-[9px] font-black tracking-wider text-gray-400 uppercase mb-1 text-center">Subtotal</label>
-                                            <div className="text-[13px] font-black text-[#1a202c] pt-2 text-center">
+                                            <div className="text-[13px] font-black text-[#28106F] pt-2 text-center">
                                                 {(item.quantity * item.unit_price).toLocaleString()}
                                             </div>
                                         </div>
-                                        <div className="col-span-1 flex justify-end">
+                                        <div>
+                                            <label className="block text-[9px] font-black tracking-wider text-gray-400 uppercase mb-1">Batch</label>
+                                            <input
+                                                type="text"
+                                                value={item.batch_number}
+                                                onChange={e => updateItem(index, 'batch_number', e.target.value)}
+                                                placeholder="B-YYYYMMDD-X"
+                                                className="w-full rounded-xl bg-white border-gray-200 text-[12px] font-bold focus:ring-[#5932C9] focus:border-[#5932C9]"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-[9px] font-black tracking-wider text-gray-400 uppercase mb-1">Exp. Date</label>
+                                            <input
+                                                type="date"
+                                                value={item.expired_date}
+                                                onChange={e => updateItem(index, 'expired_date', e.target.value)}
+                                                className="w-full rounded-xl bg-white border-gray-200 text-[12px] font-bold focus:ring-[#5932C9] focus:border-[#5932C9]"
+                                            />
+                                        </div>
+                                        <div className="flex justify-end">
                                             {data.items.length > 1 && (
                                                 <button 
                                                     type="button" 
@@ -212,7 +231,7 @@ export default function Create({ suppliers, products, autoPoNumber, operationalW
                             <div className="flex justify-end mt-12 bg-gray-50 p-6 rounded-[20px]">
                                 <div className="text-right">
                                     <div className="text-[12px] font-black text-gray-400 uppercase tracking-widest mb-1">Perkiraan Total</div>
-                                    <div className="text-[32px] font-black text-[#1a202c]">
+                                    <div className="text-[32px] font-black text-[#28106F]">
                                         Rp {calculateGrandTotal().toLocaleString('id-ID')}
                                     </div>
                                 </div>
@@ -227,7 +246,7 @@ export default function Create({ suppliers, products, autoPoNumber, operationalW
                         <button 
                             type="submit" 
                             disabled={processing}
-                            className="px-8 py-3.5 bg-[#4f46e5] shadow-[#4f46e5]/30 shadow-lg hover:bg-indigo-700 text-white font-bold rounded-xl text-[14px] transition-colors disabled:opacity-50"
+                            className="px-8 py-3.5 bg-[#5932C9] shadow-[#5932C9]/30 shadow-lg hover:bg-indigo-700 text-white font-bold rounded-xl text-[14px] transition-colors disabled:opacity-50"
                         >
                             {processing ? 'Menyimpan...' : 'Simpan & Kirim PO'}
                         </button>

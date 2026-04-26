@@ -41,6 +41,7 @@ const filters = [
     { value: 'stock_transfer', label: 'Transfer Rak' },
     { value: 'stock_opname', label: 'Stok Opname' },
     { value: 'stock_adjustment', label: 'Koreksi Stok' },
+    { value: 'manual_rack_stock', label: 'Manual Rack Stock' },
 ];
 
 const formatNumber = (value) => Number(value || 0).toLocaleString('id-ID');
@@ -55,7 +56,11 @@ export default function WmsDocuments({ documents = [], stats = {} }) {
         const needle = searchTerm.trim().toLowerCase();
 
         return documents.filter((document) => {
-            const matchesType = activeType === 'all' || document.type === activeType;
+            const matchesType = activeType === 'all'
+                || document.type === activeType
+                || (activeType === 'manual_rack_stock'
+                    && document.type === 'stock_adjustment'
+                    && document.adjustment_mode === 'manual_rack_stock');
             const matchesDateFrom = !dateFrom || document.date >= dateFrom;
             const matchesDateTo = !dateTo || document.date <= dateTo;
             const searchable = [

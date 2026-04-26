@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Shipment;
+use App\Models\ShipmentItem;
 use Illuminate\Database\Seeder;
 
 class ShipmentsSeeder extends Seeder
@@ -12,124 +13,169 @@ class ShipmentsSeeder extends Seeder
      */
     public function run(): void
     {
-        // Create sample shipments
+        // Create sample shipments — semua berasal dari Gudang Utama Samarinda
+        // Rute realistis berdasarkan jarak & jalur dari Samarinda, Kaltim
         $shipments = [
             [
+                // Samarinda → Balikpapan: ~120km, jalur darat via Jl. Soekarno-Hatta
                 'shipment_id' => 'TRK-10293',
-                'origin' => 'LHR',
-                'origin_name' => 'London, UK',
-                'origin_lat' => 51.4700,
-                'origin_lng' => -0.4543,
-                'destination' => 'JFK',
-                'destination_name' => 'New York, USA',
-                'dest_lat' => 40.6413,
-                'dest_lng' => -73.7781,
+                'origin' => 'SMD',
+                'origin_name' => 'Gudang Samarinda, Kaltim',
+                'origin_lat' => -0.4948,
+                'origin_lng' => 117.1436,
+                'destination' => 'BPN',
+                'destination_name' => 'Balikpapan, Kaltim',
+                'dest_lat' => -1.2654,
+                'dest_lng' => 116.8312,
                 'status' => 'on-time',
-                'estimated_arrival' => now()->addDays(11)->setHours(14)->setMinutes(30),
-                'load_type' => 'air',
+                'estimated_arrival' => now()->addHours(6)->setMinutes(0),
+                'load_type' => 'ground',
             ],
             [
-                'shipment_id' => 'TRK-10294',
-                'origin' => 'SIN',
-                'origin_name' => 'Singapore',
-                'origin_lat' => 1.3644,
-                'origin_lng' => 103.9915,
-                'destination' => 'DXB',
-                'destination_name' => 'Dubai, UAE',
-                'dest_lat' => 25.2532,
-                'dest_lng' => 55.3657,
-                'status' => 'delayed',
-                'estimated_arrival' => now()->addDays(11)->setHours(18)->setMinutes(45),
-                'load_type' => 'sea',
-            ],
-            [
-                'shipment_id' => 'TRK-10295',
-                'origin' => 'HAM',
-                'origin_name' => 'Hamburg, GER',
-                'origin_lat' => 53.5511,
-                'origin_lng' => 9.9937,
-                'destination' => 'PVG',
-                'destination_name' => 'Shanghai, CN',
-                'dest_lat' => 31.2304,
-                'dest_lng' => 121.4737,
-                'status' => 'on-time',
-                'estimated_arrival' => now()->addDays(12)->setHours(9)->setMinutes(15),
-                'load_type' => 'sea',
-            ],
-            [
-                'shipment_id' => 'TRK-10296',
-                'origin' => 'LAX',
-                'origin_name' => 'Los Angeles, USA',
-                'origin_lat' => 33.9416,
-                'origin_lng' => -118.4085,
-                'destination' => 'CDG',
-                'destination_name' => 'Paris, FRA',
-                'dest_lat' => 49.0097,
-                'dest_lng' => 2.5479,
-                'status' => 'in-transit',
-                'estimated_arrival' => now()->addDays(15)->setHours(16)->setMinutes(0),
-                'load_type' => 'air',
-            ],
-            [
+                // Samarinda → Tenggarong: ~35km, jalur darat via Jl. PT. Pupuk Kaltim
                 'shipment_id' => 'TRK-10297',
-                'origin' => 'SYD',
-                'origin_name' => 'Sydney, AUS',
-                'origin_lat' => -33.9399,
-                'origin_lng' => 151.1753,
-                'destination' => 'NRT',
-                'destination_name' => 'Tokyo, JP',
-                'dest_lat' => 35.7720,
-                'dest_lng' => 140.3929,
+                'origin' => 'SMD',
+                'origin_name' => 'Gudang Samarinda, Kaltim',
+                'origin_lat' => -0.4948,
+                'origin_lng' => 117.1436,
+                'destination' => 'TGR',
+                'destination_name' => 'Tenggarong, Kaltim',
+                'dest_lat' => -0.4167,
+                'dest_lng' => 116.9833,
                 'status' => 'on-time',
-                'estimated_arrival' => now()->addDays(8)->setHours(11)->setMinutes(30),
-                'load_type' => 'air',
+                'estimated_arrival' => now()->addHours(3)->setMinutes(30),
+                'load_type' => 'ground',
             ],
             [
-                'shipment_id' => 'TRK-10298',
-                'origin' => 'JFK',
-                'origin_name' => 'New York, USA',
-                'origin_lat' => 40.6413,
-                'origin_lng' => -73.7781,
-                'destination' => 'HAM',
-                'destination_name' => 'Hamburg, GER',
-                'dest_lat' => 53.5511,
-                'dest_lng' => 9.9937,
-                'status' => 'delivered',
-                'estimated_arrival' => now()->subDays(2)->setHours(10)->setMinutes(0),
+                // Samarinda → Bontang: ~130km, jalur darat utara via Jl. Bontang-Sangatta
+                'shipment_id' => 'TRK-10295',
+                'origin' => 'SMD',
+                'origin_name' => 'Gudang Samarinda, Kaltim',
+                'origin_lat' => -0.4948,
+                'origin_lng' => 117.1436,
+                'destination' => 'BXT',
+                'destination_name' => 'Bontang, Kaltim',
+                'dest_lat' => 0.1333,
+                'dest_lng' => 117.4833,
+                'status' => 'in-transit',
+                'estimated_arrival' => now()->addHours(8)->setMinutes(0),
+                'load_type' => 'ground',
+            ],
+            [
+                // Samarinda → Sangatta: ~250km, jalur darat utara
+                'shipment_id' => 'TRK-10294',
+                'origin' => 'SMD',
+                'origin_name' => 'Gudang Samarinda, Kaltim',
+                'origin_lat' => -0.4948,
+                'origin_lng' => 117.1436,
+                'destination' => 'SGQ',
+                'destination_name' => 'Sangatta, Kaltim',
+                'dest_lat' => 0.5167,
+                'dest_lng' => 117.5500,
+                'status' => 'delayed',
+                'estimated_arrival' => now()->addDays(1)->setHours(10)->setMinutes(0),
+                'load_type' => 'ground',
+            ],
+            [
+                // Samarinda → Banjarmasin: ~600km, jalur darat via Balikpapan-Kotabaru atau laut via Selat Makassar
+                'shipment_id' => 'TRK-10296',
+                'origin' => 'SMD',
+                'origin_name' => 'Gudang Samarinda, Kaltim',
+                'origin_lat' => -0.4948,
+                'origin_lng' => 117.1436,
+                'destination' => 'BJM',
+                'destination_name' => 'Banjarmasin, Kalsel',
+                'dest_lat' => -3.4434,
+                'dest_lng' => 114.8361,
+                'status' => 'in-transit',
+                'estimated_arrival' => now()->addDays(2)->setHours(16)->setMinutes(0),
                 'load_type' => 'sea',
             ],
             [
+                // Samarinda → Makassar: laut via Selat Makassar, kapal cargo ~2-3 hari
+                'shipment_id' => 'TRK-10298',
+                'origin' => 'SMD',
+                'origin_name' => 'Gudang Samarinda, Kaltim',
+                'origin_lat' => -0.4948,
+                'origin_lng' => 117.1436,
+                'destination' => 'UPG',
+                'destination_name' => 'Makassar, Sulsel',
+                'dest_lat' => -5.1476,
+                'dest_lng' => 119.4327,
+                'status' => 'on-time',
+                'estimated_arrival' => now()->addDays(3)->setHours(9)->setMinutes(0),
+                'load_type' => 'sea',
+            ],
+            [
+                // Samarinda → Surabaya: laut via Selat Makassar → Laut Jawa, kapal cargo ~4-5 hari
                 'shipment_id' => 'TRK-10299',
-                'origin' => 'DXB',
-                'origin_name' => 'Dubai, UAE',
-                'origin_lat' => 25.2532,
-                'origin_lng' => 55.3657,
-                'destination' => 'SIN',
-                'destination_name' => 'Singapore',
-                'dest_lat' => 1.3644,
-                'dest_lng' => 103.9915,
+                'origin' => 'SMD',
+                'origin_name' => 'Gudang Samarinda, Kaltim',
+                'origin_lat' => -0.4948,
+                'origin_lng' => 117.1436,
+                'destination' => 'SUB',
+                'destination_name' => 'Surabaya, Jatim',
+                'dest_lat' => -7.2575,
+                'dest_lng' => 112.7521,
                 'status' => 'delivered',
                 'estimated_arrival' => now()->subDays(1)->setHours(14)->setMinutes(30),
                 'load_type' => 'sea',
             ],
             [
+                // Samarinda → Jakarta: laut via Selat Makassar → Laut Jawa → Tanjung Priok, ~5-7 hari
                 'shipment_id' => 'TRK-10300',
-                'origin' => 'LHR',
-                'origin_name' => 'London, UK',
-                'origin_lat' => 51.4700,
-                'origin_lng' => -0.4543,
-                'destination' => 'LAX',
-                'destination_name' => 'Los Angeles, USA',
-                'dest_lat' => 33.9416,
-                'dest_lng' => -118.4085,
+                'origin' => 'SMD',
+                'origin_name' => 'Gudang Samarinda, Kaltim',
+                'origin_lat' => -0.4948,
+                'origin_lng' => 117.1436,
+                'destination' => 'JKT',
+                'destination_name' => 'Jakarta, DKI',
+                'dest_lat' => -6.2088,
+                'dest_lng' => 106.8456,
                 'status' => 'delivered',
-                'estimated_arrival' => now()->subHours(6)->setMinutes(0),
-                'load_type' => 'air',
+                'estimated_arrival' => now()->subDays(2)->setHours(10)->setMinutes(0),
+                'load_type' => 'sea',
             ],
         ];
 
         $drivers = \App\Models\Driver::where('status', 'approved')->get();
         $activeDriverIndex = 0;
+
+        // Item yang dikirim per shipment
+        $shipmentItemsMap = [
+            'TRK-10293' => [
+                ['product_name' => 'AX900 Sensor Module', 'sku' => 'HP-AX900', 'quantity' => 120, 'unit' => 'box', 'weight_kg' => 480],
+                ['product_name' => 'Industrial Cable 24m', 'sku' => 'HP-CBL24', 'quantity' => 80, 'unit' => 'box', 'weight_kg' => 640],
+            ],
+            'TRK-10297' => [
+                ['product_name' => 'PCB Controller Board', 'sku' => 'EL-PCB77', 'quantity' => 50, 'unit' => 'box', 'weight_kg' => 150],
+            ],
+            'TRK-10295' => [
+                ['product_name' => 'Bulk Pallet Resin', 'sku' => 'BK-PLT55', 'quantity' => 20, 'unit' => 'plt', 'weight_kg' => 4000],
+                ['product_name' => 'AX900 Sensor Module', 'sku' => 'HP-AX900', 'quantity' => 30, 'unit' => 'box', 'weight_kg' => 120],
+            ],
+            'TRK-10294' => [
+                ['product_name' => 'Solvent Chemical Drum', 'sku' => 'HZ-SOL88', 'quantity' => 8, 'unit' => 'plt', 'weight_kg' => 3200],
+                ['product_name' => 'Cross Dock Parcel', 'sku' => 'CD-DOCK1', 'quantity' => 45, 'unit' => 'box', 'weight_kg' => 225],
+            ],
+            'TRK-10296' => [
+                ['product_name' => 'AX900 Sensor Module', 'sku' => 'HP-AX900', 'quantity' => 200, 'unit' => 'box', 'weight_kg' => 800],
+                ['product_name' => 'PCB Controller Board', 'sku' => 'EL-PCB77', 'quantity' => 150, 'unit' => 'box', 'weight_kg' => 450],
+                ['product_name' => 'Industrial Cable 24m', 'sku' => 'HP-CBL24', 'quantity' => 100, 'unit' => 'box', 'weight_kg' => 800],
+            ],
+            'TRK-10298' => [
+                ['product_name' => 'Bulk Pallet Resin', 'sku' => 'BK-PLT55', 'quantity' => 30, 'unit' => 'plt', 'weight_kg' => 6000],
+                ['product_name' => 'Solvent Chemical Drum', 'sku' => 'HZ-SOL88', 'quantity' => 5, 'unit' => 'plt', 'weight_kg' => 2000],
+            ],
+            'TRK-10299' => [
+                ['product_name' => 'AX900 Sensor Module', 'sku' => 'HP-AX900', 'quantity' => 500, 'unit' => 'box', 'weight_kg' => 2000],
+                ['product_name' => 'Cross Dock Parcel', 'sku' => 'CD-DOCK1', 'quantity' => 100, 'unit' => 'box', 'weight_kg' => 500],
+            ],
+            'TRK-10300' => [
+                ['product_name' => 'Industrial Cable 24m', 'sku' => 'HP-CBL24', 'quantity' => 300, 'unit' => 'box', 'weight_kg' => 2400],
+                ['product_name' => 'PCB Controller Board', 'sku' => 'EL-PCB77', 'quantity' => 250, 'unit' => 'box', 'weight_kg' => 750],
+            ],
+        ];
         
         foreach ($shipments as $shipmentData) {
             $data = $shipmentData;
@@ -155,6 +201,19 @@ class ShipmentsSeeder extends Seeder
                 ['shipment_id' => $data['shipment_id']],
                 $data
             );
+
+            // Seed items for this shipment
+            $shipmentModel = Shipment::where('shipment_id', $data['shipment_id'])->first();
+            if ($shipmentModel && isset($shipmentItemsMap[$data['shipment_id']])) {
+                $shipmentModel->items()->delete(); // clear old
+                foreach ($shipmentItemsMap[$data['shipment_id']] as $itemData) {
+                    // Try to link product by SKU
+                    $product = \App\Models\Product::where('sku', $itemData['sku'])->first();
+                    $shipmentModel->items()->create(array_merge($itemData, [
+                        'product_id' => $product?->id,
+                    ]));
+                }
+            }
         }
     }
 }

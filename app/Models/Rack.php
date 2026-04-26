@@ -14,6 +14,11 @@ class Rack extends Model
         'capacity',
         'status',
         'notes',
+        'pos_x',
+        'pos_y',
+        'width',
+        'height',
+        'rotation',
     ];
 
     public function zone()

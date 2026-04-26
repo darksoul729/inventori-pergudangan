@@ -126,7 +126,7 @@ export default function Sidebar() {
                                     <span className="text-white text-sm font-bold">⚡</span>
                                 </div>
                                 <div>
-                                    <h1 className="text-lg font-bold text-gray-900">Aether</h1>
+                                    <h1 className="text-lg font-bold text-gray-900">PETAYU</h1>
                                     <p className="text-xs text-gray-500">Logistix</p>
                                 </div>
                             </div>

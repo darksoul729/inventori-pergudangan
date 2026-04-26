@@ -29,13 +29,13 @@ const modules = [
         ],
     },
     {
-        title: 'Aether AI',
-        href: '/aether',
+        title: 'PETAYU AI',
+        href: '/petayu-ai',
         icon: Sparkles,
         access: 'Semua role terautentikasi',
         summary: 'Asisten analitik untuk bertanya kondisi stok, ringkasan operasional, dan rekomendasi berbasis data sistem.',
         steps: [
-            'Mulai percakapan baru dari halaman Aether AI.',
+            'Mulai percakapan baru dari halaman PETAYU AI.',
             'Tanyakan ringkasan stok, pergerakan barang, atau status operasional.',
             'Gunakan jawaban sebagai bahan analisis awal sebelum mengambil tindakan di modul terkait.',
         ],
@@ -203,7 +203,7 @@ export default function Documentation() {
                 <section className="pt-4 pb-8">
                     <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
                         <div>
-                            <p className="text-[11px] font-black uppercase tracking-[0.22em] text-[#3632c0]">Pusat Bantuan</p>
+                            <p className="text-[11px] font-black uppercase tracking-[0.22em] text-[#28106F]">Pusat Bantuan</p>
                             <h1 className="mt-3 text-[34px] font-black tracking-tight text-[#111827]">Dokumentasi Inventori Pergudangan</h1>
                             <p className="mt-3 max-w-3xl text-[14px] font-semibold leading-7 text-gray-500">
                                 Panduan ringkas untuk setiap menu di sistem WMS ini, termasuk fungsi utama, hak akses, dan langkah kerja yang dipakai dalam operasional gudang.
@@ -211,7 +211,7 @@ export default function Documentation() {
                         </div>
                         <Link
                             href="/help/live-support"
-                            className="inline-flex items-center justify-center gap-2 rounded-[12px] bg-[#3632c0] px-5 py-3 text-[12px] font-black uppercase tracking-wider text-white shadow-lg shadow-indigo-100 transition-all hover:bg-[#28239d]"
+                            className="inline-flex items-center justify-center gap-2 rounded-[12px] bg-[#28106F] px-5 py-3 text-[12px] font-black uppercase tracking-wider text-white shadow-lg shadow-indigo-100 transition-all hover:bg-[#28239d]"
                         >
                             Bantuan Langsung
                             <ArrowRight className="h-4 w-4" />
@@ -221,15 +221,15 @@ export default function Documentation() {
 
                 <section id="alur-kerja" className="mb-8 rounded-[8px] border border-gray-100 bg-white p-6 shadow-sm">
                     <div className="flex items-start gap-4">
-                        <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-[8px] bg-indigo-50 text-[#3632c0]">
+                        <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-[8px] bg-indigo-50 text-[#28106F]">
                             <PackageCheck className="h-6 w-6" />
                         </div>
                         <div className="min-w-0 flex-1">
                             <h2 className="text-[18px] font-black text-gray-900">Alur Kerja Utama</h2>
                             <div className="mt-4 grid gap-3 md:grid-cols-5">
                                 {flowSteps.map((step, index) => (
-                                    <div key={step} className="rounded-[8px] border border-gray-100 bg-[#f8fafc] p-4">
-                                        <div className="mb-3 flex h-8 w-8 items-center justify-center rounded-[8px] bg-white text-[12px] font-black text-[#3632c0] shadow-sm">
+                                    <div key={step} className="rounded-[8px] border border-gray-100 bg-[#F8F7FF] p-4">
+                                        <div className="mb-3 flex h-8 w-8 items-center justify-center rounded-[8px] bg-white text-[12px] font-black text-[#28106F] shadow-sm">
                                             {index + 1}
                                         </div>
                                         <p className="text-[12px] font-bold leading-6 text-gray-600">{step}</p>
@@ -247,7 +247,7 @@ export default function Documentation() {
                         return (
                             <article key={item.title} className="rounded-[8px] border border-gray-100 bg-white p-6 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md">
                                 <div className="mb-5 flex items-start justify-between gap-4">
-                                    <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-[8px] bg-[#f4f3ff] text-[#3632c0]">
+                                    <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-[8px] bg-[#f4f3ff] text-[#28106F]">
                                         <Icon className="h-6 w-6" />
                                     </div>
                                     <span className="rounded-full bg-gray-50 px-3 py-1.5 text-[10px] font-black uppercase tracking-wider text-gray-400">
@@ -259,12 +259,12 @@ export default function Documentation() {
                                 <div className="mt-5 space-y-2">
                                     {item.steps.map((step) => (
                                         <div key={step} className="flex gap-2 text-[12px] font-bold leading-6 text-gray-600">
-                                            <span className="mt-2 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-[#3632c0]" />
+                                            <span className="mt-2 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-[#28106F]" />
                                             <span>{step}</span>
                                         </div>
                                     ))}
                                 </div>
-                                <Link href={item.href} className="mt-5 inline-flex items-center gap-2 text-[12px] font-black uppercase tracking-wider text-[#3632c0] hover:text-[#28239d]">
+                                <Link href={item.href} className="mt-5 inline-flex items-center gap-2 text-[12px] font-black uppercase tracking-wider text-[#28106F] hover:text-[#28239d]">
                                     Buka Menu
                                     <ArrowRight className="h-4 w-4" />
                                 </Link>

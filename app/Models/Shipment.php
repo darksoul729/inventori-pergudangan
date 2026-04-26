@@ -77,6 +77,11 @@ class Shipment extends Model
         return $this->belongsTo(GoodsReceipt::class);
     }
 
+    public function items()
+    {
+        return $this->hasMany(ShipmentItem::class);
+    }
+
     public static function trackingStageLabels(): array
     {
         return [

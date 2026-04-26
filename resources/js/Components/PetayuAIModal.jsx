@@ -9,7 +9,7 @@ import {
 } from 'lucide-react';
 
 // ─── AI SVG Icon ─────────────────────────────────────────────────────────────
-const AetherIcon = ({ className = 'w-6 h-6', style }) => (
+const PetayuIcon = ({ className = 'w-6 h-6', style }) => (
     <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={className} style={style}>
         <path d="M12 2L14.85 9.15L22 12L14.85 14.85L12 22L9.15 14.85L2 12L9.15 9.15L12 2Z" fill="white" fillOpacity="0.9" />
         <circle cx="12" cy="12" r="3" fill="white" />
@@ -21,12 +21,12 @@ const AetherIcon = ({ className = 'w-6 h-6', style }) => (
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function stripStructuredMetadata(text) {
     if (typeof text !== 'string') return '';
-    return text.replace(/\n*\[\[AETHER_FORECAST:[\s\S]*?\]\]\s*/g, '').trim();
+    return text.replace(/\n*\[\[PETAYU_FORECAST:[\s\S]*?\]\]\s*/g, '').trim();
 }
 
 function parseForecastMetadata(content) {
     if (typeof content !== 'string') return null;
-    const match = content.match(/\[\[AETHER_FORECAST:([\s\S]*?)\]\]/);
+    const match = content.match(/\[\[PETAYU_FORECAST:([\s\S]*?)\]\]/);
     if (!match) return null;
     try {
         const data = JSON.parse(match[1]);
@@ -91,7 +91,7 @@ function MarkdownContent({ content }) {
     if (typeof content !== 'string') return null;
     const lines = stripStructuredMetadata(content).split('\n');
     return (
-        <div className="prose-aether space-y-2">
+        <div className="prose-petayu space-y-2">
             {lines.map((line, i) => {
                 const cleanLine = line.trim();
                 if (cleanLine.startsWith('# ')) return <h1 key={i} className="text-lg font-black text-slate-950 mb-2">{cleanLine.slice(2)}</h1>;
@@ -292,7 +292,7 @@ function MessageBubble({ message, user, onSpeak }) {
             <div className={`w-10 h-10 rounded-2xl shrink-0 flex items-center justify-center text-sm font-black shadow-md ${isUser ? 'bg-white text-slate-700 border border-slate-200' : 'bg-gradient-to-br from-indigo-500 to-blue-600 shadow-indigo-100'}`}>
                 {isUser
                     ? (user?.name ? user.name.charAt(0).toUpperCase() : <User className="w-5 h-5" />)
-                    : <AetherIcon className="w-6 h-6" />
+                    : <PetayuIcon className="w-6 h-6" />
                 }
             </div>
             <div className={`max-w-[85%] px-6 py-4 rounded-3xl shadow-sm ${isUser ? 'rounded-tr-lg bg-indigo-600 text-white font-bold' : 'rounded-tl-lg bg-white border border-slate-100 text-slate-800'}`}>
@@ -311,7 +311,7 @@ function MessageBubble({ message, user, onSpeak }) {
                 {isUser ? (
                     <div className="whitespace-pre-wrap text-sm font-bold leading-relaxed text-white">{typedContent}</div>
                 ) : (
-                    <div className="prose-aether">
+                    <div className="prose-petayu">
                         {typedContent && (
                             <>
                                 {typedContent.includes('Total Unit Tersimpan') && <InsightSummary content={typedContent} />}
@@ -330,7 +330,7 @@ function MessageBubble({ message, user, onSpeak }) {
 }
 
 // ─── Main Modal ───────────────────────────────────────────────────────────────
-export default function AetherAIModal({ isOpen, onClose, startInCall = false }) {
+export default function PetayuAIModal({ isOpen, onClose, startInCall = false }) {
     // ── Safe page props ──
     let auth = {};
     try {
@@ -432,7 +432,7 @@ export default function AetherAIModal({ isOpen, onClose, startInCall = false }) 
             setIsPreparingSpeech(true);
             for (const chunk of chunks) {
                 if (signal?.aborted) throw new DOMException('Canceled', 'AbortError');
-                const res = await fetch('/aether/local-tts', {
+                const res = await fetch('/petayu-ai/local-tts', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' },
                     body: JSON.stringify({ text: chunk }),
@@ -475,7 +475,7 @@ export default function AetherAIModal({ isOpen, onClose, startInCall = false }) 
     const loadConversations = useCallback(async () => {
         setIsFetchingHistory(true);
         try {
-            const res = await fetch('/aether/conversations');
+            const res = await fetch('/petayu-ai/conversations');
             const data = await res.json();
             setConversations(Array.isArray(data) ? data : []);
         } catch (e) {
@@ -488,7 +488,7 @@ export default function AetherAIModal({ isOpen, onClose, startInCall = false }) 
     const loadMessages = useCallback(async (conversationId) => {
         setIsFetchingHistory(true);
         try {
-            const res = await fetch(`/aether/messages/${conversationId}`);
+            const res = await fetch(`/petayu-ai/conversations/${conversationId}/messages`);
             const data = await res.json();
             setMessages(Array.isArray(data) ? data : []);
             setActiveConversationId(conversationId);
@@ -522,7 +522,7 @@ export default function AetherAIModal({ isOpen, onClose, startInCall = false }) 
         scrollToBottom();
         try {
             const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
-            const res = await fetch('/aether/chat', {
+            const res = await fetch('/petayu-ai/chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
                 body: JSON.stringify({ message: text, conversation_id: activeConversationId }),
@@ -561,7 +561,7 @@ export default function AetherAIModal({ isOpen, onClose, startInCall = false }) 
         setVoiceDebug(d => ({ ...d, chat: 'sending' }));
         try {
             const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
-            const res = await fetch('/aether/chat', {
+            const res = await fetch('/petayu-ai/chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
                 body: JSON.stringify({ message: text, conversation_id: activeConversationId }),
@@ -616,7 +616,7 @@ export default function AetherAIModal({ isOpen, onClose, startInCall = false }) 
                 fd.append('audio', blob, 'voice.webm');
                 const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
                 try {
-                    const res = await fetch('/aether/transcribe', {
+                    const res = await fetch('/petayu-ai/transcribe', {
                         method: 'POST',
                         headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' },
                         body: fd,
@@ -714,7 +714,7 @@ export default function AetherAIModal({ isOpen, onClose, startInCall = false }) 
                                     <Sparkles className="w-6 h-6 text-white" />
                                 </div>
                                 <div>
-                                    <h2 className="text-lg font-black text-slate-900 tracking-tight">Aether AI</h2>
+                                    <h2 className="text-lg font-black text-slate-900 tracking-tight">PETAYU AI</h2>
                                     <p className="text-[10px] font-black text-indigo-500 uppercase tracking-widest">Intelligence</p>
                                 </div>
                             </div>
@@ -782,7 +782,7 @@ export default function AetherAIModal({ isOpen, onClose, startInCall = false }) 
                             </button>
                             <div>
                                 <h3 className="text-sm font-black text-slate-900 leading-none">
-                                    {isLiveCallOpen ? 'Panggilan Aether' : 'Aether Intelligence'}
+                                    {isLiveCallOpen ? 'Panggilan PETAYU AI' : 'PETAYU AI'}
                                 </h3>
                                 <div className="flex items-center gap-1.5 mt-1">
                                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
@@ -842,7 +842,7 @@ export default function AetherAIModal({ isOpen, onClose, startInCall = false }) 
                                             )}
                                         </div>
                                     </div>
-                                    <div className="text-3xl font-black tracking-tight text-slate-950">Aether</div>
+                                    <div className="text-3xl font-black tracking-tight text-slate-950">PETAYU AI</div>
                                     <div className="mt-2 text-sm font-bold text-slate-500">
                                         {isPreparingSpeech ? 'Menyiapkan suara...' : isThinking ? 'Memahami ucapan anda...' : isSpeaking ? 'Sedang berbicara — ketuk untuk potong' : isListening ? 'Mendengarkan...' : 'Panggilan suara aktif'}
                                     </div>
@@ -917,7 +917,7 @@ export default function AetherAIModal({ isOpen, onClose, startInCall = false }) 
                             <div className="h-full flex flex-col items-center justify-center text-center px-6">
                                 <div className="relative mb-8">
                                     <div className="w-20 h-20 rounded-[32px] bg-gradient-to-br from-indigo-500 to-blue-600 flex items-center justify-center shadow-2xl shadow-indigo-200 rotate-3">
-                                        <AetherIcon className="w-10 h-10" />
+                                        <PetayuIcon className="w-10 h-10" />
                                     </div>
                                     <div className="absolute -bottom-2 -right-2 bg-white p-2 rounded-2xl shadow-xl border border-slate-50">
                                         <Sparkles className="w-5 h-5 text-indigo-500" />
@@ -948,7 +948,7 @@ export default function AetherAIModal({ isOpen, onClose, startInCall = false }) 
                         {!isLiveCallOpen && isLoading && (
                             <div className="flex gap-4 mb-6">
                                 <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-indigo-500 to-blue-600 flex items-center justify-center shrink-0 shadow-lg shadow-indigo-100">
-                                    <AetherIcon className="w-6 h-6" />
+                                    <PetayuIcon className="w-6 h-6" />
                                 </div>
                                 <div className="px-5 py-4 rounded-3xl rounded-tl-lg flex items-center gap-1.5 bg-white border border-slate-100 shadow-sm">
                                     <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-bounce [animation-delay:0ms]" />
@@ -970,7 +970,7 @@ export default function AetherAIModal({ isOpen, onClose, startInCall = false }) 
                     {/* Input */}
                     {!isLiveCallOpen && (
                         <div className="px-6 pb-6 pt-3 bg-white/85 backdrop-blur-md">
-                            <div className="relative rounded-[28px] border border-slate-200/80 bg-white shadow-[0_16px_45px_rgba(15,23,42,0.08)] transition-all focus-within:border-indigo-200 focus-within:shadow-[0_18px_55px_rgba(99,102,241,0.16)]">
+                            <div className="relative rounded-[28px] border border-slate-200/80 bg-white shadow-[0_16px_45px_rgba(15,23,42,0.08)] transition-all focus-within:border-indigo-200 focus-within:shadow-[0_18px_55px_rgba(89,50,201,0.16)]">
                                 <textarea
                                     ref={textareaRef}
                                     value={inputText}
@@ -992,8 +992,8 @@ export default function AetherAIModal({ isOpen, onClose, startInCall = false }) 
                                     disabled={!inputText.trim() || isLoading}
                                     className="absolute right-2.5 bottom-2.5 w-9 h-9 rounded-2xl flex items-center justify-center transition-all disabled:opacity-40"
                                     style={{
-                                        background: inputText.trim() && !isLoading ? '#6366f1' : '#cbd5e1',
-                                        boxShadow: inputText.trim() && !isLoading ? '0 8px 20px rgba(99,102,241,0.3)' : 'none',
+                                        background: inputText.trim() && !isLoading ? '#5932C9' : '#cbd5e1',
+                                        boxShadow: inputText.trim() && !isLoading ? '0 8px 20px rgba(89,50,201,0.3)' : 'none',
                                     }}
                                 >
                                     {isLoading ? <Loader2 className="w-5 h-5 text-white animate-spin" /> : <Send className="w-5 h-5 text-white" />}

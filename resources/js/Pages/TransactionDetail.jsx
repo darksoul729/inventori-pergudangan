@@ -55,15 +55,15 @@ const formatDate = (value, options = {}) => {
 };
 
 const DetailRow = ({ label, value, mono = false }) => (
-    <div className="grid grid-cols-1 gap-1 border-b border-[#edf2f7] py-3 last:border-b-0 sm:grid-cols-[190px_1fr] sm:gap-5">
+    <div className="grid grid-cols-1 gap-1 border-b border-[#EDE8FC] py-3 last:border-b-0 sm:grid-cols-[190px_1fr] sm:gap-5">
         <dt className="text-[12px] font-semibold uppercase tracking-[0.08em] text-slate-500">{label}</dt>
-        <dd className={`text-[14px] font-semibold text-[#1a202c] ${mono ? 'font-mono tracking-wide' : ''}`}>{value || '-'}</dd>
+        <dd className={`text-[14px] font-semibold text-[#28106F] ${mono ? 'font-mono tracking-wide' : ''}`}>{value || '-'}</dd>
     </div>
 );
 
 const SectionTitle = ({ children }) => (
-    <h2 className="mb-4 flex items-center gap-3 text-[13px] font-black uppercase tracking-[0.14em] text-[#1a202c]">
-        <span className="h-5 w-1 rounded-full bg-[#4338ca]" />
+    <h2 className="mb-4 flex items-center gap-3 text-[13px] font-black uppercase tracking-[0.14em] text-[#28106F]">
+        <span className="h-5 w-1 rounded-full bg-[#28106F]" />
         {children}
     </h2>
 );
@@ -86,7 +86,7 @@ export default function TransactionDetail({ transaction }) {
     const getStatusInfo = (tx) => {
         switch (tx.movement_type) {
             case 'in':
-                return { label: 'Barang Masuk', tone: 'text-[#4338ca] bg-[#eef2ff] border-[#c7d2fe]', icon: <InboundIcon className="h-5 w-5" />, sign: '+' };
+                return { label: 'Barang Masuk', tone: 'text-[#28106F] bg-[#eef2ff] border-[#c7d2fe]', icon: <InboundIcon className="h-5 w-5" />, sign: '+' };
             case 'out':
                 return { label: 'Barang Keluar', tone: 'text-[#ef4444] bg-[#fef2f2] border-[#fecaca]', icon: <OutboundIcon className="h-5 w-5" />, sign: '-' };
             case 'transfer':
@@ -94,9 +94,9 @@ export default function TransactionDetail({ transaction }) {
             case 'adjustment':
                 return { label: 'Penyesuaian', tone: 'text-[#9a3412] bg-[#fff7ed] border-[#fed7aa]', icon: <AdjustmentIcon className="h-5 w-5" />, sign: transaction.stock_after >= transaction.stock_before ? '+' : '-' };
             case 'opname':
-                return { label: 'Stock Opname', tone: 'text-[#475569] bg-[#f8fafc] border-[#e2e8f0]', icon: <AdjustmentIcon className="h-5 w-5" />, sign: transaction.stock_after >= transaction.stock_before ? '+' : '-' };
+                return { label: 'Stock Opname', tone: 'text-[#475569] bg-[#F8F7FF] border-[#e2e8f0]', icon: <AdjustmentIcon className="h-5 w-5" />, sign: transaction.stock_after >= transaction.stock_before ? '+' : '-' };
             default:
-                return { label: 'Selesai', tone: 'text-[#475569] bg-[#f8fafc] border-[#e2e8f0]', icon: <InboundIcon className="h-5 w-5" />, sign: '' };
+                return { label: 'Selesai', tone: 'text-[#475569] bg-[#F8F7FF] border-[#e2e8f0]', icon: <InboundIcon className="h-5 w-5" />, sign: '' };
         }
     };
 
@@ -119,13 +119,13 @@ export default function TransactionDetail({ transaction }) {
                         <Link
                             href={route('transaction')}
                             aria-label="Kembali ke riwayat transaksi"
-                            className="flex h-11 w-11 items-center justify-center rounded-xl border border-[#dbe4f0] bg-white text-slate-500 shadow-[0_2px_12px_rgba(0,0,0,0.02)] transition hover:border-[#4338ca] hover:text-[#4338ca]"
+                            className="flex h-11 w-11 items-center justify-center rounded-xl border border-[#dbe4f0] bg-white text-slate-500 shadow-[0_2px_12px_rgba(0,0,0,0.02)] transition hover:border-[#28106F] hover:text-[#28106F]"
                         >
                             <BackIcon className="h-5 w-5" />
                         </Link>
                         <div>
                             <p className="text-[12px] font-bold uppercase tracking-[0.16em] text-slate-500">Detail Transaksi</p>
-                            <h1 className="text-2xl font-black tracking-tight text-[#1a202c]">Voucher Mutasi Stok</h1>
+                            <h1 className="text-2xl font-black tracking-tight text-[#28106F]">Voucher Mutasi Stok</h1>
                         </div>
                     </div>
 
@@ -144,7 +144,7 @@ export default function TransactionDetail({ transaction }) {
                         )}
                         <a
                             href={route('transaction.pdf', transaction.id)}
-                            className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-[#4338ca] px-5 text-[13px] font-black text-white shadow-[0_10px_20px_rgba(67,56,202,0.18)] transition hover:bg-[#3730a3] focus:outline-none focus:ring-2 focus:ring-[#c7d2fe] focus:ring-offset-2"
+                            className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-[#28106F] px-5 text-[13px] font-black text-white shadow-[0_10px_20px_rgba(89,50,201,0.18)] transition hover:bg-[#3730a3] focus:outline-none focus:ring-2 focus:ring-[#c7d2fe] focus:ring-offset-2"
                         >
                             <DownloadIcon className="h-4 w-4" />
                             Export PDF
@@ -153,19 +153,19 @@ export default function TransactionDetail({ transaction }) {
                 </div>
 
                 <article className="w-full">
-                    <header className="border-b border-[#edf2f7] pb-6">
+                    <header className="border-b border-[#EDE8FC] pb-6">
                         <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
                             <div>
                                 <div className="mb-4 flex items-center gap-3">
-                                    <div className="flex h-11 w-11 items-center justify-center rounded-[14px] bg-[#3632c0] text-white shadow-lg shadow-indigo-200/50">
+                                    <div className="flex h-11 w-11 items-center justify-center rounded-[14px] bg-[#28106F] text-white shadow-lg shadow-indigo-200/50">
                                         <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z" />
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.3 7L12 12l8.7-5M12 22V12" />
                                         </svg>
                                     </div>
                                     <div>
-                                        <p className="text-[12px] font-black uppercase tracking-[0.18em] text-slate-500">Aether Logistix</p>
-                                        <h2 className="text-xl font-black tracking-tight text-[#1a202c]">Bukti Transaksi Persediaan</h2>
+                                        <p className="text-[12px] font-black uppercase tracking-[0.18em] text-slate-500">PETAYU</p>
+                                        <h2 className="text-xl font-black tracking-tight text-[#28106F]">Bukti Transaksi Persediaan</h2>
                                     </div>
                                 </div>
                                 <p className="max-w-2xl text-sm font-medium leading-6 text-slate-600">
@@ -173,14 +173,14 @@ export default function TransactionDetail({ transaction }) {
                                 </p>
                             </div>
 
-                            <div className="min-w-[260px] rounded-xl border border-[#edf2f7] bg-[#f8f9fc] p-4">
+                            <div className="min-w-[260px] rounded-xl border border-[#EDE8FC] bg-[#f8f9fc] p-4">
                                 <div className="grid grid-cols-[92px_1fr] gap-y-2 text-sm">
                                     <span className="font-semibold text-slate-500">No. Dokumen</span>
-                                    <span className="font-mono font-black text-[#1a202c]">{transactionNumber}</span>
+                                    <span className="font-mono font-black text-[#28106F]">{transactionNumber}</span>
                                     <span className="font-semibold text-slate-500">Tanggal</span>
-                                    <span className="font-semibold text-[#1a202c]">{formatDate(transaction.movement_date, { dateStyle: 'medium', timeStyle: 'short' })}</span>
+                                    <span className="font-semibold text-[#28106F]">{formatDate(transaction.movement_date, { dateStyle: 'medium', timeStyle: 'short' })}</span>
                                     <span className="font-semibold text-slate-500">Referensi</span>
-                                    <span className="font-mono font-semibold text-[#1a202c]">{referenceNumber}</span>
+                                    <span className="font-mono font-semibold text-[#28106F]">{referenceNumber}</span>
                                 </div>
                             </div>
                         </div>
@@ -195,36 +195,36 @@ export default function TransactionDetail({ transaction }) {
                                 </div>
                                 <p className="text-2xl font-black tracking-tight">{status.label}</p>
                             </div>
-                            <div className="rounded-xl border border-[#edf2f7] bg-white px-5 py-4">
+                            <div className="rounded-xl border border-[#EDE8FC] bg-white px-5 py-4">
                                 <p className="mb-2 text-[12px] font-black uppercase tracking-[0.12em] text-slate-500">Jumlah Mutasi</p>
-                                <p className="font-mono text-3xl font-black tracking-tight text-[#1a202c]">
+                                <p className="font-mono text-3xl font-black tracking-tight text-[#28106F]">
                                     {status.sign}{formatNumber(transaction.quantity)} <span className="font-sans text-sm font-black text-slate-500">PCS</span>
                                 </p>
                             </div>
-                            <div className="rounded-xl border border-[#edf2f7] bg-white px-5 py-4">
+                            <div className="rounded-xl border border-[#EDE8FC] bg-white px-5 py-4">
                                 <p className="mb-2 text-[12px] font-black uppercase tracking-[0.12em] text-slate-500">Estimasi Nilai</p>
-                                <p className="text-2xl font-black tracking-tight text-[#1a202c]">{formatMoney(totalValue)}</p>
+                                <p className="text-2xl font-black tracking-tight text-[#28106F]">{formatMoney(totalValue)}</p>
                             </div>
                         </section>
 
                         <section className="document-section">
                             <SectionTitle>Rincian Barang</SectionTitle>
-                            <div className="overflow-hidden rounded-xl border border-[#edf2f7]">
+                            <div className="overflow-hidden rounded-xl border border-[#EDE8FC]">
                                 <table className="w-full border-collapse text-left text-sm">
                                     <thead className="bg-[#f8f9fc] text-[12px] uppercase tracking-[0.1em] text-slate-500">
                                         <tr>
-                                            <th className="border-b border-[#edf2f7] px-4 py-3 font-black">Nama Barang</th>
-                                            <th className="border-b border-[#edf2f7] px-4 py-3 font-black">SKU</th>
-                                            <th className="border-b border-[#edf2f7] px-4 py-3 text-right font-black">Harga Satuan</th>
-                                            <th className="border-b border-[#edf2f7] px-4 py-3 text-right font-black">Total Nilai</th>
+                                            <th className="border-b border-[#EDE8FC] px-4 py-3 font-black">Nama Barang</th>
+                                            <th className="border-b border-[#EDE8FC] px-4 py-3 font-black">SKU</th>
+                                            <th className="border-b border-[#EDE8FC] px-4 py-3 text-right font-black">Harga Satuan</th>
+                                            <th className="border-b border-[#EDE8FC] px-4 py-3 text-right font-black">Total Nilai</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         <tr className="align-top">
-                                            <td className="px-4 py-4 font-bold text-[#1a202c]">{transaction.product?.name || 'Unidentified Item'}</td>
+                                            <td className="px-4 py-4 font-bold text-[#28106F]">{transaction.product?.name || 'Unidentified Item'}</td>
                                             <td className="px-4 py-4 font-mono font-semibold text-slate-700">{transaction.product?.sku || '-'}</td>
                                             <td className="px-4 py-4 text-right font-semibold text-slate-700">{formatMoney(unitPrice)}</td>
-                                            <td className="px-4 py-4 text-right font-black text-[#1a202c]">{formatMoney(totalValue)}</td>
+                                            <td className="px-4 py-4 text-right font-black text-[#28106F]">{formatMoney(totalValue)}</td>
                                         </tr>
                                     </tbody>
                                 </table>
@@ -234,15 +234,15 @@ export default function TransactionDetail({ transaction }) {
                         <section className="document-section">
                             <SectionTitle>Pergerakan Stok</SectionTitle>
                             <div className="grid gap-4 md:grid-cols-3">
-                                <div className="rounded-xl border border-[#edf2f7] bg-[#f8f9fc] p-5">
+                                <div className="rounded-xl border border-[#EDE8FC] bg-[#f8f9fc] p-5">
                                     <p className="text-[12px] font-black uppercase tracking-[0.12em] text-slate-500">Stok Awal</p>
-                                    <p className="mt-2 font-mono text-3xl font-black text-[#1a202c]">{formatNumber(transaction.stock_before)}</p>
+                                    <p className="mt-2 font-mono text-3xl font-black text-[#28106F]">{formatNumber(transaction.stock_before)}</p>
                                 </div>
-                                <div className="rounded-xl border border-[#edf2f7] bg-white p-5">
+                                <div className="rounded-xl border border-[#EDE8FC] bg-white p-5">
                                     <p className="text-[12px] font-black uppercase tracking-[0.12em] text-slate-500">Mutasi</p>
-                                    <p className="mt-2 font-mono text-3xl font-black text-[#4338ca]">{status.sign}{formatNumber(transaction.quantity)}</p>
+                                    <p className="mt-2 font-mono text-3xl font-black text-[#28106F]">{status.sign}{formatNumber(transaction.quantity)}</p>
                                 </div>
-                                <div className="rounded-xl border border-[#4338ca] bg-[#4338ca] p-5 text-white shadow-[0_10px_20px_rgba(67,56,202,0.18)]">
+                                <div className="rounded-xl border border-[#28106F] bg-[#28106F] p-5 text-white shadow-[0_10px_20px_rgba(89,50,201,0.18)]">
                                     <p className="text-[12px] font-black uppercase tracking-[0.12em] text-slate-300">Stok Akhir</p>
                                     <p className="mt-2 font-mono text-3xl font-black">{formatNumber(transaction.stock_after)}</p>
                                 </div>
@@ -252,7 +252,7 @@ export default function TransactionDetail({ transaction }) {
                         <section className="document-section grid gap-7 lg:grid-cols-2">
                             <div>
                                 <SectionTitle>Data Operasional</SectionTitle>
-                                <dl className="rounded-xl border border-[#edf2f7] px-5">
+                                <dl className="rounded-xl border border-[#EDE8FC] px-5">
                                     <DetailRow label="Operator" value={transaction.user?.name || 'System Auto'} />
                                     <DetailRow label="Email Operator" value={transaction.user?.email || 'verified_system'} />
                                     <DetailRow label="Gudang" value={transaction.warehouse?.name || 'N/A'} />
@@ -268,14 +268,14 @@ export default function TransactionDetail({ transaction }) {
 
                             <div>
                                 <SectionTitle>Referensi & Catatan</SectionTitle>
-                                <dl className="rounded-xl border border-[#edf2f7] px-5">
+                                <dl className="rounded-xl border border-[#EDE8FC] px-5">
                                     <DetailRow label="Tipe Referensi" value={transaction.reference_type || 'Manual Entry'} />
                                     <DetailRow label="Nomor Referensi" value={referenceNumber} mono />
                                     {transaction.source_document && (
-                                        <div className="grid grid-cols-1 gap-1 border-b border-[#edf2f7] py-3 last:border-b-0 sm:grid-cols-[190px_1fr] sm:gap-5">
+                                        <div className="grid grid-cols-1 gap-1 border-b border-[#EDE8FC] py-3 last:border-b-0 sm:grid-cols-[190px_1fr] sm:gap-5">
                                             <dt className="text-[12px] font-semibold uppercase tracking-[0.08em] text-slate-500">Dokumen Sumber</dt>
                                             <dd>
-                                                <Link href={transaction.source_document.url} className="text-[14px] font-black text-[#4338ca] hover:text-[#3730a3]">
+                                                <Link href={transaction.source_document.url} className="text-[14px] font-black text-[#28106F] hover:text-[#3730a3]">
                                                     {transaction.source_document.label} - {transaction.source_document.number}
                                                 </Link>
                                             </dd>
@@ -287,7 +287,7 @@ export default function TransactionDetail({ transaction }) {
                             </div>
                         </section>
 
-                        <section className="document-section rounded-xl border border-[#edf2f7] bg-[#f8f9fc] p-5">
+                        <section className="document-section rounded-xl border border-[#EDE8FC] bg-[#f8f9fc] p-5">
                             <p className="text-[12px] font-black uppercase tracking-[0.14em] text-slate-500">Pernyataan Dokumen</p>
                             <p className="mt-2 text-sm font-medium leading-6 text-slate-700">
                                 Dokumen ini dibuat otomatis dari sistem dan digunakan sebagai bukti administrasi mutasi stok. Validasi akhir dapat dilakukan dengan mencocokkan nomor dokumen, referensi, operator, dan jumlah stok pada sistem.
@@ -295,25 +295,25 @@ export default function TransactionDetail({ transaction }) {
                         </section>
 
                         <section className="document-section grid gap-5 pt-2 sm:grid-cols-3">
-                            <div className="rounded-xl border border-[#edf2f7] p-5 text-center">
+                            <div className="rounded-xl border border-[#EDE8FC] p-5 text-center">
                                 <p className="text-[12px] font-bold text-slate-500">Dibuat oleh</p>
                                 <div className="h-16" />
-                                <p className="border-t border-[#dbe4f0] pt-3 text-sm font-black text-[#1a202c]">{transaction.user?.name || 'System Auto'}</p>
+                                <p className="border-t border-[#dbe4f0] pt-3 text-sm font-black text-[#28106F]">{transaction.user?.name || 'System Auto'}</p>
                             </div>
-                            <div className="rounded-xl border border-[#edf2f7] p-5 text-center">
+                            <div className="rounded-xl border border-[#EDE8FC] p-5 text-center">
                                 <p className="text-[12px] font-bold text-slate-500">Diperiksa oleh</p>
                                 <div className="h-16" />
-                                <p className="border-t border-[#dbe4f0] pt-3 text-sm font-black text-[#1a202c]">Supervisor Gudang</p>
+                                <p className="border-t border-[#dbe4f0] pt-3 text-sm font-black text-[#28106F]">Supervisor Gudang</p>
                             </div>
-                            <div className="rounded-xl border border-[#edf2f7] p-5 text-center">
+                            <div className="rounded-xl border border-[#EDE8FC] p-5 text-center">
                                 <p className="text-[12px] font-bold text-slate-500">Disetujui oleh</p>
                                 <div className="h-16" />
-                                <p className="border-t border-[#dbe4f0] pt-3 text-sm font-black text-[#1a202c]">Manager Gudang</p>
+                                <p className="border-t border-[#dbe4f0] pt-3 text-sm font-black text-[#28106F]">Manager Gudang</p>
                             </div>
                         </section>
                     </main>
 
-                    <footer className="flex flex-col gap-2 border-t border-[#edf2f7] py-4 text-[12px] font-semibold text-slate-500 sm:flex-row sm:items-center sm:justify-between">
+                    <footer className="flex flex-col gap-2 border-t border-[#EDE8FC] py-4 text-[12px] font-semibold text-slate-500 sm:flex-row sm:items-center sm:justify-between">
                         <span>{transactionNumber} / {status.label} / {transaction.product?.sku || '-'}</span>
                         <span>Siap export pada {generatedAt}</span>
                     </footer>

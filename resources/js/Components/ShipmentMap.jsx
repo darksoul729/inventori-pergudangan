@@ -6,6 +6,153 @@ import 'leaflet/dist/leaflet.css';
 
 const INDONESIA_CENTER = [-2.5489, 118.0149];
 
+// Waypoint rute realistis dari Samarinda ke berbagai tujuan
+// Jalur darat mengikuti jalan utama Kalimantan, jalur laut mengikuti Selat Makassar
+const ROUTE_WAYPOINTS = {
+    // === JALUR DARAT KALTIM ===
+    // Samarinda → Balikpapan: via Jl. Soekarno-Hatta (jalan pantai timur)
+    'SMD-BPN': [
+        [-0.4948, 117.1436], [-0.4700, 117.0500], [-0.5200, 116.9200],
+        [-0.7000, 116.8700], [-0.9000, 116.8400], [-1.1000, 116.8312], [-1.2654, 116.8312],
+    ],
+    // Samarinda → Tenggarong: via Jl. PT Pupuk Kaltim (jalan pedalaman)
+    'SMD-TGR': [
+        [-0.4948, 117.1436], [-0.4800, 117.0800], [-0.4600, 117.0200], [-0.4167, 116.9833],
+    ],
+    // Samarinda → Bontang: via jalan utara pantai timur
+    'SMD-BXT': [
+        [-0.4948, 117.1436], [-0.4000, 117.2000], [-0.2000, 117.3000],
+        [0.0000, 117.4000], [0.1000, 117.4500], [0.1333, 117.4833],
+    ],
+    // Samarinda → Sangatta: via jalan utara (Bontang → Sangatta)
+    'SMD-SGQ': [
+        [-0.4948, 117.1436], [-0.4000, 117.2000], [-0.2000, 117.3000],
+        [0.0000, 117.4000], [0.1333, 117.4833], [0.3000, 117.5200], [0.5167, 117.5500],
+    ],
+    // Samarinda → Tarakan: laut utara via Selat Makassar → Tarakan
+    'SMD-TRK': [
+        [-0.4948, 117.1436], [-0.3000, 117.3000], [0.5000, 117.5000],
+        [1.5000, 117.5000], [2.5000, 117.6000], [3.3000, 117.5833],
+    ],
+
+    // === JALUR LAUT VIA SELAT MAKASSAR ===
+    // Samarinda → Banjarmasin: laut selatan via Selat Makassar → Kalimantan Selatan
+    'SMD-BJM': [
+        [-0.4948, 117.1436], [-0.8000, 117.0000], [-1.5000, 116.5000],
+        [-2.2000, 115.8000], [-2.8000, 115.2000], [-3.2000, 114.8000], [-3.4434, 114.8361],
+    ],
+    // Samarinda → Palangkaraya: laut via Selat Makassar → darat Kalteng
+    'SMD-PKY': [
+        [-0.4948, 117.1436], [-0.8000, 117.0000], [-1.5000, 116.5000],
+        [-2.0000, 115.5000], [-2.1000, 114.5000], [-2.2083, 113.9167],
+    ],
+    // Samarinda → Pontianak: laut via Selat Makassar → Selat Karimata → Kalbar
+    'SMD-PNK': [
+        [-0.4948, 117.1436], [-0.8000, 117.0000], [-1.5000, 116.5000],
+        [-2.0000, 115.5000], [-1.5000, 113.0000], [-0.8000, 110.5000], [-0.0226, 109.3444],
+    ],
+    // Samarinda → Makassar: laut via Selat Makassar
+    'SMD-UPG': [
+        [-0.4948, 117.1436], [-1.0000, 117.5000], [-2.0000, 118.0000],
+        [-3.0000, 118.5000], [-4.0000, 119.0000], [-5.1476, 119.4327],
+    ],
+    // Samarinda → Surabaya: laut via Selat Makassar → Laut Jawa
+    'SMD-SUB': [
+        [-0.4948, 117.1436], [-1.0000, 117.5000], [-2.5000, 118.0000],
+        [-4.0000, 118.5000], [-5.5000, 117.5000], [-6.5000, 115.5000],
+        [-7.0000, 113.0000], [-7.2575, 112.7521],
+    ],
+    // Samarinda → Jakarta: laut via Selat Makassar → Laut Jawa → Tanjung Priok
+    'SMD-JKT': [
+        [-0.4948, 117.1436], [-1.0000, 117.5000], [-2.5000, 118.0000],
+        [-4.0000, 118.5000], [-5.5000, 117.5000], [-6.5000, 115.5000],
+        [-7.0000, 113.0000], [-7.0000, 111.0000], [-6.8000, 109.0000],
+        [-6.6000, 107.5000], [-6.4000, 106.9000], [-6.2088, 106.8456],
+    ],
+    // Samarinda → Semarang: laut via Selat Makassar → Laut Jawa
+    'SMD-SRG': [
+        [-0.4948, 117.1436], [-1.0000, 117.5000], [-2.5000, 118.0000],
+        [-5.5000, 117.5000], [-6.5000, 115.5000], [-6.8000, 112.0000],
+        [-6.9667, 110.4167],
+    ],
+    // Samarinda → Singapore: laut via Selat Makassar → Laut Jawa → Selat Malaka
+    'SMD-SIN': [
+        [-0.4948, 117.1436], [-1.0000, 117.5000], [-2.5000, 118.0000],
+        [-4.0000, 118.5000], [-3.0000, 117.5000], [-2.0000, 116.0000],
+        [-1.0000, 114.0000], [0.0000, 110.0000], [0.5000, 107.0000],
+        [1.0000, 104.5000], [1.3521, 103.8198],
+    ],
+    // Samarinda → Denpasar/Bali: laut via Selat Makassar → Laut Jawa → Bali
+    'SMD-DPS': [
+        [-0.4948, 117.1436], [-1.0000, 117.5000], [-2.5000, 118.0000],
+        [-5.5000, 117.5000], [-7.0000, 115.0000], [-7.5000, 114.0000],
+        [-8.2000, 114.5000], [-8.6705, 115.2126],
+    ],
+    // Samarinda → Bandung: laut + darat via Jakarta
+    'SMD-BDO': [
+        [-0.4948, 117.1436], [-1.0000, 117.5000], [-2.5000, 118.0000],
+        [-5.5000, 117.5000], [-6.5000, 115.5000], [-7.0000, 113.0000],
+        [-7.0000, 111.0000], [-6.8000, 109.0000], [-6.6000, 107.5000],
+        [-6.9175, 107.6191],
+    ],
+    // Samarinda → Medan: laut via Selat Makassar → Laut Sulawesi → Selat Makassar utara
+    'SMD-KNO': [
+        [-0.4948, 117.1436], [1.0000, 117.8000], [2.5000, 118.0000],
+        [3.0000, 115.0000], [2.0000, 108.0000], [1.0000, 103.0000],
+        [2.0000, 100.0000], [3.5952, 98.6722],
+    ],
+    // Samarinda → Palembang: laut via Selat Makassar → Laut Jawa → Selat Bangka
+    'SMD-PLM': [
+        [-0.4948, 117.1436], [-1.0000, 117.5000], [-2.5000, 118.0000],
+        [-5.5000, 117.5000], [-6.5000, 115.5000], [-5.5000, 108.0000],
+        [-4.0000, 106.0000], [-2.9761, 104.7754],
+    ],
+};
+
+// Fallback: generate curved route using bezier-like midpoint offset
+function generateCurvedRoute(origin, destination) {
+    if (!origin || !destination) return [origin, destination];
+
+    const [lat1, lng1] = origin;
+    const [lat2, lng2] = destination;
+    const distLat = lat2 - lat1;
+    const distLng = lng2 - lng1;
+    const distance = Math.sqrt(distLat * distLat + distLng * distLng);
+
+    // Number of intermediate points based on distance
+    const steps = Math.max(3, Math.min(8, Math.floor(distance * 4)));
+
+    // Perpendicular offset for curve (avoids straight line, simulates land/sea detour)
+    const offsetFactor = distance > 10 ? 0.08 : distance > 3 ? 0.12 : 0.15;
+    const perpLat = -distLng / distance;
+    const perpLng = distLat / distance;
+    const sign = (lat1 + lat2) / 2 < 0 ? 1 : -1; // curve direction based on hemisphere
+
+    const points = [origin];
+    for (let i = 1; i < steps; i++) {
+        const t = i / steps;
+        const baseLat = lat1 + distLat * t;
+        const baseLng = lng1 + distLng * t;
+        // Bell curve offset peaking at midpoint
+        const bellOffset = Math.sin(t * Math.PI) * distance * offsetFactor * sign;
+        points.push([baseLat + perpLat * bellOffset, baseLng + perpLng * bellOffset]);
+    }
+    points.push(destination);
+
+    return points;
+}
+
+// Get route points: use predefined waypoints if available, otherwise generate curved route
+function getRoutePoints(originCode, destCode, origin, destination) {
+    const key = `${originCode}-${destCode}`;
+    if (ROUTE_WAYPOINTS[key]) return ROUTE_WAYPOINTS[key];
+    // Try reverse
+    const reverseKey = `${destCode}-${originCode}`;
+    if (ROUTE_WAYPOINTS[reverseKey]) return [...ROUTE_WAYPOINTS[reverseKey]].reverse();
+    // Fallback: curved line
+    return generateCurvedRoute(origin, destination);
+}
+
 function isValidCoordinate(value) {
     if (value === null || value === undefined || value === '') return false;
 
@@ -71,15 +218,25 @@ function RouteLines({ origin, destination, driver, shipment }) {
     const isDelivered = shipment.tracking_stage === 'delivered' || shipment.status === 'delivered';
     const hasLiveDriver = Boolean(driver);
 
+    // Get realistic route points
+    const routePoints = getRoutePoints(shipment.origin, shipment.destination, origin, destination);
+
+    // Determine route style based on load type
+    const isSea = shipment.load_type === 'sea';
+    const routeColor = isSea ? '#0ea5e9' : '#2563eb'; // sky blue for sea, indigo for ground
+    const routeDash = isSea ? '12 8' : '10 12';
+
     return (
         <>
             {origin && destination && (
                 <Polyline
-                    positions={[origin, destination]}
-                    color="#2563eb"
+                    positions={routePoints}
+                    color={routeColor}
                     weight={4}
-                    opacity={0.55}
-                    dashArray="10 12"
+                    opacity={0.6}
+                    dashArray={routeDash}
+                    lineCap="round"
+                    lineJoin="round"
                 />
             )}
 
@@ -89,6 +246,7 @@ function RouteLines({ origin, destination, driver, shipment }) {
                     color={isDelivered ? '#10b981' : '#059669'}
                     weight={5}
                     opacity={0.9}
+                    lineCap="round"
                 />
             )}
 
@@ -99,13 +257,22 @@ function RouteLines({ origin, destination, driver, shipment }) {
                     weight={4}
                     opacity={0.8}
                     dashArray="8 10"
+                    lineCap="round"
                 />
             )}
         </>
     );
 }
 
-export default function ShipmentMap({ shipments = [] }) {
+export default function ShipmentMap({ shipments = [], mapOptions = {} }) {
+    const options = {
+        showRoutes: true,
+        showOriginMarkers: true,
+        showDestinationMarkers: true,
+        showDriverMarkers: true,
+        showLegend: true,
+        ...mapOptions,
+    };
     const hasAnyGps = shipments.some((shipment) => pointFrom(shipment.driver_lat, shipment.driver_lng));
 
     return (
@@ -137,15 +304,17 @@ export default function ShipmentMap({ shipments = [] }) {
 
                     return (
                         <React.Fragment key={shipment.database_id || shipment.id || index}>
-                            <RouteLines
-                                origin={origin}
-                                destination={destination}
-                                driver={driver}
-                                shipment={shipment}
-                            />
+                            {options.showRoutes && (
+                                <RouteLines
+                                    origin={origin}
+                                    destination={destination}
+                                    driver={driver}
+                                    shipment={shipment}
+                                />
+                            )}
 
-                            {origin && (
-                                <Marker position={origin} icon={pointIcon({ color: '#4f46e5', icon: 'warehouse' })}>
+                            {options.showOriginMarkers && origin && (
+                                <Marker position={origin} icon={pointIcon({ color: '#5932C9', icon: 'warehouse' })}>
                                     <Popup>
                                         <div className="text-[11px] font-black uppercase tracking-wide text-indigo-600">Asal Pengiriman</div>
                                         <div className="text-[13px] font-bold text-slate-900">{shipment.origin_name}</div>
@@ -154,7 +323,7 @@ export default function ShipmentMap({ shipments = [] }) {
                                 </Marker>
                             )}
 
-                            {destination && (
+                            {options.showDestinationMarkers && destination && (
                                 <Marker position={destination} icon={pointIcon({ color: '#2563eb', icon: 'flag' })}>
                                     <Popup>
                                         <div className="text-[11px] font-black uppercase tracking-wide text-blue-600">Tujuan Akhir</div>
@@ -164,7 +333,7 @@ export default function ShipmentMap({ shipments = [] }) {
                                 </Marker>
                             )}
 
-                            {driver && (
+                            {options.showDriverMarkers && driver && (
                                 <Marker
                                     position={driver}
                                     icon={L.divIcon({
@@ -196,7 +365,7 @@ export default function ShipmentMap({ shipments = [] }) {
                                         {shipment.driver_id && (
                                             <button
                                                 onClick={() => router.get(route('drivers.index'), { tab: 'tracking', id: shipment.driver_id })}
-                                                className="mt-3 w-full flex items-center justify-center gap-2 bg-[#3632c0] hover:bg-[#2a27a3] text-white text-[10px] font-black uppercase tracking-widest py-2 px-3 rounded-lg transition-all shadow-md active:scale-95"
+                                                className="mt-3 w-full flex items-center justify-center gap-2 bg-[#28106F] hover:bg-[#2a27a3] text-white text-[10px] font-black uppercase tracking-widest py-2 px-3 rounded-lg transition-all shadow-md active:scale-95"
                                             >
                                                 <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -213,7 +382,7 @@ export default function ShipmentMap({ shipments = [] }) {
                 })}
             </MapContainer>
 
-            {!hasAnyGps && (
+            {options.showDriverMarkers && !hasAnyGps && (
                 <div className="absolute left-4 top-4 z-[1000] max-w-[280px] rounded-2xl border border-amber-100 bg-white/95 px-4 py-3 shadow-xl backdrop-blur">
                     <div className="text-[11px] font-black uppercase tracking-[0.16em] text-amber-600">GPS Driver Belum Masuk</div>
                     <div className="mt-1 text-[12px] font-semibold leading-relaxed text-slate-600">
@@ -222,12 +391,20 @@ export default function ShipmentMap({ shipments = [] }) {
                 </div>
             )}
 
-            <div className="absolute bottom-4 left-4 z-[1000] rounded-xl border border-gray-100 bg-white/95 px-3 py-2 shadow-sm backdrop-blur">
-                <div className="flex items-center gap-2">
-                    <span className="h-2 w-2 rounded-full bg-blue-600"></span>
-                    <span className="text-[10px] font-black uppercase tracking-widest text-gray-500">Rute Asal - Tujuan</span>
+            {options.showLegend && (
+                <div className="absolute bottom-4 left-4 z-[1000] rounded-xl border border-gray-100 bg-white/95 px-3 py-2 shadow-sm backdrop-blur">
+                    <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-2">
+                            <span className="h-0.5 w-5 bg-indigo-600" style={{ borderTop: '2px dashed #2563eb' }}></span>
+                            <span className="text-[10px] font-black uppercase tracking-widest text-gray-500">Darat</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <span className="h-0.5 w-5 bg-sky-500" style={{ borderTop: '2px dashed #0ea5e9' }}></span>
+                            <span className="text-[10px] font-black uppercase tracking-widest text-gray-500">Laut</span>
+                        </div>
+                    </div>
                 </div>
-            </div>
+            )}
 
             <style>{`
                 .shipment-map-marker {

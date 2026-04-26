@@ -21,7 +21,7 @@ export default function Edit({ mustVerifyEmail, status }) {
                         <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
                             <ProfilePhoto user={user} initials={initials} size="large" />
                             <div>
-                                <p className="text-[11px] font-black uppercase tracking-[0.22em] text-[#3632c0]">
+                                <p className="text-[11px] font-black uppercase tracking-[0.22em] text-[#28106F]">
                                     Pusat Akun
                                 </p>
                                 <h1 className="mt-2 text-[32px] font-black tracking-tight text-slate-950">
@@ -64,7 +64,7 @@ export default function Edit({ mustVerifyEmail, status }) {
                         </div>
 
                         <div className="rounded-[8px] border border-indigo-100 bg-indigo-50 px-4 py-4">
-                            <p className="text-[13px] font-black text-[#3632c0]">Akses operasional gudang</p>
+                            <p className="text-[13px] font-black text-[#28106F]">Akses operasional gudang</p>
                             <p className="mt-2 text-[12px] font-semibold leading-6 text-indigo-900/70">
                                 Data profil dipakai untuk audit transaksi, eskalasi kendala, dan identitas pengguna pada workflow WMS.
                             </p>
@@ -91,7 +91,7 @@ function ProfilePhoto({ user, initials, size = 'normal' }) {
     const large = size === 'large';
 
     return (
-        <div className={`${large ? 'h-24 w-24 rounded-[8px]' : 'h-16 w-16 rounded-[8px]'} flex flex-shrink-0 items-center justify-center overflow-hidden border border-indigo-100 bg-[#f4f3ff] text-[#3632c0] shadow-sm`}>
+        <div className={`${large ? 'h-24 w-24 rounded-[8px]' : 'h-16 w-16 rounded-[8px]'} flex flex-shrink-0 items-center justify-center overflow-hidden border border-indigo-100 bg-[#f4f3ff] text-[#28106F] shadow-sm`}>
             {user.profile_photo_url ? (
                 <img
                     src={user.profile_photo_url}
@@ -124,7 +124,7 @@ function InfoPill({ icon: Icon, label, value }) {
 function StatusBadge({ icon: Icon, text, tone = 'default' }) {
     const styles = tone === 'success'
         ? 'border-emerald-100 bg-emerald-50 text-emerald-700'
-        : 'border-indigo-100 bg-[#f4f3ff] text-[#3632c0]';
+        : 'border-indigo-100 bg-[#f4f3ff] text-[#28106F]';
 
     return (
         <span className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-[11px] font-black uppercase tracking-wider ${styles}`}>

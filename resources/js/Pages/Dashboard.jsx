@@ -1,4 +1,5 @@
 import DashboardLayout from '@/Layouts/DashboardLayout';
+import PageHeader, { PageHeaderActions } from '@/Components/PageHeader';
 import { Head, Link } from '@inertiajs/react';
 import React, { useState, useEffect } from 'react';
 
@@ -69,15 +70,15 @@ export default function Dashboard({ stats = {}, trends = [], racks = [], wmsKpis
         );
     }, [wmsKpis.latest_documents, searchTerm]);
 
-    const [aiInsight, setAiInsight] = useState('Analisis koneksi saraf Aether sedang memproses data...');
+    const [aiInsight, setAiInsight] = useState('Analisis koneksi PETAYU AI sedang memproses data...');
     const [aiLoading, setAiLoading] = useState(true);
 
     const fetchAiInsight = (refresh = false) => {
         if (refresh) {
             setAiLoading(true);
-            setAiInsight('Menghubungkan ulang ke Aether AI untuk menyusun analitik terbaru...');
+            setAiInsight('Menghubungkan ulang ke PETAYU AI untuk menyusun analitik terbaru...');
         }
-        fetch(`/aether/dashboard-insight${refresh ? '?refresh=1' : ''}`)
+        fetch(`/petayu-ai/dashboard-insight${refresh ? '?refresh=1' : ''}`)
             .then(res => res.json())
             .then(data => {
                 setAiInsight(data.text || 'Sistem Prediksi AI beroperasi dalam mode pemantauan rutin.');
@@ -108,6 +109,8 @@ export default function Dashboard({ stats = {}, trends = [], racks = [], wmsKpis
     
     const utilizationRaw = wmsKpis.rack_utilization || (totalRacks > 0 ? Math.round((occupiedRacks / totalRacks) * 100) : 0);
     const rackUtilization = Math.min(Math.max(utilizationRaw, 0), 100);
+    const warehouseUtilization = wmsKpis.warehouse_utilization || 0;
+    const unplacedStock = wmsKpis.unplaced_stock || 0;
 
     const getUtilColorObj = (val) => {
         if (val >= 90) return { bg: 'bg-rose-50', border: 'border-rose-100', text: 'text-rose-600', iconBg: 'bg-rose-100', dot: 'bg-rose-500' };
@@ -176,13 +179,22 @@ export default function Dashboard({ stats = {}, trends = [], racks = [], wmsKpis
             <Head title="WMS Dashboard" />
             
             <div className="max-w-[1500px] mx-auto pb-12 space-y-6 animate-in fade-in duration-500">
-                {/* --- 0. Header --- */}
-                <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-                    <div>
-                        <h1 className="text-2xl sm:text-[28px] font-bold text-slate-900 tracking-tight">Dashboard Operasional</h1>
-                        <p className="text-sm font-medium text-slate-500 mt-1">Status gudang dan ringkasan aktivitas harian.</p>
-                    </div>
-                    {stats.active_nodes !== undefined && (
+                {/* --- 0. Page Header (Consistent) --- */}
+                <PageHeader
+                    title="Dashboard Operasional"
+                    subtitle="Status gudang dan ringkasan aktivitas harian. Pantau KPI real-time dan tren aktivitas WMS."
+                    primaryAction={
+                        <PageHeaderActions.Add href="/inventory" label="Receiving Baru" />
+                    }
+                    secondaryActions={[
+                        <PageHeaderActions.Refresh key="refresh" onClick={() => fetchAiInsight(true)} />,
+                        <PageHeaderActions.Export key="export" onClick={() => window.print()} label="Print" />,
+                    ]}
+                />
+
+                {/* Status Badge */}
+                {stats.active_nodes !== undefined && (
+                    <div className="flex items-center gap-2">
                         <div className="flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 pl-2.5 pr-4 py-1.5 shadow-sm">
                             <span className="relative flex h-2.5 w-2.5">
                               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
@@ -192,8 +204,8 @@ export default function Dashboard({ stats = {}, trends = [], racks = [], wmsKpis
                                 {stats.active_nodes} Node Aktif
                             </span>
                         </div>
-                    )}
-                </div>
+                    </div>
+                )}
 
                 {/* --- 1. KPI Utama (5 Cards) --- */}
                 <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4">
@@ -248,6 +260,9 @@ export default function Dashboard({ stats = {}, trends = [], racks = [], wmsKpis
                         <div>
                             <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Total Inventaris</p>
                             <h3 className="text-2xl font-black text-slate-900">{formatNumber(stats.total_inventory || 0)}</h3>
+                            {unplacedStock > 0 && (
+                                <p className="text-[9px] font-bold text-amber-600 mt-1">{formatNumber(unplacedStock)} belum di-rack</p>
+                            )}
                         </div>
                     </div>
 
@@ -277,7 +292,7 @@ export default function Dashboard({ stats = {}, trends = [], racks = [], wmsKpis
                     <div className="px-6 py-3 border-b border-slate-100 flex items-center justify-between bg-slate-50">
                         <h2 className="text-[12px] font-bold text-slate-600 uppercase tracking-wide">Ringkasan Rack Gudang</h2>
                     </div>
-                    <div className="grid grid-cols-2 lg:grid-cols-4 divide-y lg:divide-y-0 lg:divide-x divide-slate-100">
+                    <div className="grid grid-cols-2 lg:grid-cols-5 divide-y lg:divide-y-0 lg:divide-x divide-slate-100">
                         <div className="px-6 py-4 flex items-center justify-between">
                             <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Total Rack</span>
                             <span className="text-xl font-black text-slate-800">{formatPreciseNumber(totalRacks)}</span>
@@ -290,6 +305,10 @@ export default function Dashboard({ stats = {}, trends = [], racks = [], wmsKpis
                             <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Kosong</span>
                             <span className="text-xl font-black text-emerald-600">{formatPreciseNumber(emptyRacks)}</span>
                         </div>
+                        <div className={`px-6 py-4 flex items-center justify-between transition-colors ${unplacedStock > 0 ? 'bg-amber-50/60' : ''}`}>
+                            <span className={`text-[11px] font-bold uppercase tracking-widest ${unplacedStock > 0 ? 'text-amber-500' : 'text-slate-400'}`}>Belum Di-rack</span>
+                            <span className={`text-xl font-black ${unplacedStock > 0 ? 'text-amber-600' : 'text-slate-400'}`}>{formatNumber(unplacedStock)}</span>
+                        </div>
                         <div className={`px-6 py-4 flex items-center justify-between transition-colors ${alertRacks > 0 ? 'bg-rose-50/60' : ''}`}>
                             <span className={`text-[11px] font-bold uppercase tracking-widest ${alertRacks > 0 ? 'text-rose-500' : 'text-slate-400'}`}>Perlu Tinjau</span>
                             <div className="flex items-center gap-2">
@@ -297,6 +316,21 @@ export default function Dashboard({ stats = {}, trends = [], racks = [], wmsKpis
                                 {alertRacks > 0 && <span className="flex h-2 w-2 rounded-full bg-rose-500 animate-ping"></span>}
                             </div>
                         </div>
+                        {(wmsKpis.expired_stock > 0 || wmsKpis.expiring_soon > 0) && (
+                            <>
+                                <div className={`px-6 py-4 flex items-center justify-between transition-colors ${wmsKpis.expired_stock > 0 ? 'bg-red-50/60' : ''}`}>
+                                    <span className={`text-[11px] font-bold uppercase tracking-widest ${wmsKpis.expired_stock > 0 ? 'text-red-500' : 'text-slate-400'}`}>Kadaluarsa</span>
+                                    <div className="flex items-center gap-2">
+                                        <span className={`text-xl font-black ${wmsKpis.expired_stock > 0 ? 'text-red-600' : 'text-slate-400'}`}>{wmsKpis.expired_stock || 0}</span>
+                                        {wmsKpis.expired_stock > 0 && <span className="flex h-2 w-2 rounded-full bg-red-500 animate-ping"></span>}
+                                    </div>
+                                </div>
+                                <div className={`px-6 py-4 flex items-center justify-between transition-colors ${wmsKpis.expiring_soon > 0 ? 'bg-amber-50/60' : ''}`}>
+                                    <span className={`text-[11px] font-bold uppercase tracking-widest ${wmsKpis.expiring_soon > 0 ? 'text-amber-500' : 'text-slate-400'}`}>Segera Expired</span>
+                                    <span className={`text-xl font-black ${wmsKpis.expiring_soon > 0 ? 'text-amber-600' : 'text-slate-400'}`}>{wmsKpis.expiring_soon || 0}</span>
+                                </div>
+                            </>
+                        )}
                     </div>
                 </div>
 
@@ -304,12 +338,12 @@ export default function Dashboard({ stats = {}, trends = [], racks = [], wmsKpis
                 <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
                     
                     {/* Visualisasi Lantai Gudang */}
-                    <div className="xl:col-span-8 bg-white rounded-2xl p-6 shadow-sm border border-[#edf2f7] min-h-[340px] flex flex-col relative">
+                    <div className="xl:col-span-8 bg-white rounded-2xl p-6 shadow-sm border border-[#EDE8FC] min-h-[340px] flex flex-col relative">
                         <div className="flex justify-between items-start mb-5 relative z-10">
                             <div>
-                                <h2 className="text-[16px] font-black text-[#1a202c]">Visualisasi Lantai Gudang</h2>
+                                <h2 className="text-[16px] font-black text-[#28106F]">Visualisasi Lantai Gudang</h2>
                                 <p className="text-[11px] font-semibold text-gray-500 mt-1 uppercase tracking-wider">
-                                    Tampilan: <span className="text-[#3632c0] font-black">{sortBy === 'zone' ? 'Zona' : sortBy === 'capacity' ? 'Kapasitas Penuh' : 'Baru Ditambahkan'}</span>
+                                    Tampilan: <span className="text-[#28106F] font-black">{sortBy === 'zone' ? 'Zona' : sortBy === 'capacity' ? 'Kapasitas Penuh' : 'Baru Ditambahkan'}</span>
                                 </p>
                             </div>
                             <div className="flex items-center space-x-3">
@@ -323,7 +357,7 @@ export default function Dashboard({ stats = {}, trends = [], racks = [], wmsKpis
                                         <button
                                             key={option.id}
                                             onClick={() => setSortBy(option.id)}
-                                            className={`px-2.5 py-1 rounded-[7px] text-[9px] font-black transition-all ${sortBy === option.id ? 'bg-white text-[#3632c0] shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
+                                            className={`px-2.5 py-1 rounded-[7px] text-[9px] font-black transition-all ${sortBy === option.id ? 'bg-white text-[#28106F] shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
                                         >
                                             {option.label}
                                         </button>
@@ -332,7 +366,7 @@ export default function Dashboard({ stats = {}, trends = [], racks = [], wmsKpis
                             </div>
                         </div>
 
-                        <div className="flex-1 bg-[#fbfcfd] rounded-[18px] border border-[#edf2f7] relative flex flex-col overflow-y-auto max-h-[400px] custom-scrollbar">
+                        <div className="flex-1 bg-[#fbfcfd] rounded-[18px] border border-[#EDE8FC] relative flex flex-col overflow-y-auto max-h-[400px] custom-scrollbar">
                             <div className="p-5 px-10 pt-8 space-y-6">
                                 {Object.entries(processedData).map(([groupName, groupRacks]) => (
                                     <div key={groupName} className="space-y-3">
@@ -356,23 +390,23 @@ export default function Dashboard({ stats = {}, trends = [], racks = [], wmsKpis
                                                     <div
                                                         key={rack.id}
                                                         onClick={() => setSelectedRack(rack)}
-                                                        className={`h-4 rounded-[5px] transition-all duration-300 relative group cursor-pointer ${rack.has_alert ? 'bg-[#ef4444] shadow-[0_0_10px_rgba(239,68,68,0.3)]' : rack.is_occupied ? 'bg-[#3632c0]' : 'bg-[#e2e8f0]'}`}
+                                                        className={`h-4 rounded-[5px] transition-all duration-300 relative group cursor-pointer ${rack.has_alert ? 'bg-[#ef4444] shadow-[0_0_10px_rgba(239,68,68,0.3)]' : rack.is_occupied ? 'bg-[#28106F]' : 'bg-[#e2e8f0]'}`}
                                                     >
                                                         {/* Advanced Tooltip */}
-                                                        <div className={`absolute bottom-full ${tooltipPosClass} mb-2.5 w-40 p-2.5 bg-white text-[#1a202c] rounded-xl opacity-0 group-hover:opacity-100 transition-all transform translate-y-2 group-hover:translate-y-0 z-50 pointer-events-none shadow-[0_10px_24px_rgba(0,0,0,0.08)] border border-[#edf2f7]`}>
+                                                        <div className={`absolute bottom-full ${tooltipPosClass} mb-2.5 w-40 p-2.5 bg-white text-[#28106F] rounded-xl opacity-0 group-hover:opacity-100 transition-all transform translate-y-2 group-hover:translate-y-0 z-50 pointer-events-none shadow-[0_10px_24px_rgba(0,0,0,0.08)] border border-[#EDE8FC]`}>
                                                             <div className="flex justify-between items-start mb-2">
                                                                 <span className="text-[9px] font-black tracking-wider uppercase opacity-40">Info Rak</span>
                                                                 {rack.has_alert && <span className="w-2 h-2 bg-red-500 rounded-full animate-ping"></span>}
                                                             </div>
-                                                            <div className="text-[12px] font-black mb-2 text-[#1a202c]">{rack.name}</div>
+                                                            <div className="text-[12px] font-black mb-2 text-[#28106F]">{rack.name}</div>
                                                             <div className="space-y-1.5">
                                                                 <div className="flex justify-between text-[8px] font-black uppercase tracking-widest text-gray-400">
                                                                     <span>Kapasitas</span>
-                                                                    <span className={rack.has_alert ? 'text-red-600' : 'text-[#3632c0]'}>{rack.fill_percent}%</span>
+                                                                    <span className={rack.has_alert ? 'text-red-600' : 'text-[#28106F]'}>{rack.fill_percent}%</span>
                                                                 </div>
                                                                 <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
                                                                     <div
-                                                                        className={`h-full rounded-full transition-all duration-500 ${rack.has_alert ? 'bg-red-500' : 'bg-[#3632c0]'}`}
+                                                                        className={`h-full rounded-full transition-all duration-500 ${rack.has_alert ? 'bg-red-500' : 'bg-[#28106F]'}`}
                                                                         style={{ width: `${Math.min(rack.fill_percent, 100)}%` }}
                                                                     ></div>
                                                                 </div>
@@ -395,7 +429,7 @@ export default function Dashboard({ stats = {}, trends = [], racks = [], wmsKpis
                         {/* Summary Legend Overlay */}
                         <div className="absolute bottom-10 left-10 bg-white/90 backdrop-blur-sm px-2.5 py-1.5 rounded-lg border border-gray-100 shadow-sm flex items-center space-x-3 z-10 pointer-events-none">
                             <div className="flex items-center space-x-1.5">
-                                <span className="w-2 h-2 rounded-full bg-[#3632c0]"></span>
+                                <span className="w-2 h-2 rounded-full bg-[#28106F]"></span>
                                 <span className="text-[9px] font-bold text-gray-500 uppercase tracking-wider">Terisi</span>
                             </div>
                             <div className="flex items-center space-x-1.5">
@@ -462,10 +496,10 @@ export default function Dashboard({ stats = {}, trends = [], racks = [], wmsKpis
                 <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
                     
                     {/* Tren Pergerakan Stok */}
-                    <div className="xl:col-span-8 bg-white rounded-[20px] p-6 shadow-sm border border-[#edf2f7] min-h-[320px] flex flex-col">
+                    <div className="xl:col-span-8 bg-white rounded-[20px] p-6 shadow-sm border border-[#EDE8FC] min-h-[320px] flex flex-col">
                         <div className="flex justify-between items-center mb-5">
                             <div>
-                                <h2 className="text-[16px] font-black text-[#1a202c]">Tren Pergerakan Stok</h2>
+                                <h2 className="text-[16px] font-black text-[#28106F]">Tren Pergerakan Stok</h2>
                                 <p className="text-[11px] font-semibold text-gray-500 mt-1">Perbandingan barang masuk dan keluar historikal.</p>
                             </div>
                             <div className="flex items-center gap-4">
@@ -562,7 +596,7 @@ export default function Dashboard({ stats = {}, trends = [], racks = [], wmsKpis
                             {/* Interactive Tooltip */}
                             {hoveredTrendIndex !== null && (
                                 <div
-                                    className="absolute z-50 pointer-events-none transition-all duration-200 bg-[#1a202c] rounded-xl p-3 shadow-2xl border border-white/10 text-white min-w-[140px]"
+                                    className="absolute z-50 pointer-events-none transition-all duration-200 bg-[#28106F] rounded-xl p-3 shadow-2xl border border-white/10 text-white min-w-[140px]"
                                     style={{
                                         left: `${(hoveredTrendIndex / (trends.length - 1)) * 100}%`,
                                         bottom: '60%',
@@ -601,11 +635,11 @@ export default function Dashboard({ stats = {}, trends = [], racks = [], wmsKpis
                     </div>
 
                     {/* Sidebar Dokumen Terbaru */}
-                    <div className="xl:col-span-4 bg-white rounded-[20px] p-6 shadow-sm border border-[#edf2f7] min-h-[320px] flex flex-col h-full max-h-[350px]">
+                    <div className="xl:col-span-4 bg-white rounded-[20px] p-6 shadow-sm border border-[#EDE8FC] min-h-[320px] flex flex-col h-full max-h-[350px]">
                         <div className="flex items-center justify-between mb-4">
-                            <h2 className="text-[16px] font-black text-[#1a202c]">Dokumen Terbaru</h2>
+                            <h2 className="text-[16px] font-black text-[#28106F]">Dokumen Terbaru</h2>
                             {filteredDocuments.length > 0 && (
-                                <span className="rounded-[8px] bg-[#f4f3ff] px-2.5 py-1 text-[10px] font-black text-[#3632c0]">
+                                <span className="rounded-[8px] bg-[#f4f3ff] px-2.5 py-1 text-[10px] font-black text-[#28106F]">
                                     {filteredDocuments.length} Baru
                                 </span>
                             )}
@@ -629,7 +663,7 @@ export default function Dashboard({ stats = {}, trends = [], racks = [], wmsKpis
                                         <Wrapper 
                                             key={`${doc.number}-${idx}`} 
                                             {...(doc.url ? { href: doc.url } : {})}
-                                            className={`block p-3 rounded-xl border border-[#edf2f7] hover:border-slate-300 transition-all ${doc.url ? 'cursor-pointer hover:bg-slate-50/50 shadow-sm hover:shadow' : ''}`}
+                                            className={`block p-3 rounded-xl border border-[#EDE8FC] hover:border-slate-300 transition-all ${doc.url ? 'cursor-pointer hover:bg-slate-50/50 shadow-sm hover:shadow' : ''}`}
                                         >
                                             <div className="flex items-start justify-between gap-3 mb-1">
                                                 <div className="flex items-center gap-2">
@@ -656,7 +690,7 @@ export default function Dashboard({ stats = {}, trends = [], racks = [], wmsKpis
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 pb-24">
                     <div className="absolute inset-0 bg-[#0f172a]/60 backdrop-blur-md" onClick={() => setSelectedRack(null)}></div>
                     <div className="relative bg-white rounded-[32px] w-full max-w-[440px] shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
-                        <div className={`h-24 flex items-center justify-center ${selectedRack.has_alert ? 'bg-red-500' : 'bg-[#3632c0]'} relative`}>
+                        <div className={`h-24 flex items-center justify-center ${selectedRack.has_alert ? 'bg-red-500' : 'bg-[#28106F]'} relative`}>
                             <button
                                 onClick={() => setSelectedRack(null)}
                                 className="absolute top-6 right-6 text-white opacity-60 hover:opacity-100"
@@ -669,10 +703,10 @@ export default function Dashboard({ stats = {}, trends = [], racks = [], wmsKpis
                         <div className="p-8">
                             <div className="flex justify-between items-start mb-6">
                                 <div>
-                                    <h3 className="text-[20px] font-black text-[#1a202c]">{selectedRack.name}</h3>
+                                    <h3 className="text-[20px] font-black text-[#28106F]">{selectedRack.name}</h3>
                                     <p className="text-[12px] font-bold text-gray-400 uppercase tracking-widest">{selectedRack.code}</p>
                                 </div>
-                                <div className={`px-3 py-1.5 rounded-xl text-[10px] font-black tracking-wide ${selectedRack.has_alert ? 'bg-red-50 text-red-600' : 'bg-[#f4f3ff] text-[#3632c0]'}`}>
+                                <div className={`px-3 py-1.5 rounded-xl text-[10px] font-black tracking-wide ${selectedRack.has_alert ? 'bg-red-50 text-red-600' : 'bg-[#f4f3ff] text-[#28106F]'}`}>
                                     {selectedRack.fill_percent}% TERISI
                                 </div>
                             </div>
@@ -681,24 +715,24 @@ export default function Dashboard({ stats = {}, trends = [], racks = [], wmsKpis
                                 <div className="space-y-3">
                                     <div className="flex justify-between text-[11px] font-black text-gray-500 tracking-wider">
                                         <span>STATUS KETERISIAN</span>
-                                        <span className="text-[#1a202c]">{formatPreciseNumber(selectedRack.current_qty)} / {formatPreciseNumber(selectedRack.capacity)} Unit</span>
+                                        <span className="text-[#28106F]">{formatPreciseNumber(selectedRack.current_qty)} / {formatPreciseNumber(selectedRack.capacity)} Unit</span>
                                     </div>
                                     <div className="h-3 w-full bg-gray-100 rounded-full overflow-hidden">
                                         <div
-                                            className={`h-full transition-all duration-700 ${selectedRack.has_alert ? 'bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.5)]' : 'bg-[#3632c0]'}`}
+                                            className={`h-full transition-all duration-700 ${selectedRack.has_alert ? 'bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.5)]' : 'bg-[#28106F]'}`}
                                             style={{ width: `${Math.min(selectedRack.fill_percent, 100)}%` }}
                                         ></div>
                                     </div>
                                 </div>
 
                                 <div className="grid grid-cols-2 gap-4">
-                                    <div className="bg-[#f8fafc] p-4 rounded-2xl border border-gray-100">
+                                    <div className="bg-[#F8F7FF] p-4 rounded-2xl border border-gray-100">
                                         <div className="text-[9px] font-black text-gray-400 uppercase mb-1">Pemanfaatan</div>
-                                        <div className="text-[18px] font-black text-[#1a202c]">{selectedRack.fill_percent}%</div>
+                                        <div className="text-[18px] font-black text-[#28106F]">{selectedRack.fill_percent}%</div>
                                     </div>
-                                    <div className="bg-[#f8fafc] p-4 rounded-2xl border border-gray-100">
+                                    <div className="bg-[#F8F7FF] p-4 rounded-2xl border border-gray-100">
                                         <div className="text-[9px] font-black text-gray-400 uppercase mb-1">Tersedia</div>
-                                        <div className="text-[18px] font-black text-[#1a202c]">{formatPreciseNumber(Math.max(0, selectedRack.capacity - selectedRack.current_qty))} Unit</div>
+                                        <div className="text-[18px] font-black text-[#28106F]">{formatPreciseNumber(Math.max(0, selectedRack.capacity - selectedRack.current_qty))} Unit</div>
                                     </div>
                                 </div>
 

@@ -29,10 +29,29 @@ const LOCATION_INPUT_MODES = [
     { id: 'manual', label: 'Manual', icon: Crosshair },
 ];
 
+const TRACKING_STAGE_OPTIONS = [
+    { value: 'ready_for_pickup', label: 'Siap Diambil' },
+    { value: 'picked_up', label: 'Sudah Diambil' },
+    { value: 'in_transit', label: 'Dalam Perjalanan' },
+    { value: 'arrived_at_destination', label: 'Sampai Gudang Tujuan' },
+];
+
+const DEFAULT_MAP_OPTIONS = {
+    showRoutes: true,
+    showOriginMarkers: true,
+    showDestinationMarkers: true,
+    showDriverMarkers: true,
+    showLegend: true,
+    showAlertsOnly: false,
+    showGpsOnly: false,
+    refreshIntervalSec: 15,
+};
+const MAP_OPTIONS_STORAGE_KEY = 'shipments_map_options_v1';
+
 const pickerIcon = new L.DivIcon({
     className: 'shipment-location-picker',
     html: `
-        <div style="width:18px;height:18px;border-radius:999px;background:#4f46e5;border:3px solid #ffffff;box-shadow:0 6px 18px rgba(79,70,229,.35);"></div>
+        <div style="width:18px;height:18px;border-radius:999px;background:#5932C9;border:3px solid #ffffff;box-shadow:0 6px 18px rgba(89,50,201,.35);"></div>
     `,
     iconSize: [18, 18],
     iconAnchor: [9, 9],
@@ -60,7 +79,7 @@ function LocationMapEvents({ position, onPick }) {
 }
 
 function CoordinateMapPicker({ value, onPick }) {
-    const center = value?.lat && value?.lng ? [value.lat, value.lng] : [-2.5489, 118.0149];
+    const center = value?.lat && value?.lng ? [value.lat, value.lng] : [-0.4948, 117.1436];
 
     return (
         <div className="overflow-hidden rounded-[24px] border border-gray-200">
@@ -101,9 +120,15 @@ export default function Shipments({ shipments = [], stats = {}, drivers = [], fi
     const [destinationMode, setDestinationMode] = useState('city');
     const [originSearch, setOriginSearch] = useState('');
     const [destinationSearch, setDestinationSearch] = useState('');
+    const [isMapSearchOpen, setIsMapSearchOpen] = useState(false);
+    const [isMapSettingsOpen, setIsMapSettingsOpen] = useState(false);
+    const [mapSearchQuery, setMapSearchQuery] = useState('');
+    const [mapOptions, setMapOptions] = useState(DEFAULT_MAP_OPTIONS);
     const [deleteTarget, setDeleteTarget] = useState(null);
 
     const isMounted = useRef(false);
+    const mapToolbarRef = useRef(null);
+    const mapPopoverRef = useRef(null);
 
     useEffect(() => {
         if (!isMounted.current) {
@@ -122,23 +147,66 @@ export default function Shipments({ shipments = [], stats = {}, drivers = [], fi
         return () => clearTimeout(delayDebounceFn);
     }, [searchTerm]);
 
+    useEffect(() => {
+        try {
+            const raw = localStorage.getItem(MAP_OPTIONS_STORAGE_KEY);
+            if (!raw) return;
+            const parsed = JSON.parse(raw);
+            if (!parsed || typeof parsed !== 'object') return;
+
+            setMapOptions((prev) => ({
+                ...prev,
+                ...Object.fromEntries(
+                    Object.keys(DEFAULT_MAP_OPTIONS).map((key) => [key, parsed[key] ?? prev[key]])
+                ),
+            }));
+        } catch {
+            // ignore invalid saved settings
+        }
+    }, []);
+
+    useEffect(() => {
+        try {
+            localStorage.setItem(MAP_OPTIONS_STORAGE_KEY, JSON.stringify(mapOptions));
+        } catch {
+            // ignore storage issues
+        }
+    }, [mapOptions]);
+
+    // Gudang utama - Samarinda, Kalimantan Timur
+    const WAREHOUSE_ORIGIN = {
+        code: 'SMD',
+        label: 'Gudang Samarinda, Kaltim',
+        lat: -0.4948,
+        lng: 117.1436,
+        name: 'Gudang Utama Samarinda',
+    };
+
     const { data, setData, post, processing, errors, reset } = useForm({
-        shipment_id: '',
-        origin: '',
-        origin_name: '',
+        origin: WAREHOUSE_ORIGIN.code,
+        origin_name: WAREHOUSE_ORIGIN.label,
         destination: '',
         destination_name: '',
-        status: 'in-transit',
+        tracking_stage: 'ready_for_pickup',
         estimated_arrival: '',
         load_type: 'ground',
         driver_id: '',
-        origin_lat: '',
-        origin_lng: '',
+        origin_lat: WAREHOUSE_ORIGIN.lat,
+        origin_lng: WAREHOUSE_ORIGIN.lng,
         dest_lat: '',
         dest_lng: ''
     });
 
     const cityCoords = {
+        'SAMARINDA': { lat: -0.4948, lng: 117.1436, code: 'SMD', label: 'Samarinda, Kaltim' },
+        'BALIKPAPAN': { lat: -1.2654, lng: 116.8312, code: 'BPN', label: 'Balikpapan, Kaltim' },
+        'BONTANG': { lat: 0.1333, lng: 117.4833, code: 'BXT', label: 'Bontang, Kaltim' },
+        'TENGGARONG': { lat: -0.4167, lng: 116.9833, code: 'TGR', label: 'Tenggarong, Kaltim' },
+        'SANGATTA': { lat: 0.5167, lng: 117.5500, code: 'SGQ', label: 'Sangatta, Kaltim' },
+        'TARAKAN': { lat: 3.3000, lng: 117.5833, code: 'TRK', label: 'Tarakan, Kaltara' },
+        'BANJARMASIN': { lat: -3.4434, lng: 114.8361, code: 'BJM', label: 'Banjarmasin, Kalsel' },
+        'PALANGKARAYA': { lat: -2.2083, lng: 113.9167, code: 'PKY', label: 'Palangkaraya, Kalteng' },
+        'PONTIANAK': { lat: -0.0226, lng: 109.3444, code: 'PNK', label: 'Pontianak, Kalbar' },
         'JAKARTA': { lat: -6.2088, lng: 106.8456, code: 'JKT', label: 'Jakarta' },
         'SURABAYA': { lat: -7.2575, lng: 112.7521, code: 'SUB', label: 'Surabaya' },
         'MEDAN': { lat: 3.5952, lng: 98.6722, code: 'KNO', label: 'Medan' },
@@ -189,25 +257,22 @@ export default function Shipments({ shipments = [], stats = {}, drivers = [], fi
 
     const applyLocationSelection = (type, location) => {
         if (type === 'origin') {
-            setData(prev => ({
-                ...prev,
-                origin: location.code ?? prev.origin,
-                origin_name: location.label ?? prev.origin_name,
-                origin_lat: location.lat,
-                origin_lng: location.lng,
-            }));
-        } else {
-            setData(prev => ({
-                ...prev,
-                destination: location.code ?? prev.destination,
-                destination_name: location.label ?? prev.destination_name,
-                dest_lat: location.lat,
-                dest_lng: location.lng,
-            }));
+            // Origin locked to warehouse - ignore changes
+            return;
         }
+
+        setData(prev => ({
+            ...prev,
+            destination: location.code ?? prev.destination,
+            destination_name: location.label ?? prev.destination_name,
+            dest_lat: location.lat,
+            dest_lng: location.lng,
+        }));
     };
 
     const handleMapLocationPick = (type, latlng) => {
+        if (type === 'origin') return; // Origin locked
+
         const roundedLat = Number(latlng.lat.toFixed(6));
         const roundedLng = Number(latlng.lng.toFixed(6));
         const nearbyCity = cityOptions.find((city) =>
@@ -215,7 +280,7 @@ export default function Shipments({ shipments = [], stats = {}, drivers = [], fi
         );
 
         applyLocationSelection(type, {
-            code: nearbyCity?.code ?? (type === 'origin' ? data.origin || 'PIN' : data.destination || 'PIN'),
+            code: nearbyCity?.code ?? (data.destination || 'PIN'),
             label: nearbyCity?.label ?? `Pinned ${roundedLat}, ${roundedLng}`,
             lat: roundedLat,
             lng: roundedLng,
@@ -335,10 +400,37 @@ export default function Shipments({ shipments = [], stats = {}, drivers = [], fi
                 preserveState: true,
                 preserveScroll: true,
             });
-        }, 15000);
+        }, Math.max(5, Number(mapOptions.refreshIntervalSec || 15)) * 1000);
 
         return () => clearInterval(interval);
-    }, []);
+    }, [mapOptions.refreshIntervalSec]);
+
+    useEffect(() => {
+        if (!isMapSearchOpen && !isMapSettingsOpen) return undefined;
+
+        const handlePointerDown = (event) => {
+            const target = event.target;
+            const isInsideToolbar = mapToolbarRef.current?.contains(target);
+            const isInsidePopover = mapPopoverRef.current?.contains(target);
+            if (isInsideToolbar || isInsidePopover) return;
+
+            setIsMapSearchOpen(false);
+            setIsMapSettingsOpen(false);
+        };
+
+        const handleEscape = (event) => {
+            if (event.key !== 'Escape') return;
+            setIsMapSearchOpen(false);
+            setIsMapSettingsOpen(false);
+        };
+
+        document.addEventListener('mousedown', handlePointerDown);
+        document.addEventListener('keydown', handleEscape);
+        return () => {
+            document.removeEventListener('mousedown', handlePointerDown);
+            document.removeEventListener('keydown', handleEscape);
+        };
+    }, [isMapSearchOpen, isMapSettingsOpen]);
 
     // Filter logic (status filtering only, search is handled server-side now)
     const filteredShipments = currentShipments.filter(shipment => {
@@ -350,6 +442,32 @@ export default function Shipments({ shipments = [], stats = {}, drivers = [], fi
         return a.id.localeCompare(b.id);
     });
 
+    const normalizedMapSearch = mapSearchQuery.trim().toLowerCase();
+    const mapShipments = currentShipments.filter((shipment) => {
+        const matchesSearch = !normalizedMapSearch || [
+            shipment.id,
+            shipment.driver_name,
+            shipment.origin,
+            shipment.origin_name,
+            shipment.destination,
+            shipment.destination_name,
+        ].some((value) => String(value || '').toLowerCase().includes(normalizedMapSearch));
+
+        const matchesAlerts = !mapOptions.showAlertsOnly || shipment.alerts?.is_delayed || shipment.alerts?.is_off_route;
+        const matchesGps = !mapOptions.showGpsOnly || (shipment.driver_lat && shipment.driver_lng);
+
+        return matchesSearch && matchesAlerts && matchesGps;
+    });
+
+    const setMapOption = (key, value) => {
+        setMapOptions((prev) => ({ ...prev, [key]: value }));
+    };
+
+    const resetMapControls = () => {
+        setMapSearchQuery('');
+        setMapOptions(DEFAULT_MAP_OPTIONS);
+    };
+
     const getStatusBadge = (status) => {
         const statusMap = {
             'on-time': { label: 'TEPAT WAKTU', color: 'bg-blue-100 text-blue-700', icon: CheckCircle2 },
@@ -360,16 +478,42 @@ export default function Shipments({ shipments = [], stats = {}, drivers = [], fi
         return statusMap[status] || statusMap['in-transit'];
     };
 
-    const getTrackingBadge = (trackingStage) => {
+    const getTrackingBadge = (trackingStage, trackingLabel) => {
         const trackingMap = {
-            ready_for_pickup: 'bg-slate-100 text-slate-700',
-            picked_up: 'bg-indigo-100 text-indigo-700',
-            in_transit: 'bg-amber-100 text-amber-700',
-            arrived_at_destination: 'bg-cyan-100 text-cyan-700',
-            delivered: 'bg-emerald-100 text-emerald-700',
+            ready_for_pickup: {
+                label: 'Siap Diambil',
+                color: 'bg-slate-100 text-slate-700',
+                icon: Package2,
+            },
+            picked_up: {
+                label: 'Sudah Diambil',
+                color: 'bg-indigo-100 text-indigo-700',
+                icon: Truck,
+            },
+            in_transit: {
+                label: 'Dalam Perjalanan',
+                color: 'bg-amber-100 text-amber-700',
+                icon: Ship,
+            },
+            arrived_at_destination: {
+                label: 'Sampai Gudang Tujuan',
+                color: 'bg-cyan-100 text-cyan-700',
+                icon: MapPinned,
+            },
+            delivered: {
+                label: 'Terkirim',
+                color: 'bg-emerald-100 text-emerald-700',
+                icon: CheckCircle2,
+            },
         };
 
-        return trackingMap[trackingStage] || 'bg-slate-100 text-slate-700';
+        const fallback = {
+            label: trackingLabel || 'Belum Bergerak',
+            color: 'bg-slate-100 text-slate-700',
+            icon: Package2,
+        };
+
+        return trackingMap[trackingStage] || fallback;
     };
 
     const getLoadTypeIcon = (loadType) => {
@@ -545,13 +689,13 @@ export default function Shipments({ shipments = [], stats = {}, drivers = [], fi
 
             <div className="flex justify-between items-end mb-6">
                 <div>
-                    <h1 className="text-[26px] font-black text-[#1a202c] tracking-tight">Pengiriman Aktif</h1>
+                    <h1 className="text-[26px] font-black text-[#28106F] tracking-tight">Pengiriman Aktif</h1>
                     <p className="text-[14px] font-semibold text-gray-500 mt-1">Pantau status pengiriman barang keluar dari gudang operasional.</p>
                 </div>
                 {canManageShipments && (
                     <Link
                         href={route('shipments.create')}
-                        className="px-6 py-2.5 bg-[#6366f1] hover:bg-[#4f46e5] text-white font-bold rounded-lg transition-colors flex items-center space-x-2"
+                        className="px-6 py-2.5 bg-[#5932C9] hover:bg-[#5932C9] text-white font-bold rounded-lg transition-colors flex items-center space-x-2"
                     >
                         <Plus className="w-5 h-5" strokeWidth={2.2} />
                         <span>Tambah Pengiriman</span>
@@ -561,7 +705,7 @@ export default function Shipments({ shipments = [], stats = {}, drivers = [], fi
 
             {/* KPI Stats */}
             <div className="grid grid-cols-4 gap-6 mb-8">
-                <div className="bg-white rounded-[20px] p-6 shadow-[0_2px_16px_rgba(0,0,0,0.02)] border border-[#edf2f7]">
+                <div className="bg-white rounded-[20px] p-6 shadow-[0_2px_16px_rgba(0,0,0,0.02)] border border-[#EDE8FC]">
                     <div className="flex justify-between items-start mb-5">
                         <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-blue-50 text-blue-600">
                             <Truck className="w-5 h-5" strokeWidth={2.2} />
@@ -569,10 +713,10 @@ export default function Shipments({ shipments = [], stats = {}, drivers = [], fi
                         <span className="px-2.5 py-1 text-[10px] font-black rounded-lg bg-blue-50 text-blue-600 tracking-wide">+12%</span>
                     </div>
                     <div className="text-[10px] font-extrabold text-gray-400 tracking-wider mb-1.5 uppercase">Dalam Perjalanan</div>
-                    <div className="text-[24px] font-black text-[#1a202c]">{currentStats.in_transit.toLocaleString()}</div>
+                    <div className="text-[24px] font-black text-[#28106F]">{currentStats.in_transit.toLocaleString()}</div>
                 </div>
 
-                <div className="bg-white rounded-[20px] p-6 shadow-[0_2px_16px_rgba(0,0,0,0.02)] border border-[#edf2f7]">
+                <div className="bg-white rounded-[20px] p-6 shadow-[0_2px_16px_rgba(0,0,0,0.02)] border border-[#EDE8FC]">
                     <div className="flex justify-between items-start mb-5">
                         <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-red-50 text-red-600">
                             <AlertCircle className="w-5 h-5" strokeWidth={2.2} />
@@ -580,10 +724,10 @@ export default function Shipments({ shipments = [], stats = {}, drivers = [], fi
                         <span className="px-2.5 py-1 text-[10px] font-black rounded-lg bg-red-50 text-red-600 tracking-wide">-3%</span>
                     </div>
                     <div className="text-[10px] font-extrabold text-gray-400 tracking-wider mb-1.5 uppercase">Terlambat</div>
-                    <div className="text-[24px] font-black text-[#1a202c]">{currentStats.delayed}</div>
+                    <div className="text-[24px] font-black text-[#28106F]">{currentStats.delayed}</div>
                 </div>
 
-                <div className="bg-white rounded-[20px] p-6 shadow-[0_2px_16px_rgba(0,0,0,0.02)] border border-[#edf2f7]">
+                <div className="bg-white rounded-[20px] p-6 shadow-[0_2px_16px_rgba(0,0,0,0.02)] border border-[#EDE8FC]">
                     <div className="flex justify-between items-start mb-5">
                         <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-yellow-50 text-yellow-600">
                             <CheckCircle2 className="w-5 h-5" strokeWidth={2.2} />
@@ -591,10 +735,10 @@ export default function Shipments({ shipments = [], stats = {}, drivers = [], fi
                         <span className="px-2.5 py-1 text-[10px] font-black rounded-lg bg-yellow-50 text-yellow-600 tracking-wide">Optimal</span>
                     </div>
                     <div className="text-[10px] font-extrabold text-gray-400 tracking-wider mb-1.5 uppercase">Terkirim Hari Ini</div>
-                    <div className="text-[24px] font-black text-[#1a202c]">{currentStats.delivered_today}</div>
+                    <div className="text-[24px] font-black text-[#28106F]">{currentStats.delivered_today}</div>
                 </div>
 
-                <div className="bg-white rounded-[20px] p-6 shadow-[0_2px_16px_rgba(0,0,0,0.02)] border border-[#edf2f7]">
+                <div className="bg-white rounded-[20px] p-6 shadow-[0_2px_16px_rgba(0,0,0,0.02)] border border-[#EDE8FC]">
                     <div className="text-[10px] font-extrabold text-gray-400 tracking-wider mb-4 uppercase">Jaringan Global</div>
                     <div className="space-y-2">
                         <div className="flex justify-between items-center">
@@ -614,29 +758,159 @@ export default function Shipments({ shipments = [], stats = {}, drivers = [], fi
             </div>
 
             {/* Global Network Map */}
-            <div className="bg-white rounded-[28px] p-6 md:p-7 mb-8 shadow-[0_2px_16px_rgba(0,0,0,0.02)] border border-[#edf2f7]">
+            <div className="bg-white rounded-[28px] p-6 md:p-7 mb-8 shadow-[0_2px_16px_rgba(0,0,0,0.02)] border border-[#EDE8FC]">
                 <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-[16px] font-black text-[#1a202c]">JARINGAN GLOBAL LANGSUNG</h2>
-                    <div className="flex space-x-2">
-                        <button className="w-10 h-10 rounded-lg bg-gray-50 hover:bg-gray-100 flex items-center justify-center border border-gray-200 transition-colors">
+                    <div>
+                        <h2 className="text-[16px] font-black text-[#28106F]">JARINGAN GLOBAL LANGSUNG</h2>
+                        <p className="mt-1 text-[12px] font-semibold text-slate-500">Pantau lintasan aktif, posisi driver, dan anomali rute secara real-time.</p>
+                    </div>
+                    <div ref={mapToolbarRef} className="flex space-x-2">
+                        <button
+                            type="button"
+                            onClick={() => {
+                                setIsMapSettingsOpen((v) => !v);
+                                setIsMapSearchOpen(false);
+                            }}
+                            className={`w-10 h-10 rounded-xl flex items-center justify-center border transition-colors ${
+                                isMapSettingsOpen
+                                    ? 'bg-indigo-50 border-indigo-200'
+                                    : 'bg-gray-50 hover:bg-gray-100 border-gray-200'
+                            }`}
+                        >
                             <Settings2 className="w-5 h-5 text-gray-600" strokeWidth={2.1} />
                         </button>
-                        <button className="w-10 h-10 rounded-lg bg-gray-50 hover:bg-gray-100 flex items-center justify-center border border-gray-200 transition-colors">
+                        <button
+                            type="button"
+                            onClick={() => {
+                                setIsMapSearchOpen((v) => !v);
+                                setIsMapSettingsOpen(false);
+                            }}
+                            className={`w-10 h-10 rounded-xl flex items-center justify-center border transition-colors ${
+                                isMapSearchOpen
+                                    ? 'bg-indigo-50 border-indigo-200'
+                                    : 'bg-gray-50 hover:bg-gray-100 border-gray-200'
+                            }`}
+                        >
                             <Search className="w-5 h-5 text-gray-600" strokeWidth={2.1} />
                         </button>
                     </div>
                 </div>
 
                 {/* Map Placeholder - showing network routes */}
-                <div className="h-[420px] md:h-[520px] xl:h-[620px]">
-                    <ShipmentMap shipments={currentShipments} />
+                <div className="relative h-[420px] md:h-[520px] xl:h-[620px]">
+                    <ShipmentMap shipments={mapShipments} mapOptions={mapOptions} />
+
+                    {(isMapSearchOpen || isMapSettingsOpen) && (
+                        <div
+                            ref={mapPopoverRef}
+                            className="map-popover-enter absolute right-4 top-4 z-[1200] w-[360px] max-w-[calc(100%-2rem)] rounded-2xl border border-slate-200/80 bg-white/95 p-4 shadow-2xl backdrop-blur"
+                        >
+                            {isMapSearchOpen && (
+                                <>
+                                    <div className="mb-2 text-[10px] font-black uppercase tracking-widest text-slate-500">Cari di Map</div>
+                                    <input
+                                        type="text"
+                                        value={mapSearchQuery}
+                                        onChange={(e) => setMapSearchQuery(e.target.value)}
+                                        placeholder="ID shipment, driver, asal, tujuan..."
+                                        className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-[13px] font-bold text-slate-700"
+                                    />
+                                    <div className="mt-2 text-[11px] font-semibold text-slate-500">
+                                        Menampilkan <span className="text-indigo-600">{mapShipments.length}</span> dari {currentShipments.length} shipment.
+                                    </div>
+                                </>
+                            )}
+
+                            {isMapSettingsOpen && (
+                                <>
+                                    <div className="mb-3 text-[10px] font-black uppercase tracking-widest text-slate-500">Layer & Refresh</div>
+                                    <div className="grid grid-cols-2 gap-2">
+                                        {[
+                                            ['showRoutes', 'Rute'],
+                                            ['showOriginMarkers', 'Asal'],
+                                            ['showDestinationMarkers', 'Tujuan'],
+                                            ['showDriverMarkers', 'Driver'],
+                                            ['showLegend', 'Legenda'],
+                                            ['showAlertsOnly', 'Alert Only'],
+                                            ['showGpsOnly', 'GPS Only'],
+                                        ].map(([key, label]) => (
+                                            <button
+                                                key={key}
+                                                type="button"
+                                                onClick={() => setMapOption(key, !mapOptions[key])}
+                                                className={`rounded-lg border px-3 py-2 text-[11px] font-black transition ${
+                                                    mapOptions[key]
+                                                        ? 'border-indigo-200 bg-indigo-50 text-indigo-700'
+                                                        : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
+                                                }`}
+                                            >
+                                                {label}
+                                            </button>
+                                        ))}
+                                    </div>
+
+                                    <div className="mt-3 flex items-center justify-between gap-2">
+                                        <label className="text-[11px] font-black uppercase tracking-wider text-slate-500">Auto Refresh</label>
+                                        <select
+                                            value={mapOptions.refreshIntervalSec}
+                                            onChange={(e) => setMapOption('refreshIntervalSec', Number(e.target.value))}
+                                            className="rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-[12px] font-bold text-slate-700"
+                                        >
+                                            <option value={10}>10 detik</option>
+                                            <option value={15}>15 detik</option>
+                                            <option value={30}>30 detik</option>
+                                            <option value={60}>60 detik</option>
+                                        </select>
+                                    </div>
+                                </>
+                            )}
+
+                            <div className="mt-3 flex justify-end gap-2 border-t border-slate-200 pt-3">
+                                <button
+                                    type="button"
+                                    onClick={resetMapControls}
+                                    className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[11px] font-black text-slate-600 hover:bg-slate-50"
+                                >
+                                    Reset
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setIsMapSearchOpen(false);
+                                        setIsMapSettingsOpen(false);
+                                    }}
+                                    className="rounded-lg bg-indigo-600 px-3 py-1.5 text-[11px] font-black text-white hover:bg-indigo-700"
+                                >
+                                    Selesai
+                                </button>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
 
+            <style>{`
+                .map-popover-enter {
+                    animation: mapPopoverIn .18s ease-out;
+                    transform-origin: top right;
+                }
+
+                @keyframes mapPopoverIn {
+                    from {
+                        opacity: 0;
+                        transform: translateY(-8px) scale(0.98);
+                    }
+                    to {
+                        opacity: 1;
+                        transform: translateY(0) scale(1);
+                    }
+                }
+            `}</style>
+
             {/* Shipment Pipeline Table */}
-            <div className="bg-white rounded-[24px] p-7 shadow-[0_2px_16px_rgba(0,0,0,0.02)] border border-[#edf2f7]">
+            <div className="bg-white rounded-[24px] p-7 shadow-[0_2px_16px_rgba(0,0,0,0.02)] border border-[#EDE8FC]">
                 <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-[16px] font-black text-[#1a202c]">JALUR PENGIRIMAN</h2>
+                    <h2 className="text-[16px] font-black text-[#28106F]">JALUR PENGIRIMAN</h2>
                     <div className="flex items-center space-x-3">
                         <div className="text-[13px] font-bold text-gray-400 bg-gray-50 px-3 py-2 rounded-lg border border-gray-200">
                             ID: {searchTerm || 'Semua'}
@@ -655,6 +929,7 @@ export default function Shipments({ shipments = [], stats = {}, drivers = [], fi
                             <tr className="border-b border-gray-200">
                                 <th className="px-4 py-3.5 text-left text-[11px] font-black text-gray-500 uppercase tracking-wide">ID Pengiriman</th>
                                 <th className="px-4 py-3.5 text-left text-[11px] font-black text-gray-500 uppercase tracking-wide">Asal / Tujuan</th>
+                                <th className="px-4 py-3.5 text-left text-[11px] font-black text-gray-500 uppercase tracking-wide">Barang Dikirim</th>
                                 <th className="px-4 py-3.5 text-left text-[11px] font-black text-gray-500 uppercase tracking-wide">Driver / Kurir</th>
                                 <th className="px-4 py-3.5 text-left text-[11px] font-black text-gray-500 uppercase tracking-wide">Status</th>
                                 <th className="px-4 py-3.5 text-left text-[11px] font-black text-gray-500 uppercase tracking-wide">Progress Driver</th>
@@ -674,6 +949,32 @@ export default function Shipments({ shipments = [], stats = {}, drivers = [], fi
                                             <div className="text-[12px] text-gray-500 mt-0.5">{shipment.origin_name} — {shipment.destination_name}</div>
                                         </td>
                                         <td className="px-4 py-4">
+                                            {shipment.items_summary ? (
+                                                <div>
+                                                    <div className="text-[12px] font-bold text-gray-700">
+                                                        {shipment.items_summary.total_items} produk · {shipment.items_summary.total_quantity} {shipment.items_summary.top_items?.[0]?.unit || 'unit'}
+                                                    </div>
+                                                    {shipment.items_summary.total_weight_kg && (
+                                                        <div className="text-[11px] text-gray-400 mt-0.5">{shipment.items_summary.total_weight_kg.toLocaleString()} kg total</div>
+                                                    )}
+                                                    <div className="flex flex-wrap gap-1 mt-1">
+                                                        {shipment.items_summary.top_items?.map((item, i) => (
+                                                            <span key={i} className="inline-flex px-2 py-0.5 bg-slate-100 text-slate-600 text-[10px] font-bold rounded-md">
+                                                                {item.product_name} ×{item.quantity}
+                                                            </span>
+                                                        ))}
+                                                        {shipment.items_summary.total_items > 3 && (
+                                                            <span className="inline-flex px-2 py-0.5 bg-indigo-50 text-indigo-500 text-[10px] font-bold rounded-md">
+                                                                +{shipment.items_summary.total_items - 3} lagi
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <span className="text-[12px] text-gray-400">Belum ada item</span>
+                                            )}
+                                        </td>
+                                        <td className="px-4 py-4">
                                             <div className="flex items-center space-x-2">
                                                 <div className="w-7 h-7 rounded-lg bg-gray-100 flex items-center justify-center text-[10px] font-black text-gray-500">
                                                     {shipment.driver_name.charAt(0)}
@@ -688,9 +989,16 @@ export default function Shipments({ shipments = [], stats = {}, drivers = [], fi
                                         </td>
                                         <td className="px-4 py-4">
                                             <div className="space-y-1">
-                                                <span className={`inline-flex px-3 py-1 text-[10px] font-black rounded-lg ${getTrackingBadge(shipment.tracking_stage)}`}>
-                                                    {shipment.tracking_stage_label || 'Belum Bergerak'}
-                                                </span>
+                                                {(() => {
+                                                    const trackingInfo = getTrackingBadge(shipment.tracking_stage, shipment.tracking_stage_label);
+                                                    const TrackingIcon = trackingInfo.icon;
+                                                    return (
+                                                        <span className={`inline-flex items-center gap-1.5 px-3 py-1 text-[10px] font-black rounded-lg ${trackingInfo.color}`}>
+                                                            <TrackingIcon className="h-3.5 w-3.5" strokeWidth={2.4} />
+                                                            {shipment.tracking_stage_label || trackingInfo.label}
+                                                        </span>
+                                                    );
+                                                })()}
                                                 {(shipment.alerts?.is_delayed || shipment.alerts?.is_off_route) && (
                                                     <div className="flex flex-wrap gap-1.5">
                                                         {shipment.alerts?.is_delayed && (
@@ -817,7 +1125,7 @@ export default function Shipments({ shipments = [], stats = {}, drivers = [], fi
                 <div className="fixed inset-0 z-[10010] flex items-center justify-center bg-black/45 backdrop-blur-sm p-4">
                     <div className="w-full max-w-md rounded-[28px] border border-gray-200 bg-white p-6 shadow-2xl">
                         <div className="text-[11px] font-black uppercase tracking-[0.2em] text-red-500">Konfirmasi Hapus</div>
-                        <h3 className="mt-2 text-[20px] font-black text-[#1a202c]">Hapus Shipment #{deleteTarget.id}?</h3>
+                        <h3 className="mt-2 text-[20px] font-black text-[#28106F]">Hapus Shipment #{deleteTarget.id}?</h3>
                         <p className="mt-3 text-[13px] font-semibold leading-6 text-gray-500">
                             Data shipment akan dihapus permanen dan tindakan ini tidak bisa dibatalkan.
                         </p>
@@ -847,7 +1155,7 @@ export default function Shipments({ shipments = [], stats = {}, drivers = [], fi
                     <div className="bg-white rounded-[32px] w-full max-w-2xl shadow-2xl flex flex-col max-h-[90vh] animate-in fade-in zoom-in-95 duration-200">
                         <div className="px-8 py-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/50 flex-shrink-0">
                             <div>
-                                <h3 className="text-[18px] font-black text-[#1a202c]">Tambah Pengiriman Baru</h3>
+                                <h3 className="text-[18px] font-black text-[#28106F]">Tambah Pengiriman Baru</h3>
                                 <p className="text-[12px] font-bold text-gray-400">Input data logistik dan tugaskan kurir pengantar.</p>
                             </div>
                             <button onClick={() => setShowCreateModal(false)} className="text-gray-400 hover:text-gray-600">
@@ -862,13 +1170,12 @@ export default function Shipments({ shipments = [], stats = {}, drivers = [], fi
                                         <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-2">ID Pengiriman</label>
                                         <input
                                             type="text"
-                                            placeholder="TRK-XXXXX"
-                                            className="w-full px-5 py-3 bg-gray-50 border border-gray-200 rounded-2xl text-[14px] font-bold focus:ring-[#6366f1] focus:border-[#6366f1] transition-all"
-                                            value={data.shipment_id}
-                                            onChange={e => setData('shipment_id', e.target.value)}
-                                            required
+                                            placeholder="Akan dibuat otomatis saat disimpan"
+                                            className="w-full px-5 py-3 bg-gray-50 border border-gray-200 rounded-2xl text-[14px] font-bold focus:ring-[#5932C9] focus:border-[#5932C9] transition-all"
+                                            value=""
+                                            disabled
                                         />
-                                        {errors.shipment_id && <div className="text-red-500 text-[10px] mt-1 font-bold">{errors.shipment_id}</div>}
+                                        <div className="text-slate-500 text-[10px] mt-1 font-bold">Nomor pengiriman di-generate sistem.</div>
                                     </div>
 
                                     <div className="col-span-2 rounded-[24px] border border-slate-200 bg-slate-50 px-5 py-4">
@@ -913,12 +1220,11 @@ export default function Shipments({ shipments = [], stats = {}, drivers = [], fi
                                         <input type="datetime-local" className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl text-[13px] font-bold" value={data.estimated_arrival} onChange={e => setData('estimated_arrival', e.target.value)} required />
                                     </div>
                                     <div>
-                                        <label className="text-[10px] font-black text-gray-400 mb-2 block uppercase tracking-widest">Status</label>
-                                        <select className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl text-[13px] font-bold appearance-none" value={data.status} onChange={e => setData('status', e.target.value)}>
-                                            <option value="in-transit">Dalam Perjalanan</option>
-                                            <option value="on-time">Tepat Waktu</option>
-                                            <option value="delayed">Terlambat</option>
-                                            <option value="delivered">Sampai Tujuan</option>
+                                        <label className="text-[10px] font-black text-gray-400 mb-2 block uppercase tracking-widest">Tahap Tracking</label>
+                                        <select className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl text-[13px] font-bold appearance-none" value={data.tracking_stage} onChange={e => setData('tracking_stage', e.target.value)}>
+                                            {TRACKING_STAGE_OPTIONS.map((option) => (
+                                                <option key={option.value} value={option.value}>{option.label}</option>
+                                            ))}
                                         </select>
                                     </div>
                                     <div>
@@ -950,7 +1256,7 @@ export default function Shipments({ shipments = [], stats = {}, drivers = [], fi
 
                             <div className="p-8 bg-gray-50/50 border-t border-gray-100 flex space-x-4 flex-shrink-0">
                                 <button type="button" onClick={() => setShowCreateModal(false)} className="flex-1 px-6 py-4 border border-gray-200 rounded-2xl text-[14px] font-black text-gray-500 hover:bg-white transition-all capitalize">Batal</button>
-                                <button type="submit" disabled={processing} className="flex-[2] px-6 py-4 bg-[#6366f1] text-white rounded-2xl text-[14px] font-black shadow-lg shadow-indigo-200 hover:bg-[#5558e3] transition-all disabled:opacity-50 uppercase">Buat Pengiriman</button>
+                                <button type="submit" disabled={processing} className="flex-[2] px-6 py-4 bg-[#5932C9] text-white rounded-2xl text-[14px] font-black shadow-lg shadow-indigo-200 hover:bg-[#4D2AB5] transition-all disabled:opacity-50 uppercase">Buat Pengiriman</button>
                             </div>
                         </form>
                     </div>

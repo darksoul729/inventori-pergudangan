@@ -43,7 +43,7 @@ function RackBlock({ x, y, w, h, rack, zoneId, pal, isSelected, containerRef, se
         <g>
             <rect
                 x={x} y={y} width={w} height={h}
-                fill={isSelected ? '#4338ca' : '#fff'}
+                fill={isSelected ? '#28106F' : '#fff'}
                 stroke={isSelected ? '#312e81' : pal.border}
                 strokeWidth={isSelected ? 1.5 : 0.8}
                 rx="1"
@@ -204,7 +204,7 @@ export default function WarehouseFloorPlan({ zoneSummaries, rackSummaries, selec
         return (
             <g key={zone.id}>
                 <rect x={x} y={y} width={w} height={h}
-                    fill={zone.pal.bg} stroke={isSelected ? '#4338ca' : zone.pal.border}
+                    fill={zone.pal.bg} stroke={isSelected ? '#28106F' : zone.pal.border}
                     strokeWidth={isSelected ? 3 : 1.5} rx="4"
                     style={{ cursor: 'pointer' }}
                     onClick={() => goToZone(zone.id)}
@@ -237,11 +237,11 @@ export default function WarehouseFloorPlan({ zoneSummaries, rackSummaries, selec
     }
 
     return (
-        <div className="rounded-[24px] border border-[#edf2f7] bg-white p-7 shadow-[0_2px_16px_rgba(0,0,0,0.02)]">
+        <div className="rounded-[24px] border border-[#EDE8FC] bg-white p-7 shadow-[0_2px_16px_rgba(0,0,0,0.02)]">
             {/* Header */}
             <div className="mb-5 flex items-center justify-between gap-4">
                 <div>
-                    <h3 className="text-[18px] font-black text-[#1a202c]">Visualisasi Denah Gudang</h3>
+                    <h3 className="text-[18px] font-black text-[#28106F]">Visualisasi Denah Gudang</h3>
                     <p className="mt-1 text-[13px] font-semibold text-gray-500">
                         Peta tata letak zona dan rak — klik zona atau rak untuk navigasi
                     </p>
@@ -251,7 +251,7 @@ export default function WarehouseFloorPlan({ zoneSummaries, rackSummaries, selec
                     <button type="button" onClick={zoomOut} className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#dbe4f0] bg-white text-[16px] font-black text-gray-500 transition hover:bg-gray-50">−</button>
                     <button type="button" onClick={zoomReset} className="rounded-lg border border-[#dbe4f0] bg-white px-2.5 py-1.5 text-[10px] font-black uppercase tracking-wider text-gray-500 transition hover:bg-gray-50">Reset</button>
                     <button type="button" onClick={zoomIn} className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#dbe4f0] bg-white text-[16px] font-black text-gray-500 transition hover:bg-gray-50">+</button>
-                    <span className="ml-2 rounded-full bg-[#eef2ff] px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-[#4338ca]">
+                    <span className="ml-2 rounded-full bg-[#eef2ff] px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-[#28106F]">
                         Interaktif
                     </span>
                 </div>
@@ -260,7 +260,7 @@ export default function WarehouseFloorPlan({ zoneSummaries, rackSummaries, selec
             {/* SVG Container */}
             <div
                 ref={containerRef}
-                className="relative overflow-hidden rounded-[18px] border border-[#edf2f7] bg-[#f5f5f0]"
+                className="relative overflow-hidden rounded-[18px] border border-[#EDE8FC] bg-[#f5f5f0]"
                 style={{ height: 560, cursor: isPanning ? 'grabbing' : 'grab', userSelect: 'none' }}
                 onMouseDown={onMouseDown}
                 onMouseMove={onMouseMove}
@@ -361,7 +361,7 @@ export default function WarehouseFloorPlan({ zoneSummaries, rackSummaries, selec
                         style={{ left: tooltip.x, top: tooltip.y, transform: 'translate(-50%, -100%)' }}
                     >
                         {tooltip.text.split('\n').map((line, i) => (
-                            <div key={i} className={`text-[11px] font-semibold ${i === 0 ? 'font-black text-[#1a202c]' : 'text-gray-500'}`}>
+                            <div key={i} className={`text-[11px] font-semibold ${i === 0 ? 'font-black text-[#28106F]' : 'text-gray-500'}`}>
                                 {line}
                             </div>
                         ))}

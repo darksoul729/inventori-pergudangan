@@ -11,16 +11,28 @@
             margin: 28px;
         }
         .header {
-            border-bottom: 2px solid #4f46e5;
+            border-bottom: 2px solid #5932C9;
             padding-bottom: 16px;
             margin-bottom: 20px;
+            display: flex;
+            align-items: flex-start;
+        }
+        .header-logo {
+            width: 48px;
+            height: 48px;
+            object-fit: contain;
+            margin-right: 14px;
+            flex-shrink: 0;
+        }
+        .header-content {
+            flex: 1;
         }
         .kicker {
             font-size: 10px;
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.18em;
-            color: #4f46e5;
+            color: #5932C9;
             margin-bottom: 6px;
         }
         .title {
@@ -119,10 +131,13 @@
 </head>
 <body>
     <div class="header">
-        <div class="kicker">Proof of Delivery</div>
-        <h1 class="title">{{ $shipment->shipment_id }}</h1>
-        <div class="subtitle">
-            {{ $shipment->origin_name }} ({{ $shipment->origin }}) -> {{ $shipment->destination_name }} ({{ $shipment->destination }})
+        <img src="{{ public_path('images/logo 1.png') }}" class="header-logo" alt="Logo">
+        <div class="header-content">
+            <div class="kicker">Proof of Delivery</div>
+            <h1 class="title">{{ $shipment->shipment_id }}</h1>
+            <div class="subtitle">
+                {{ $shipment->origin_name }} ({{ $shipment->origin }}) -> {{ $shipment->destination_name }} ({{ $shipment->destination }})
+            </div>
         </div>
     </div>
 
@@ -199,7 +214,7 @@
     </div>
 
     <div class="footer">
-        Dokumen ini dibuat otomatis oleh Aether Logistix pada {{ now()->format('d M Y H:i') }}.
+        Dokumen ini dibuat otomatis oleh PETAYU pada {{ now()->format('d M Y H:i') }}.
     </div>
 </body>
 </html>

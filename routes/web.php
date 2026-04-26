@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\WarehouseController;
+use App\Http\Controllers\WarehouseLayoutController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\StockTransferController;
 use App\Http\Controllers\StockOpnameController;
@@ -54,6 +55,10 @@ Route::middleware(['auth', 'verified', 'role:manager,supervisor,staff'])->group(
     Route::post('/warehouse/rack-stocks', [WarehouseController::class, 'storeRackStock'])->middleware('role:manager,supervisor')->name('warehouse.rack-stocks.store');
     Route::put('/warehouse/rack-stocks/{rackStock}', [WarehouseController::class, 'updateRackStock'])->middleware('role:manager,supervisor')->name('warehouse.rack-stocks.update');
     Route::delete('/warehouse/rack-stocks/{rackStock}', [WarehouseController::class, 'destroyRackStock'])->middleware('role:manager,supervisor')->name('warehouse.rack-stocks.destroy');
+
+    Route::get('/warehouse/layout', [WarehouseLayoutController::class, 'show'])->name('warehouse.layout.show');
+    Route::post('/warehouse/layout', [WarehouseLayoutController::class, 'store'])->middleware('role:manager')->name('warehouse.layout.store');
+    Route::get('/warehouse/layout/snapshots', [WarehouseLayoutController::class, 'snapshots'])->name('warehouse.layout.snapshots');
 });
 
 use App\Http\Controllers\InventoryController;
@@ -114,6 +119,9 @@ Route::middleware(['auth', 'verified', 'role:manager,supervisor'])->group(functi
 Route::get('/purchase-orders/{purchaseOrder}', [PurchaseOrderController::class, 'show'])
     ->middleware(['auth', 'verified', 'role:manager,supervisor,staff'])
     ->name('purchase-orders.show');
+Route::get('/purchase-orders/{purchaseOrder}/pdf', [PurchaseOrderController::class, 'downloadPdf'])
+    ->middleware(['auth', 'verified', 'role:manager,supervisor,staff'])
+    ->name('purchase-orders.pdf');
 
 Route::middleware(['auth', 'verified', 'role:manager,supervisor'])->group(function () {
     Route::get('/wms-documents', [WmsDocumentController::class, 'index'])->name('wms-documents.index');
@@ -155,23 +163,35 @@ use App\Http\Controllers\DriverController;
 
 Route::middleware(['auth', 'verified', 'role:manager'])->group(function () {
     Route::get('/drivers', [DriverController::class, 'index'])->name('drivers.index');
+    Route::get('/drivers/create', [DriverController::class, 'create'])->name('drivers.create');
     Route::post('/drivers', [DriverController::class, 'store'])->name('drivers.store');
     Route::get('/drivers/{driver}', [DriverController::class, 'show'])->name('drivers.show');
     Route::get('/api/drivers/locations', [DriverController::class, 'getLocations'])->name('drivers.locations');
     Route::put('/drivers/{driver}/status', [DriverController::class, 'updateStatus'])->name('drivers.status.update');
 });
 
-Route::middleware(['auth', 'verified', 'role:manager,supervisor'])->group(function () {
+Route::middleware(['auth', 'verified', 'role:manager,supervisor,staff'])->group(function () {
+    // Staff can view rack allocation & stock opname (read-only)
     Route::get('/rack-allocation', [StockTransferController::class, 'index'])->name('rack.allocation');
-    Route::post('/rack-allocation/transfers', [StockTransferController::class, 'store'])->name('rack.allocation.transfers.store');
     Route::get('/rack-allocation/transfers/{stockTransfer}/pdf', [StockTransferController::class, 'downloadPdf'])->name('rack.allocation.transfers.pdf');
     Route::get('/rack-allocation/transfers/{stockTransfer}', [StockTransferController::class, 'show'])->name('rack.allocation.transfers.show');
     Route::get('/stock-opname', [StockOpnameController::class, 'index'])->name('stock-opname.index');
-    Route::post('/stock-opname', [StockOpnameController::class, 'store'])->name('stock-opname.store');
     Route::get('/stock-opname/{stockOpname}/pdf', [StockOpnameController::class, 'downloadPdf'])->name('stock-opname.pdf');
     Route::get('/stock-opname/{stockOpname}', [StockOpnameController::class, 'show'])->name('stock-opname.show');
     Route::get('/stock-adjustments/{stockAdjustment}/pdf', [StockAdjustmentController::class, 'downloadPdf'])->name('stock-adjustments.pdf');
     Route::get('/stock-adjustments/{stockAdjustment}', [StockAdjustmentController::class, 'show'])->name('stock-adjustments.show');
+});
+
+// Supervisor+ can create, approve, reject
+Route::middleware(['auth', 'verified', 'role:manager,supervisor'])->group(function () {
+    Route::post('/rack-allocation/transfers', [StockTransferController::class, 'store'])->name('rack.allocation.transfers.store');
+    Route::post('/rack-allocation/transfers/{stockTransfer}/approve', [StockTransferController::class, 'approve'])->name('rack.allocation.transfers.approve');
+    Route::post('/rack-allocation/transfers/{stockTransfer}/reject', [StockTransferController::class, 'reject'])->name('rack.allocation.transfers.reject');
+    Route::post('/stock-opname', [StockOpnameController::class, 'store'])->name('stock-opname.store');
+    Route::post('/stock-opname/{stockOpname}/approve', [StockOpnameController::class, 'approve'])->name('stock-opname.approve');
+    Route::post('/stock-opname/{stockOpname}/reject', [StockOpnameController::class, 'reject'])->name('stock-opname.reject');
+    Route::post('/stock-adjustments/{stockAdjustment}/approve', [StockAdjustmentController::class, 'approve'])->name('stock-adjustments.approve');
+    Route::post('/stock-adjustments/{stockAdjustment}/reject', [StockAdjustmentController::class, 'reject'])->name('stock-adjustments.reject');
 });
 
 use App\Http\Controllers\ReportController;
@@ -207,21 +227,36 @@ Route::middleware(['auth', 'verified', 'role:manager'])->group(function () {
 });
 
 
-use App\Http\Controllers\AetherAIController;
+use App\Http\Controllers\PetayuAIController;
 
-// ─── Aether AI Assistant ───────────────────────────────────────────────────────
-Route::middleware(['auth', 'verified', 'role:manager,supervisor,staff'])->prefix('aether')->name('aether.')->group(function () {
-    Route::get('/',                                    [AetherAIController::class, 'index'])->name('index');
-    Route::get('/dashboard-insight',                   [AetherAIController::class, 'dashboardInsight'])->name('dashboard-insight');
-    Route::get('/conversations',                       [AetherAIController::class, 'conversations'])->name('conversations');
-    Route::post('/conversations',                      [AetherAIController::class, 'newConversation'])->name('conversations.new');
-    Route::delete('/conversations-empty',              [AetherAIController::class, 'deleteUntitledConversations'])->name('conversations.delete-empty');
-    Route::get('/conversations/{id}/messages',         [AetherAIController::class, 'messages'])->name('conversations.messages');
-    Route::delete('/conversations/{id}',              [AetherAIController::class, 'deleteConversation'])->name('conversations.delete');
-    Route::post('/chat',                               [AetherAIController::class, 'chat'])->name('chat');
-    Route::post('/local-tts',                          [AetherAIController::class, 'localTextToSpeech'])->name('local-tts');
-    Route::post('/transcribe',                         [AetherAIController::class, 'transcribeAudio'])->name('transcribe');
-    Route::post('/live-transcript',                    [AetherAIController::class, 'saveLiveTranscript'])->name('live-transcript');
+// ─── PETAYU AI Assistant ───────────────────────────────────────────────────────
+Route::middleware(['auth', 'verified', 'role:manager,supervisor,staff'])->prefix('petayu-ai')->name('petayu.')->group(function () {
+    Route::get('/',                                    [PetayuAIController::class, 'index'])->name('index');
+    Route::get('/dashboard-insight',                   [PetayuAIController::class, 'dashboardInsight'])->name('dashboard-insight');
+    Route::get('/conversations',                       [PetayuAIController::class, 'conversations'])->name('conversations');
+    Route::post('/conversations',                      [PetayuAIController::class, 'newConversation'])->name('conversations.new');
+    Route::delete('/conversations-empty',              [PetayuAIController::class, 'deleteUntitledConversations'])->name('conversations.delete-empty');
+    Route::get('/conversations/{id}/messages',         [PetayuAIController::class, 'messages'])->name('conversations.messages');
+    Route::delete('/conversations/{id}',              [PetayuAIController::class, 'deleteConversation'])->name('conversations.delete');
+    Route::post('/chat',                               [PetayuAIController::class, 'chat'])->name('chat');
+    Route::post('/local-tts',                          [PetayuAIController::class, 'localTextToSpeech'])->name('local-tts');
+    Route::post('/transcribe',                         [PetayuAIController::class, 'transcribeAudio'])->name('transcribe');
+    Route::post('/live-transcript',                    [PetayuAIController::class, 'saveLiveTranscript'])->name('live-transcript');
+});
+
+// Legacy compatibility for old /petayu endpoints.
+Route::middleware(['auth', 'verified', 'role:manager,supervisor,staff'])->prefix('petayu')->group(function () {
+    Route::get('/',                                    [PetayuAIController::class, 'index']);
+    Route::get('/dashboard-insight',                   [PetayuAIController::class, 'dashboardInsight']);
+    Route::get('/conversations',                       [PetayuAIController::class, 'conversations']);
+    Route::post('/conversations',                      [PetayuAIController::class, 'newConversation']);
+    Route::delete('/conversations-empty',              [PetayuAIController::class, 'deleteUntitledConversations']);
+    Route::get('/conversations/{id}/messages',         [PetayuAIController::class, 'messages']);
+    Route::delete('/conversations/{id}',               [PetayuAIController::class, 'deleteConversation']);
+    Route::post('/chat',                               [PetayuAIController::class, 'chat']);
+    Route::post('/local-tts',                          [PetayuAIController::class, 'localTextToSpeech']);
+    Route::post('/transcribe',                         [PetayuAIController::class, 'transcribeAudio']);
+    Route::post('/live-transcript',                    [PetayuAIController::class, 'saveLiveTranscript']);
 });
 
 require __DIR__.'/auth.php';

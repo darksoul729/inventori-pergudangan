@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('aether_conversations', function (Blueprint $table) {
+        Schema::create('petayu_conversations', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->string('title')->default('Percakapan Baru');
@@ -18,10 +18,10 @@ return new class extends Migration
             $table->index(['user_id', 'updated_at']);
         });
 
-        Schema::create('aether_messages', function (Blueprint $table) {
+        Schema::create('petayu_messages', function (Blueprint $table) {
             $table->id();
             $table->foreignId('conversation_id')
-                ->references('id')->on('aether_conversations')
+                ->references('id')->on('petayu_conversations')
                 ->cascadeOnDelete();
             $table->enum('role', ['user', 'model']);
             $table->longText('content');
@@ -33,7 +33,7 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('aether_messages');
-        Schema::dropIfExists('aether_conversations');
+        Schema::dropIfExists('petayu_messages');
+        Schema::dropIfExists('petayu_conversations');
     }
 };

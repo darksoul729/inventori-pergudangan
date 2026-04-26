@@ -12,16 +12,41 @@ const LOCATION_INPUT_MODES = [
     { id: 'manual', label: 'Manual', icon: Crosshair },
 ];
 
+const TRACKING_STAGE_OPTIONS = [
+    { value: 'ready_for_pickup', label: 'Siap Diambil' },
+    { value: 'picked_up', label: 'Sudah Diambil' },
+    { value: 'in_transit', label: 'Dalam Perjalanan' },
+    { value: 'arrived_at_destination', label: 'Sampai Gudang Tujuan' },
+];
+
 const pickerIcon = new L.DivIcon({
     className: 'shipment-location-picker',
     html: `
-        <div style="width:18px;height:18px;border-radius:999px;background:#4f46e5;border:3px solid #ffffff;box-shadow:0 6px 18px rgba(79,70,229,.35);"></div>
+        <div style="width:18px;height:18px;border-radius:999px;background:#5932C9;border:3px solid #ffffff;box-shadow:0 6px 18px rgba(89,50,201,.35);"></div>
     `,
     iconSize: [18, 18],
     iconAnchor: [9, 9],
 });
 
+// Gudang utama - Samarinda, Kalimantan Timur
+const WAREHOUSE_ORIGIN = {
+    code: 'SMD',
+    label: 'Gudang Samarinda, Kaltim',
+    lat: -0.4948,
+    lng: 117.1436,
+    name: 'Gudang Utama Samarinda',
+};
+
 const cityCoords = {
+    SAMARINDA: { lat: -0.4948, lng: 117.1436, code: 'SMD', label: 'Samarinda, Kaltim' },
+    BALIKPAPAN: { lat: -1.2654, lng: 116.8312, code: 'BPN', label: 'Balikpapan, Kaltim' },
+    BONTANG: { lat: 0.1333, lng: 117.4833, code: 'BXT', label: 'Bontang, Kaltim' },
+    TENGGARONG: { lat: -0.4167, lng: 116.9833, code: 'TGR', label: 'Tenggarong, Kaltim' },
+    SANGATTA: { lat: 0.5167, lng: 117.5500, code: 'SGQ', label: 'Sangatta, Kaltim' },
+    TARAKAN: { lat: 3.3000, lng: 117.5833, code: 'TRK', label: 'Tarakan, Kaltara' },
+    BANJARMASIN: { lat: -3.4434, lng: 114.8361, code: 'BJM', label: 'Banjarmasin, Kalsel' },
+    PALANGKARAYA: { lat: -2.2083, lng: 113.9167, code: 'PKY', label: 'Palangkaraya, Kalteng' },
+    PONTIANAK: { lat: -0.0226, lng: 109.3444, code: 'PNK', label: 'Pontianak, Kalbar' },
     JAKARTA: { lat: -6.2088, lng: 106.8456, code: 'JKT', label: 'Jakarta' },
     SURABAYA: { lat: -7.2575, lng: 112.7521, code: 'SUB', label: 'Surabaya' },
     MEDAN: { lat: 3.5952, lng: 98.6722, code: 'KNO', label: 'Medan' },
@@ -67,7 +92,7 @@ function LocationMapEvents({ position, onPick }) {
 }
 
 function CoordinateMapPicker({ value, onPick }) {
-    const center = value?.lat && value?.lng ? [value.lat, value.lng] : [-2.5489, 118.0149];
+    const center = value?.lat && value?.lng ? [value.lat, value.lng] : [-0.4948, 117.1436];
 
     return (
         <div className="overflow-hidden rounded-[24px] border border-gray-200">
@@ -85,37 +110,54 @@ function CoordinateMapPicker({ value, onPick }) {
     );
 }
 
-export default function CreateShipment({ drivers = [] }) {
+export default function CreateShipment({ drivers = [], products = [] }) {
     const [originMode, setOriginMode] = useState('city');
     const [destinationMode, setDestinationMode] = useState('city');
     const [originSearch, setOriginSearch] = useState('');
     const [destinationSearch, setDestinationSearch] = useState('');
 
     const { data, setData, post, processing, errors } = useForm({
-        shipment_id: '',
-        origin: '',
-        origin_name: '',
+        origin: WAREHOUSE_ORIGIN.code,
+        origin_name: WAREHOUSE_ORIGIN.label,
         destination: '',
         destination_name: '',
-        status: 'in-transit',
+        tracking_stage: 'ready_for_pickup',
         estimated_arrival: '',
         load_type: 'ground',
         driver_id: '',
-        origin_lat: '',
-        origin_lng: '',
+        origin_lat: WAREHOUSE_ORIGIN.lat,
+        origin_lng: WAREHOUSE_ORIGIN.lng,
         dest_lat: '',
         dest_lng: '',
+        items: [],
     });
+
+    const addItem = () => {
+        setData('items', [...data.items, { product_id: '', product_name: '', sku: '', quantity: 1, unit: 'pcs', weight_kg: '', notes: '' }]);
+    };
+
+    const removeItem = (index) => {
+        setData('items', data.items.filter((_, i) => i !== index));
+    };
+
+    const updateItem = (index, field, value) => {
+        const updated = [...data.items];
+        updated[index][field] = value;
+        // Auto-fill from product catalog
+        if (field === 'product_id' && value) {
+            const product = products.find(p => p.id == value);
+            if (product) {
+                updated[index].product_name = product.name;
+                updated[index].sku = product.sku;
+                updated[index].unit = product.unit;
+            }
+        }
+        setData('items', updated);
+    };
 
     const applyLocationSelection = (type, location) => {
         if (type === 'origin') {
-            setData((prev) => ({
-                ...prev,
-                origin: location.code ?? prev.origin,
-                origin_name: location.label ?? prev.origin_name,
-                origin_lat: location.lat,
-                origin_lng: location.lng,
-            }));
+            // Origin locked to warehouse - ignore changes
             return;
         }
 
@@ -129,12 +171,14 @@ export default function CreateShipment({ drivers = [] }) {
     };
 
     const handleMapLocationPick = (type, latlng) => {
+        if (type === 'origin') return; // Origin locked
+
         const roundedLat = Number(latlng.lat.toFixed(6));
         const roundedLng = Number(latlng.lng.toFixed(6));
         const nearbyCity = cityOptions.find((city) => Math.abs(city.lat - roundedLat) < 0.8 && Math.abs(city.lng - roundedLng) < 0.8);
 
         applyLocationSelection(type, {
-            code: nearbyCity?.code ?? (type === 'origin' ? data.origin || 'PIN' : data.destination || 'PIN'),
+            code: nearbyCity?.code ?? (data.destination || 'PIN'),
             label: nearbyCity?.label ?? `Pinned ${roundedLat}, ${roundedLng}`,
             lat: roundedLat,
             lng: roundedLng,
@@ -287,8 +331,8 @@ export default function CreateShipment({ drivers = [] }) {
                 <div className="rounded-2xl bg-white/80 border border-white px-4 py-3 text-[12px] leading-6 text-slate-500">
                     <span className="font-black text-slate-700">Lat</span> menunjukkan posisi utara atau selatan.
                     <span className="mx-1 font-black text-slate-700">Lng</span> menunjukkan posisi timur atau barat.
-                    Contoh Jakarta: <span className="font-black text-indigo-600">Lat -6.2088</span>,
-                    <span className="ml-1 font-black text-indigo-600">Lng 106.8456</span>.
+                    Contoh Samarinda: <span className="font-black text-indigo-600">Lat -0.4948</span>,
+                    <span className="ml-1 font-black text-indigo-600">Lng 117.1436</span>.
                 </div>
             </div>
         );
@@ -330,28 +374,38 @@ export default function CreateShipment({ drivers = [] }) {
                             <label className="mb-3 block text-[10px] font-black uppercase tracking-[0.24em] text-slate-500">ID Pengiriman</label>
                             <input
                                 type="text"
-                                placeholder="TRK-XXXXX"
+                                placeholder="Akan dibuat otomatis saat disimpan"
                                 className="w-full rounded-2xl border border-gray-200 bg-slate-50 px-5 py-4 text-[14px] font-bold text-slate-800"
-                                value={data.shipment_id}
-                                onChange={(e) => setData('shipment_id', e.target.value)}
-                                required
+                                value=""
+                                disabled
                             />
-                            {errors.shipment_id && <div className="mt-2 text-[11px] font-bold text-red-500">{errors.shipment_id}</div>}
+                            <p className="mt-2 text-[11px] font-semibold text-slate-500">Nomor pengiriman di-generate sistem setelah Anda klik simpan.</p>
                         </div>
 
-                        {renderLocationSection({
-                            type: 'origin',
-                            title: 'Data Asal (Origin)',
-                            tone: 'bg-indigo-50/40 border-indigo-100/70',
-                            mode: originMode,
-                            setMode: setOriginMode,
-                            search: originSearch,
-                            setSearch: setOriginSearch,
-                            codeValue: data.origin,
-                            nameValue: data.origin_name,
-                            latValue: data.origin_lat,
-                            lngValue: data.origin_lng,
-                        })}
+                        {/* Origin locked to warehouse */}
+                        <div className="rounded-[28px] border bg-indigo-50/40 border-indigo-100/70 p-6 space-y-4">
+                            <div className="flex items-center justify-between gap-3">
+                                <div>
+                                    <div className="text-[10px] font-black uppercase tracking-[0.24em] text-slate-500">Asal (Origin) — Gudang Utama</div>
+                                    <p className="mt-1 text-[13px] font-semibold text-slate-500">Pengiriman selalu berasal dari gudang utama Samarinda.</p>
+                                </div>
+                                <span className="rounded-full bg-emerald-50 border border-emerald-200 px-3 py-1 text-[10px] font-black text-emerald-700 uppercase tracking-wider">Fixed</span>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div className="rounded-2xl bg-white border border-indigo-100 px-4 py-3">
+                                    <div className="text-[9px] font-black uppercase tracking-wider text-indigo-400 mb-1">Kode</div>
+                                    <div className="text-[14px] font-black text-slate-900">{WAREHOUSE_ORIGIN.code}</div>
+                                </div>
+                                <div className="rounded-2xl bg-white border border-indigo-100 px-4 py-3">
+                                    <div className="text-[9px] font-black uppercase tracking-wider text-indigo-400 mb-1">Nama Gudang</div>
+                                    <div className="text-[14px] font-black text-slate-900">{WAREHOUSE_ORIGIN.label}</div>
+                                </div>
+                                <div className="rounded-2xl bg-white border border-indigo-100 px-4 py-3">
+                                    <div className="text-[9px] font-black uppercase tracking-wider text-indigo-400 mb-1">Koordinat</div>
+                                    <div className="text-[14px] font-black text-slate-900">{WAREHOUSE_ORIGIN.lat}, {WAREHOUSE_ORIGIN.lng}</div>
+                                </div>
+                            </div>
+                        </div>
 
                         {renderLocationSection({
                             type: 'destination',
@@ -377,12 +431,11 @@ export default function CreateShipment({ drivers = [] }) {
                                     <input type="datetime-local" className="w-full rounded-2xl border border-gray-200 bg-slate-50 px-4 py-3 text-[13px] font-bold" value={data.estimated_arrival} onChange={(e) => setData('estimated_arrival', e.target.value)} required />
                                 </div>
                                 <div>
-                                    <label className="mb-2 block text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Status</label>
-                                    <select className="w-full rounded-2xl border border-gray-200 bg-slate-50 px-4 py-3 text-[13px] font-bold" value={data.status} onChange={(e) => setData('status', e.target.value)}>
-                                        <option value="in-transit">Dalam Perjalanan</option>
-                                        <option value="on-time">Tepat Waktu</option>
-                                        <option value="delayed">Terlambat</option>
-                                        <option value="delivered">Sampai Tujuan</option>
+                                    <label className="mb-2 block text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Tahap Tracking</label>
+                                    <select className="w-full rounded-2xl border border-gray-200 bg-slate-50 px-4 py-3 text-[13px] font-bold" value={data.tracking_stage} onChange={(e) => setData('tracking_stage', e.target.value)}>
+                                        {TRACKING_STAGE_OPTIONS.map((option) => (
+                                            <option key={option.value} value={option.value}>{option.label}</option>
+                                        ))}
                                     </select>
                                 </div>
                                 <div>
@@ -410,6 +463,62 @@ export default function CreateShipment({ drivers = [] }) {
                                     {errors.driver_id && <div className="mt-2 text-[11px] font-bold text-red-500">{errors.driver_id}</div>}
                                 </div>
                             </div>
+                        </div>
+
+                        <div className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
+                            <div className="flex items-center justify-between mb-4">
+                                <div className="text-[10px] font-black uppercase tracking-[0.24em] text-slate-500">Barang Dikirim</div>
+                                <button type="button" onClick={addItem} className="px-3 py-1.5 bg-indigo-50 text-indigo-600 text-[10px] font-black rounded-lg hover:bg-indigo-100 transition-colors">
+                                    + Tambah Item
+                                </button>
+                            </div>
+                            {data.items.length === 0 ? (
+                                <div className="py-8 text-center rounded-2xl border border-dashed border-gray-200 bg-gray-50">
+                                    <svg className="w-8 h-8 text-gray-300 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>
+                                    <div className="text-[12px] font-bold text-gray-400">Belum ada barang ditambahkan</div>
+                                    <div className="text-[11px] text-gray-300 mt-1">Klik "Tambah Item" untuk menambahkan</div>
+                                </div>
+                            ) : (
+                                <div className="space-y-3">
+                                    {data.items.map((item, index) => (
+                                        <div key={index} className="p-4 rounded-2xl bg-gray-50 border border-gray-100 space-y-3">
+                                            <div className="flex items-center justify-between">
+                                                <span className="text-[11px] font-black text-gray-500">Item #{index + 1}</span>
+                                                <button type="button" onClick={() => removeItem(index)} className="text-red-400 hover:text-red-600 text-[11px] font-bold">Hapus</button>
+                                            </div>
+                                            <div className="grid grid-cols-2 gap-3">
+                                                <div className="col-span-2">
+                                                    <label className="mb-1 block text-[9px] font-black uppercase tracking-wider text-gray-400">Produk dari Katalog</label>
+                                                    <select className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-[12px] font-bold" value={item.product_id} onChange={(e) => updateItem(index, 'product_id', e.target.value)}>
+                                                        <option value="">Pilih produk atau isi manual</option>
+                                                        {products.map(p => <option key={p.id} value={p.id}>{p.sku} — {p.name} (stok: {p.available_stock})</option>)}
+                                                    </select>
+                                                </div>
+                                                <div className="col-span-2">
+                                                    <label className="mb-1 block text-[9px] font-black uppercase tracking-wider text-gray-400">Nama Produk *</label>
+                                                    <input type="text" className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-[12px] font-bold" value={item.product_name} onChange={(e) => updateItem(index, 'product_name', e.target.value)} required />
+                                                </div>
+                                                <div>
+                                                    <label className="mb-1 block text-[9px] font-black uppercase tracking-wider text-gray-400">SKU</label>
+                                                    <input type="text" className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-[12px] font-bold" value={item.sku} onChange={(e) => updateItem(index, 'sku', e.target.value)} />
+                                                </div>
+                                                <div>
+                                                    <label className="mb-1 block text-[9px] font-black uppercase tracking-wider text-gray-400">Jumlah *</label>
+                                                    <input type="number" min="0" step="any" className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-[12px] font-bold" value={item.quantity} onChange={(e) => updateItem(index, 'quantity', e.target.value)} required />
+                                                </div>
+                                                <div>
+                                                    <label className="mb-1 block text-[9px] font-black uppercase tracking-wider text-gray-400">Satuan</label>
+                                                    <input type="text" className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-[12px] font-bold" value={item.unit} onChange={(e) => updateItem(index, 'unit', e.target.value)} />
+                                                </div>
+                                                <div>
+                                                    <label className="mb-1 block text-[9px] font-black uppercase tracking-wider text-gray-400">Berat (kg)</label>
+                                                    <input type="number" min="0" step="0.01" className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-[12px] font-bold" value={item.weight_kg} onChange={(e) => updateItem(index, 'weight_kg', e.target.value)} />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
                         </div>
 
                         <div className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
