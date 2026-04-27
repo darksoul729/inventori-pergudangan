@@ -7,6 +7,7 @@ use App\Models\Shipment;
 use App\Policies\PetayuConversationPolicy;
 use App\Policies\ShipmentPolicy;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
 
@@ -25,6 +26,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Force HTTPS for all generated URLs when APP_URL is https (fixes mixed-content behind reverse proxy)
+        if (str_starts_with(config('app.url', ''), 'https')) {
+            URL::forceScheme('https');
+        }
+
         Gate::policy(PetayuConversation::class, PetayuConversationPolicy::class);
         Gate::policy(Shipment::class, ShipmentPolicy::class);
 
