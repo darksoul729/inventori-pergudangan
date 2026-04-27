@@ -15,79 +15,63 @@
 
 ---
 
-## <img src="https://api.iconify.design/lucide:info.svg?color=%233b82f6" width="20" height="20"> Tentang Petayu
+## <img src="https://api.iconify.design/lucide:info.svg?color=%233b82f6" width="24" height="24" align="center"> Tentang Petayu
 
 **Petayu** adalah solusi *Warehouse Management System* (WMS) tingkat lanjut yang dirancang khusus untuk skala industri. Mengintegrasikan AI analitik dengan alur kerja pergudangan yang ketat, sistem ini memastikan akurasi inventaris, efisiensi distribusi, dan transparansi logistik melalui satu platform terpadu.
 
-## <img src="https://api.iconify.design/lucide:star.svg?color=%23f59e0b" width="20" height="20"> Fitur Unggulan
+## <img src="https://api.iconify.design/lucide:star.svg?color=%23f59e0b" width="24" height="24" align="center"> Fitur Unggulan
 
-*   **<img src="https://api.iconify.design/lucide:bot.svg?color=%238b5cf6" width="16" height="16"> Petayu AI (Groq Powered)**: Asisten AI interaktif dengan kemampuan suara (Piper TTS & Whisper STT) untuk audit stok, prediksi barang menipis, dan wawasan operasional instan.
-*   **<img src="https://api.iconify.design/lucide:layout-dashboard.svg?color=%233b82f6" width="16" height="16"> Dashboard Analitik**: Visualisasi KPI cerdas menggunakan Chart.js & Recharts, mencakup tren pergerakan stok dan efisiensi ruang gudang.
-*   **<img src="https://api.iconify.design/lucide:map.svg?color=%233b82f6" width="16" height="16"> Visualisasi Lantai (Heatmap)**: Pemetaan rak secara interaktif untuk memantau kapasitas zona dan okupansi stok secara visual.
-*   **<img src="https://api.iconify.design/lucide:shopping-cart.svg?color=%233b82f6" width="16" height="16"> Procurement & Logistics**: Siklus lengkap mulai dari Purchase Order (PO), Supplier Performance, hingga manajemen pengiriman (Shipment) dengan pelacakan status.
-*   **<img src="https://api.iconify.design/lucide:shield-check.svg?color=%23ef4444" width="16" height="16"> Role-Based Access Control (RBAC)**: Pembatasan akses ketat untuk Manager, Supervisor, Staff, dan Driver.
-*   **<img src="https://api.iconify.design/lucide:file-spreadsheet.svg?color=%2310b981" width="16" height="16"> Export Profesional**: Laporan terperinci dalam format Excel (.xlsx) menggunakan ExcelJS dan laporan PDF untuk bukti transaksi.
+*   <img src="https://api.iconify.design/lucide:bot.svg?color=%238b5cf6" width="18" height="18" align="center"> **Petayu AI (Groq Powered)**: Asisten AI interaktif dengan kemampuan suara (Piper TTS & Whisper STT).
+*   <img src="https://api.iconify.design/lucide:layout-dashboard.svg?color=%233b82f6" width="18" height="18" align="center"> **Dashboard Analitik**: Visualisasi KPI cerdas mencakup tren pergerakan stok dan efisiensi ruang gudang.
+*   <img src="https://api.iconify.design/lucide:map.svg?color=%233b82f6" width="18" height="18" align="center"> **Visualisasi Lantai (Heatmap)**: Pemetaan rak secara interaktif untuk memantau kapasitas zona.
+*   <img src="https://api.iconify.design/lucide:shopping-cart.svg?color=%233b82f6" width="18" height="18" align="center"> **Procurement & Logistics**: Siklus lengkap mulai dari PO hingga manajemen pengiriman (Shipment).
+*   <img src="https://api.iconify.design/lucide:shield-check.svg?color=%23ef4444" width="18" height="18" align="center"> **Role-Based Access Control**: Pembatasan akses ketat untuk Manager, Supervisor, Staff, dan Driver.
+*   <img src="https://api.iconify.design/lucide:file-spreadsheet.svg?color=%2310b981" width="18" height="18" align="center"> **Export Profesional**: Laporan terperinci dalam format Excel (.xlsx) dan PDF.
 
-## <img src="https://api.iconify.design/lucide:users.svg?color=%233b82f6" width="20" height="20"> Matriks Peran & Akses (Backend Verified)
-
-Berdasarkan validasi *middleware* dan *controller* pada backend:
+## <img src="https://api.iconify.design/lucide:users.svg?color=%233b82f6" width="24" height="24" align="center"> Matriks Peran & Akses (Backend Verified)
 
 | Fitur / Modul | Manager | Supervisor | Staff | Driver |
 | :--- | :---: | :---: | :---: | :---: |
-| **Konfigurasi Sistem** (Gudang/User/Kategori) | <img src="https://api.iconify.design/lucide:check-circle.svg?color=%2310b981" width="14"> | <img src="https://api.iconify.design/lucide:x-circle.svg?color=%23ef4444" width="14"> | <img src="https://api.iconify.design/lucide:x-circle.svg?color=%23ef4444" width="14"> | <img src="https://api.iconify.design/lucide:x-circle.svg?color=%23ef4444" width="14"> |
-| **Master Produk** (Create/Edit) | <img src="https://api.iconify.design/lucide:check-circle.svg?color=%2310b981" width="14"> | <img src="https://api.iconify.design/lucide:x-circle.svg?color=%23ef4444" width="14"> | <img src="https://api.iconify.design/lucide:x-circle.svg?color=%23ef4444" width="14"> | <img src="https://api.iconify.design/lucide:x-circle.svg?color=%23ef4444" width="14"> |
+| **Konfigurasi Sistem** | <img src="https://api.iconify.design/lucide:check-circle.svg?color=%2310b981" width="14"> | <img src="https://api.iconify.design/lucide:x-circle.svg?color=%23ef4444" width="14"> | <img src="https://api.iconify.design/lucide:x-circle.svg?color=%23ef4444" width="14"> | <img src="https://api.iconify.design/lucide:x-circle.svg?color=%23ef4444" width="14"> |
+| **Master Produk** | <img src="https://api.iconify.design/lucide:check-circle.svg?color=%2310b981" width="14"> | <img src="https://api.iconify.design/lucide:x-circle.svg?color=%23ef4444" width="14"> | <img src="https://api.iconify.design/lucide:x-circle.svg?color=%23ef4444" width="14"> | <img src="https://api.iconify.design/lucide:x-circle.svg?color=%23ef4444" width="14"> |
 | **Kelola Zona & Rak** | <img src="https://api.iconify.design/lucide:check-circle.svg?color=%2310b981" width="14"> | <img src="https://api.iconify.design/lucide:x-circle.svg?color=%23ef4444" width="14"> | <img src="https://api.iconify.design/lucide:x-circle.svg?color=%23ef4444" width="14"> | <img src="https://api.iconify.design/lucide:x-circle.svg?color=%23ef4444" width="14"> |
-| **Operasional PO & Stok Masuk** | <img src="https://api.iconify.design/lucide:check-circle.svg?color=%2310b981" width="14"> | <img src="https://api.iconify.design/lucide:check-circle.svg?color=%2310b981" width="14"> | <img src="https://api.iconify.design/lucide:x-circle.svg?color=%23ef4444" width="14"> | <img src="https://api.iconify.design/lucide:x-circle.svg?color=%23ef4444" width="14"> |
-| **Persetujuan (Approve) Audit/Opname** | <img src="https://api.iconify.design/lucide:check-circle.svg?color=%2310b981" width="14"> | <img src="https://api.iconify.design/lucide:check-circle.svg?color=%2310b981" width="14"> | <img src="https://api.iconify.design/lucide:x-circle.svg?color=%23ef4444" width="14"> | <img src="https://api.iconify.design/lucide:x-circle.svg?color=%23ef4444" width="14"> |
-| **Input Outbound (Stok Keluar)** | <img src="https://api.iconify.design/lucide:check-circle.svg?color=%2310b981" width="14"> | <img src="https://api.iconify.design/lucide:check-circle.svg?color=%2310b981" width="14"> | <img src="https://api.iconify.design/lucide:check-circle.svg?color=%2310b981" width="14"> | <img src="https://api.iconify.design/lucide:x-circle.svg?color=%23ef4444" width="14"> |
-| **Monitoring Dashboard & Layout** | <img src="https://api.iconify.design/lucide:check-circle.svg?color=%2310b981" width="14"> | <img src="https://api.iconify.design/lucide:check-circle.svg?color=%2310b981" width="14"> | <img src="https://api.iconify.design/lucide:check-circle.svg?color=%2310b981" width="14"> | <img src="https://api.iconify.design/lucide:x-circle.svg?color=%23ef4444" width="14"> |
-| **Penugasan Driver & Lokasi API** | <img src="https://api.iconify.design/lucide:check-circle.svg?color=%2310b981" width="14"> | <img src="https://api.iconify.design/lucide:x-circle.svg?color=%23ef4444" width="14"> | <img src="https://api.iconify.design/lucide:x-circle.svg?color=%23ef4444" width="14"> | <img src="https://api.iconify.design/lucide:x-circle.svg?color=%23ef4444" width="14"> |
-| **Klaim & Update Shipment API** | <img src="https://api.iconify.design/lucide:x-circle.svg?color=%23ef4444" width="14"> | <img src="https://api.iconify.design/lucide:x-circle.svg?color=%23ef4444" width="14"> | <img src="https://api.iconify.design/lucide:x-circle.svg?color=%23ef4444" width="14"> | <img src="https://api.iconify.design/lucide:check-circle.svg?color=%2310b981" width="14"> |
-| **Petayu AI Assistant** | <img src="https://api.iconify.design/lucide:check-circle.svg?color=%2310b981" width="14"> | <img src="https://api.iconify.design/lucide:check-circle.svg?color=%2310b981" width="14"> | <img src="https://api.iconify.design/lucide:check-circle.svg?color=%2310b981" width="14"> | <img src="https://api.iconify.design/lucide:x-circle.svg?color=%23ef4444" width="14"> |
+| **Operasional PO** | <img src="https://api.iconify.design/lucide:check-circle.svg?color=%2310b981" width="14"> | <img src="https://api.iconify.design/lucide:check-circle.svg?color=%2310b981" width="14"> | <img src="https://api.iconify.design/lucide:x-circle.svg?color=%23ef4444" width="14"> | <img src="https://api.iconify.design/lucide:x-circle.svg?color=%23ef4444" width="14"> |
+| **Audit/Opname** | <img src="https://api.iconify.design/lucide:check-circle.svg?color=%2310b981" width="14"> | <img src="https://api.iconify.design/lucide:check-circle.svg?color=%2310b981" width="14"> | <img src="https://api.iconify.design/lucide:x-circle.svg?color=%23ef4444" width="14"> | <img src="https://api.iconify.design/lucide:x-circle.svg?color=%23ef4444" width="14"> |
+| **Stok Keluar** | <img src="https://api.iconify.design/lucide:check-circle.svg?color=%2310b981" width="14"> | <img src="https://api.iconify.design/lucide:check-circle.svg?color=%2310b981" width="14"> | <img src="https://api.iconify.design/lucide:check-circle.svg?color=%2310b981" width="14"> | <img src="https://api.iconify.design/lucide:x-circle.svg?color=%23ef4444" width="14"> |
+| **Dashboard** | <img src="https://api.iconify.design/lucide:check-circle.svg?color=%2310b981" width="14"> | <img src="https://api.iconify.design/lucide:check-circle.svg?color=%2310b981" width="14"> | <img src="https://api.iconify.design/lucide:check-circle.svg?color=%2310b981" width="14"> | <img src="https://api.iconify.design/lucide:x-circle.svg?color=%23ef4444" width="14"> |
+| **Driver API** | <img src="https://api.iconify.design/lucide:x-circle.svg?color=%23ef4444" width="14"> | <img src="https://api.iconify.design/lucide:x-circle.svg?color=%23ef4444" width="14"> | <img src="https://api.iconify.design/lucide:x-circle.svg?color=%23ef4444" width="14"> | <img src="https://api.iconify.design/lucide:check-circle.svg?color=%2310b981" width="14"> |
+| **Petayu AI** | <img src="https://api.iconify.design/lucide:check-circle.svg?color=%2310b981" width="14"> | <img src="https://api.iconify.design/lucide:check-circle.svg?color=%2310b981" width="14"> | <img src="https://api.iconify.design/lucide:check-circle.svg?color=%2310b981" width="14"> | <img src="https://api.iconify.design/lucide:x-circle.svg?color=%23ef4444" width="14"> |
 
-## <img src="https://api.iconify.design/lucide:cpu.svg?color=%2310b981" width="20" height="20"> Tech Stack
+## <img src="https://api.iconify.design/lucide:cpu.svg?color=%2310b981" width="24" height="24" align="center"> Tech Stack
 
 *   **Backend:** Laravel 13 (PHP 8.3)
 *   **Frontend:** React (Inertia.js 2.0)
 *   **CSS:** Tailwind CSS 4.0
-*   **Database:** PostgreSQL / MySQL
-*   **Tools:** Vite 8.0, Playwright (Role Audit), Puppeteer
+*   **Tools:** Vite 8.0, Playwright, Puppeteer
 
-## <img src="https://api.iconify.design/lucide:settings.svg?color=%236b7280" width="20" height="20"> Instalasi Cepat
+## <img src="https://api.iconify.design/lucide:settings.svg?color=%236b7280" width="24" height="24" align="center"> Instalasi Cepat
 
 ```bash
-# 1. Clone Repositori
-git clone https://github.com/username/inventori-pergudangan.git
-cd inventori-pergudangan
+# 1. Clone & Setup
+git clone https://github.com/username/inventori-pergudangan.git && cd inventori-pergudangan
+composer install && npm install
+cp .env.example .env && php artisan key:generate && php artisan migrate --seed
 
-# 2. Instalasi Dependensi & Setup Otomatis
-composer install
-npm install
-cp .env.example .env
-php artisan key:generate
-php artisan migrate --seed
-
-# 3. Jalankan Aplikasi
-# Terminal 1: Vite & Laravel
+# 2. Jalankan
 php artisan dev
 ```
 
-## <img src="https://api.iconify.design/lucide:key.svg?color=%23f59e0b" width="20" height="20"> Konfigurasi AI
-
-Pastikan environment berikut terisi untuk mengaktifkan **Petayu AI**:
+## <img src="https://api.iconify.design/lucide:key.svg?color=%23f59e0b" width="24" height="24" align="center"> Konfigurasi AI
 
 ```env
 GROQ_API_KEY=gsk_your_key_here
 GROQ_MODEL=llama-3.3-70b-versatile
 ```
 
-## <img src="https://api.iconify.design/lucide:book-open.svg?color=%233b82f6" width="20" height="20"> Dokumentasi Alur
+## <img src="https://api.iconify.design/lucide:book-open.svg?color=%233b82f6" width="24" height="24" align="center"> Dokumentasi Alur
 
-*   [Matriks Peran Lengkap](ROLE_PERMISSION_MATRIX.md)
-*   [Alur Transaksi & Stok](TRANSACTION_FLOW.md)
-*   [Alur Pengiriman & Driver](DRIVER_FLOW.md)
-*   [Manajemen Gudang](WAREHOUSE_FLOW.md)
+*   [Matriks Peran](ROLE_PERMISSION_MATRIX.md) | [Alur Transaksi](TRANSACTION_FLOW.md)
+*   [Alur Pengiriman](DRIVER_FLOW.md) | [Manajemen Gudang](WAREHOUSE_FLOW.md)
 
 ---
 <p align="center">© 2026 Petayu - Smart Storage, Smooth Flow</p>
-
