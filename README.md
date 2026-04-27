@@ -15,20 +15,20 @@
 
 ---
 
-## <img src="https://api.iconify.design/lucide:info.svg?color=%233b82f6" width="24" height="24" align="center"> Tentang Petayu
+<h2><img src="https://api.iconify.design/lucide:info.svg?color=%233b82f6" width="22" height="22" style="vertical-align: middle;"> Tentang Petayu</h2>
 
 **Petayu** adalah solusi *Warehouse Management System* (WMS) tingkat lanjut yang dirancang khusus untuk skala industri. Mengintegrasikan AI analitik dengan alur kerja pergudangan yang ketat, sistem ini memastikan akurasi inventaris, efisiensi distribusi, dan transparansi logistik melalui satu platform terpadu.
 
-## <img src="https://api.iconify.design/lucide:star.svg?color=%23f59e0b" width="24" height="24" align="center"> Fitur Unggulan
+<h2><img src="https://api.iconify.design/lucide:star.svg?color=%23f59e0b" width="22" height="22" style="vertical-align: middle;"> Fitur Unggulan</h2>
 
-*   <img src="https://api.iconify.design/lucide:bot.svg?color=%238b5cf6" width="18" height="18" align="center"> **Petayu AI (Groq Powered)**: Asisten AI interaktif dengan kemampuan suara (Piper TTS & Whisper STT).
-*   <img src="https://api.iconify.design/lucide:layout-dashboard.svg?color=%233b82f6" width="18" height="18" align="center"> **Dashboard Analitik**: Visualisasi KPI cerdas mencakup tren pergerakan stok dan efisiensi ruang gudang.
-*   <img src="https://api.iconify.design/lucide:map.svg?color=%233b82f6" width="18" height="18" align="center"> **Visualisasi Lantai (Heatmap)**: Pemetaan rak secara interaktif untuk memantau kapasitas zona.
-*   <img src="https://api.iconify.design/lucide:shopping-cart.svg?color=%233b82f6" width="18" height="18" align="center"> **Procurement & Logistics**: Siklus lengkap mulai dari PO hingga manajemen pengiriman (Shipment).
-*   <img src="https://api.iconify.design/lucide:shield-check.svg?color=%23ef4444" width="18" height="18" align="center"> **Role-Based Access Control**: Pembatasan akses ketat untuk Manager, Supervisor, Staff, dan Driver.
-*   <img src="https://api.iconify.design/lucide:file-spreadsheet.svg?color=%2310b981" width="18" height="18" align="center"> **Export Profesional**: Laporan terperinci dalam format Excel (.xlsx) dan PDF.
+*   <img src="https://api.iconify.design/lucide:bot.svg?color=%238b5cf6" width="18" height="18" style="vertical-align: middle;"> **Petayu AI (Groq Powered)**: Asisten AI interaktif dengan kemampuan suara (Piper TTS & Whisper STT).
+*   <img src="https://api.iconify.design/lucide:layout-dashboard.svg?color=%233b82f6" width="18" height="18" style="vertical-align: middle;"> **Dashboard Analitik**: Visualisasi KPI cerdas mencakup tren pergerakan stok dan efisiensi ruang gudang.
+*   <img src="https://api.iconify.design/lucide:map.svg?color=%233b82f6" width="18" height="18" style="vertical-align: middle;"> **Visualisasi Lantai (Heatmap)**: Pemetaan rak secara interaktif untuk memantau kapasitas zona.
+*   <img src="https://api.iconify.design/lucide:shopping-cart.svg?color=%233b82f6" width="18" height="18" style="vertical-align: middle;"> **Procurement & Logistics**: Siklus lengkap mulai dari PO hingga manajemen pengiriman (Shipment).
+*   <img src="https://api.iconify.design/lucide:shield-check.svg?color=%23ef4444" width="18" height="18" style="vertical-align: middle;"> **Role-Based Access Control**: Pembatasan akses ketat untuk Manager, Supervisor, Staff, dan Driver.
+*   <img src="https://api.iconify.design/lucide:file-spreadsheet.svg?color=%2310b981" width="18" height="18" style="vertical-align: middle;"> **Export Profesional**: Laporan terperinci dalam format Excel (.xlsx) dan PDF.
 
-## <img src="https://api.iconify.design/lucide:users.svg?color=%233b82f6" width="24" height="24" align="center"> Matriks Peran & Akses (Backend Verified)
+<h2><img src="https://api.iconify.design/lucide:users.svg?color=%233b82f6" width="22" height="22" style="vertical-align: middle;"> Matriks Peran & Akses (Backend Verified)</h2>
 
 | Fitur / Modul | Manager | Supervisor | Staff | Driver |
 | :--- | :---: | :---: | :---: | :---: |
@@ -42,14 +42,14 @@
 | **Driver API** | <img src="https://api.iconify.design/lucide:x-circle.svg?color=%23ef4444" width="14"> | <img src="https://api.iconify.design/lucide:x-circle.svg?color=%23ef4444" width="14"> | <img src="https://api.iconify.design/lucide:x-circle.svg?color=%23ef4444" width="14"> | <img src="https://api.iconify.design/lucide:check-circle.svg?color=%2310b981" width="14"> |
 | **Petayu AI** | <img src="https://api.iconify.design/lucide:check-circle.svg?color=%2310b981" width="14"> | <img src="https://api.iconify.design/lucide:check-circle.svg?color=%2310b981" width="14"> | <img src="https://api.iconify.design/lucide:check-circle.svg?color=%2310b981" width="14"> | <img src="https://api.iconify.design/lucide:x-circle.svg?color=%23ef4444" width="14"> |
 
-## <img src="https://api.iconify.design/lucide:cpu.svg?color=%2310b981" width="24" height="24" align="center"> Tech Stack
+<h2><img src="https://api.iconify.design/lucide:cpu.svg?color=%2310b981" width="22" height="22" style="vertical-align: middle;"> Tech Stack</h2>
 
 *   **Backend:** Laravel 13 (PHP 8.3)
 *   **Frontend:** React (Inertia.js 2.0)
 *   **CSS:** Tailwind CSS 4.0
 *   **Tools:** Vite 8.0, Playwright, Puppeteer
 
-## <img src="https://api.iconify.design/lucide:settings.svg?color=%236b7280" width="24" height="24" align="center"> Instalasi Cepat
+<h2><img src="https://api.iconify.design/lucide:settings.svg?color=%236b7280" width="22" height="22" style="vertical-align: middle;"> Instalasi Cepat</h2>
 
 ```bash
 # 1. Clone & Setup
@@ -61,14 +61,14 @@ cp .env.example .env && php artisan key:generate && php artisan migrate --seed
 php artisan dev
 ```
 
-## <img src="https://api.iconify.design/lucide:key.svg?color=%23f59e0b" width="24" height="24" align="center"> Konfigurasi AI
+<h2><img src="https://api.iconify.design/lucide:key.svg?color=%23f59e0b" width="22" height="22" style="vertical-align: middle;"> Konfigurasi AI</h2>
 
 ```env
 GROQ_API_KEY=gsk_your_key_here
 GROQ_MODEL=llama-3.3-70b-versatile
 ```
 
-## <img src="https://api.iconify.design/lucide:book-open.svg?color=%233b82f6" width="24" height="24" align="center"> Dokumentasi Alur
+<h2><img src="https://api.iconify.design/lucide:book-open.svg?color=%233b82f6" width="22" height="22" style="vertical-align: middle;"> Dokumentasi Alur</h2>
 
 *   [Matriks Peran](ROLE_PERMISSION_MATRIX.md) | [Alur Transaksi](TRANSACTION_FLOW.md)
 *   [Alur Pengiriman](DRIVER_FLOW.md) | [Manajemen Gudang](WAREHOUSE_FLOW.md)
