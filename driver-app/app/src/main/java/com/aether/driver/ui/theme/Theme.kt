@@ -12,11 +12,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-// Laravel dashboard-aligned industrial palette (indigo + slate)
-val Primary      = Color(0xFF4F46E5)   // indigo-600
-val PrimaryLight = Color(0xFFEEF2FF)   // indigo-50
-val PrimaryDark  = Color(0xFF4338CA)   // indigo-700
-val PrimaryDeep  = Color(0xFF3632C0)   // brand accent used in web sidebar
+// Petayu Driver brand palette — aligned with logo colors
+val Primary      = Color(0xFF5932C9)   // brand purple — tombol utama, sidebar aktif, icon, link
+val PrimaryLight = Color(0xFFF0EBFF)   // light purple tint
+val PrimaryDark  = Color(0xFF28106F)   // deep purple — header, teks penting, gradient
+val PrimaryDeep  = Color(0xFF28106F)   // same as PrimaryDark for gradient headers
+
+val Secondary    = Color(0xFF72CBEA)   // sky blue — aksen, grafik, badge, hover, status info
+val SecondaryLt  = Color(0xFFDCF4FC)   // light sky tint
 
 val Danger       = Color(0xFFEF4444)   // red-500
 val DangerLight  = Color(0xFFFEE2E2)   // red-100
@@ -24,16 +27,16 @@ val DangerLight  = Color(0xFFFEE2E2)   // red-100
 val Warning      = Color(0xFFF59E0B)   // amber-500
 val WarningLight = Color(0xFFFEF3C7)   // amber-100
 
-val Secondary    = Color(0xFF10B981)   // emerald-500
-val SecondaryLt  = Color(0xFFD1FAE5)   // emerald-100
+val Success      = Color(0xFF10B981)   // emerald-500
+val SuccessLight = Color(0xFFD1FAE5)   // emerald-100
 
-val Surface      = Color(0xFFF8F9FC)   // web background
+val Surface      = Color(0xFFFFFFFF)   // pure white background
 val Card         = Color(0xFFFFFFFF)
-val Border       = Color(0xFFE2E8F0)   // slate-200
-val BorderSoft   = Color(0xFFEDF2F7)   // soft panel border
-val TextPrimary  = Color(0xFF1A202C)   // slate-900
-val TextSecond   = Color(0xFF64748B)   // slate-500
-val TextMuted    = Color(0xFF94A3B8)   // slate-400
+val Border       = Color(0xFFE5E0F0)   // muted purple-grey border
+val BorderSoft   = Color(0xFFF0EBFA)   // soft panel border
+val TextPrimary  = Color(0xFF1A1035)   // deep dark text
+val TextSecond   = Color(0xFF6B5F8A)   // muted purple-grey
+val TextMuted    = Color(0xFF9B8FC0)   // light muted purple
 
 private val ColorScheme = lightColorScheme(
     primary            = Primary,
@@ -50,7 +53,7 @@ private val ColorScheme = lightColorScheme(
     onBackground       = TextPrimary,
     surface            = Card,
     onSurface          = TextPrimary,
-    surfaceVariant     = Color(0xFFF4F5F9),
+    surfaceVariant     = Color(0xFFF4F0FF),
     onSurfaceVariant   = TextSecond,
     outline            = TextMuted,
     outlineVariant     = Border,

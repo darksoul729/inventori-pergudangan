@@ -261,44 +261,31 @@ fun ShipmentListScreen(
 
     Scaffold(
         topBar = {
-            Surface(
-                color = Card,
-                shadowElevation = 1.dp,
-            ) {
-                AetherWorkspaceHeader(
+            AetherWorkspaceHeader(
                     title = "Pengiriman Saya",
-                    subtitle = "Aether Driver",
+                    subtitle = "Petayu Driver",
                     actions = {
                         IconButton(onClick = { showProfileDialog = true }, modifier = Modifier.size(36.dp)) {
-                            Icon(Icons.Rounded.AccountCircle, contentDescription = "Profil", tint = TextSecond, modifier = Modifier.size(19.dp))
+                            Icon(Icons.Rounded.AccountCircle, contentDescription = "Profil", tint = Primary, modifier = Modifier.size(19.dp))
                         }
                         IconButton(onClick = onOpenHistory, modifier = Modifier.size(36.dp)) {
-                            Icon(Icons.Rounded.History, contentDescription = "Riwayat", tint = TextSecond, modifier = Modifier.size(18.dp))
+                            Icon(Icons.Rounded.History, contentDescription = "Riwayat", tint = Primary, modifier = Modifier.size(18.dp))
                         }
                         IconButton(onClick = onOpenSettings, modifier = Modifier.size(36.dp)) {
-                            Icon(Icons.Rounded.Settings, contentDescription = "Pengaturan", tint = TextSecond, modifier = Modifier.size(18.dp))
+                            Icon(Icons.Rounded.Settings, contentDescription = "Pengaturan", tint = Primary, modifier = Modifier.size(18.dp))
                         }
                         IconButton(onClick = { showLogoutDialog = true }, modifier = Modifier.size(36.dp)) {
-                            Icon(Icons.Rounded.Logout, contentDescription = "Keluar", tint = TextSecond, modifier = Modifier.size(18.dp))
+                            Icon(Icons.Rounded.Logout, contentDescription = "Keluar", tint = Primary, modifier = Modifier.size(18.dp))
                         }
                     },
                 )
-            }
         },
         containerColor = Surface,
     ) { paddingValues ->
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(
-                    Brush.verticalGradient(
-                        colors = listOf(
-                            Surface,
-                            PrimaryLight.copy(alpha = 0.35f),
-                            Surface,
-                        )
-                    )
-                ),
+                .background(Surface),
         ) {
             LazyColumn(
                 modifier             = Modifier
@@ -333,7 +320,7 @@ fun ShipmentListScreen(
                     item { AlertBanner(message = msg, type = AlertType.Error) }
                 }
 
-                if (shipments.isEmpty()) {
+                if (shipments.isEmpty() && !isLoading) {
                     item {
                         ClaimShipmentCard(
                             claimCode = claimCode,
@@ -346,9 +333,8 @@ fun ShipmentListScreen(
                     item {
                         Surface(
                             modifier = Modifier.fillMaxWidth(),
-                            color = Primary.copy(alpha = 0.05f),
+                            color = PrimaryLight.copy(alpha = 0.3f),
                             shape = RoundedCornerShape(16.dp),
-                            border = BorderStroke(1.dp, Primary.copy(alpha = 0.1f))
                         ) {
                             Row(
                                 modifier = Modifier.padding(16.dp),
@@ -357,7 +343,8 @@ fun ShipmentListScreen(
                                 Box(
                                     modifier = Modifier
                                         .size(40.dp)
-                                        .background(Primary.copy(alpha = 0.1f), CircleShape),
+                                        .clip(RoundedCornerShape(10.dp))
+                                        .background(PrimaryLight),
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Icon(
@@ -367,12 +354,13 @@ fun ShipmentListScreen(
                                         modifier = Modifier.size(20.dp)
                                     )
                                 }
-                                Spacer(Modifier.width(16.dp))
+                                Spacer(Modifier.width(14.dp))
                                 Column {
                                     Text(
                                         "Pengiriman Aktif",
                                         style = MaterialTheme.typography.titleSmall,
-                                        color = TextPrimary
+                                        color = TextPrimary,
+                                        fontWeight = FontWeight.Bold,
                                     )
                                     Text(
                                         "Selesaikan pengiriman saat ini untuk mengambil yang baru.",
@@ -412,23 +400,23 @@ fun ShipmentListScreen(
                             Box(
                                 modifier = Modifier
                                     .size(86.dp)
-                                    .clip(RoundedCornerShape(20.dp))
-                                    .background(Color.White)
-                                    .border(1.dp, Border, RoundedCornerShape(20.dp)),
+                                    .clip(RoundedCornerShape(24.dp))
+                                    .background(PrimaryLight),
                                 contentAlignment = Alignment.Center,
                             ) {
                                 Icon(
                                     Icons.Rounded.LocalShipping,
                                     contentDescription = null,
                                     tint = Primary,
-                                    modifier = Modifier.size(38.dp),
+                                    modifier = Modifier.size(40.dp),
                                 )
                             }
-                            Spacer(Modifier.height(18.dp))
+                            Spacer(Modifier.height(20.dp))
                             Text(
                                 text = "Belum Ada Pengiriman Aktif",
                                 style = MaterialTheme.typography.titleLarge,
                                 color = TextPrimary,
+                                fontWeight = FontWeight.Bold,
                             )
                             Spacer(Modifier.height(8.dp))
                             Text(
@@ -500,31 +488,21 @@ fun ShipmentListScreen(
     }
 
     if (showLogoutDialog) {
-        AlertDialog(
-            onDismissRequest = { showLogoutDialog = false },
-            modifier = dialogEntranceModifier(),
-            title            = { Text("Keluar dari Akun", style = MaterialTheme.typography.headlineMedium) },
-            text             = { Text("Anda akan keluar dan perlu login kembali.", style = MaterialTheme.typography.bodyMedium, color = TextSecond) },
-            confirmButton    = {
-                AetherPrimaryButton(
-                    text = "Keluar",
-                    onClick = {
-                        showLogoutDialog = false
-                        scope.launch {
-                            sessionManager.clearToken()
-                            onLogout()
-                        }
-                    },
-                    danger = true,
-                )
+        PetayuConfirmDialog(
+            title = "Keluar dari Akun",
+            message = "Anda akan keluar dari sesi saat ini dan perlu login kembali untuk mengakses pengiriman.",
+            confirmText = "Keluar Sekarang",
+            cancelText = "Batal",
+            isDanger = true,
+            icon = Icons.Rounded.Logout,
+            onConfirm = {
+                showLogoutDialog = false
+                scope.launch {
+                    sessionManager.clearToken()
+                    onLogout()
+                }
             },
-            dismissButton    = {
-                AetherSecondaryButton(
-                    text = "Batal",
-                    onClick = { showLogoutDialog = false },
-                )
-            },
-            shape            = MaterialTheme.shapes.extraLarge,
+            onDismiss = { showLogoutDialog = false }
         )
     }
 
@@ -557,21 +535,25 @@ fun ShipmentCard(
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onOpenDetail() },
-        padding = PaddingValues(18.dp),
+        padding = PaddingValues(20.dp),
     ) {
-
+            // Header: ID + Status
             Row(
                 modifier              = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment     = Alignment.CenterVertically,
             ) {
-                Column {
-                    SectionLabel("ID Pengiriman")
-                    Text(
-                        text  = "#${shipment.shipment_id}",
-                        style = MaterialTheme.typography.headlineMedium,
-                        color = Primary,
-                    )
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Box(
+                        modifier = Modifier.size(40.dp).clip(RoundedCornerShape(10.dp)).background(PrimaryLight),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Text("#${shipment.shipment_id}", style = MaterialTheme.typography.labelSmall, color = Primary, fontWeight = FontWeight.Bold)
+                    }
+                    Column {
+                        SectionLabel("ID Pengiriman")
+                        Text("#${shipment.shipment_id}", style = MaterialTheme.typography.headlineMedium, color = Primary, fontWeight = FontWeight.Bold)
+                    }
                 }
                 AetherStatusBadge(
                     label = shipment.tracking_stage_label ?: trackingStageLabel(stage),
@@ -583,83 +565,82 @@ fun ShipmentCard(
             Divider(color = Border)
             Spacer(Modifier.height(16.dp))
 
+            // Route: Origin → Destination
             Row(
-                modifier      = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     SectionLabel("Asal")
                     Spacer(Modifier.height(4.dp))
-                    Text(
-                        text  = shipment.origin_name,
-                        style = MaterialTheme.typography.titleMedium,
-                        color = TextPrimary,
-                    )
+                    Text(shipment.origin_name, style = MaterialTheme.typography.titleMedium, color = TextPrimary, fontWeight = FontWeight.SemiBold)
                 }
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Icon(Icons.Rounded.ArrowForward, contentDescription = null, tint = TextMuted, modifier = Modifier.size(18.dp))
+                Box(
+                    modifier = Modifier.size(32.dp).clip(RoundedCornerShape(8.dp)).background(PrimaryLight),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(Icons.Rounded.ArrowForward, contentDescription = null, tint = Primary, modifier = Modifier.size(16.dp))
                 }
                 Column(modifier = Modifier.weight(1f), horizontalAlignment = Alignment.End) {
                     SectionLabel("Tujuan")
                     Spacer(Modifier.height(4.dp))
-                    Text(
-                        text      = shipment.destination_name,
-                        style     = MaterialTheme.typography.titleMedium,
-                        color     = TextPrimary,
-                        textAlign = TextAlign.End,
-                    )
+                    Text(shipment.destination_name, style = MaterialTheme.typography.titleMedium, color = TextPrimary, textAlign = TextAlign.End, fontWeight = FontWeight.SemiBold)
                 }
             }
 
+            // ETA
             shipment.estimated_arrival?.let { eta ->
                 Spacer(Modifier.height(12.dp))
-                Row(
-                    modifier              = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(10.dp))
-                        .background(PrimaryLight)
-                        .padding(horizontal = 12.dp, vertical = 8.dp),
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
-                    verticalAlignment     = Alignment.CenterVertically,
-                ) {
-                    Icon(Icons.Rounded.Schedule, contentDescription = null, tint = Primary, modifier = Modifier.size(16.dp))
-                    Text(
-                        text  = "ETA: ${formatApiDate(eta)}",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = Primary,
-                        fontWeight = FontWeight.SemiBold,
-                    )
+                Surface(color = PrimaryLight, shape = RoundedCornerShape(10.dp)) {
+                    Row(modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp), horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Rounded.Schedule, contentDescription = null, tint = Primary, modifier = Modifier.size(16.dp))
+                        Text("ETA: ${formatApiDate(eta)}", style = MaterialTheme.typography.bodySmall, color = Primary, fontWeight = FontWeight.SemiBold)
+                    }
                 }
             }
 
+            // Tracking stepper
             Spacer(Modifier.height(16.dp))
             TrackingStepper(currentStage = stage)
 
+            // Last note
             shipment.last_tracking_note?.let { note ->
                 Spacer(Modifier.height(12.dp))
-                Row(
-                    modifier  = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(10.dp))
-                        .background(MaterialTheme.colorScheme.surfaceVariant)
-                        .padding(12.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    Icon(Icons.Rounded.Notes, contentDescription = null, tint = TextSecond, modifier = Modifier.size(16.dp))
-                    Text(
-                        text  = note,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = TextSecond,
-                    )
+                Surface(color = PrimaryLight.copy(alpha = 0.3f), shape = RoundedCornerShape(10.dp)) {
+                    Row(modifier = Modifier.padding(12.dp), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Rounded.Notes, contentDescription = null, tint = Primary, modifier = Modifier.size(16.dp))
+                        Text(note, style = MaterialTheme.typography.bodySmall, color = TextSecond)
+                    }
                 }
+            }
+
+            // Action button
+            var advanceConfirmStage by remember { mutableStateOf<String?>(null) }
+            
+            if (advanceConfirmStage != null && !isDone) {
+                PetayuConfirmDialog(
+                    title = "Update Status",
+                    message = "Tandai pesanan ini menjadi '${trackingStageLabel(advanceConfirmStage!!)}'?",
+                    confirmText = "Update Status",
+                    onConfirm = {
+                        onAdvanceStage(advanceConfirmStage!!)
+                        advanceConfirmStage = null
+                    },
+                    onDismiss = { advanceConfirmStage = null }
+                )
             }
 
             if (nextStage != null && !isDone) {
                 Spacer(Modifier.height(16.dp))
                 AetherPrimaryButton(
                     text = nextStageActionLabel(nextStage),
-                    onClick = { onAdvanceStage(nextStage) },
+                    onClick = { 
+                        if (nextStage == "delivered") {
+                            onAdvanceStage(nextStage)
+                        } else {
+                            advanceConfirmStage = nextStage
+                        }
+                    },
                     modifier = Modifier.fillMaxWidth(),
                     enabled = !isAdvancing,
                     isLoading = isAdvancing,
@@ -667,49 +648,28 @@ fun ShipmentCard(
                 )
             }
 
+            // Verification status
             if (isDone) {
                 Spacer(Modifier.height(12.dp))
                 if (isVerified) {
-                    Row(
-                        modifier              = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(10.dp))
-                            .background(SecondaryLt)
-                            .padding(12.dp),
-                        horizontalArrangement = Arrangement.Center,
-                        verticalAlignment     = Alignment.CenterVertically,
-                    ) {
-                        Icon(Icons.Rounded.CheckCircle, contentDescription = null, tint = Secondary, modifier = Modifier.size(18.dp))
-                        Spacer(Modifier.width(8.dp))
-                        Text(
-                            text       = "Selesai diverifikasi admin",
-                            style      = MaterialTheme.typography.bodySmall,
-                            color      = Secondary,
-                            fontWeight = FontWeight.ExtraBold,
-                        )
+                    Surface(color = SuccessLight, shape = RoundedCornerShape(10.dp)) {
+                        Row(modifier = Modifier.fillMaxWidth().padding(12.dp), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Rounded.CheckCircle, contentDescription = null, tint = Success, modifier = Modifier.size(18.dp))
+                            Spacer(Modifier.width(8.dp))
+                            Text("Selesai diverifikasi admin", style = MaterialTheme.typography.bodySmall, color = Success, fontWeight = FontWeight.Bold)
+                        }
                     }
                 } else {
                     val waitingText = when (verificationStatus) {
                         "rejected" -> "Bukti ditolak admin. Kirim ulang POD."
                         else -> "Menunggu verifikasi admin."
                     }
-                    Row(
-                        modifier              = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(10.dp))
-                            .background(WarningLight)
-                            .padding(12.dp),
-                        horizontalArrangement = Arrangement.Center,
-                        verticalAlignment     = Alignment.CenterVertically,
-                    ) {
-                        Icon(Icons.Rounded.Schedule, contentDescription = null, tint = Warning, modifier = Modifier.size(18.dp))
-                        Spacer(Modifier.width(8.dp))
-                        Text(
-                            text       = waitingText,
-                            style      = MaterialTheme.typography.bodySmall,
-                            color      = Warning,
-                            fontWeight = FontWeight.ExtraBold,
-                        )
+                    Surface(color = WarningLight, shape = RoundedCornerShape(10.dp)) {
+                        Row(modifier = Modifier.fillMaxWidth().padding(12.dp), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Rounded.Schedule, contentDescription = null, tint = Warning, modifier = Modifier.size(18.dp))
+                            Spacer(Modifier.width(8.dp))
+                            Text(waitingText, style = MaterialTheme.typography.bodySmall, color = Warning, fontWeight = FontWeight.Bold)
+                        }
                     }
 
                     if (verificationStatus == "rejected") {
@@ -748,18 +708,18 @@ private fun ClaimShipmentCard(
         Column(
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 Box(
                     modifier = Modifier
-                        .size(30.dp)
-                        .clip(RoundedCornerShape(8.dp))
+                        .size(36.dp)
+                        .clip(RoundedCornerShape(10.dp))
                         .background(PrimaryLight),
                     contentAlignment = Alignment.Center,
                 ) {
-                    Icon(Icons.Rounded.LocalShipping, contentDescription = null, tint = Primary, modifier = Modifier.size(16.dp))
+                    Icon(Icons.Rounded.LocalShipping, contentDescription = null, tint = Primary, modifier = Modifier.size(18.dp))
                 }
                 Column {
-                    Text("Tambah Pengiriman via Kode", style = MaterialTheme.typography.titleLarge, color = TextPrimary)
+                    Text("Tambah Pengiriman via Kode", style = MaterialTheme.typography.titleLarge, color = TextPrimary, fontWeight = FontWeight.Bold)
                     Text("Input kode shipment resmi dari admin.", style = MaterialTheme.typography.bodySmall, color = TextMuted)
                 }
             }
@@ -791,60 +751,75 @@ private fun ClaimShipmentCard(
 private fun TrackingStepper(currentStage: String) {
     val currentIdx = STAGES.indexOfFirst { it.first == currentStage }.coerceAtLeast(0)
 
-    Row(
-        modifier              = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment     = Alignment.Top,
-    ) {
-        STAGES.forEachIndexed { idx, (_, label) ->
-            val isDone   = idx < currentIdx
-            val isCurrent = idx == currentIdx
-            val color    = when {
-                isDone    -> Secondary
-                isCurrent -> Primary
-                else      -> Border
-            }
+    Column(modifier = Modifier.fillMaxWidth()) {
+        // Dots + lines row
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            STAGES.forEachIndexed { idx, (_, label) ->
+                val isDone    = idx < currentIdx
+                val isCurrent = idx == currentIdx
+                val dotColor  = when {
+                    isDone    -> Success
+                    isCurrent -> Primary
+                    else      -> Border
+                }
 
-            Column(
-                modifier            = Modifier.weight(1f),
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                Box(
-                    modifier         = Modifier
-                        .size(22.dp)
-                        .clip(CircleShape)
-                        .background(color),
-                    contentAlignment = Alignment.Center,
+                Column(
+                    modifier = Modifier.weight(1f),
+                    horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
-                    if (isDone) {
-                        Icon(Icons.Rounded.Check, contentDescription = null, tint = Color.White, modifier = Modifier.size(14.dp))
-                    } else if (isCurrent) {
-                        Box(
-                            modifier = Modifier
-                                .size(8.dp)
-                                .clip(CircleShape)
-                                .background(Color.White)
-                        )
+                    Box(
+                        modifier = Modifier
+                            .size(28.dp)
+                            .clip(CircleShape)
+                            .background(dotColor),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        if (isDone) {
+                            Icon(Icons.Rounded.Check, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
+                        } else if (isCurrent) {
+                            Box(modifier = Modifier.size(10.dp).clip(CircleShape).background(Color.White))
+                        }
                     }
                 }
-                Spacer(Modifier.height(4.dp))
-                Text(
-                    text      = label,
-                    style     = MaterialTheme.typography.labelSmall.copy(fontSize = 8.sp),
-                    color     = if (isCurrent || isDone) color else TextMuted,
-                    textAlign = TextAlign.Center,
-                    maxLines  = 2,
-                )
-            }
 
-            if (idx < STAGES.lastIndex) {
-                Box(
-                    modifier = Modifier
-                        .weight(0.5f)
-                        .height(2.dp)
-                        .padding(top = 10.dp)
-                        .background(if (idx < currentIdx) Secondary else Border)
+                if (idx < STAGES.lastIndex) {
+                    Box(
+                        modifier = Modifier
+                            .weight(0.6f)
+                            .height(3.dp)
+                            .clip(RoundedCornerShape(2.dp))
+                            .background(if (idx < currentIdx) Success.copy(alpha = 0.6f) else Border.copy(alpha = 0.5f))
+                    )
+                }
+            }
+        }
+        // Labels row
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(top = 6.dp),
+        ) {
+            STAGES.forEachIndexed { idx, (_, label) ->
+                val isDone    = idx < currentIdx
+                val isCurrent = idx == currentIdx
+                val color     = when {
+                    isDone    -> Success
+                    isCurrent -> Primary
+                    else      -> TextMuted
+                }
+                Text(
+                    text = label,
+                    style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp),
+                    color = color,
+                    textAlign = TextAlign.Center,
+                    fontWeight = if (isCurrent) FontWeight.Bold else FontWeight.Normal,
+                    maxLines = 1,
+                    modifier = Modifier.weight(1f),
                 )
+                if (idx < STAGES.lastIndex) {
+                    Spacer(Modifier.weight(0.6f))
+                }
             }
         }
     }
@@ -867,76 +842,92 @@ private fun ProofOfDeliveryDialog(
 
     AlertDialog(
         onDismissRequest = { if (!isSubmitting) onDismiss() },
-        modifier = dialogEntranceModifier(),
-        shape            = MaterialTheme.shapes.extraLarge,
+        modifier = Modifier.fillMaxWidth().then(dialogEntranceModifier()),
+        containerColor = Color.White,
+        shape = RoundedCornerShape(24.dp),
         title = {
-            Column {
-                Text("Bukti Pengiriman (POD)", style = MaterialTheme.typography.headlineMedium)
-                Text(
-                    text  = "#${shipment.shipment_id} → ${shipment.destination_name}",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = TextMuted,
-                )
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+            ) {
+                Box(
+                    modifier = Modifier.size(64.dp).clip(CircleShape).background(PrimaryLight),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(Icons.Rounded.TaskAlt, contentDescription = null, tint = Primary, modifier = Modifier.size(32.dp))
+                }
+                Spacer(Modifier.height(16.dp))
+                Text("Bukti Pengiriman (POD)", style = MaterialTheme.typography.headlineMedium, color = TextPrimary, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center)
+                Text("#${shipment.shipment_id} → ${shipment.destination_name}", style = MaterialTheme.typography.bodySmall, color = TextMuted, textAlign = TextAlign.Center)
             }
         },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
                 AetherTextField(
-                    value         = recipientName,
+                    value = recipientName,
                     onValueChange = { recipientName = it },
-                    label         = "Nama Penerima",
-                    placeholder   = "Nama orang yang menerima barang",
-                    leadingIcon   = { Icon(Icons.Rounded.Person, contentDescription = null, tint = TextMuted, modifier = Modifier.size(20.dp)) }
+                    label = "Nama Penerima",
+                    placeholder = "Nama orang yang menerima barang",
+                    leadingIcon = { Icon(Icons.Rounded.Person, contentDescription = null, tint = TextMuted, modifier = Modifier.size(20.dp)) }
                 )
                 AetherTextField(
-                    value         = note,
+                    value = note,
                     onValueChange = { note = it },
-                    label         = "Catatan Pengiriman (Opsional)",
-                    placeholder   = "Contoh: Diterima di pintu depan",
-                    leadingIcon   = { Icon(Icons.Rounded.EditNote, contentDescription = null, tint = TextMuted, modifier = Modifier.size(20.dp)) }
+                    label = "Catatan Pengiriman (Opsional)",
+                    placeholder = "Contoh: Diterima di pintu depan",
+                    leadingIcon = { Icon(Icons.Rounded.EditNote, contentDescription = null, tint = TextMuted, modifier = Modifier.size(20.dp)) }
                 )
                 OutlinedButton(
-                    onClick  = { photoLauncher.launch("image/*") },
-                    modifier = Modifier.fillMaxWidth(),
-                    shape    = MaterialTheme.shapes.medium,
+                    onClick = { photoLauncher.launch("image/*") },
+                    modifier = Modifier.fillMaxWidth().height(48.dp),
+                    shape = RoundedCornerShape(14.dp),
+                    border = BorderStroke(1.5.dp, if (photoUri != null) Success.copy(alpha = 0.4f) else Border),
                 ) {
                     Icon(
                         imageVector = if (photoUri != null) Icons.Rounded.AddAPhoto else Icons.Rounded.PhotoCamera,
                         contentDescription = null,
-                        tint = if (photoUri != null) Secondary else Primary,
+                        tint = if (photoUri != null) Success else Primary,
                         modifier = Modifier.size(18.dp)
                     )
                     Spacer(Modifier.width(8.dp))
                     Text(
-                        text  = if (photoUri != null) "Foto Terpilih" else "Pilih Foto Bukti",
+                        text = if (photoUri != null) "Foto Terpilih ✓" else "Pilih Foto Bukti",
                         style = MaterialTheme.typography.labelMedium,
-                        color = if (photoUri != null) Secondary else Primary,
+                        color = if (photoUri != null) Success else Primary,
+                        fontWeight = FontWeight.SemiBold,
                     )
                 }
             }
         },
         confirmButton = {
-            AetherPrimaryButton(
-                text = "Simpan & Selesaikan",
-                onClick = {
-                    val base64 = photoUri?.let { contentResolver.readImageAsBase64(it) }
-                    onSubmit(recipientName.trim(), note.trim(), base64)
-                },
-                enabled = recipientName.isNotBlank() && !isSubmitting,
-                isLoading = isSubmitting,
-                leadingIcon = Icons.Rounded.TaskAlt,
-            )
-        },
-        dismissButton = {
-            TextButton(onClick = { if (!isSubmitting) onDismiss() }) {
-                Text("Batal", color = TextSecond, style = MaterialTheme.typography.labelLarge)
+            Column(
+                modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
+                AetherPrimaryButton(
+                    text = "Simpan & Selesaikan",
+                    onClick = {
+                        val base64 = photoUri?.let { contentResolver.readImageAsBase64(it) }
+                        onSubmit(recipientName.trim(), note.trim(), base64)
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = recipientName.isNotBlank() && !isSubmitting,
+                    isLoading = isSubmitting,
+                    leadingIcon = Icons.Rounded.TaskAlt,
+                )
+                AetherSecondaryButton(
+                    text = "Batal",
+                    onClick = { if (!isSubmitting) onDismiss() },
+                    modifier = Modifier.fillMaxWidth(),
+                )
             }
-        }
+        },
+        dismissButton = {}
     )
 }
 
 // VerificationCodeDialog removed
-2
+
 @Composable
 private fun ShipmentDetailPage(
     shipment: Shipment,
@@ -958,13 +949,11 @@ private fun ShipmentDetailPage(
 
     Scaffold(
         topBar = {
-            Surface(color = Card, shadowElevation = 1.dp) {
-                AetherWorkspaceHeader(
+            AetherWorkspaceHeader(
                     title = "Detail Pengiriman",
-                    subtitle = "Aether Driver",
+                    subtitle = "Petayu Driver",
                     onBack = onBack,
                 )
-            }
         },
         containerColor = Surface,
     ) { paddingValues ->
@@ -972,11 +961,7 @@ private fun ShipmentDetailPage(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .background(
-                    Brush.verticalGradient(
-                        colors = listOf(Surface, PrimaryLight.copy(alpha = 0.3f), Surface)
-                    )
-                )
+                .background(Surface)
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 20.dp, vertical = 16.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp),
@@ -1204,7 +1189,7 @@ private fun RouteMapPreview(
                     strokeWidth = 6f,
                     cap = StrokeCap.Round,
                 )
-                drawCircle(color = Secondary, center = start, radius = 10f)
+                drawCircle(color = Success, center = start, radius = 10f)
                 drawCircle(color = Danger, center = end, radius = 10f)
                 drawCircle(color = Color.White, center = start, radius = 4f)
                 drawCircle(color = Color.White, center = end, radius = 4f)
@@ -1238,7 +1223,7 @@ private fun RouteSketchMap(modifier: Modifier = Modifier) {
             cap = StrokeCap.Round,
         )
 
-        drawCircle(color = Secondary, radius = 14f, center = start)
+        drawCircle(color = Success, radius = 14f, center = start)
         drawCircle(color = Danger, radius = 14f, center = end)
         drawCircle(color = Color.White, radius = 6f, center = start)
         drawCircle(color = Color.White, radius = 6f, center = end)
@@ -1268,7 +1253,7 @@ private fun RouteReviewPanel(
         else -> "Internasional"
     }
     val routeClassColor = when (routeClass) {
-        "Lokal" -> Secondary
+        "Lokal" -> Success
         "Antar Kota" -> Warning
         "Internasional" -> Primary
         else -> TextMuted
@@ -1278,7 +1263,7 @@ private fun RouteReviewPanel(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(12.dp))
-            .background(MaterialTheme.colorScheme.surfaceVariant)
+            .background(PrimaryLight.copy(alpha = 0.3f))
             .padding(12.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
@@ -1332,18 +1317,20 @@ private fun RouteReviewPanel(
 
 @Composable
 private fun DetailInfoCard(label: String, value: String) {
-    Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(10.dp))
-                    .background(MaterialTheme.colorScheme.surfaceVariant)
-                    .padding(horizontal = 12.dp, vertical = 10.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-        Text(label.uppercase(), style = MaterialTheme.typography.labelSmall, color = TextMuted)
-        Text(value, style = MaterialTheme.typography.bodyMedium, color = TextPrimary, textAlign = TextAlign.End)
-            }
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(10.dp),
+        color = PrimaryLight.copy(alpha = 0.3f),
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(label.uppercase(), style = MaterialTheme.typography.labelSmall, color = TextMuted, fontWeight = FontWeight.SemiBold)
+            Text(value, style = MaterialTheme.typography.bodyMedium, color = TextPrimary, textAlign = TextAlign.End, fontWeight = FontWeight.SemiBold)
+        }
+    }
 }
 
 @Composable
@@ -1352,21 +1339,23 @@ private fun DetailInfoCopyCard(
     value: String,
     onCopy: () -> Unit,
 ) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(10.dp))
-            .background(MaterialTheme.colorScheme.surfaceVariant)
-            .padding(horizontal = 12.dp, vertical = 10.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically,
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(10.dp),
+        color = PrimaryLight.copy(alpha = 0.3f),
     ) {
-        Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
-            Text(label.uppercase(), style = MaterialTheme.typography.labelSmall, color = TextMuted)
-            Text(value, style = MaterialTheme.typography.bodyMedium, color = TextPrimary)
-        }
-        TextButton(onClick = onCopy, enabled = value != "-") {
-            Text("COPY", style = MaterialTheme.typography.labelSmall, color = Primary)
+        Row(
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Column(verticalArrangement = Arrangement.spacedBy(3.dp), modifier = Modifier.weight(1f)) {
+                Text(label.uppercase(), style = MaterialTheme.typography.labelSmall, color = TextMuted, fontWeight = FontWeight.SemiBold)
+                Text(value, style = MaterialTheme.typography.bodyMedium, color = TextPrimary, fontWeight = FontWeight.SemiBold)
+            }
+            TextButton(onClick = onCopy, enabled = value != "-", contentPadding = PaddingValues(horizontal = 8.dp)) {
+                Text("COPY", style = MaterialTheme.typography.labelSmall, color = Primary, fontWeight = FontWeight.Bold)
+            }
         }
     }
 }
@@ -1451,18 +1440,44 @@ private fun ProfileDialog(
         "inactive" -> "Tidak Aktif"
         else -> "Belum tersedia"
     }
+    val statusColor = when (status?.lowercase()) {
+        "active", "approved" -> Success
+        "pending", "pending_approval" -> Warning
+        "rejected", "suspended" -> Danger
+        else -> TextMuted
+    }
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        modifier = dialogEntranceModifier(),
-        shape = MaterialTheme.shapes.extraLarge,
+        modifier = Modifier.fillMaxWidth().then(dialogEntranceModifier()),
+        containerColor = Color.White,
+        shape = RoundedCornerShape(24.dp),
         title = {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(10.dp),
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
             ) {
-                Icon(Icons.Rounded.Badge, contentDescription = null, tint = Primary, modifier = Modifier.size(20.dp))
-                Text("Profil Driver", style = MaterialTheme.typography.headlineMedium)
+                Box(
+                    modifier = Modifier.size(72.dp).clip(CircleShape).background(PrimaryLight),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(Icons.Rounded.Person, contentDescription = null, tint = Primary, modifier = Modifier.size(36.dp))
+                }
+                Spacer(Modifier.height(16.dp))
+                Text("Profil Driver", style = MaterialTheme.typography.headlineMedium, color = TextPrimary, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center)
+                Spacer(Modifier.height(4.dp))
+                Surface(
+                    shape = RoundedCornerShape(8.dp),
+                    color = statusColor.copy(alpha = 0.14f),
+                ) {
+                    Text(
+                        statusLabel.uppercase(),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = statusColor,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
+                    )
+                }
             }
         },
         text = {
@@ -1470,15 +1485,20 @@ private fun ProfileDialog(
                 ProfileInfoItem("Nama", name ?: "-")
                 ProfileInfoItem("Email", email ?: "-")
                 ProfileInfoItem("No. SIM", licenseNumber ?: "-")
-                ProfileInfoItem("Status", statusLabel)
             }
         },
         confirmButton = {
-            AetherSecondaryButton(
-                text = "Tutup",
-                onClick = onDismiss,
-            )
+            Column(
+                modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+            ) {
+                AetherSecondaryButton(
+                    text = "Tutup",
+                    onClick = onDismiss,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
         },
+        dismissButton = {}
     )
 }
 
@@ -1489,8 +1509,8 @@ private fun ProfileInfoItem(
 ) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
-        color = MaterialTheme.colorScheme.surfaceVariant,
+        shape = RoundedCornerShape(10.dp),
+        color = PrimaryLight.copy(alpha = 0.3f),
     ) {
         Column(
             modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
@@ -1500,6 +1520,7 @@ private fun ProfileInfoItem(
                 text = label.uppercase(),
                 style = MaterialTheme.typography.labelMedium,
                 color = TextMuted,
+                fontWeight = FontWeight.SemiBold,
             )
             Text(
                 text = value,
@@ -1555,18 +1576,24 @@ private fun DebugGpsCard(
 ) {
     AetherPanel(
         modifier = Modifier.fillMaxWidth(),
-        padding = PaddingValues(16.dp),
+        padding = PaddingValues(18.dp),
     ) {
-        Column(
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Icon(Icons.Rounded.SettingsInputAntenna, contentDescription = null, tint = Primary, modifier = Modifier.size(20.dp))
-                Text("Debug Tracking GPS", style = MaterialTheme.typography.titleLarge, color = TextPrimary)
+        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                Box(
+                    modifier = Modifier.size(36.dp).clip(RoundedCornerShape(10.dp)).background(SecondaryLt),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(Icons.Rounded.SettingsInputAntenna, contentDescription = null, tint = Secondary, modifier = Modifier.size(18.dp))
+                }
+                Column {
+                    Text("Debug Tracking GPS", style = MaterialTheme.typography.titleLarge, color = TextPrimary, fontWeight = FontWeight.Bold)
+                    Text("Informasi status GPS real-time", style = MaterialTheme.typography.bodySmall, color = TextMuted)
+                }
             }
-            DebugRow("Izin Lokasi", if (locationGranted) "Diberikan" else "Belum diizinkan")
-            DebugRow("GPS Terkirim Terakhir", lastSentAt ?: "Belum pernah")
-            DebugRow("Payload Terakhir", lastPayload ?: "-")
+            DebugInfoRow("Izin Lokasi", if (locationGranted) "Diberikan ✓" else "Belum diizinkan", if (locationGranted) Success else Warning)
+            DebugInfoRow("GPS Terkirim Terakhir", lastSentAt ?: "Belum pernah")
+            DebugInfoRow("Payload Terakhir", lastPayload ?: "-")
             if (!lastError.isNullOrBlank()) {
                 Spacer(Modifier.height(2.dp))
                 AlertBanner(message = "Error: $lastError", type = AlertType.Error)
@@ -1576,10 +1603,20 @@ private fun DebugGpsCard(
 }
 
 @Composable
-private fun DebugRow(label: String, value: String) {
-    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-        Text(label.uppercase(), style = MaterialTheme.typography.labelSmall, color = TextMuted)
-        Text(value, style = MaterialTheme.typography.bodySmall, color = TextPrimary)
+private fun DebugInfoRow(label: String, value: String, valueColor: Color = TextPrimary) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(8.dp),
+        color = PrimaryLight.copy(alpha = 0.3f),
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(label.uppercase(), style = MaterialTheme.typography.labelSmall, color = TextMuted, fontWeight = FontWeight.SemiBold)
+            Text(value, style = MaterialTheme.typography.bodySmall, color = valueColor, fontWeight = FontWeight.SemiBold)
+        }
     }
 }
 

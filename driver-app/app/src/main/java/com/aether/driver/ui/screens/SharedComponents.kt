@@ -9,33 +9,61 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.rounded.ArrowBack
+import androidx.compose.material.icons.rounded.CheckCircle
+import androidx.compose.material.icons.rounded.Error
+import androidx.compose.material.icons.rounded.Info
+import androidx.compose.material.icons.rounded.Warning
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Divider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.onFocusChanged
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import com.aether.driver.ui.theme.*
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
-import com.aether.driver.ui.theme.*
 
-// ─────────────────────────────────────────────────────────────────────────────
-//  AetherTextField — custom styled text field dengan leadingIcon support
-// ─────────────────────────────────────────────────────────────────────────────
+// ── PetayuTextField ──────────────────────────────────────────────────────
 @Composable
 fun AetherTextField(
     value: String,
@@ -61,6 +89,7 @@ fun AetherTextField(
                 isFocused -> Primary
                 else      -> TextMuted
             },
+            fontWeight = FontWeight.SemiBold,
             modifier = Modifier.padding(bottom = 6.dp),
         )
         OutlinedTextField(
@@ -74,14 +103,14 @@ fun AetherTextField(
             enabled              = enabled,
             isError              = isError,
             singleLine           = true,
-            shape                = RoundedCornerShape(12.dp),
+            shape                = RoundedCornerShape(14.dp),
             colors               = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor      = Primary,
                 unfocusedBorderColor    = Border,
                 errorBorderColor        = Danger,
-                focusedContainerColor   = Card,
-                unfocusedContainerColor = Color(0xFFF4F5F9),
-                disabledContainerColor  = Color(0xFFF1F5F9),
+                focusedContainerColor   = Color(0xFFFAF8FF),
+                unfocusedContainerColor = Color(0xFFFAF8FF),
+                disabledContainerColor  = Color(0xFFF5F3FF),
                 focusedTextColor        = TextPrimary,
                 unfocusedTextColor      = TextPrimary,
                 cursorColor             = Primary,
@@ -93,86 +122,84 @@ fun AetherTextField(
     }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-//  AetherStatusBadge — badge warna per tracking_stage
-// ─────────────────────────────────────────────────────────────────────────────
+// ── PetayuStatusBadge ────────────────────────────────────────────────────
 @Composable
 fun AetherStatusBadge(label: String, stage: String) {
     val (bg, fg) = when (stage) {
-        "delivered"              -> SecondaryLt to Secondary
+        "delivered"              -> SuccessLight to Success
         "arrived_at_destination" -> WarningLight to Warning
-        "in_transit"             -> PrimaryLight to Primary
+        "in_transit"             -> SecondaryLt to Secondary
         "picked_up"              -> PrimaryLight to Primary
-        else                     -> Color(0xFFF1F5F9) to TextSecond
+        else                     -> Color(0xFFF1F0FF) to TextSecond
     }
-    Surface(color = bg, shape = MaterialTheme.shapes.small) {
+    Surface(color = bg, shape = RoundedCornerShape(8.dp)) {
         Text(
             text     = label.uppercase(),
             style    = MaterialTheme.typography.labelSmall,
             color    = fg,
+            fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
         )
     }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-//  SectionLabel — uppercase muted label
-// ─────────────────────────────────────────────────────────────────────────────
+// ── SectionLabel ─────────────────────────────────────────────────────────
 @Composable
 fun SectionLabel(text: String, modifier: Modifier = Modifier) {
     Text(
         text     = text.uppercase(),
         style    = MaterialTheme.typography.labelSmall,
         color    = TextMuted,
+        fontWeight = FontWeight.SemiBold,
         modifier = modifier,
     )
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-//  InfoRow — label + value pair
-// ─────────────────────────────────────────────────────────────────────────────
+// ── InfoRow ──────────────────────────────────────────────────────────────
 @Composable
 fun InfoRow(label: String, value: String, valueColor: Color = TextPrimary) {
     Column(modifier = Modifier.fillMaxWidth()) {
         SectionLabel(label)
         Spacer(Modifier.height(2.dp))
-        Text(text = value, style = MaterialTheme.typography.titleMedium, color = valueColor)
+        Text(text = value, style = MaterialTheme.typography.titleMedium, color = valueColor, fontWeight = FontWeight.SemiBold)
     }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-//  AlertBanner — error / warning / success / info banner
-// ─────────────────────────────────────────────────────────────────────────────
+// ── AlertBanner ──────────────────────────────────────────────────────────
 @Composable
 fun AlertBanner(message: String, type: AlertType = AlertType.Error) {
     val (bg, fg, icon) = when (type) {
         AlertType.Error   -> Triple(DangerLight, Danger, Icons.Rounded.Error)
         AlertType.Warning -> Triple(WarningLight, Warning, Icons.Rounded.Warning)
-        AlertType.Success -> Triple(SecondaryLt, Secondary, Icons.Rounded.CheckCircle)
+        AlertType.Success -> Triple(SuccessLight, Success, Icons.Rounded.CheckCircle)
         AlertType.Info    -> Triple(PrimaryLight, Primary, Icons.Rounded.Info)
     }
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(10.dp))
-            .background(bg)
-            .padding(12.dp),
-        verticalAlignment     = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    Surface(
+        color = bg,
+        shape = RoundedCornerShape(12.dp),
     ) {
-        Icon(icon, contentDescription = null, tint = fg, modifier = Modifier.size(18.dp))
-        Text(
-            text       = message,
-            style      = MaterialTheme.typography.bodySmall,
-            color      = fg,
-            fontWeight = FontWeight.SemiBold,
-            modifier   = Modifier.weight(1f),
-        )
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 14.dp, vertical = 12.dp),
+            verticalAlignment     = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            Icon(icon, contentDescription = null, tint = fg, modifier = Modifier.size(18.dp))
+            Text(
+                text       = message,
+                style      = MaterialTheme.typography.bodySmall,
+                color      = fg,
+                fontWeight = FontWeight.SemiBold,
+                modifier   = Modifier.weight(1f),
+            )
+        }
     }
 }
 
 enum class AlertType { Error, Warning, Success, Info }
 
+// ── Loading dots ─────────────────────────────────────────────────────────
 @Composable
 fun AppInlineLoadingDots(color: Color) {
     val transition = rememberInfiniteTransition(label = "inline-dots")
@@ -189,9 +216,9 @@ fun AppInlineLoadingDots(color: Color) {
     Row(horizontalArrangement = Arrangement.spacedBy(5.dp), verticalAlignment = Alignment.CenterVertically) {
         repeat(3) { index ->
             val alpha = when (index) {
-                0 -> if (phase < 0.33f) 1f else 0.45f
-                1 -> if (phase in 0.33f..0.66f) 1f else 0.45f
-                else -> if (phase > 0.66f) 1f else 0.45f
+                0 -> if (phase < 0.33f) 1f else 0.4f
+                1 -> if (phase in 0.33f..0.66f) 1f else 0.4f
+                else -> if (phase > 0.66f) 1f else 0.4f
             }
             Box(
                 modifier = Modifier
@@ -203,68 +230,32 @@ fun AppInlineLoadingDots(color: Color) {
     }
 }
 
+// ── Warehouse loader ─────────────────────────────────────────────────────
 @Composable
 fun AppWarehouseLoader(
     label: String,
     modifier: Modifier = Modifier,
 ) {
-    val transition = rememberInfiniteTransition(label = "warehouse-loader")
-    val rotateDeg by transition.animateFloat(
-        initialValue = 0f,
-        targetValue = 360f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 1800, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart,
-        ),
-        label = "rotate",
-    )
-    val pulseScale by transition.animateFloat(
-        initialValue = 0.78f,
-        targetValue = 1.18f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 1150, easing = LinearEasing),
-            repeatMode = RepeatMode.Reverse,
-        ),
-        label = "pulse",
-    )
-
     Column(
-        modifier = modifier,
+        modifier = modifier.padding(vertical = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(10.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
-        Canvas(modifier = Modifier.size(64.dp)) {
-            val center = Offset(size.width / 2f, size.height / 2f)
-            val radius = size.minDimension * 0.34f
-
-            drawCircle(
-                color = PrimaryLight.copy(alpha = 0.75f),
-                radius = radius * pulseScale,
-                center = center,
-                style = androidx.compose.ui.graphics.drawscope.Stroke(width = 4.dp.toPx())
-            )
-
-            val angleRad = (rotateDeg * PI / 180f).toFloat()
-            val orbit = Offset(
-                x = center.x + (radius * cos(angleRad)),
-                y = center.y + (radius * sin(angleRad)),
-            )
-
-            drawCircle(color = Primary, radius = 8.dp.toPx(), center = orbit)
-            drawCircle(color = Secondary, radius = 5.dp.toPx(), center = center)
-        }
-
+        androidx.compose.material3.CircularProgressIndicator(
+            color = Primary,
+            strokeWidth = 3.dp,
+            modifier = Modifier.size(48.dp)
+        )
         Text(
             text = label,
-            style = MaterialTheme.typography.bodySmall,
-            color = TextSecond,
+            style = MaterialTheme.typography.bodyMedium,
+            color = TextMuted,
+            fontWeight = FontWeight.Medium
         )
     }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-//  IconLabelRow — row dengan icon + label (untuk debug card, tips, dll)
-// ─────────────────────────────────────────────────────────────────────────────
+// ── IconLabelRow ─────────────────────────────────────────────────────────
 @Composable
 fun IconLabelRow(
     icon: ImageVector,
@@ -280,6 +271,7 @@ fun IconLabelRow(
     }
 }
 
+// ── Workspace header ─────────────────────────────────────────────────────
 @Composable
 fun AetherWorkspaceHeader(
     title: String,
@@ -288,54 +280,60 @@ fun AetherWorkspaceHeader(
     onBack: (() -> Unit)? = null,
     actions: @Composable RowScope.() -> Unit = {},
 ) {
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 14.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically,
+    Surface(
+        modifier = modifier.fillMaxWidth(),
+        color = Color.White,
+        shadowElevation = 0.dp,
     ) {
-        Row(
-            modifier = Modifier.weight(1f),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp, vertical = 16.dp),
         ) {
             if (onBack != null) {
                 IconButton(
                     onClick = onBack,
-                    modifier = Modifier.size(36.dp),
+                    modifier = Modifier.size(32.dp),
                 ) {
                     Icon(
                         imageVector = Icons.Rounded.ArrowBack,
                         contentDescription = "Kembali",
-                        tint = TextSecond,
+                        tint = Primary,
                         modifier = Modifier.size(18.dp),
                     )
                 }
+                Spacer(Modifier.height(4.dp))
             }
-
-            Column {
-                Text(
-                    text = subtitle.uppercase(),
-                    style = MaterialTheme.typography.labelMedium,
-                    color = PrimaryDark,
-                )
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.headlineLarge,
-                    color = TextPrimary,
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = subtitle.uppercase(),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = Primary,
+                        fontWeight = FontWeight.Bold,
+                    )
+                    Text(
+                        text = title,
+                        style = MaterialTheme.typography.headlineLarge,
+                        color = TextPrimary,
+                        fontWeight = FontWeight.Bold,
+                    )
+                }
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(2.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    content = actions,
                 )
             }
         }
-
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            content = actions,
-        )
     }
 }
 
+// ── Panel card ───────────────────────────────────────────────────────────
 @Composable
 fun AetherPanel(
     modifier: Modifier = Modifier,
@@ -344,20 +342,22 @@ fun AetherPanel(
 ) {
     Surface(
         modifier = modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.extraLarge,
-        color = Card,
-        shadowElevation = 1.dp,
+        shape = RoundedCornerShape(16.dp),
+        color = Color.White,
+        shadowElevation = 2.dp,
+        tonalElevation = 0.dp,
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .border(1.dp, BorderSoft, MaterialTheme.shapes.extraLarge)
+                .border(1.dp, BorderSoft, RoundedCornerShape(16.dp))
                 .padding(padding),
             content = content,
         )
     }
 }
 
+// ── Primary button ───────────────────────────────────────────────────────
 @Composable
 fun AetherPrimaryButton(
     text: String,
@@ -373,8 +373,11 @@ fun AetherPrimaryButton(
         onClick = onClick,
         modifier = modifier.height(50.dp),
         enabled = enabled && !isLoading,
-        shape = MaterialTheme.shapes.large,
-        colors = ButtonDefaults.buttonColors(containerColor = container),
+        shape = RoundedCornerShape(14.dp),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = container,
+            disabledContainerColor = container.copy(alpha = 0.5f),
+        ),
     ) {
         if (isLoading) {
             AppInlineLoadingDots(color = Color.White)
@@ -383,11 +386,12 @@ fun AetherPrimaryButton(
                 Icon(leadingIcon, contentDescription = null, tint = Color.White, modifier = Modifier.size(18.dp))
                 Spacer(Modifier.width(8.dp))
             }
-            Text(text, style = MaterialTheme.typography.labelLarge, color = Color.White)
+            Text(text, style = MaterialTheme.typography.labelLarge, color = Color.White, fontWeight = FontWeight.Bold)
         }
     }
 }
 
+// ── Secondary button ─────────────────────────────────────────────────────
 @Composable
 fun AetherSecondaryButton(
     text: String,
@@ -402,17 +406,18 @@ fun AetherSecondaryButton(
         onClick = onClick,
         modifier = modifier.height(48.dp),
         enabled = enabled,
-        shape = MaterialTheme.shapes.large,
-        border = androidx.compose.foundation.BorderStroke(1.dp, if (danger) DangerLight else Border),
+        shape = RoundedCornerShape(14.dp),
+        border = androidx.compose.foundation.BorderStroke(1.5.dp, if (danger) Danger.copy(alpha = 0.4f) else Border),
     ) {
         if (leadingIcon != null) {
             Icon(leadingIcon, contentDescription = null, tint = color, modifier = Modifier.size(18.dp))
             Spacer(Modifier.width(8.dp))
         }
-        Text(text, style = MaterialTheme.typography.labelLarge, color = color)
+        Text(text, style = MaterialTheme.typography.labelLarge, color = color, fontWeight = FontWeight.SemiBold)
     }
 }
 
+// ── Form section header ──────────────────────────────────────────────────
 @Composable
 fun AetherFormSectionHeader(
     icon: ImageVector,
@@ -420,22 +425,99 @@ fun AetherFormSectionHeader(
     title: String,
     subtitle: String? = null,
 ) {
-    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
         Box(
             modifier = Modifier
-                .size(32.dp)
+                .size(36.dp)
                 .clip(RoundedCornerShape(10.dp))
-                .background(PrimaryLight),
+                .background(Primary),
             contentAlignment = Alignment.Center,
         ) {
-            Icon(icon, contentDescription = null, tint = Primary, modifier = Modifier.size(18.dp))
+            Icon(icon, contentDescription = null, tint = Color.White, modifier = Modifier.size(18.dp))
         }
         Column {
-            Text(number, style = MaterialTheme.typography.labelSmall, color = TextMuted)
-            Text(title, style = MaterialTheme.typography.titleLarge, color = TextPrimary)
+            Text(number, style = MaterialTheme.typography.labelSmall, color = Primary, fontWeight = FontWeight.Bold)
+            Text(title, style = MaterialTheme.typography.titleLarge, color = TextPrimary, fontWeight = FontWeight.Bold)
             if (!subtitle.isNullOrBlank()) {
                 Text(subtitle, style = MaterialTheme.typography.bodySmall, color = TextMuted)
             }
         }
     }
+}
+
+// ── Petayu Confirm Dialog ──────────────────────────────────────────────────
+@Composable
+fun PetayuConfirmDialog(
+    title: String,
+    message: String,
+    confirmText: String = "Lanjutkan",
+    cancelText: String = "Batal",
+    isDanger: Boolean = false,
+    icon: ImageVector = Icons.Rounded.Warning,
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit,
+) {
+    androidx.compose.material3.AlertDialog(
+        onDismissRequest = onDismiss,
+        modifier = Modifier.fillMaxWidth(),
+        containerColor = Color.White,
+        shape = RoundedCornerShape(24.dp),
+        title = {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.fillMaxWidth().padding(top = 8.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(64.dp)
+                        .clip(CircleShape)
+                        .background(if (isDanger) DangerLight else PrimaryLight),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = null,
+                        tint = if (isDanger) Danger else Primary,
+                        modifier = Modifier.size(32.dp)
+                    )
+                }
+                Spacer(Modifier.height(20.dp))
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = TextPrimary,
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                    fontWeight = FontWeight.Black
+                )
+            }
+        },
+        text = {
+            Text(
+                text = message,
+                style = MaterialTheme.typography.bodyMedium,
+                color = TextSecond,
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp)
+            )
+        },
+        confirmButton = {
+            Column(
+                modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                AetherPrimaryButton(
+                    text = confirmText,
+                    onClick = onConfirm,
+                    modifier = Modifier.fillMaxWidth(),
+                    danger = isDanger,
+                )
+                AetherSecondaryButton(
+                    text = cancelText,
+                    onClick = onDismiss,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
+        },
+        dismissButton = {}
+    )
 }

@@ -1,17 +1,64 @@
 package com.aether.driver.ui.screens
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.rounded.ArrowBackIosNew
+import androidx.compose.material.icons.rounded.Badge
+import androidx.compose.material.icons.rounded.CreditCard
+import androidx.compose.material.icons.rounded.DirectionsCar
+import androidx.compose.material.icons.rounded.Email
+import androidx.compose.material.icons.rounded.ErrorOutline
+import androidx.compose.material.icons.rounded.HourglassTop
+import androidx.compose.material.icons.rounded.Info
+import androidx.compose.material.icons.rounded.Lock
+import androidx.compose.material.icons.rounded.LockOpen
+import androidx.compose.material.icons.rounded.NotificationsActive
+import androidx.compose.material.icons.rounded.Person
+import androidx.compose.material.icons.rounded.PersonAdd
+import androidx.compose.material.icons.rounded.Phone
+import androidx.compose.material.icons.rounded.Send
+import androidx.compose.material.icons.rounded.Visibility
+import androidx.compose.material.icons.rounded.VisibilityOff
+import androidx.compose.material3.Divider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -25,6 +72,7 @@ import com.aether.driver.api.RetrofitClient
 import com.aether.driver.data.SessionManager
 import com.aether.driver.data.model.RegisterRequest
 import com.aether.driver.ui.theme.*
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Composable
@@ -43,70 +91,64 @@ fun RegisterScreen(sessionManager: SessionManager, onBackToLogin: () -> Unit) {
     val scope            = rememberCoroutineScope()
     val scrollState      = rememberScrollState()
 
+    var cardVisible by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) { delay(200); cardVisible = true }
+
     if (registrationDone) {
         PendingApprovalScreen(onBackToLogin = onBackToLogin)
         return
     }
 
-    Box(modifier = Modifier.fillMaxSize().background(Surface)) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(200.dp)
-                .background(Brush.verticalGradient(listOf(PrimaryDeep, Primary, Surface)))
-        )
+    Box(modifier = Modifier.fillMaxSize().background(Color(0xFFF9F8FD))) {
+        // Decorative circles
+        Box(modifier = Modifier.offset(x = (-60).dp, y = (-80).dp).size(200.dp).alpha(0.4f).clip(CircleShape).background(PrimaryLight))
+        Box(modifier = Modifier.offset(x = 180.dp, y = 350.dp).size(140.dp).alpha(0.3f).clip(CircleShape).background(SecondaryLt))
 
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(scrollState)
-                .padding(horizontal = 24.dp),
+            modifier = Modifier.fillMaxSize().verticalScroll(scrollState).padding(horizontal = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Spacer(Modifier.height(48.dp))
 
-            // Back
+            // Back button
             Row(modifier = Modifier.fillMaxWidth()) {
                 TextButton(onClick = onBackToLogin, contentPadding = PaddingValues(0.dp)) {
                     Icon(Icons.Rounded.ArrowBackIosNew, contentDescription = "Kembali",
-                        tint = Color.White, modifier = Modifier.size(16.dp))
+                        tint = PrimaryDark, modifier = Modifier.size(16.dp))
                     Spacer(Modifier.width(4.dp))
-                    Text("Kembali ke Login", style = MaterialTheme.typography.labelLarge, color = Color.White)
+                    Text("Kembali ke Login", style = MaterialTheme.typography.labelLarge, color = PrimaryDark)
                 }
             }
 
             Spacer(Modifier.height(16.dp))
 
+            // Header
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 Box(
-                    modifier = Modifier
-                        .size(48.dp)
-                        .clip(RoundedCornerShape(14.dp))
-                        .background(Color.White.copy(alpha = 0.15f)),
+                    modifier = Modifier.size(48.dp).clip(RoundedCornerShape(14.dp)).background(PrimaryLight.copy(alpha = 0.5f)),
                     contentAlignment = Alignment.Center,
                 ) {
-                    Icon(Icons.Rounded.PersonAdd, contentDescription = null,
-                        tint = Color.White, modifier = Modifier.size(26.dp))
+                    Icon(Icons.Rounded.PersonAdd, contentDescription = null, tint = Primary, modifier = Modifier.size(26.dp))
                 }
                 Column {
-                    Text("Daftar Driver", style = MaterialTheme.typography.displaySmall, color = Color.White)
+                    Text("Daftar Driver", style = MaterialTheme.typography.displaySmall, color = PrimaryDark, fontWeight = FontWeight.Bold)
                     Text("Ajukan akun untuk persetujuan admin gudang",
-                        style = MaterialTheme.typography.bodySmall, color = Color.White.copy(alpha = 0.70f))
+                        style = MaterialTheme.typography.bodySmall, color = TextSecond)
                 }
             }
 
-            Spacer(Modifier.height(32.dp))
+            Spacer(Modifier.height(28.dp))
 
-            AetherPanel(
-                modifier = Modifier.fillMaxWidth(),
-                padding = PaddingValues(28.dp),
+            AnimatedVisibility(
+                visible = cardVisible,
+                enter = fadeIn(tween(400)) + slideInVertically(tween(500, easing = androidx.compose.animation.core.FastOutSlowInEasing), initialOffsetY = { it / 6 }),
             ) {
-
-                    // ── Step 01: Identitas ─────────────────────────────────
+                AetherPanel(modifier = Modifier.fillMaxWidth(), padding = PaddingValues(24.dp)) {
+                    // Step 01
                     AetherFormSectionHeader(icon = Icons.Rounded.Person, number = "01", title = "Identitas Diri")
                     Spacer(Modifier.height(16.dp))
 
@@ -122,11 +164,11 @@ fun RegisterScreen(sessionManager: SessionManager, onBackToLogin: () -> Unit) {
                         label = "No. HP (Opsional)", placeholder = "08123456789", keyboardType = KeyboardType.Phone,
                         leadingIcon = { Icon(Icons.Rounded.Phone, null, tint = TextMuted, modifier = Modifier.size(20.dp)) })
 
-                    Spacer(Modifier.height(28.dp))
-                    Divider(color = Border)
                     Spacer(Modifier.height(24.dp))
+                    Divider(color = Border)
+                    Spacer(Modifier.height(20.dp))
 
-                    // ── Step 02: Data Pengemudi ────────────────────────────
+                    // Step 02
                     AetherFormSectionHeader(icon = Icons.Rounded.DirectionsCar, number = "02", title = "Data Pengemudi")
                     Spacer(Modifier.height(16.dp))
 
@@ -135,29 +177,19 @@ fun RegisterScreen(sessionManager: SessionManager, onBackToLogin: () -> Unit) {
                         leadingIcon = { Icon(Icons.Rounded.CreditCard, null, tint = TextMuted, modifier = Modifier.size(20.dp)) })
 
                     Spacer(Modifier.height(12.dp))
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(10.dp))
-                            .background(PrimaryLight)
-                            .border(1.dp, BorderSoft, RoundedCornerShape(10.dp))
-                            .padding(12.dp),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Icon(Icons.Rounded.Info, null, tint = Primary, modifier = Modifier.size(16.dp))
-                        Text(
-                            text  = "Foto KTP diserahkan langsung ke admin untuk diunggah saat verifikasi.",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = PrimaryDark,
-                        )
+                    Surface(color = PrimaryLight, shape = RoundedCornerShape(10.dp)) {
+                        Row(modifier = Modifier.padding(12.dp), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Rounded.Info, null, tint = Primary, modifier = Modifier.size(16.dp))
+                            Text("Foto KTP diserahkan langsung ke admin untuk diunggah saat verifikasi.",
+                                style = MaterialTheme.typography.bodySmall, color = PrimaryDark)
+                        }
                     }
 
-                    Spacer(Modifier.height(28.dp))
-                    Divider(color = Border)
                     Spacer(Modifier.height(24.dp))
+                    Divider(color = Border)
+                    Spacer(Modifier.height(20.dp))
 
-                    // ── Step 03: Password ──────────────────────────────────
+                    // Step 03
                     AetherFormSectionHeader(icon = Icons.Rounded.Lock, number = "03", title = "Keamanan Akun")
                     Spacer(Modifier.height(16.dp))
 
@@ -169,9 +201,8 @@ fun RegisterScreen(sessionManager: SessionManager, onBackToLogin: () -> Unit) {
                         leadingIcon = { Icon(Icons.Rounded.Lock, null, tint = TextMuted, modifier = Modifier.size(20.dp)) },
                         trailingIcon = {
                             IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                                Icon(
-                                    imageVector = if (passwordVisible) Icons.Rounded.VisibilityOff else Icons.Rounded.Visibility,
-                                    contentDescription = null, tint = TextMuted, modifier = Modifier.size(20.dp))
+                                Icon(if (passwordVisible) Icons.Rounded.VisibilityOff else Icons.Rounded.Visibility,
+                                    null, tint = TextMuted, modifier = Modifier.size(20.dp))
                             }
                         },
                     )
@@ -192,13 +223,12 @@ fun RegisterScreen(sessionManager: SessionManager, onBackToLogin: () -> Unit) {
                         }
                     }
 
-                    // Response message
                     message?.let {
                         Spacer(Modifier.height(16.dp))
                         AlertBanner(message = it, type = if (isError) AlertType.Error else AlertType.Success)
                     }
 
-                    Spacer(Modifier.height(28.dp))
+                    Spacer(Modifier.height(24.dp))
 
                     AetherPrimaryButton(
                         onClick = {
@@ -222,6 +252,7 @@ fun RegisterScreen(sessionManager: SessionManager, onBackToLogin: () -> Unit) {
                         text = "AJUKAN REGISTRASI",
                         leadingIcon = Icons.Rounded.Send,
                     )
+                }
             }
 
             Spacer(Modifier.height(20.dp))
@@ -236,29 +267,28 @@ fun RegisterScreen(sessionManager: SessionManager, onBackToLogin: () -> Unit) {
     }
 }
 
-// ── Pending approval screen ───────────────────────────────────────────────────
 @Composable
 fun PendingApprovalScreen(onBackToLogin: () -> Unit) {
-    Box(modifier = Modifier.fillMaxSize().background(Surface), contentAlignment = Alignment.Center) {
+    Box(modifier = Modifier.fillMaxSize().background(Color(0xFFF9F8FD)), contentAlignment = Alignment.Center) {
         Column(modifier = Modifier.padding(40.dp), horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp)) {
 
-            Box(modifier = Modifier.size(100.dp).clip(RoundedCornerShape(28.dp)).background(WarningLight),
+            Box(modifier = Modifier.size(100.dp).clip(RoundedCornerShape(28.dp)).background(PrimaryLight),
                 contentAlignment = Alignment.Center) {
-                Icon(Icons.Rounded.HourglassTop, contentDescription = null, tint = Warning, modifier = Modifier.size(52.dp))
+                Icon(Icons.Rounded.HourglassTop, contentDescription = null, tint = Primary, modifier = Modifier.size(52.dp))
             }
 
             Text("Menunggu Verifikasi", style = MaterialTheme.typography.displaySmall,
-                color = TextPrimary, textAlign = TextAlign.Center)
+                color = PrimaryDark, textAlign = TextAlign.Center, fontWeight = FontWeight.Bold)
             Text("Akun Anda telah diajukan. Admin gudang akan meninjau dan menyetujui akses Anda.",
                 style = MaterialTheme.typography.bodyMedium, color = TextSecond, textAlign = TextAlign.Center)
 
-            Surface(modifier = Modifier.fillMaxWidth(), shape = MaterialTheme.shapes.large, color = WarningLight) {
+            Surface(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(14.dp), color = PrimaryLight.copy(alpha = 0.5f)) {
                 Row(modifier = Modifier.padding(16.dp), horizontalArrangement = Arrangement.spacedBy(12.dp),
                     verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Rounded.NotificationsActive, null, tint = Warning, modifier = Modifier.size(24.dp))
+                    Icon(Icons.Rounded.NotificationsActive, null, tint = Primary, modifier = Modifier.size(24.dp))
                     Column {
-                        Text("Status: MENUNGGU PERSETUJUAN", style = MaterialTheme.typography.labelMedium, color = Warning)
+                        Text("Status: MENUNGGU PERSETUJUAN", style = MaterialTheme.typography.labelMedium, color = Primary, fontWeight = FontWeight.Bold)
                         Text("Anda bisa login setelah admin menyetujui akun.",
                             style = MaterialTheme.typography.bodySmall, color = TextSecond)
                     }

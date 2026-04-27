@@ -18,6 +18,7 @@ import android.os.Build
 import androidx.core.app.ActivityCompat
 import com.aether.driver.data.SessionManager
 import com.aether.driver.ui.screens.LoginScreen
+import com.aether.driver.ui.screens.PetayuSplashScreen
 import com.aether.driver.ui.screens.RegisterScreen
 import com.aether.driver.ui.screens.ServerSettingsScreen
 import com.aether.driver.ui.screens.ShipmentListScreen
@@ -50,7 +51,7 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
                     val token = sessionManager.authToken.collectAsState(initial = null).value
-                    AppNavigation(sessionManager, startDestination = if (token == null) "login" else "shipments")
+                    AppNavigation(sessionManager, startDestination = "splash", isLoggedIn = token != null)
                 }
             }
         }
@@ -58,9 +59,19 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun AppNavigation(sessionManager: SessionManager, startDestination: String) {
+fun AppNavigation(sessionManager: SessionManager, startDestination: String, isLoggedIn: Boolean) {
     val navController = rememberNavController()
     NavHost(navController = navController, startDestination = startDestination) {
+        composable("splash") {
+            PetayuSplashScreen(
+                onSplashFinished = {
+                    val destination = if (isLoggedIn) "shipments" else "login"
+                    navController.navigate(destination) {
+                        popUpTo("splash") { inclusive = true }
+                    }
+                }
+            )
+        }
         composable("login") {
             LoginScreen(
                 sessionManager = sessionManager,

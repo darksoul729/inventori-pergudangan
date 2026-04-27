@@ -29,7 +29,7 @@ class LocationService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val notification = NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("Sistem Pelacakan Aether")
+            .setContentTitle("Sistem Pelacakan Petayu")
             .setContentText("Mencari lokasi GPS...")
             .setSmallIcon(android.R.drawable.ic_menu_mylocation)
             .setOngoing(true)
@@ -117,7 +117,7 @@ class LocationService : Service() {
 
     private fun updateNotification(content: String) {
         val notification = NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("Sistem Pelacakan Aether")
+            .setContentTitle("Sistem Pelacakan Petayu")
             .setContentText(content)
             .setSmallIcon(android.R.drawable.ic_menu_mylocation)
             .setPriority(NotificationCompat.PRIORITY_LOW)
