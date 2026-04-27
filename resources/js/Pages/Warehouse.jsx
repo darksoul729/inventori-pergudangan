@@ -685,7 +685,7 @@ function createInitialItems({ zoneSummaries, rackSummaries, savedLayout }) {
         return items;
     }
 
-    const structuralPreset = WAREHOUSE_LAYOUT_PRESET.map((item) => ({
+    const structuralPreset = (WAREHOUSE_LAYOUT_PRESETS.data_driven.walls || []).map((item) => ({
         ...item,
         serverId: null,
         source: 'local',
