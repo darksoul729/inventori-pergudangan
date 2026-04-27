@@ -19,6 +19,11 @@ Route::get('/', function () {
         'canRegister' => Route::has('register'),
         'laravelVersion' => Application::VERSION,
         'phpVersion' => PHP_VERSION,
+        'stats' => [
+            'transactions' => \App\Models\StockMovement::count() + \App\Models\Shipment::count(),
+            'products' => \App\Models\Product::count(),
+            'accuracy' => 99,
+        ],
     ]);
 });
 
