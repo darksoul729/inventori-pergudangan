@@ -599,6 +599,9 @@ export default function PetayuAIModal({ isOpen, onClose, startInCall = false }) 
         setStableStatus('Mendengarkan...');
         setVoiceDebug(d => ({ ...d, mic: 'recording' }));
         try {
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                throw new Error("Browser memblokir mikrofon. Pastikan Anda menggunakan HTTPS atau localhost.");
+            }
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
             liveStreamRef.current = stream;
             const recorder = new MediaRecorder(stream);
@@ -639,7 +642,7 @@ export default function PetayuAIModal({ isOpen, onClose, startInCall = false }) 
             recorder.start();
         } catch (e) {
             console.error('Mic error:', e);
-            setStableStatus('Izin mikrofon diperlukan.');
+            setStableStatus(e.message === 'Browser memblokir mikrofon. Pastikan Anda menggunakan HTTPS atau localhost.' ? e.message : 'Izin mikrofon ditolak / tidak tersedia.');
             setVoiceDebug(d => ({ ...d, mic: 'error', error: e.message }));
             setIsPptHolding(false);
             setIsListening(false);
