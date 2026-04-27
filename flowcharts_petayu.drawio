@@ -1,0 +1,144 @@
+<mxfile host="Electron" modified="2026-04-27T12:00:00.000Z" agent="Mozilla/5.0" etag="test" version="22.1.2" type="device">
+  <diagram id="flowchart_wms" name="Flowchart WMS">
+    <mxGraphModel dx="1600" dy="1200" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1200" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- =======================
+             BACKGROUND BOXES
+             ======================= -->
+        <mxCell id="box1" value="1. Alur Barang Masuk (Inbound)" style="swimlane;whiteSpace=wrap;html=1;startSize=30;fillColor=#f5f5f5;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="40" y="40" width="300" height="960" as="geometry" />
+        </mxCell>
+        <mxCell id="box2" value="2. Alur Barang Keluar (Outbound)" style="swimlane;whiteSpace=wrap;html=1;startSize=30;fillColor=#f5f5f5;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="360" y="40" width="460" height="960" as="geometry" />
+        </mxCell>
+        <mxCell id="box3" value="3. Alur Manajemen Stok (Internal)" style="swimlane;whiteSpace=wrap;html=1;startSize=30;fillColor=#f5f5f5;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="840" y="40" width="600" height="960" as="geometry" />
+        </mxCell>
+
+        <!-- =======================
+             BOX 1 NODES & EDGES
+             ======================= -->
+        <mxCell id="n1_1" value="Mulai: Kebutuhan Stok" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1" vertex="1" parent="1"><mxGeometry x="90" y="100" width="200" height="50" as="geometry" /></mxCell>
+        <mxCell id="n1_2" value="Buat Purchase Order" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1"><mxGeometry x="90" y="190" width="200" height="50" as="geometry" /></mxCell>
+        <mxCell id="n1_3" value="Pilih Supplier" style="rhombus;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1"><mxGeometry x="115" y="280" width="150" height="60" as="geometry" /></mxCell>
+        <mxCell id="n1_4" value="Sistem Mengirim Data PO" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1"><mxGeometry x="90" y="380" width="200" height="50" as="geometry" /></mxCell>
+        <mxCell id="n1_5" value="Menunggu Barang Tiba" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1"><mxGeometry x="90" y="470" width="200" height="50" as="geometry" /></mxCell>
+        <mxCell id="n1_6" value="Barang Tiba di Gudang" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1" vertex="1" parent="1"><mxGeometry x="90" y="560" width="200" height="50" as="geometry" /></mxCell>
+        <mxCell id="n1_7" value="Pengecekan Fisik" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1"><mxGeometry x="90" y="650" width="200" height="50" as="geometry" /></mxCell>
+        <mxCell id="n1_8" value="Goods Receipt &amp; Tambah Stok" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1"><mxGeometry x="90" y="740" width="200" height="50" as="geometry" /></mxCell>
+        <mxCell id="n1_9" value="Alokasi ke Rak Spesifik" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1"><mxGeometry x="90" y="830" width="200" height="50" as="geometry" /></mxCell>
+        <mxCell id="n1_10" value="Selesai" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1" vertex="1" parent="1"><mxGeometry x="90" y="920" width="200" height="50" as="geometry" /></mxCell>
+
+        <!-- Box 1 Edges -->
+        <mxCell id="e1_1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="1" source="n1_1" target="n1_2"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e1_2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="1" source="n1_2" target="n1_3"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e1_3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="1" source="n1_3" target="n1_4"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e1_4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="1" source="n1_4" target="n1_5"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e1_5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="1" source="n1_5" target="n1_6"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e1_6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="1" source="n1_6" target="n1_7"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e1_7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="1" source="n1_7" target="n1_8"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e1_8" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="1" source="n1_8" target="n1_9"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e1_9" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="1" source="n1_9" target="n1_10"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <!-- =======================
+             BOX 2 NODES & EDGES
+             ======================= -->
+        <mxCell id="n2_1" value="Mulai: Permintaan Pengeluaran" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1" vertex="1" parent="1"><mxGeometry x="490" y="100" width="200" height="50" as="geometry" /></mxCell>
+        <mxCell id="n2_2" value="Buat Dokumen Stock Out" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1"><mxGeometry x="490" y="190" width="200" height="50" as="geometry" /></mxCell>
+        <mxCell id="n2_3" value="Sistem Memotong Stok Asli" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1"><mxGeometry x="490" y="280" width="200" height="50" as="geometry" /></mxCell>
+        <mxCell id="n2_4" value="Butuh Diantar Armada?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1"><mxGeometry x="515" y="370" width="150" height="60" as="geometry" /></mxCell>
+        
+        <!-- Branch Tidak (Kiri) -->
+        <mxCell id="n2_5" value="Cetak Tanda Terima / Resi" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1"><mxGeometry x="380" y="500" width="160" height="50" as="geometry" /></mxCell>
+        
+        <!-- Branch Ya (Kanan) -->
+        <mxCell id="n2_6" value="Buat Tiket Pengiriman (Shipment)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1"><mxGeometry x="600" y="500" width="200" height="50" as="geometry" /></mxCell>
+        <mxCell id="n2_7" value="Pilih Driver Armada" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1"><mxGeometry x="600" y="580" width="200" height="50" as="geometry" /></mxCell>
+        <mxCell id="n2_8" value="Status: In Transit" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1"><mxGeometry x="600" y="660" width="200" height="50" as="geometry" /></mxCell>
+        <mxCell id="n2_9" value="Upload Bukti Foto POD" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1"><mxGeometry x="600" y="740" width="200" height="50" as="geometry" /></mxCell>
+        <mxCell id="n2_10" value="Verifikasi &amp; Status Delivered" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1"><mxGeometry x="600" y="820" width="200" height="50" as="geometry" /></mxCell>
+        
+        <mxCell id="n2_11" value="Selesai" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1" vertex="1" parent="1"><mxGeometry x="490" y="920" width="200" height="50" as="geometry" /></mxCell>
+
+        <!-- Box 2 Edges -->
+        <mxCell id="e2_1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="1" source="n2_1" target="n2_2"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e2_2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="1" source="n2_2" target="n2_3"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e2_3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="1" source="n2_3" target="n2_4"><mxGeometry relative="1" as="geometry" /></mxCell>
+        
+        <!-- Tidak -->
+        <mxCell id="e2_4" value="Tidak" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontStyle=1;" edge="1" parent="1" source="n2_4" target="n2_5"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e2_5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="1" source="n2_5" target="n2_11"><mxGeometry relative="1" as="geometry" /></mxCell>
+        
+        <!-- Ya -->
+        <mxCell id="e2_6" value="Ya" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontStyle=1;" edge="1" parent="1" source="n2_4" target="n2_6"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e2_7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="1" source="n2_6" target="n2_7"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e2_8" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="1" source="n2_7" target="n2_8"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e2_9" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="1" source="n2_8" target="n2_9"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e2_10" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="1" source="n2_9" target="n2_10"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e2_11" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="1" source="n2_10" target="n2_11"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <!-- =======================
+             BOX 3 NODES & EDGES
+             ======================= -->
+        <mxCell id="n3_1" value="Mulai: Audit / Penataan" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1" vertex="1" parent="1"><mxGeometry x="1040" y="100" width="200" height="50" as="geometry" /></mxCell>
+        <mxCell id="n3_2" value="Pilih Proses" style="rhombus;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1"><mxGeometry x="1065" y="190" width="150" height="60" as="geometry" /></mxCell>
+        
+        <!-- Pindah Rak (Kiri) -->
+        <mxCell id="n3_3" value="Buat Stock Transfer" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1"><mxGeometry x="880" y="300" width="160" height="50" as="geometry" /></mxCell>
+        <mxCell id="n3_4" value="Pilih Asal &amp; Tujuan Rak" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1"><mxGeometry x="880" y="380" width="160" height="50" as="geometry" /></mxCell>
+        <mxCell id="n3_5" value="Manager Approve?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1"><mxGeometry x="885" y="460" width="150" height="60" as="geometry" /></mxCell>
+        <mxCell id="n3_6" value="Staf Pindah Fisik" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1"><mxGeometry x="880" y="620" width="160" height="50" as="geometry" /></mxCell>
+        <mxCell id="n3_7" value="Update Peta Visual Rak" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1"><mxGeometry x="880" y="700" width="160" height="50" as="geometry" /></mxCell>
+        <mxCell id="n3_8" value="Selesai (Transfer)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1" vertex="1" parent="1"><mxGeometry x="880" y="860" width="160" height="50" as="geometry" /></mxCell>
+
+        <!-- Stock Opname (Kanan) -->
+        <mxCell id="n3_9" value="Input Hasil Hitung Fisik" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1"><mxGeometry x="1240" y="300" width="160" height="50" as="geometry" /></mxCell>
+        <mxCell id="n3_10" value="Ada Selisih?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1"><mxGeometry x="1245" y="380" width="150" height="60" as="geometry" /></mxCell>
+        <mxCell id="n3_11" value="Butuh Stock Adjustment" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1"><mxGeometry x="1240" y="480" width="160" height="50" as="geometry" /></mxCell>
+        <mxCell id="n3_12" value="Manager Approve?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1"><mxGeometry x="1245" y="560" width="150" height="60" as="geometry" /></mxCell>
+        <mxCell id="n3_13" value="Sistem Auto Adjustment" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1"><mxGeometry x="1240" y="660" width="160" height="50" as="geometry" /></mxCell>
+        <mxCell id="n3_14" value="Stok Riil Berubah" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1"><mxGeometry x="1240" y="740" width="160" height="50" as="geometry" /></mxCell>
+        <mxCell id="n3_15" value="Selesai (Opname)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1" vertex="1" parent="1"><mxGeometry x="1240" y="860" width="160" height="50" as="geometry" /></mxCell>
+        
+        <!-- Batal -->
+        <mxCell id="n3_16" value="Dibatalkan" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontStyle=1" vertex="1" parent="1"><mxGeometry x="1060" y="620" width="160" height="50" as="geometry" /></mxCell>
+
+        <!-- Box 3 Edges -->
+        <mxCell id="e3_1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="1" source="n3_1" target="n3_2"><mxGeometry relative="1" as="geometry" /></mxCell>
+        
+        <!-- Pindah Rak -->
+        <mxCell id="e3_2" value="Alokasi / Pindah Rak" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontStyle=1;" edge="1" parent="1" source="n3_2" target="n3_3"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e3_3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="1" source="n3_3" target="n3_4"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e3_4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="1" source="n3_4" target="n3_5"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e3_5" value="Ditolak" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontStyle=1;" edge="1" parent="1" source="n3_5" target="n3_16"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e3_6" value="Disetujui" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontStyle=1;" edge="1" parent="1" source="n3_5" target="n3_6"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e3_7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="1" source="n3_6" target="n3_7"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e3_8" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="1" source="n3_7" target="n3_8"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <!-- Stock Opname -->
+        <mxCell id="e3_9" value="Stock Opname" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontStyle=1;" edge="1" parent="1" source="n3_2" target="n3_9"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e3_10" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="1" source="n3_9" target="n3_10"><mxGeometry relative="1" as="geometry" /></mxCell>
+        
+        <mxCell id="e3_11" value="Tidak Ada" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontStyle=1;" edge="1" parent="1" source="n3_10" target="n3_15">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1440" y="410" />
+              <mxPoint x="1440" y="885" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e3_12" value="Ada Selisih" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontStyle=1;" edge="1" parent="1" source="n3_10" target="n3_11"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e3_13" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="1" source="n3_11" target="n3_12"><mxGeometry relative="1" as="geometry" /></mxCell>
+        
+        <mxCell id="e3_14" value="Ditolak" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontStyle=1;" edge="1" parent="1" source="n3_12" target="n3_16"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e3_15" value="Disetujui" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontStyle=1;" edge="1" parent="1" source="n3_12" target="n3_13"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e3_16" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="1" source="n3_13" target="n3_14"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e3_17" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="1" source="n3_14" target="n3_15"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
