@@ -26,7 +26,7 @@ export default function NotificationsShow() {
 
     if (!notification) {
         return (
-            <DashboardLayout headerTitle="Detail Notifikasi" hideSearch={true} contentClassName="w-full max-w-none">
+            <DashboardLayout headerTitle="Detail Notifikasi" contentClassName="w-full max-w-none">
                 <Head title="Detail Notifikasi" />
                 <div className="w-full px-5 py-8 md:px-8">
                     <div className="rounded-xl border border-gray-200 bg-white px-8 py-20 text-center shadow-sm">
@@ -56,7 +56,7 @@ export default function NotificationsShow() {
     const isRead = readIds.includes(notification.id);
 
     return (
-        <DashboardLayout headerTitle="Detail Notifikasi" hideSearch={true} contentClassName="w-full max-w-none">
+        <DashboardLayout headerTitle="Detail Notifikasi" contentClassName="w-full max-w-none">
             <Head title={notification.title} />
 
             <div className="w-full px-5 pb-10 pt-1 md:px-8">

@@ -21,6 +21,7 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Database\QueryException;
 use App\Traits\HandlesStockSync;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -61,8 +62,7 @@ class InventoryController extends Controller
         if ($request->filled('status') && $request->status !== 'all') {
             $query->where(function ($q) use ($request, $operationalWarehouse) {
                 $stockSubquery = 'COALESCE((select SUM(current_stock) from product_stocks where product_id = products.id and warehouse_id = ?), 0)';
-                $capacitySubquery = 'COALESCE((select SUM(racks.capacity) from rack_stocks inner join racks on racks.id = rack_stocks.rack_id where rack_stocks.product_id = products.id), 0)';
-                $maxStockExpression = "CASE WHEN {$capacitySubquery} > 0 THEN {$capacitySubquery} ELSE GREATEST(1000, products.minimum_stock * 10) END";
+                $maxStockExpression = "GREATEST(1, COALESCE((SELECT SUM(r.capacity) FROM racks r WHERE EXISTS (SELECT 1 FROM rack_stocks rs WHERE rs.rack_id = r.id AND rs.product_id = products.id)), 0))";
                 $warehouseId = $operationalWarehouse->id;
 
                 if ($request->status === 'OutOfStock') {
@@ -91,8 +91,7 @@ class InventoryController extends Controller
 
         if ($request->filled('min_percentage') || $request->filled('max_percentage')) {
             $stockSubquery = 'COALESCE((select SUM(current_stock) from product_stocks where product_id = products.id and warehouse_id = ?), 0)';
-            $capacitySubquery = 'COALESCE((select SUM(racks.capacity) from rack_stocks inner join racks on racks.id = rack_stocks.rack_id where rack_stocks.product_id = products.id), 0)';
-            $maxStockExpression = "CASE WHEN {$capacitySubquery} > 0 THEN {$capacitySubquery} ELSE GREATEST(1000, products.minimum_stock * 10) END";
+            $maxStockExpression = "GREATEST(1, COALESCE((SELECT SUM(r.capacity) FROM racks r WHERE EXISTS (SELECT 1 FROM rack_stocks rs WHERE rs.rack_id = r.id AND rs.product_id = products.id)), 0))";
             $percentageExpression = "({$stockSubquery} / NULLIF({$maxStockExpression}, 0)) * 100";
             $warehouseId = $operationalWarehouse->id;
 
@@ -227,6 +226,7 @@ class InventoryController extends Controller
                 'purchase_price' => $product->purchase_price,
                 'selling_price' => $product->selling_price,
                 'minimum_stock' => $product->minimum_stock,
+                'max_stock' => $product->max_stock,
                 'description' => $product->description,
                 'volume_entry_mode' => $product->volume_entry_mode ?? 'none',
                 'dimension_unit' => $product->dimension_unit,
@@ -267,6 +267,7 @@ class InventoryController extends Controller
             'purchase_price' => 'nullable|numeric',
             'selling_price' => 'nullable|numeric',
             'minimum_stock' => 'required|integer|min:0',
+            'max_stock' => 'nullable|integer|min:1',
             'description' => 'nullable|string',
             'volume_entry_mode' => 'nullable|in:none,auto,manual',
             'dimension_unit' => 'nullable|in:mm,cm,m',
@@ -277,7 +278,7 @@ class InventoryController extends Controller
             // Initial stock fields - only require locations if stock is > 0
             'initial_stock' => 'nullable|integer|min:0',
             'warehouse_id' => 'nullable|exists:warehouses,id',
-            'rack_id' => 'required_unless:initial_stock,0|exists:racks,id',
+            'rack_id' => 'nullable|required_unless:initial_stock,0|exists:racks,id',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
         $volumePayload = $this->resolveVolumePayload($validated);
@@ -289,7 +290,7 @@ class InventoryController extends Controller
             $imagePath = $request->file('image')->store('products', 'public');
         }
 
-        DB::transaction(function () use ($validated, $request, $imagePath) {
+        DB::transaction(function () use ($validated, $request, $imagePath, $volumePayload) {
             $product = Product::create([
                 'sku' => $validated['sku'],
                 'name' => $validated['name'],
@@ -299,7 +300,8 @@ class InventoryController extends Controller
                 'purchase_price' => $validated['purchase_price'] ?? 0,
                 'selling_price' => $validated['selling_price'] ?? 0,
                 'minimum_stock' => $validated['minimum_stock'],
-                'description' => $validated['description'],
+                'max_stock' => $validated['max_stock'] ?? 1000,
+                'description' => $validated['description'] ?? null,
                 ...$volumePayload,
                 'image' => $imagePath,
                 'is_active' => true,
@@ -334,12 +336,12 @@ class InventoryController extends Controller
                     quantity: $validated['initial_stock'],
                     stockBefore: 0,
                     stockAfter: $validated['initial_stock'],
-                    notes: 'Initial stock entry on ' . $rack->code
+                    notes: 'Entri stok awal pada rak ' . $rack->code
                 );
             }
         });
 
-        return redirect()->route('inventory')->with('success', 'Product created successfully.');
+        return redirect()->route('inventory')->with('success', 'Produk berhasil ditambahkan.');
     }
 
     public function update(Request $request, Product $product): RedirectResponse
@@ -354,6 +356,7 @@ class InventoryController extends Controller
             'purchase_price' => 'nullable|numeric',
             'selling_price' => 'nullable|numeric',
             'minimum_stock' => 'required|integer|min:0',
+            'max_stock' => 'nullable|integer|min:1',
             'description' => 'nullable|string',
             'volume_entry_mode' => 'nullable|in:none,auto,manual',
             'dimension_unit' => 'nullable|in:mm,cm,m',
@@ -384,6 +387,7 @@ class InventoryController extends Controller
             'purchase_price' => $validated['purchase_price'] ?? 0,
             'selling_price' => $validated['selling_price'] ?? 0,
             'minimum_stock' => $validated['minimum_stock'],
+            'max_stock' => $validated['max_stock'] ?? $product->max_stock,
             'description' => $validated['description'] ?? null,
             ...$volumePayload,
             ...array_intersect_key($validated, ['image' => true]),
@@ -391,7 +395,44 @@ class InventoryController extends Controller
 
         return redirect()
             ->route('inventory.show', $product)
-            ->with('success', 'Product updated successfully.');
+            ->with('success', 'Produk berhasil diperbarui.');
+    }
+
+    public function destroy(Request $request, Product $product): RedirectResponse
+    {
+        Gate::authorize('update-product');
+        $forceDelete = $request->boolean('force_delete');
+
+        $warehouseStock = (int) $product->productStocks()->sum('current_stock');
+        $rackStock = (int) $product->rackStocks()->sum('quantity');
+
+        if (($warehouseStock > 0 || $rackStock > 0) && !$forceDelete) {
+            return redirect()
+                ->back()
+                ->with('error', 'Produk tidak bisa dihapus karena stok masih tersedia. Kosongkan stok terlebih dahulu.');
+        }
+
+        try {
+            DB::transaction(function () use ($product) {
+                if ($product->image) {
+                    Storage::disk('public')->delete($product->image);
+                }
+
+                // Hapus relasi stok lebih dulu agar force-delete bisa berjalan.
+                $product->rackStocks()->delete();
+                $product->productStocks()->delete();
+
+                $product->delete();
+            });
+        } catch (QueryException $e) {
+            return redirect()
+                ->back()
+                ->with('error', 'Produk tidak bisa dihapus permanen karena sudah terhubung ke data transaksi.');
+        }
+
+        return redirect()
+            ->route('inventory')
+            ->with('success', $forceDelete ? 'Produk berhasil dihapus paksa.' : 'Produk berhasil dihapus.');
     }
 
     public function recordOutbound(Request $request): RedirectResponse
@@ -417,14 +458,14 @@ class InventoryController extends Controller
 
             if (!$productStock || $productStock->current_stock < $validated['quantity']) {
                 throw ValidationException::withMessages([
-                    'quantity' => "Insufficient stock in selected warehouse. Available: " . ($productStock ? $productStock->current_stock : 0) . " units."
+                    'quantity' => "Stok di gudang terpilih tidak mencukupi. Tersedia: " . ($productStock ? $productStock->current_stock : 0) . " unit."
                 ]);
             }
 
             $availableStock = (int) $productStock->current_stock - (int) ($productStock->reserved_stock ?? 0);
             if ($availableStock < $validated['quantity']) {
                 throw ValidationException::withMessages([
-                    'quantity' => "Insufficient available stock (reserved: {$productStock->reserved_stock}). Available: {$availableStock} units."
+                    'quantity' => "Stok siap pakai tidak mencukupi (ter-reservasi: {$productStock->reserved_stock}). Tersedia: {$availableStock} unit."
                 ]);
             }
 
@@ -475,7 +516,7 @@ class InventoryController extends Controller
 
             if ($remainingToReduce > 0) {
                 throw ValidationException::withMessages([
-                    'quantity' => "Unable to fulfill outbound — part of the stock is reserved for shipment. Unfulfilled: {$remainingToReduce} units."
+                    'quantity' => "Tidak dapat memproses barang keluar — sebagian stok sudah ter-reservasi untuk shipment. Kekurangan: {$remainingToReduce} unit."
                 ]);
             }
 
@@ -506,11 +547,11 @@ class InventoryController extends Controller
                 quantity: $validated['quantity'],
                 stockBefore: $stockBefore,
                 stockAfter: $stockBefore - $validated['quantity'],
-                notes: $validated['notes'] ?? ('Outbound to: ' . ($validated['destination'] ?? $customer->name))
+                notes: $validated['notes'] ?? ('Barang keluar ke: ' . ($validated['destination'] ?? $customer->name))
             );
         });
 
-        return redirect()->route('inventory')->with('success', 'Outbound recorded successfully.');
+        return redirect()->route('inventory')->with('success', 'Transaksi barang keluar berhasil dicatat.');
     }
 
     private function resolveOutboundCustomer(?string $destination): Customer
@@ -520,7 +561,7 @@ class InventoryController extends Controller
         return Customer::firstOrCreate(
             ['code' => 'GENERAL-OUT'],
             [
-                'name' => $name !== '' ? $name : 'General Outbound',
+                'name' => $name !== '' ? $name : 'Pengeluaran Umum',
                 'contact_person' => null,
                 'phone' => null,
                 'email' => null,
@@ -601,10 +642,10 @@ class InventoryController extends Controller
     private function getStockStatus(int $current, int $min, ?int $maxStock = null): string
     {
         if ($current <= 0)
-            return 'Critical';
+            return 'Kritis';
         if ($this->isLowStock($current, $min, $maxStock))
-            return 'Low Stock';
-        return 'Healthy';
+            return 'Stok Menipis';
+        return 'Aman';
     }
 
     private function getStatusColor(int $current, int $min, ?int $maxStock = null): string
@@ -631,11 +672,11 @@ class InventoryController extends Controller
 
     private function getDisplayCapacity(Product $product): int
     {
-        $realCapacity = (int) $product->rackStocks->sum(function ($rackStock) {
-            return $rackStock->rack->capacity ?? 0;
-        });
+        $rackCapacity = (int) Rack::query()
+            ->whereHas('rackStocks', fn ($query) => $query->where('product_id', $product->id))
+            ->sum('capacity');
 
-        return $realCapacity > 0 ? $realCapacity : max(1000, (int) $product->minimum_stock * 10);
+        return max(1, $rackCapacity);
     }
 
     public function show(Product $product): Response
@@ -718,6 +759,7 @@ class InventoryController extends Controller
                 'dimension_height' => $product->dimension_height,
                 'volume_m3_per_unit' => $product->volume_m3_per_unit,
                 'image_url' => $product->image ? Storage::url($product->image) : null,
+                'max_stock' => (int) ($product->max_stock ?? 1000),
             ],
             'stats' => $stats,
             'distribution' => $distribution,

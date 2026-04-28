@@ -12,7 +12,7 @@ export default function Edit({ mustVerifyEmail, status }) {
     const initials = getInitials(user.name);
 
     return (
-        <DashboardLayout headerTitle="Profil Pengguna" contentClassName="max-w-none" hideSearch={true}>
+        <DashboardLayout headerTitle="Profil Pengguna" contentClassName="max-w-none">
             <Head title="Profil" />
 
             <div className="pb-12">

@@ -24,7 +24,7 @@ trait HandlesStockSync
 
         if (($currentOtherQuantity + $incomingQuantity) > $rack->capacity) {
             throw ValidationException::withMessages([
-                $errorKey => "Quantity ($incomingQuantity) exceeds rack capacity ({$rack->capacity}) for rack {$rack->code}. Current other items: $currentOtherQuantity.",
+                $errorKey => "Jumlah ({$incomingQuantity}) melebihi kapasitas rak ({$rack->capacity}) untuk rak {$rack->code}. Jumlah item lain saat ini: {$currentOtherQuantity}.",
             ]);
         }
     }

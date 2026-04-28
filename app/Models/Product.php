@@ -14,6 +14,7 @@ class Product extends Model
         'unit_id',
         'default_supplier_id',
         'minimum_stock',
+        'max_stock',
         'purchase_price',
         'selling_price',
         'lead_time_days',

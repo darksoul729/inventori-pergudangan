@@ -67,10 +67,10 @@ export default function StockMovementTrend() {
                 </div>
             </div>
 
-            {/* Live Shipment Status */}
+            {/* Status Pengiriman Langsung */}
             <div>
                 <h3 className="text-sm font-bold text-gray-900 mb-3">
-                    Live Shipment Status
+                    Status Pengiriman Langsung
                 </h3>
                 <div className="flex flex-wrap gap-2">
                     {shipments.map((shipment) => (

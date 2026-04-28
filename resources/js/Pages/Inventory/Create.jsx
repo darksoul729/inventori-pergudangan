@@ -102,28 +102,37 @@ export default function Create({ categories, units, suppliers, warehouses, opera
         ...data,
         default_supplier_id: data.default_supplier_id || null,
     });
+    const [clientValidationMessage, setClientValidationMessage] = React.useState('');
 
     const handleSubmit = (e) => {
         e.preventDefault();
+        setClientValidationMessage('');
 
-        if (isEdit && product?.id) {
-            addProductForm
-                .transform((data) => ({
-                    ...buildUpdatePayload(data),
-                    _method: 'put',
-                }))
-                .post(route('inventory.update', product.id), {
-                    forceFormData: true,
-                    preserveScroll: true,
-                });
+        if (!e.currentTarget.checkValidity()) {
+            e.currentTarget.reportValidity();
+            setClientValidationMessage('Form masih kosong/belum lengkap. Isi semua field wajib terlebih dahulu.');
             return;
         }
 
-        addProductForm
-            .transform(buildStorePayload)
-            .post(route('inventory.store'), {
+        if (isEdit && product?.id) {
+            addProductForm.transform((data) => ({
+                ...buildUpdatePayload(data),
+                _method: 'put',
+            }));
+            addProductForm.post(route('inventory.update', product.id), {
+                forceFormData: true,
                 preserveScroll: true,
+                onError: () => setClientValidationMessage('Data belum valid. Periksa field yang ditandai merah.'),
             });
+            return;
+        }
+
+        addProductForm.transform(buildStorePayload);
+        addProductForm.post(route('inventory.store'), {
+            forceFormData: true,
+            preserveScroll: true,
+            onError: () => setClientValidationMessage('Data belum valid. Periksa field yang ditandai merah.'),
+        });
     };
 
     const selectedWarehouse = warehouses.find((warehouse) => String(warehouse.id) === String(addProductForm.data.warehouse_id));
@@ -175,28 +184,17 @@ export default function Create({ categories, units, suppliers, warehouses, opera
                         </p>
                     </div>
 
-                    <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
-                        <Link
-                            href={backHref}
-                            className="inline-flex h-12 min-w-[112px] items-center justify-center rounded-[8px] border border-slate-200 bg-white px-6 text-[14px] font-black text-slate-600 shadow-sm transition hover:bg-slate-50"
-                        >
-                            Batal
-                        </Link>
-                        <button
-                            type="submit"
-                            onClick={handleSubmit}
-                            disabled={addProductForm.processing}
-                            className="inline-flex h-12 min-w-[168px] items-center justify-center gap-2 rounded-[8px] bg-indigo-600 px-7 text-[14px] font-black text-white shadow-sm transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
-                        >
-                            <SaveIcon className="h-4 w-4" />
-                            {addProductForm.processing ? 'Menyimpan...' : (isEdit ? 'Simpan Perubahan' : 'Tambah Item')}
-                        </button>
-                    </div>
+                    <div />
                 </div>
 
                 {hasErrors && (
                     <div className="mb-6 rounded-[8px] border border-red-200 bg-red-50 px-4 py-3 text-[13px] font-bold text-red-700">
                         Ada data yang belum valid. Periksa field yang ditandai merah.
+                    </div>
+                )}
+                {clientValidationMessage && (
+                    <div className="mb-6 rounded-[8px] border border-amber-200 bg-amber-50 px-4 py-3 text-[13px] font-bold text-amber-700">
+                        {clientValidationMessage}
                     </div>
                 )}
 
@@ -330,6 +328,7 @@ export default function Create({ categories, units, suppliers, warehouses, opera
                                         required
                                     />
                                 </Field>
+
                             </div>
                         </Section>
 
@@ -575,7 +574,6 @@ export default function Create({ categories, units, suppliers, warehouses, opera
                         </Link>
                         <button
                             type="submit"
-                            onClick={handleSubmit}
                             disabled={addProductForm.processing}
                             className="inline-flex h-12 min-w-[168px] items-center justify-center gap-2 rounded-[8px] bg-indigo-600 px-7 text-[14px] font-black text-white shadow-sm transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
                         >

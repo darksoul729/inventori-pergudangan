@@ -1,5 +1,6 @@
 import DashboardLayout from '@/Layouts/DashboardLayout';
 import { Head, Link } from '@inertiajs/react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
     ArrowRight,
     BarChart3,
@@ -45,9 +46,10 @@ const modules = [
         href: '/warehouse',
         icon: Home,
         access: 'Manager, Supervisor',
-        summary: 'Kelola zona, rak, kapasitas, dan penempatan stok di lokasi gudang.',
+        summary: 'Kelola zona, rak, kapasitas, layout gudang, serta penempatan stok di lokasi gudang.',
         steps: [
             'Manager mengatur zona dan master rak.',
+            'Gunakan editor layout untuk sketch, rotate, simpan draft, dan ekspor PDF layout.',
             'Manager atau Supervisor menempatkan stok ke rak yang sesuai.',
             'Staff memakai informasi rak untuk mencari lokasi barang saat transaksi.',
         ],
@@ -81,11 +83,12 @@ const modules = [
         href: '/inventory',
         icon: Boxes,
         access: 'Manager, Supervisor, Staff',
-        summary: 'Lihat daftar produk, stok tersedia, batas minimum, kategori, satuan, dan detail pergerakan.',
+        summary: 'Lihat daftar produk, stok tersedia, batas minimum, stok maksimum otomatis, kategori, satuan, dan detail pergerakan.',
         steps: [
             'Cari produk berdasarkan nama atau kode.',
-            'Buka detail produk untuk melihat stok dan histori pergerakan.',
-            'Manager Gudang dapat menambah dan mengubah master produk.',
+            'Buka detail produk untuk melihat stok, histori pergerakan, dan distribusi rak.',
+            'Stok maksimum dihitung otomatis dari total kapasitas rak yang terhubung ke produk.',
+            'Manager Gudang dapat menambah, mengubah, dan hapus paksa produk (dengan validasi relasi transaksi).',
         ],
     },
     {
@@ -141,9 +144,10 @@ const modules = [
         href: '/shipments',
         icon: Truck,
         access: 'Manager, Supervisor, Staff',
-        summary: 'Pantau pengiriman, status delivery, bukti POD, dan posisi operasional pengiriman.',
+        summary: 'Pantau pengiriman, status delivery, bukti POD, validasi stok rak, dan posisi operasional pengiriman.',
         steps: [
             'Buat pengiriman dari data pesanan atau kebutuhan distribusi.',
+            'Sistem membaca ketersediaan stok per rak sebelum pengiriman diproses.',
             'Perbarui status sesuai proses pengiriman.',
             'Verifikasi proof of delivery sebelum pengiriman dinyatakan selesai.',
         ],
@@ -153,10 +157,11 @@ const modules = [
         href: '/drivers',
         icon: Truck,
         access: 'Manager',
-        summary: 'Kelola driver, status aktif, dan koordinat GPS untuk kebutuhan tracking.',
+        summary: 'Kelola driver, status aktif/nonaktif (tahan), serta koordinat GPS untuk kebutuhan tracking.',
         steps: [
             'Manager menambah atau mengubah data driver.',
-            'Aktifkan driver yang siap menerima tugas pengiriman.',
+            'Aktifkan driver yang siap menerima tugas pengiriman, atau nonaktifkan sementara bila diperlukan.',
+            'Sebelum menonaktifkan driver, cek dulu apakah masih punya shipment aktif.',
             'Gunakan data lokasi untuk memantau driver yang sedang bertugas.',
         ],
     },
@@ -177,7 +182,7 @@ const modules = [
         href: '/settings',
         icon: Settings,
         access: 'Manager',
-        summary: 'Atur profil gudang, kategori, satuan, dan akun staff operasional.',
+        summary: 'Atur profil gudang, kategori, satuan, serta akun operasional dengan layout panel konfigurasi terbaru.',
         steps: [
             'Lengkapi identitas dan lokasi gudang.',
             'Kelola kategori dan satuan agar master produk konsisten.',
@@ -189,14 +194,48 @@ const modules = [
 const flowSteps = [
     'Manager menyiapkan master gudang, kategori, satuan, produk, supplier, dan driver.',
     'Supervisor atau Manager membuat PO, menerima barang, melakukan transfer rack, dan menjalankan stock opname.',
-    'Staff menjalankan transaksi keluar dan membantu pengiriman berdasarkan data stok.',
+    'Staff menjalankan transaksi keluar dan membantu pengiriman berdasarkan data stok per rak.',
     'Supervisor memverifikasi transaksi, POD, opname, dan adjustment.',
     'Manager membaca dasbor dan laporan untuk mengambil keputusan operasional.',
 ];
 
 export default function Documentation() {
+    const [searchTerm, setSearchTerm] = useState('');
+    const normalizedQuery = searchTerm.trim().toLowerCase();
+    const flowSectionRef = useRef(null);
+    const modulesSectionRef = useRef(null);
+
+    const filteredModules = useMemo(() => {
+        if (!normalizedQuery) return modules;
+        return modules.filter((item) => {
+            const haystack = `${item.title} ${item.summary} ${item.access} ${(item.steps || []).join(' ')}`.toLowerCase();
+            return haystack.includes(normalizedQuery);
+        });
+    }, [normalizedQuery]);
+
+    const filteredFlowSteps = useMemo(() => {
+        if (!normalizedQuery) return flowSteps;
+        return flowSteps.filter((step) => step.toLowerCase().includes(normalizedQuery));
+    }, [normalizedQuery]);
+
+    useEffect(() => {
+        if (!normalizedQuery) return;
+        if (filteredFlowSteps.length > 0) {
+            flowSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            return;
+        }
+        if (filteredModules.length > 0) {
+            modulesSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    }, [filteredFlowSteps.length, filteredModules.length, normalizedQuery]);
+
     return (
-        <DashboardLayout headerTitle="Dokumentasi Sistem" hideSearch={true} contentClassName="max-w-[1280px] mx-auto">
+        <DashboardLayout
+            headerTitle="Dokumentasi Sistem"
+            contentClassName="max-w-[1280px] mx-auto"
+            searchValue={searchTerm}
+            onSearch={setSearchTerm}
+        >
             <Head title="Dokumentasi Sistem" />
 
             <div className="pb-16">
@@ -219,7 +258,7 @@ export default function Documentation() {
                     </div>
                 </section>
 
-                <section id="alur-kerja" className="mb-8 rounded-[8px] border border-gray-100 bg-white p-6 shadow-sm">
+                <section ref={flowSectionRef} id="alur-kerja" className="mb-8 rounded-[8px] border border-gray-100 bg-white p-6 shadow-sm">
                     <div className="flex items-start gap-4">
                         <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-[8px] bg-indigo-50 text-[#28106F]">
                             <PackageCheck className="h-6 w-6" />
@@ -227,7 +266,7 @@ export default function Documentation() {
                         <div className="min-w-0 flex-1">
                             <h2 className="text-[18px] font-black text-gray-900">Alur Kerja Utama</h2>
                             <div className="mt-4 grid gap-3 md:grid-cols-5">
-                                {flowSteps.map((step, index) => (
+                                {filteredFlowSteps.map((step, index) => (
                                     <div key={step} className="rounded-[8px] border border-gray-100 bg-[#F8F7FF] p-4">
                                         <div className="mb-3 flex h-8 w-8 items-center justify-center rounded-[8px] bg-white text-[12px] font-black text-[#28106F] shadow-sm">
                                             {index + 1}
@@ -240,8 +279,8 @@ export default function Documentation() {
                     </div>
                 </section>
 
-                <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                    {modules.map((item) => {
+                <section ref={modulesSectionRef} className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                    {filteredModules.map((item) => {
                         const Icon = item.icon;
 
                         return (
@@ -272,6 +311,11 @@ export default function Documentation() {
                         );
                     })}
                 </section>
+                {normalizedQuery && filteredModules.length === 0 && filteredFlowSteps.length === 0 && (
+                    <section className="mt-6 rounded-[8px] border border-slate-200 bg-white p-6 text-center text-[13px] font-bold text-slate-500">
+                        Tidak ada hasil untuk kata kunci "{searchTerm}".
+                    </section>
+                )}
             </div>
         </DashboardLayout>
     );

@@ -69,6 +69,24 @@ trait HandlesShipmentStock
             $remaining = $quantity;
             $totalAvailable = $rackStocks->sum('quantity') - $rackStocks->sum('reserved_quantity');
 
+            if ($totalAvailable < $quantity) {
+                $sourceRackLabels = $rackStocks
+                    ->loadMissing('rack.zone')
+                    ->map(function ($stock) {
+                        $zoneCode = $stock->rack?->zone?->code ? strtoupper($stock->rack->zone->code).'/' : '';
+                        $rackCode = $stock->rack?->code ? strtoupper($stock->rack->code) : '-';
+                        $available = max(0, (int) $stock->quantity - (int) $stock->reserved_quantity);
+                        return "{$zoneCode}{$rackCode}:{$available}";
+                    })
+                    ->take(6)
+                    ->implode(', ');
+
+                $productName = $item['product_name'] ?? "ID:$productId";
+                throw ValidationException::withMessages([
+                    'items' => "Stok rack tidak cukup untuk {$productName}. Tersedia di rack: {$totalAvailable}, diminta: {$quantity}. Sumber: {$sourceRackLabels}",
+                ]);
+            }
+
             foreach ($rackStocks as $rackStock) {
                 if ($remaining <= 0) {
                     break;
@@ -97,6 +115,13 @@ trait HandlesShipmentStock
                         $remaining -= $reserveAmount;
                     }
                 }
+            }
+
+            if ($remaining > 0) {
+                $productName = $item['product_name'] ?? "ID:$productId";
+                throw ValidationException::withMessages([
+                    'items' => "Reservasi stok rack untuk {$productName} gagal diselesaikan. Sisa belum ter-reserve: {$remaining}.",
+                ]);
             }
         }
     }

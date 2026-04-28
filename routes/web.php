@@ -63,6 +63,7 @@ Route::middleware(['auth', 'verified', 'role:manager,supervisor,staff'])->group(
 
     Route::get('/warehouse/layout', [WarehouseLayoutController::class, 'show'])->name('warehouse.layout.show');
     Route::post('/warehouse/layout', [WarehouseLayoutController::class, 'store'])->middleware('role:manager')->name('warehouse.layout.store');
+    Route::post('/warehouse/layout/export-pdf', [WarehouseLayoutController::class, 'exportPdf'])->name('warehouse.layout.export-pdf');
     Route::get('/warehouse/layout/snapshots', [WarehouseLayoutController::class, 'snapshots'])->name('warehouse.layout.snapshots');
 });
 
@@ -79,6 +80,7 @@ Route::middleware(['auth', 'verified', 'role:manager'])->group(function () {
     Route::post('/inventory/products', [InventoryController::class, 'store'])->name('inventory.store');
     Route::get('/inventory/{product}/edit', [InventoryController::class, 'edit'])->name('inventory.edit');
     Route::put('/inventory/{product}', [InventoryController::class, 'update'])->name('inventory.update');
+    Route::delete('/inventory/{product}', [InventoryController::class, 'destroy'])->name('inventory.destroy');
 });
 
 Route::get('/inventory/{product}', [InventoryController::class, 'show'])
@@ -209,6 +211,7 @@ Route::middleware(['auth', 'verified', 'role:manager,supervisor'])->group(functi
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::get('/profile/photo', [ProfileController::class, 'photo'])->name('profile.photo');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 }

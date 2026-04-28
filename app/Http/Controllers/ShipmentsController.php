@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Shipment;
 use App\Models\ShipmentItem;
 use App\Models\Product;
+use App\Models\RackStock;
 use App\Traits\HandlesShipmentStock;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
@@ -61,7 +62,7 @@ class ShipmentsController extends Controller
                     'last_tracking_note' => $shipment->last_tracking_note,
                     'estimated_arrival' => $shipment->estimated_arrival?->format('M d, H:i'),
                     'load_type' => $shipment->load_type,
-                    'driver_name' => $shipment->driver?->user?->name ?? 'Unassigned',
+                    'driver_name' => $shipment->driver?->user?->name ?? 'Belum ditugaskan',
                     'driver_id' => $shipment->driver_id,
                     'driver_lat' => $this->nullableCoordinate($shipment->driver?->latitude),
                     'driver_lng' => $this->nullableCoordinate($shipment->driver?->longitude),
@@ -130,21 +131,7 @@ class ShipmentsController extends Controller
                 ];
             });
 
-        $products = Product::where('is_active', true)
-            ->orderBy('name')
-            ->get(['id', 'sku', 'name', 'unit_id'])
-            ->map(function ($p) {
-                $stock = $p->productStocks()->first();
-                return [
-                    'id' => $p->id,
-                    'sku' => $p->sku,
-                    'name' => $p->name,
-                    'unit' => $p->unit?->symbol ?? 'pcs',
-                    'available_stock' => $stock ? ($stock->current_stock - $stock->reserved_stock) : 0,
-                    'current_stock' => $stock?->current_stock ?? 0,
-                    'reserved_stock' => $stock?->reserved_stock ?? 0,
-                ];
-            });
+        $products = $this->shipmentProductCatalog();
 
         return Inertia::render('Shipments/Create', [
             'drivers' => $approvedDrivers,
@@ -210,7 +197,7 @@ class ShipmentsController extends Controller
 
         return redirect()
             ->route('shipments.index', ['page' => $request->integer('page', 1)])
-            ->with('success', 'Shipment created successfully.');
+            ->with('success', 'Pengiriman berhasil dibuat.');
     }
 
     private function generateShipmentId(): string
@@ -237,21 +224,7 @@ class ShipmentsController extends Controller
                 ];
             });
 
-        $products = Product::where('is_active', true)
-            ->orderBy('name')
-            ->get(['id', 'sku', 'name', 'unit_id'])
-            ->map(function ($p) {
-                $stock = $p->productStocks()->first();
-                return [
-                    'id' => $p->id,
-                    'sku' => $p->sku,
-                    'name' => $p->name,
-                    'unit' => $p->unit?->symbol ?? 'pcs',
-                    'available_stock' => $stock ? ($stock->current_stock - $stock->reserved_stock) : 0,
-                    'current_stock' => $stock?->current_stock ?? 0,
-                    'reserved_stock' => $stock?->reserved_stock ?? 0,
-                ];
-            });
+        $products = $this->shipmentProductCatalog();
 
         $shipment->load('items');
 
@@ -357,7 +330,7 @@ class ShipmentsController extends Controller
 
         return redirect()
             ->route('shipments.index', ['page' => $request->integer('page', 1)])
-            ->with('success', 'Shipment updated successfully.');
+            ->with('success', 'Pengiriman berhasil diperbarui.');
     }
 
     public function destroy(Request $request, Shipment $shipment)
@@ -379,7 +352,7 @@ class ShipmentsController extends Controller
 
         return redirect()
             ->route('shipments.index', ['page' => $request->integer('page', 1)])
-            ->with('success', 'Shipment deleted successfully.');
+            ->with('success', 'Pengiriman berhasil dihapus.');
     }
 
     public function show(Shipment $shipment)
@@ -408,7 +381,7 @@ class ShipmentsController extends Controller
                 'estimated_arrival' => $shipment->estimated_arrival?->format('F d, Y H:i'),
                 'load_type' => $shipment->load_type,
                 'created_at' => $shipment->created_at?->format('F d, Y'),
-                'driver_name' => $shipment->driver?->user?->name ?? 'Unassigned',
+                'driver_name' => $shipment->driver?->user?->name ?? 'Belum ditugaskan',
                 'driver_lat' => $this->nullableCoordinate($shipment->driver?->latitude),
                 'driver_lng' => $this->nullableCoordinate($shipment->driver?->longitude),
                 'last_location_at' => $this->lastLocationLabel($shipment),
@@ -463,7 +436,7 @@ class ShipmentsController extends Controller
 
         $shipment->save();
 
-        return redirect()->back()->with('success', 'Shipment status updated.');
+        return redirect()->back()->with('success', 'Status pengiriman berhasil diperbarui.');
     }
 
     public function verifyProof(Request $request, Shipment $shipment)
@@ -582,6 +555,50 @@ class ShipmentsController extends Controller
         return $trackingStage === 'delivered' ? 'delivered' : 'in-transit';
     }
 
+    private function shipmentProductCatalog()
+    {
+        $warehouseId = \App\Models\Warehouse::query()->value('id');
+
+        return Product::where('is_active', true)
+            ->with(['unit:id,symbol', 'productStocks' => fn ($query) => $query->when($warehouseId, fn ($q) => $q->where('warehouse_id', $warehouseId))])
+            ->orderBy('name')
+            ->get(['id', 'sku', 'name', 'unit_id'])
+            ->map(function ($p) use ($warehouseId) {
+                $stock = $p->productStocks->first();
+
+                $rackSources = RackStock::query()
+                    ->with(['rack:id,code,warehouse_zone_id', 'rack.zone:id,code,name,warehouse_id'])
+                    ->where('product_id', $p->id)
+                    ->whereHas('rack.zone', fn ($q) => $q->where('warehouse_id', $warehouseId))
+                    ->where('quantity', '>', 0)
+                    ->orderByRaw('CASE WHEN expired_date IS NULL THEN 1 ELSE 0 END')
+                    ->orderBy('expired_date')
+                    ->get()
+                    ->map(fn ($rs) => [
+                        'rack_code' => $rs->rack?->code,
+                        'zone_code' => $rs->rack?->zone?->code,
+                        'zone_name' => $rs->rack?->zone?->name,
+                        'available' => max(0, (int) $rs->quantity - (int) $rs->reserved_quantity),
+                        'batch_number' => $rs->batch_number,
+                        'expired_date' => $rs->expired_date?->format('Y-m-d'),
+                    ])
+                    ->filter(fn ($row) => $row['available'] > 0)
+                    ->values();
+
+                return [
+                    'id' => $p->id,
+                    'sku' => $p->sku,
+                    'name' => $p->name,
+                    'unit' => $p->unit?->symbol ?? 'pcs',
+                    'available_stock' => $stock ? ((int) $stock->current_stock - (int) $stock->reserved_stock) : 0,
+                    'current_stock' => $stock?->current_stock ?? 0,
+                    'reserved_stock' => $stock?->reserved_stock ?? 0,
+                    'rack_available_stock' => $rackSources->sum('available'),
+                    'rack_sources' => $rackSources,
+                ];
+            });
+    }
+
     private function trackingStageNote(string $trackingStage, bool $hasDriver): string
     {
         return match ($trackingStage) {
@@ -619,10 +636,10 @@ class ShipmentsController extends Controller
             $eta = Carbon::parse($shipment->estimated_arrival);
             if ($eta->isPast()) {
                 $alerts['is_delayed'] = true;
-                $alerts['delay_minutes'] = $eta->diffInMinutes(now());
-                $alerts['eta_label'] = $eta->diffForHumans();
+                $alerts['delay_minutes'] = (int) round($eta->diffInMinutes(now()));
+                $alerts['eta_label'] = $eta->locale('id')->diffForHumans();
             } else {
-                $alerts['eta_label'] = $eta->diffForHumans();
+                $alerts['eta_label'] = $eta->locale('id')->diffForHumans();
             }
         }
 

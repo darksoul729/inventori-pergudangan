@@ -21,8 +21,21 @@ class DriverController extends Controller
 
     public function index()
     {
+        $drivers = Driver::with('user:id,name,email,role_id,status')
+            ->get()
+            ->map(function (Driver $driver) {
+                return [
+                    'id' => $driver->id,
+                    'user' => $driver->user,
+                    'license_number' => $driver->license_number,
+                    'phone' => $driver->phone,
+                    'status' => $driver->status,
+                    'has_active_shipment' => $driver->hasActiveShipment(),
+                ];
+            });
+
         return Inertia::render('Drivers', [
-            'drivers' => Driver::with('user:id,name,email,role_id,status')->get(),
+            'drivers' => $drivers,
         ]);
     }
 
@@ -103,6 +116,12 @@ class DriverController extends Controller
             'status' => 'required|in:approved,suspended,pending',
         ]);
 
+        if ($request->status === 'suspended' && $driver->hasActiveShipment()) {
+            return redirect()->back()->withErrors([
+                'status' => 'Driver tidak bisa ditahan karena masih punya pengiriman aktif. Selesaikan atau re-assign shipment terlebih dulu.',
+            ]);
+        }
+
         $isActive = $request->status === 'approved';
 
         $driver->update([
@@ -117,7 +136,7 @@ class DriverController extends Controller
             $driver->user->update(['status' => 'inactive']);
         }
 
-        return redirect()->back()->with('message', 'Driver status updated successfully.');
+        return redirect()->back()->with('message', 'Status driver berhasil diperbarui.');
     }
 
     public function store(Request $request)

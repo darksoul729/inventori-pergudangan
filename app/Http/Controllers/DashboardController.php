@@ -79,7 +79,7 @@ class DashboardController extends Controller
                 'is_occupied' => $r->total_qty > 0,
                 'has_alert' => $r->total_qty > ($r->capacity * 0.9),
                 'fill_percent' => $r->capacity > 0 ? round(($r->total_qty / $r->capacity) * 100, 1) : 0,
-                'zone_name' => $r->zone?->name ?? 'Unassigned',
+                'zone_name' => $r->zone?->name ?? 'Belum Ditentukan',
                 'zone_id' => $r->warehouse_zone_id,
                 'created_at' => $r->created_at->toIso8601String(),
             ]);

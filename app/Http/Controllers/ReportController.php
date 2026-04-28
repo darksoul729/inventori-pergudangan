@@ -274,7 +274,7 @@ class ReportController extends Controller
     public function download(Report $report)
     {
         if (!Storage::disk('public')->exists($report->file_path)) {
-            return redirect()->back()->with('error', 'File not found.');
+            return redirect()->back()->with('error', 'Berkas tidak ditemukan.');
         }
 
         return Storage::disk('public')->download($report->file_path);

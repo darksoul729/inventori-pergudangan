@@ -6,6 +6,7 @@ use App\Http\Requests\ProfileUpdateRequest;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response as HttpResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Storage;
@@ -71,5 +72,17 @@ class ProfileController extends Controller
         $request->session()->regenerateToken();
 
         return Redirect::to('/');
+    }
+
+    public function photo(Request $request): HttpResponse
+    {
+        $user = $request->user();
+        abort_unless($user && $user->profile_photo_path, 404);
+
+        if (!Storage::disk('public')->exists($user->profile_photo_path)) {
+            abort(404);
+        }
+
+        return Storage::disk('public')->response($user->profile_photo_path);
     }
 }

@@ -190,7 +190,7 @@ export default function WmsDocuments({ documents = [], stats = {} }) {
                                     }}
                                     className="h-10 w-full rounded-[8px] border border-gray-200 bg-white px-4 text-xs font-black text-gray-500 transition-colors hover:border-gray-300 hover:text-gray-700 md:w-auto"
                                 >
-                                    Reset Filter
+                                    Setel Ulang Filter
                                 </button>
                             )}
                         </div>

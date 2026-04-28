@@ -253,7 +253,7 @@ export default function TransactionDetail({ transaction }) {
                             <div>
                                 <SectionTitle>Data Operasional</SectionTitle>
                                 <dl className="rounded-xl border border-[#EDE8FC] px-5">
-                                    <DetailRow label="Operator" value={transaction.user?.name || 'System Auto'} />
+                                    <DetailRow label="Operator" value={transaction.user?.name || 'Sistem Otomatis'} />
                                     <DetailRow label="Email Operator" value={transaction.user?.email || 'verified_system'} />
                                     <DetailRow label="Gudang" value={transaction.warehouse?.name || 'N/A'} />
                                     <DetailRow label="Lokasi Gudang" value={transaction.warehouse?.location || 'Belum ditentukan'} />
@@ -298,7 +298,7 @@ export default function TransactionDetail({ transaction }) {
                             <div className="rounded-xl border border-[#EDE8FC] p-5 text-center">
                                 <p className="text-[12px] font-bold text-slate-500">Dibuat oleh</p>
                                 <div className="h-16" />
-                                <p className="border-t border-[#dbe4f0] pt-3 text-sm font-black text-[#28106F]">{transaction.user?.name || 'System Auto'}</p>
+                                <p className="border-t border-[#dbe4f0] pt-3 text-sm font-black text-[#28106F]">{transaction.user?.name || 'Sistem Otomatis'}</p>
                             </div>
                             <div className="rounded-xl border border-[#EDE8FC] p-5 text-center">
                                 <p className="text-[12px] font-bold text-slate-500">Diperiksa oleh</p>

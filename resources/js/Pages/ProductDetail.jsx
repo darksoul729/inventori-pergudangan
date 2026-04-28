@@ -1,6 +1,6 @@
 import React from 'react';
 import DashboardLayout from '@/Layouts/DashboardLayout';
-import { Head, Link, usePage } from '@inertiajs/react';
+import { Head, Link, usePage, router } from '@inertiajs/react';
 
 // Icons
 const TrendUpIcon = ({ className }) => (
@@ -39,15 +39,43 @@ const PhotoPlaceholder = () => (
 );
 
 export default function ProductDetail({ product, stats, distribution, movements }) {
-    const { auth } = usePage().props;
+    const { auth, flash } = usePage().props;
     const roleName = String(auth?.user?.role_name || auth?.user?.role || '').toLowerCase();
     const isManager = roleName.includes('manager') || roleName.includes('manajer') || roleName.includes('admin gudang');
+    const [isDeleting, setIsDeleting] = React.useState(false);
+
+    const handleDelete = () => {
+        if (isDeleting) {
+            return;
+        }
+
+        if (!window.confirm(`Hapus produk "${product.name}"? Tindakan ini tidak bisa dibatalkan.`)) {
+            return;
+        }
+
+        setIsDeleting(true);
+        router.delete(`/inventory/${product.id}`, {
+            data: { force_delete: 1 },
+            preserveScroll: true,
+            onFinish: () => setIsDeleting(false),
+        });
+    };
 
     return (
         <DashboardLayout>
             <Head title={`${product.name} - Detail Produk`} />
 
             <div className="pt-2 pb-12 w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
+                {flash?.success && (
+                    <div className="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm font-bold text-emerald-700">
+                        {flash.success}
+                    </div>
+                )}
+                {flash?.error && (
+                    <div className="mb-4 rounded-xl border border-red-200 bg-red-50 p-4 text-sm font-bold text-red-700">
+                        {flash.error}
+                    </div>
+                )}
 
                 {/* Header Section */}
                 <div className="flex justify-between items-start mb-8">
@@ -84,12 +112,22 @@ export default function ProductDetail({ product, stats, distribution, movements 
                             Kembali ke Daftar
                         </Link>
                         {isManager && (
-                            <Link
-                                href={route('inventory.edit', product.id)}
-                                className="px-6 py-2.5 bg-[#5932C9] shadow-[0_4px_14px_rgba(89,50,201,0.3)] hover:bg-indigo-700 text-white font-bold rounded-xl text-[13px] transition-colors"
-                            >
-                                Edit Entri
-                            </Link>
+                            <>
+                                <button
+                                    type="button"
+                                    onClick={handleDelete}
+                                    disabled={isDeleting}
+                                    className="px-6 py-2.5 bg-white border border-red-200 hover:bg-red-50 text-red-600 font-bold rounded-xl text-[13px] transition-colors"
+                                >
+                                    {isDeleting ? 'Menghapus...' : 'Hapus Paksa'}
+                                </button>
+                                <Link
+                                    href={route('inventory.edit', product.id)}
+                                    className="px-6 py-2.5 bg-[#5932C9] shadow-[0_4px_14px_rgba(89,50,201,0.3)] hover:bg-indigo-700 text-white font-bold rounded-xl text-[13px] transition-colors"
+                                >
+                                    Edit Entri
+                                </Link>
+                            </>
                         )}
                     </div>
                 </div>

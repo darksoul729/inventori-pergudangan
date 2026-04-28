@@ -113,7 +113,7 @@ export default function Show({ purchaseOrder }) {
                             className="flex items-center space-x-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-[13px] font-bold text-slate-700 transition-colors hover:bg-slate-50"
                         >
                             <DownloadIcon className="h-4 w-4" />
-                            <span>Download PDF</span>
+                            <span>Unduh PDF</span>
                         </a>
                         {isManager && purchaseOrder.status === 'pending' && (
                             <>

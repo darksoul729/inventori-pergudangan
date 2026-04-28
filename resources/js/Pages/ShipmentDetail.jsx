@@ -66,6 +66,7 @@ export default function ShipmentDetail({ auth, shipment }) {
 
     const routeMetrics = shipment.route_metrics || {};
     const alerts = shipment.alerts || {};
+    const delayMinutes = Math.max(0, Math.round(Number(alerts.delay_minutes || 0)));
     const podVerificationStatus = shipment.pod_verification_status || 'pending';
 
     const completionCount = useMemo(
@@ -267,7 +268,7 @@ export default function ShipmentDetail({ auth, shipment }) {
                             <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v12m0 0l4-4m-4 4l-4-4M4 17v1a2 2 0 002 2h12a2 2 0 002-2v-1" />
                             </svg>
-                            Download PDF
+                            Unduh PDF
                         </a>
                         <button
                             type="button"
@@ -285,7 +286,7 @@ export default function ShipmentDetail({ auth, shipment }) {
                 {alerts.is_delayed && (
                     <section className="rounded-3xl border border-rose-200 bg-rose-50 px-5 py-4 shadow-sm">
                         <p className="text-[10px] font-black uppercase tracking-[0.16em] text-rose-600">Alert Keterlambatan</p>
-                        <p className="mt-2 text-[20px] font-black text-slate-900">Terlambat {alerts.delay_minutes} menit</p>
+                        <p className="mt-2 text-[20px] font-black text-slate-900">Terlambat {delayMinutes.toLocaleString('id-ID')} menit</p>
                         <p className="mt-1 text-[12px] font-semibold text-rose-700">ETA sudah lewat {alerts.eta_label}.</p>
                     </section>
                 )}
@@ -296,11 +297,11 @@ export default function ShipmentDetail({ auth, shipment }) {
                             <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
                                 <div>
                                     <p className="text-[10px] font-black uppercase tracking-[0.15em] text-slate-400">Peta Tracking</p>
-                                    <h2 className="mt-1 text-[18px] font-black tracking-tight text-slate-900">Live Route & Posisi Driver</h2>
+                                    <h2 className="mt-1 text-[18px] font-black tracking-tight text-slate-900">Rute Langsung & Posisi Driver</h2>
                                 </div>
                                 <span className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-[10px] font-black uppercase tracking-[0.12em] text-emerald-700">
                                     <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-500" />
-                                    Live
+                                    Langsung
                                 </span>
                             </div>
                             <div className="relative h-[360px] sm:h-[460px] md:h-[560px]">

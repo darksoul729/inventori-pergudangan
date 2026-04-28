@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Middleware;
 
 class HandleInertiaRequests extends Middleware
@@ -225,10 +226,79 @@ class HandleInertiaRequests extends Middleware
                 'message' => 'Seluruh sinkronisasi barcode dan data transaksi berjalan normal.',
                 'link' => '/dashboard',
             ];
+
+            // Personal approval outcomes for creator (important for supervisor/staff follow-up)
+            $recentWindow = now()->subDays(3);
+            $creatorId = (int) $user->id;
+
+            $recentOpnameResults = \App\Models\StockOpname::query()
+                ->where('created_by', $creatorId)
+                ->whereIn('status', ['completed', 'rejected'])
+                ->where('updated_at', '>=', $recentWindow)
+                ->latest('updated_at')
+                ->limit(5)
+                ->get();
+            foreach ($recentOpnameResults as $opname) {
+                $isApproved = $opname->status === 'completed';
+                $statusLabel = $isApproved ? 'sudah disetujui' : 'ditolak';
+                $updatedTs = $opname->updated_at?->timestamp ?? time();
+                $notifications[] = [
+                    'id' => "opname-result-{$opname->id}-{$updatedTs}",
+                    'type' => $isApproved ? 'success' : 'warning',
+                    'title' => $isApproved ? 'Opname Disetujui' : 'Opname Ditolak',
+                    'message' => "Dokumen {$opname->opname_number} {$statusLabel} dan perlu ditindaklanjuti.",
+                    'link' => "/stock-opname/{$opname->id}",
+                ];
+            }
+
+            $recentTransferResults = \App\Models\StockTransfer::query()
+                ->where('created_by', $creatorId)
+                ->whereIn('status', ['completed', 'rejected'])
+                ->where('updated_at', '>=', $recentWindow)
+                ->latest('updated_at')
+                ->limit(5)
+                ->get();
+            foreach ($recentTransferResults as $transfer) {
+                $isApproved = $transfer->status === 'completed';
+                $statusLabel = $isApproved ? 'sudah disetujui' : 'ditolak';
+                $updatedTs = $transfer->updated_at?->timestamp ?? time();
+                $notifications[] = [
+                    'id' => "transfer-result-{$transfer->id}-{$updatedTs}",
+                    'type' => $isApproved ? 'success' : 'warning',
+                    'title' => $isApproved ? 'Transfer Disetujui' : 'Transfer Ditolak',
+                    'message' => "Dokumen {$transfer->transfer_number} {$statusLabel} untuk perpindahan stok.",
+                    'link' => "/rack-allocation/transfers/{$transfer->id}",
+                ];
+            }
+
+            $recentAdjustmentResults = \App\Models\StockAdjustment::query()
+                ->where('created_by', $creatorId)
+                ->where('reason', 'manual_rack_stock')
+                ->whereIn('status', ['completed', 'rejected'])
+                ->where('updated_at', '>=', $recentWindow)
+                ->latest('updated_at')
+                ->limit(5)
+                ->get();
+            foreach ($recentAdjustmentResults as $adjustment) {
+                $isApproved = $adjustment->status === 'completed';
+                $statusLabel = $isApproved ? 'sudah disetujui' : 'ditolak';
+                $updatedTs = $adjustment->updated_at?->timestamp ?? time();
+                $notifications[] = [
+                    'id' => "adjustment-result-{$adjustment->id}-{$updatedTs}",
+                    'type' => $isApproved ? 'success' : 'warning',
+                    'title' => $isApproved ? 'Koreksi Stok Disetujui' : 'Koreksi Stok Ditolak',
+                    'message' => "Dokumen {$adjustment->adjustment_number} {$statusLabel}.",
+                    'link' => "/stock-adjustments/{$adjustment->id}",
+                ];
+            }
         }
 
         return [
             ...parent::share($request),
+            'flash' => [
+                'success' => fn () => $request->session()->get('success'),
+                'error' => fn () => $request->session()->get('error'),
+            ],
             'auth' => [
                 'user' => $user ? [
                     'id' => $user->id,
@@ -239,7 +309,7 @@ class HandleInertiaRequests extends Middleware
                     'email' => $user->email,
                     'email_verified_at' => $user->email_verified_at,
                     'phone' => $user->phone,
-                    'profile_photo_url' => $user->profile_photo_path ? asset('storage/'.$user->profile_photo_path) : null,
+                    'profile_photo_url' => $this->profilePhotoUrl($user),
                     'status' => $user->status,
                 ] : null,
             ],
@@ -250,6 +320,20 @@ class HandleInertiaRequests extends Middleware
                 'adjustments' => $pendingAdjustmentCount,
             ],
         ];
+    }
+
+    private function profilePhotoUrl($user): ?string
+    {
+        $path = $user?->profile_photo_path;
+        if (!$path) {
+            return null;
+        }
+
+        if (Storage::disk('public')->exists($path)) {
+            return route('profile.photo', ['v' => optional($user->updated_at)?->timestamp ?? time()]);
+        }
+
+        return null;
     }
 
     private function distanceKm(float $lat1, float $lng1, float $lat2, float $lng2): float

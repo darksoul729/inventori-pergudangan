@@ -1,6 +1,8 @@
 package com.aether.driver.ui.screens
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.RepeatMode
@@ -8,16 +10,12 @@ import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -32,14 +30,12 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Email
 import androidx.compose.material.icons.rounded.Lock
-import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material.icons.rounded.Visibility
 import androidx.compose.material.icons.rounded.VisibilityOff
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -75,8 +71,6 @@ import kotlinx.coroutines.launch
 fun LoginScreen(
     sessionManager: SessionManager,
     onLoginSuccess: () -> Unit,
-    onOpenRegister: () -> Unit,
-    onOpenServerSettings: () -> Unit,
 ) {
     var email           by remember { mutableStateOf("") }
     var password        by remember { mutableStateOf("") }
@@ -90,7 +84,6 @@ fun LoginScreen(
     val logoScale = remember { Animatable(0.5f) }
     val logoAlpha = remember { Animatable(0f) }
     var cardVisible by remember { mutableStateOf(false) }
-    var footerVisible by remember { mutableStateOf(false) }
 
     // Floating glow behind logo
     val infiniteTransition = rememberInfiniteTransition(label = "loginGlow")
@@ -109,8 +102,6 @@ fun LoginScreen(
         logoScale.animateTo(1f, tween(800, easing = FastOutSlowInEasing))
         delay(250)
         cardVisible = true
-        delay(350)
-        footerVisible = true
     }
 
     Box(
@@ -321,7 +312,7 @@ fun LoginScreen(
                                             }
                                         }
                                     } catch (_: Exception) {
-                                        errorMessage = "Tidak dapat terhubung ke server. Periksa URL di Pengaturan."
+                                        errorMessage = "Tidak dapat terhubung ke server. Periksa koneksi internet Anda."
                                     } finally {
                                         isLoading = false
                                     }
@@ -331,37 +322,10 @@ fun LoginScreen(
                             enabled = email.isNotBlank() && password.isNotBlank(),
                             isLoading = isLoading,
                         )
-
-                        Spacer(Modifier.height(10.dp))
-
-                        AetherSecondaryButton(
-                            text = "Atur Server/IP Dulu",
-                            onClick = onOpenServerSettings,
-                            modifier = Modifier.fillMaxWidth(),
-                            leadingIcon = Icons.Rounded.Settings,
-                        )
                 }
             }
 
-            Spacer(Modifier.height(20.dp))
-
-            AnimatedVisibility(
-                visible = footerVisible,
-                enter = fadeIn(tween(300)) + slideInVertically(tween(350), initialOffsetY = { it / 8 }),
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center,
-                ) {
-                    Text("Belum punya akun? ", style = MaterialTheme.typography.bodySmall, color = TextSecond)
-                    TextButton(onClick = onOpenRegister, contentPadding = PaddingValues(0.dp)) {
-                        Text("Daftar Driver", style = MaterialTheme.typography.bodySmall,
-                            fontWeight = FontWeight.ExtraBold, color = Primary)
-                    }
-                }
-            }
-
-            Spacer(Modifier.height(32.dp))
+            Spacer(Modifier.height(48.dp))
         }
     }
 }

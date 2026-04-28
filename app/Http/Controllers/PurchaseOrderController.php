@@ -104,7 +104,7 @@ class PurchaseOrderController extends Controller
             }
         });
 
-        return redirect()->route('purchase-orders.index')->with('success', 'Purchase Order created successfully.');
+        return redirect()->route('purchase-orders.index')->with('success', 'Purchase Order berhasil dibuat.');
     }
 
     public function show(PurchaseOrder $purchaseOrder)
@@ -239,7 +239,7 @@ class PurchaseOrderController extends Controller
             }
         });
 
-        return redirect()->back()->with('success', 'Purchase Order status updated to ' . $validated['status'] . '.');
+        return redirect()->back()->with('success', 'Status Purchase Order berhasil diperbarui menjadi ' . $validated['status'] . '.');
     }
 
     private function isManager(Request $request): bool

@@ -166,7 +166,7 @@ class StockTransferController extends Controller
 
                 if (! $sourceStock || $availableQuantity < (int) $data['quantity']) {
                     throw ValidationException::withMessages([
-                        'quantity' => 'Insufficient available stock in source rack. Available: '.$availableQuantity.' units.',
+                        'quantity' => 'Stok siap pakai di rak asal tidak mencukupi. Tersedia: '.$availableQuantity.' unit.',
                     ]);
                 }
             } else {
@@ -178,7 +178,7 @@ class StockTransferController extends Controller
 
                 if (! $productStock || $unplacedStock < (int) $data['quantity']) {
                     throw ValidationException::withMessages([
-                        'quantity' => 'Insufficient unplaced stock. Available: '.$unplacedStock.' units.',
+                        'quantity' => 'Stok belum ditempatkan tidak mencukupi. Tersedia: '.$unplacedStock.' unit.',
                     ]);
                 }
             }

@@ -1,13 +1,14 @@
 import DashboardLayout from '@/Layouts/DashboardLayout';
 import { Head, Link, usePage } from '@inertiajs/react';
 import { ArrowRight, CheckCheck, MailOpen, Search, SlidersHorizontal } from 'lucide-react';
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { filters, getNotificationMeta, typeStyle } from './notificationConfig';
 
 export default function NotificationsIndex() {
     const { notifications = [] } = usePage().props;
     const [filter, setFilter] = useState('all');
     const [query, setQuery] = useState('');
+    const listSectionRef = useRef(null);
     const [readIds, setReadIds] = useState(() => {
         try {
             return JSON.parse(localStorage.getItem('read_notifications') || '[]');
@@ -53,15 +54,27 @@ export default function NotificationsIndex() {
         localStorage.setItem('read_notifications', JSON.stringify(next));
     };
 
+    useEffect(() => {
+        if (!query.trim()) return;
+        if (visibleNotifications.length > 0) {
+            listSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    }, [query, visibleNotifications.length]);
+
     return (
-        <DashboardLayout headerTitle="Notifikasi Sistem" hideSearch={true} contentClassName="w-full max-w-none">
+        <DashboardLayout
+            headerTitle="Notifikasi Sistem"
+            contentClassName="w-full max-w-none"
+            searchValue={query}
+            onSearch={setQuery}
+        >
             <Head title="Notifikasi Sistem" />
 
             <div className="w-full px-5 pb-10 pt-1 md:px-8">
                 <section className="mb-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm md:p-6">
                     <div className="mb-5 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
                         <div>
-                            <p className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-400">Notification Center</p>
+                            <p className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-400">Pusat Notifikasi</p>
                             <h1 className="mt-2 text-[30px] font-black tracking-tight text-slate-900">Inbox Notifikasi</h1>
                             <p className="mt-2 max-w-3xl text-[14px] font-semibold text-slate-500">
                                 Pantau alert operasional harian, tandai baca, dan buka modul terkait dari satu halaman.
@@ -93,7 +106,7 @@ export default function NotificationsIndex() {
                     </div>
                 </section>
 
-                <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+                <section ref={listSectionRef} className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
                     <div className="border-b border-slate-100 px-5 py-4 md:px-6">
                         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                             <div className="inline-flex items-center gap-2 rounded-lg bg-slate-50 px-3 py-2 text-[11px] font-black uppercase tracking-[0.12em] text-slate-500">

@@ -1,5 +1,6 @@
 import DashboardLayout from '@/Layouts/DashboardLayout';
 import { Head, Link, usePage } from '@inertiajs/react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
     AlertTriangle,
     ArrowRight,
@@ -37,7 +38,7 @@ const supportChannels = [
 const issueCategories = [
     {
         title: 'Stok tidak sesuai',
-        detail: 'Cek histori produk, transaksi terakhir, stock opname, adjustment, dan lokasi rack sebelum eskalasi.',
+        detail: 'Cek histori produk, transaksi terakhir, stock opname, adjustment, lokasi rack, dan perhitungan stok maksimum otomatis berbasis kapasitas rack.',
         route: '/inventory',
     },
     {
@@ -47,8 +48,13 @@ const issueCategories = [
     },
     {
         title: 'Pengiriman bermasalah',
-        detail: 'Periksa status shipment, driver, proof of delivery, dan catatan verifikasi POD.',
+        detail: 'Periksa status shipment, validasi stok per rack, driver, proof of delivery, dan catatan verifikasi POD.',
         route: '/shipments',
+    },
+    {
+        title: 'Hapus produk gagal',
+        detail: 'Cek apakah produk masih punya stok atau terhubung dokumen transaksi. Gunakan hapus paksa hanya bila produk tidak lagi dipakai operasional aktif.',
+        route: '/inventory',
     },
     {
         title: 'PO atau supplier',
@@ -70,6 +76,7 @@ const issueCategories = [
 const escalationSteps = [
     'Catat menu yang bermasalah, nomor dokumen, nama produk, rack, supplier, driver, atau shipment terkait.',
     'Ambil screenshot tampilan error atau data yang tidak sesuai.',
+    'Jika terkait produk: cek stok maksimum otomatis (kapasitas rack), stok fisik rack, dan status relasi transaksi produk.',
     'Cek dokumentasi sistem untuk memastikan langkah kerja sudah benar.',
     'Laporkan ke Supervisor Gudang jika masalah terjadi pada proses operasional gudang.',
     'Eskalasi ke Manager Gudang jika masalah menyangkut role akses, data master, koreksi stok final, atau bug sistem.',
@@ -80,6 +87,8 @@ const quickChecks = [
     'Pastikan koneksi internet stabil.',
     'Pastikan role akun sesuai tugas yang dikerjakan.',
     'Cek apakah dokumen sudah diverifikasi.',
+    'Untuk shipment, pastikan stok tersedia di rack dan tidak seluruhnya ter-reservasi.',
+    'Untuk driver, pastikan tidak ada shipment aktif sebelum status ditahan/nonaktifkan.',
     'Gunakan pencarian atau filter tanggal sebelum menyimpulkan data hilang.',
 ];
 
@@ -98,7 +107,7 @@ const contactByRole = {
     },
     driver: {
         label: 'Supervisor Gudang',
-        detail: 'Driver sebaiknya melapor ke Supervisor Gudang untuk kendala shipment, status pengiriman, proof of delivery, atau lokasi.',
+        detail: 'Driver sebaiknya melapor ke Supervisor Gudang untuk kendala shipment, status pengiriman, proof of delivery, lokasi, atau perubahan status tahan.',
     },
 };
 
@@ -125,9 +134,65 @@ export default function LiveSupport() {
     const { auth } = usePage().props;
     const currentRole = normalizeRoleKey(auth?.user?.role_name || auth?.user?.role);
     const recommendedContact = contactByRole[currentRole] || contactByRole.staff;
+    const [searchTerm, setSearchTerm] = useState('');
+    const normalizedQuery = searchTerm.trim().toLowerCase();
+    const channelsSectionRef = useRef(null);
+    const categoriesSectionRef = useRef(null);
+    const quickChecksSectionRef = useRef(null);
+    const escalationSectionRef = useRef(null);
+
+    const filteredSupportChannels = useMemo(() => {
+        if (!normalizedQuery) return supportChannels;
+        return supportChannels.filter((item) => `${item.title} ${item.description} ${item.response}`.toLowerCase().includes(normalizedQuery));
+    }, [normalizedQuery]);
+
+    const filteredIssueCategories = useMemo(() => {
+        if (!normalizedQuery) return issueCategories;
+        return issueCategories.filter((item) => `${item.title} ${item.detail}`.toLowerCase().includes(normalizedQuery));
+    }, [normalizedQuery]);
+
+    const filteredQuickChecks = useMemo(() => {
+        if (!normalizedQuery) return quickChecks;
+        return quickChecks.filter((item) => item.toLowerCase().includes(normalizedQuery));
+    }, [normalizedQuery]);
+
+    const filteredEscalationSteps = useMemo(() => {
+        if (!normalizedQuery) return escalationSteps;
+        return escalationSteps.filter((item) => item.toLowerCase().includes(normalizedQuery));
+    }, [normalizedQuery]);
+
+    useEffect(() => {
+        if (!normalizedQuery) return;
+        if (filteredSupportChannels.length > 0) {
+            channelsSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            return;
+        }
+        if (filteredIssueCategories.length > 0) {
+            categoriesSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            return;
+        }
+        if (filteredQuickChecks.length > 0) {
+            quickChecksSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            return;
+        }
+        if (filteredEscalationSteps.length > 0) {
+            escalationSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    }, [
+        filteredEscalationSteps.length,
+        filteredIssueCategories.length,
+        filteredQuickChecks.length,
+        filteredSupportChannels.length,
+        normalizedQuery,
+    ]);
 
     return (
-        <DashboardLayout headerTitle="Bantuan Langsung" hideSearch={true} contentClassName="max-w-[1280px] mx-auto">
+        <DashboardLayout
+            headerTitle="Bantuan Langsung"
+            contentClassName="max-w-[1280px] mx-auto"
+            searchValue={searchTerm}
+            onSearch={setSearchTerm}
+        >
             <Head title="Bantuan Langsung" />
 
             <div className="pb-16">
@@ -158,13 +223,13 @@ export default function LiveSupport() {
                             <p className="mt-2 max-w-4xl text-[13px] font-bold leading-6 text-gray-600">{recommendedContact.detail}</p>
                         </div>
                         <div className="rounded-[8px] bg-white px-4 py-3 text-[12px] font-black uppercase tracking-wider text-[#28106F] shadow-sm">
-                            Role Saat Ini: {formatRoleLabel(currentRole)}
+                            Peran Saat Ini: {formatRoleLabel(currentRole)}
                         </div>
                     </div>
                 </section>
 
-                <section className="mb-8 grid gap-4 lg:grid-cols-3">
-                    {supportChannels.map((channel) => {
+                <section ref={channelsSectionRef} className="mb-8 grid gap-4 lg:grid-cols-3">
+                    {filteredSupportChannels.map((channel) => {
                         const Icon = channel.icon;
 
                         return (
@@ -184,7 +249,7 @@ export default function LiveSupport() {
                 </section>
 
                 <section className="mb-8 grid gap-8 xl:grid-cols-[1.1fr_0.9fr]">
-                    <div className="rounded-[8px] border border-gray-100 bg-white p-6 shadow-sm">
+                    <div ref={categoriesSectionRef} className="rounded-[8px] border border-gray-100 bg-white p-6 shadow-sm">
                         <div className="mb-5 flex items-center gap-3">
                             <div className="flex h-11 w-11 items-center justify-center rounded-[8px] bg-amber-50 text-amber-600">
                                 <AlertTriangle className="h-5 w-5" />
@@ -195,7 +260,7 @@ export default function LiveSupport() {
                             </div>
                         </div>
                         <div className="grid gap-3 md:grid-cols-2">
-                            {issueCategories.map((issue) => (
+                            {filteredIssueCategories.map((issue) => (
                                 <Link key={issue.title} href={issue.route} className="group rounded-[8px] border border-gray-100 bg-[#F8F7FF] p-4 transition-all hover:border-indigo-100 hover:bg-white hover:shadow-sm">
                                     <div className="flex items-start justify-between gap-3">
                                         <h3 className="text-[14px] font-black text-gray-900 group-hover:text-[#28106F]">{issue.title}</h3>
@@ -207,7 +272,7 @@ export default function LiveSupport() {
                         </div>
                     </div>
 
-                    <div className="rounded-[8px] border border-gray-100 bg-white p-6 shadow-sm">
+                    <div ref={quickChecksSectionRef} className="rounded-[8px] border border-gray-100 bg-white p-6 shadow-sm">
                         <div className="mb-5 flex items-center gap-3">
                             <div className="flex h-11 w-11 items-center justify-center rounded-[8px] bg-emerald-50 text-emerald-600">
                                 <CheckCircle2 className="h-5 w-5" />
@@ -218,7 +283,7 @@ export default function LiveSupport() {
                             </div>
                         </div>
                         <div className="space-y-3">
-                            {quickChecks.map((item) => (
+                            {filteredQuickChecks.map((item) => (
                                 <div key={item} className="flex gap-3 rounded-[8px] bg-[#F8F7FF] p-4 text-[13px] font-bold leading-6 text-gray-600">
                                     <CheckCircle2 className="mt-0.5 h-4 w-4 flex-shrink-0 text-emerald-500" />
                                     <span>{item}</span>
@@ -229,7 +294,7 @@ export default function LiveSupport() {
                 </section>
 
                 <section className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr]">
-                    <div className="rounded-[8px] border border-gray-100 bg-white p-6 shadow-sm">
+                    <div ref={escalationSectionRef} className="rounded-[8px] border border-gray-100 bg-white p-6 shadow-sm">
                         <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-[8px] bg-indigo-50 text-[#28106F]">
                             <LifeBuoy className="h-6 w-6" />
                         </div>
@@ -256,7 +321,7 @@ export default function LiveSupport() {
                             </div>
                         </div>
                         <div className="space-y-3">
-                            {escalationSteps.map((step, index) => (
+                            {filteredEscalationSteps.map((step, index) => (
                                 <div key={step} className="flex gap-4 rounded-[8px] border border-gray-100 bg-[#F8F7FF] p-4">
                                     <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-[8px] bg-white text-[12px] font-black text-[#28106F] shadow-sm">
                                         {index + 1}
@@ -277,6 +342,15 @@ export default function LiveSupport() {
                         </div>
                     </div>
                 </section>
+                {normalizedQuery &&
+                    filteredSupportChannels.length === 0 &&
+                    filteredIssueCategories.length === 0 &&
+                    filteredQuickChecks.length === 0 &&
+                    filteredEscalationSteps.length === 0 && (
+                    <section className="mt-6 rounded-[8px] border border-slate-200 bg-white p-6 text-center text-[13px] font-bold text-slate-500">
+                        Tidak ada hasil untuk kata kunci "{searchTerm}".
+                    </section>
+                )}
             </div>
         </DashboardLayout>
     );

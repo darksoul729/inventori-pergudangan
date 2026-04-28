@@ -249,7 +249,7 @@ export default function WarehouseFloorPlan({ zoneSummaries, rackSummaries, selec
                 <div className="flex items-center gap-2">
                     <span className="mr-2 text-[11px] font-bold text-gray-400">{Math.round(scale * 100)}%</span>
                     <button type="button" onClick={zoomOut} className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#dbe4f0] bg-white text-[16px] font-black text-gray-500 transition hover:bg-gray-50">−</button>
-                    <button type="button" onClick={zoomReset} className="rounded-lg border border-[#dbe4f0] bg-white px-2.5 py-1.5 text-[10px] font-black uppercase tracking-wider text-gray-500 transition hover:bg-gray-50">Reset</button>
+                    <button type="button" onClick={zoomReset} className="rounded-lg border border-[#dbe4f0] bg-white px-2.5 py-1.5 text-[10px] font-black uppercase tracking-wider text-gray-500 transition hover:bg-gray-50">Setel Ulang</button>
                     <button type="button" onClick={zoomIn} className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#dbe4f0] bg-white text-[16px] font-black text-gray-500 transition hover:bg-gray-50">+</button>
                     <span className="ml-2 rounded-full bg-[#eef2ff] px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-[#28106F]">
                         Interaktif

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import DashboardLayout from '@/Layouts/DashboardLayout';
 import { Head, useForm, router, usePage } from '@inertiajs/react';
 import Modal from '@/Components/Modal';
@@ -67,6 +67,12 @@ export default function Settings({ auth, categories, units, warehouse, staffUser
     const [showUnitModal, setShowUnitModal] = useState(false);
     const [editingUnit, setEditingUnit] = useState(null);
     const [showStaffModal, setShowStaffModal] = useState(false);
+    const [searchTerm, setSearchTerm] = useState('');
+    const normalizedQuery = searchTerm.trim().toLowerCase();
+    const warehouseSectionRef = React.useRef(null);
+    const categoriesSectionRef = React.useRef(null);
+    const unitsSectionRef = React.useRef(null);
+    const staffSectionRef = React.useRef(null);
     
     // Warehouse Form
     const warehouseForm = useForm({
@@ -209,71 +215,131 @@ export default function Settings({ auth, categories, units, warehouse, staffUser
         });
     };
 
+    const filteredCategories = useMemo(() => {
+        if (!normalizedQuery) return categories;
+        return categories.filter((cat) => `${cat.name} ${cat.description || ''}`.toLowerCase().includes(normalizedQuery));
+    }, [categories, normalizedQuery]);
+
+    const filteredUnits = useMemo(() => {
+        if (!normalizedQuery) return units;
+        return units.filter((unit) => `${unit.name} ${unit.symbol}`.toLowerCase().includes(normalizedQuery));
+    }, [normalizedQuery, units]);
+
+    const filteredStaffUsers = useMemo(() => {
+        if (!normalizedQuery) return staffUsers;
+        return staffUsers.filter((user) => `${user.name} ${user.email} ${user.phone || ''} ${formatOperationalRole(user.role)}`.toLowerCase().includes(normalizedQuery));
+    }, [normalizedQuery, staffUsers]);
+
+    useEffect(() => {
+        if (!normalizedQuery) return;
+        if (`${warehouse?.name || ''} ${warehouse?.location || ''} ${warehouse?.description || ''}`.toLowerCase().includes(normalizedQuery)) {
+            setActiveTab('warehouse');
+            return;
+        }
+        if (filteredCategories.length > 0) {
+            setActiveTab('categories');
+            return;
+        }
+        if (filteredUnits.length > 0) {
+            setActiveTab('units');
+            return;
+        }
+        if (filteredStaffUsers.length > 0) {
+            setActiveTab('staff');
+        }
+    }, [filteredCategories.length, filteredStaffUsers.length, filteredUnits.length, normalizedQuery, warehouse?.description, warehouse?.location, warehouse?.name]);
+
+    useEffect(() => {
+        if (!normalizedQuery) return;
+        if (activeTab === 'warehouse') {
+            warehouseSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            return;
+        }
+        if (activeTab === 'categories') {
+            categoriesSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            return;
+        }
+        if (activeTab === 'units') {
+            unitsSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            return;
+        }
+        if (activeTab === 'staff') {
+            staffSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    }, [activeTab, normalizedQuery]);
+
     return (
-        <DashboardLayout headerTitle="Pengaturan Sistem" hideSearch={true}>
+        <DashboardLayout
+            headerTitle="Pengaturan Sistem"
+            hideMainScrollbar
+            searchValue={searchTerm}
+            onSearch={setSearchTerm}
+        >
             <Head title="Pengaturan" />
 
-            <div className="flex flex-row gap-8 pb-12 w-full pt-4 min-w-[1000px] overflow-x-auto bg-[#F8F7FF] animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="w-full pt-3 pb-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
                 
                 {/* Sidebar Navigation for Settings */}
-                <div className="w-[280px] flex-shrink-0 flex flex-col space-y-2">
-                    <h3 className="text-[11px] font-extrabold text-gray-400 tracking-widest uppercase mb-4 px-2">Menu Konfigurasi</h3>
-                    
-                    <button 
-                        onClick={() => setActiveTab('warehouse')}
-                        className={`w-full flex items-center space-x-3 px-5 py-4 rounded-2xl font-bold text-[14px] transition-all text-left ${activeTab === 'warehouse' ? 'bg-white text-[#5932C9] shadow-[0_4px_15px_rgba(0,0,0,0.03)] border border-gray-100' : 'text-gray-500 hover:bg-white/60 hover:text-gray-900 border border-transparent'}`}
-                    >
-                        <div className={`p-2 rounded-xl flex-shrink-0 ${activeTab === 'warehouse' ? 'bg-indigo-50 text-indigo-500' : 'bg-gray-100 text-gray-400'}`}>
-                            <BuildingIcon className="w-5 h-5" />
-                        </div>
-                        <div>
-                            <div className="mb-0.5">Gudang Utama</div>
-                            <div className={`text-[11px] font-semibold ${activeTab === 'warehouse' ? 'text-indigo-400' : 'text-gray-400'}`}>Profil & Lokasi Samarinda</div>
-                        </div>
-                    </button>
+                <div className="grid grid-cols-1 gap-6 xl:grid-cols-[248px_minmax(0,1fr)]">
+                    <div className="xl:sticky xl:top-4 h-fit rounded-2xl border border-[#EDE8FC] bg-white p-4 shadow-[0_2px_16px_rgba(0,0,0,0.02)]">
+                        <h3 className="text-[11px] font-extrabold text-gray-400 tracking-widest uppercase mb-4 px-2">Menu Konfigurasi</h3>
+                        <div className="flex flex-col space-y-2">
+                            <button 
+                                onClick={() => setActiveTab('warehouse')}
+                                className={`w-full flex items-center space-x-3 px-5 py-4 rounded-2xl font-bold text-[14px] transition-all text-left ${activeTab === 'warehouse' ? 'bg-white text-[#5932C9] shadow-[0_4px_15px_rgba(0,0,0,0.03)] border border-gray-100' : 'text-gray-500 hover:bg-[#F8F7FF] hover:text-gray-900 border border-transparent'}`}
+                            >
+                                <div className={`p-2 rounded-xl flex-shrink-0 ${activeTab === 'warehouse' ? 'bg-indigo-50 text-indigo-500' : 'bg-gray-100 text-gray-400'}`}>
+                                    <BuildingIcon className="w-5 h-5" />
+                                </div>
+                                <div>
+                                    <div className="mb-0.5">Gudang Utama</div>
+                                    <div className={`text-[11px] font-semibold ${activeTab === 'warehouse' ? 'text-indigo-400' : 'text-gray-400'}`}>Profil & Lokasi Samarinda</div>
+                                </div>
+                            </button>
 
-                    <button 
-                        onClick={() => setActiveTab('categories')}
-                        className={`w-full flex items-center space-x-3 px-5 py-4 rounded-2xl font-bold text-[14px] transition-all text-left ${activeTab === 'categories' ? 'bg-white text-[#5932C9] shadow-[0_4px_15px_rgba(0,0,0,0.03)] border border-gray-100' : 'text-gray-500 hover:bg-white/60 hover:text-gray-900 border border-transparent'}`}
-                    >
-                        <div className={`p-2 rounded-xl flex-shrink-0 ${activeTab === 'categories' ? 'bg-indigo-50 text-indigo-500' : 'bg-gray-100 text-gray-400'}`}>
-                            <TagIcon className="w-5 h-5" />
-                        </div>
-                        <div>
-                            <div className="mb-0.5">Daftar Kategori</div>
-                            <div className={`text-[11px] font-semibold ${activeTab === 'categories' ? 'text-indigo-400' : 'text-gray-400'}`}>Klasifikasi Inventaris</div>
-                        </div>
-                    </button>
+                            <button 
+                                onClick={() => setActiveTab('categories')}
+                                className={`w-full flex items-center space-x-3 px-5 py-4 rounded-2xl font-bold text-[14px] transition-all text-left ${activeTab === 'categories' ? 'bg-white text-[#5932C9] shadow-[0_4px_15px_rgba(0,0,0,0.03)] border border-gray-100' : 'text-gray-500 hover:bg-[#F8F7FF] hover:text-gray-900 border border-transparent'}`}
+                            >
+                                <div className={`p-2 rounded-xl flex-shrink-0 ${activeTab === 'categories' ? 'bg-indigo-50 text-indigo-500' : 'bg-gray-100 text-gray-400'}`}>
+                                    <TagIcon className="w-5 h-5" />
+                                </div>
+                                <div>
+                                    <div className="mb-0.5">Daftar Kategori</div>
+                                    <div className={`text-[11px] font-semibold ${activeTab === 'categories' ? 'text-indigo-400' : 'text-gray-400'}`}>Klasifikasi Inventaris</div>
+                                </div>
+                            </button>
 
-                    <button 
-                        onClick={() => setActiveTab('units')}
-                        className={`w-full flex items-center space-x-3 px-5 py-4 rounded-2xl font-bold text-[14px] transition-all text-left ${activeTab === 'units' ? 'bg-white text-[#5932C9] shadow-[0_4px_15px_rgba(0,0,0,0.03)] border border-gray-100' : 'text-gray-500 hover:bg-white/60 hover:text-gray-900 border border-transparent'}`}
-                    >
-                        <div className={`p-2 rounded-xl flex-shrink-0 ${activeTab === 'units' ? 'bg-indigo-50 text-indigo-500' : 'bg-gray-100 text-gray-400'}`}>
-                            <ScaleIcon className="w-5 h-5" />
-                        </div>
-                        <div>
-                            <div className="mb-0.5">Satuan Metrik</div>
-                            <div className={`text-[11px] font-semibold ${activeTab === 'units' ? 'text-indigo-400' : 'text-gray-400'}`}>Unit Perhitungan Barcode</div>
-                        </div>
-                    </button>
+                            <button 
+                                onClick={() => setActiveTab('units')}
+                                className={`w-full flex items-center space-x-3 px-5 py-4 rounded-2xl font-bold text-[14px] transition-all text-left ${activeTab === 'units' ? 'bg-white text-[#5932C9] shadow-[0_4px_15px_rgba(0,0,0,0.03)] border border-gray-100' : 'text-gray-500 hover:bg-[#F8F7FF] hover:text-gray-900 border border-transparent'}`}
+                            >
+                                <div className={`p-2 rounded-xl flex-shrink-0 ${activeTab === 'units' ? 'bg-indigo-50 text-indigo-500' : 'bg-gray-100 text-gray-400'}`}>
+                                    <ScaleIcon className="w-5 h-5" />
+                                </div>
+                                <div>
+                                    <div className="mb-0.5">Satuan Metrik</div>
+                                    <div className={`text-[11px] font-semibold ${activeTab === 'units' ? 'text-indigo-400' : 'text-gray-400'}`}>Unit Perhitungan Barcode</div>
+                                </div>
+                            </button>
 
-                    <button 
-                        onClick={() => setActiveTab('staff')}
-                        className={`w-full flex items-center space-x-3 px-5 py-4 rounded-2xl font-bold text-[14px] transition-all text-left ${activeTab === 'staff' ? 'bg-white text-[#5932C9] shadow-[0_4px_15px_rgba(0,0,0,0.03)] border border-gray-100' : 'text-gray-500 hover:bg-white/60 hover:text-gray-900 border border-transparent'}`}
-                    >
-                        <div className={`p-2 rounded-xl flex-shrink-0 ${activeTab === 'staff' ? 'bg-indigo-50 text-indigo-500' : 'bg-gray-100 text-gray-400'}`}>
-                            <UsersIcon className="w-5 h-5" />
+                            <button 
+                                onClick={() => setActiveTab('staff')}
+                                className={`w-full flex items-center space-x-3 px-5 py-4 rounded-2xl font-bold text-[14px] transition-all text-left ${activeTab === 'staff' ? 'bg-white text-[#5932C9] shadow-[0_4px_15px_rgba(0,0,0,0.03)] border border-gray-100' : 'text-gray-500 hover:bg-[#F8F7FF] hover:text-gray-900 border border-transparent'}`}
+                            >
+                                <div className={`p-2 rounded-xl flex-shrink-0 ${activeTab === 'staff' ? 'bg-indigo-50 text-indigo-500' : 'bg-gray-100 text-gray-400'}`}>
+                                    <UsersIcon className="w-5 h-5" />
+                                </div>
+                                <div>
+                                    <div className="mb-0.5">Akun Operasional</div>
+                                    <div className={`text-[11px] font-semibold ${activeTab === 'staff' ? 'text-indigo-400' : 'text-gray-400'}`}>Login Operasional Terbatas</div>
+                                </div>
+                            </button>
                         </div>
-                        <div>
-                            <div className="mb-0.5">Akun Operasional</div>
-                            <div className={`text-[11px] font-semibold ${activeTab === 'staff' ? 'text-indigo-400' : 'text-gray-400'}`}>Login Operasional Terbatas</div>
-                        </div>
-                    </button>
-                </div>
+                    </div>
 
-                {/* Main Content Area */}
-                <div className="flex-1">
+                    {/* Main Content Area */}
+                    <div className="min-w-0 min-h-[calc(100vh-220px)] [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
                     {/* Flash Messages */}
                     {flash.success && (
                         <div className="mb-6 p-4 bg-emerald-50 border border-emerald-100 text-emerald-600 rounded-xl font-bold flex items-center space-x-2 animate-in fade-in slide-in-from-top-2">
@@ -288,10 +354,10 @@ export default function Settings({ auth, categories, units, warehouse, staffUser
 
                     {/* WAREHOUSE TAB */}
                     {activeTab === 'warehouse' && (
-                        <div className="bg-white rounded-[24px] p-8 shadow-[0_2px_16px_rgba(0,0,0,0.02)] border border-[#EDE8FC]">
+                        <div ref={warehouseSectionRef} className="bg-white rounded-[24px] p-8 shadow-[0_2px_16px_rgba(0,0,0,0.02)] border border-[#EDE8FC] min-h-[calc(100vh-240px)]">
                             <div className="flex items-center justify-between mb-2">
                                 <h2 className="text-[20px] font-black text-[#28106F]">Gudang Utama</h2>
-                                <span className="rounded-full bg-emerald-50 border border-emerald-200 px-3 py-1 text-[10px] font-black text-emerald-700 uppercase tracking-wider">Single Warehouse</span>
+                                <span className="rounded-full bg-emerald-50 border border-emerald-200 px-3 py-1 text-[10px] font-black text-emerald-700 uppercase tracking-wider">Gudang Tunggal</span>
                             </div>
                             <p className="text-[13px] font-semibold text-gray-400 mb-8">Sistem ini beroperasi dengan 1 gudang utama di Samarinda, Kalimantan Timur. Semua pengiriman berasal dari gudang ini.</p>
 
@@ -345,7 +411,7 @@ export default function Settings({ auth, categories, units, warehouse, staffUser
 
                     {/* CATEGORIES TAB */}
                     {activeTab === 'categories' && (
-                        <div className="bg-white rounded-[24px] p-8 shadow-[0_2px_16px_rgba(0,0,0,0.02)] border border-[#EDE8FC]">
+                        <div ref={categoriesSectionRef} className="bg-white rounded-[24px] p-8 shadow-[0_2px_16px_rgba(0,0,0,0.02)] border border-[#EDE8FC] min-h-[calc(100vh-240px)]">
                             <div className="flex justify-between items-center mb-8">
                                 <div>
                                     <h2 className="text-[20px] font-black text-[#28106F] mb-1">Manajemen Kategori Barang</h2>
@@ -372,7 +438,7 @@ export default function Settings({ auth, categories, units, warehouse, staffUser
                                         </tr>
                                     </thead>
                                     <tbody className="bg-white">
-                                        {categories.length > 0 ? categories.map((cat, i) => (
+                                        {filteredCategories.length > 0 ? filteredCategories.map((cat, i) => (
                                             <tr key={cat.id} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
                                                 <td className="px-6 py-4 text-center">
                                                     <span className="text-[11px] font-bold text-gray-400">#{cat.id}</span>
@@ -425,7 +491,7 @@ export default function Settings({ auth, categories, units, warehouse, staffUser
 
                     {/* UNITS TAB */}
                     {activeTab === 'units' && (
-                        <div className="bg-white rounded-[24px] p-8 shadow-[0_2px_16px_rgba(0,0,0,0.02)] border border-[#EDE8FC]">
+                        <div ref={unitsSectionRef} className="bg-white rounded-[24px] p-8 shadow-[0_2px_16px_rgba(0,0,0,0.02)] border border-[#EDE8FC] min-h-[calc(100vh-240px)]">
                             <div className="flex justify-between items-center mb-8">
                                 <div>
                                     <h2 className="text-[20px] font-black text-[#28106F] mb-1">Satuan Metrik (Units)</h2>
@@ -452,7 +518,7 @@ export default function Settings({ auth, categories, units, warehouse, staffUser
                                         </tr>
                                     </thead>
                                     <tbody className="bg-white">
-                                        {units.length > 0 ? units.map((u, i) => (
+                                        {filteredUnits.length > 0 ? filteredUnits.map((u, i) => (
                                             <tr key={u.id} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
                                                 <td className="px-6 py-4 text-center">
                                                     <span className="text-[11px] font-bold text-gray-400">#{u.id}</span>
@@ -506,11 +572,19 @@ export default function Settings({ auth, categories, units, warehouse, staffUser
                     )}
 
                     {activeTab === 'staff' && (
-                        <div className="bg-white rounded-[24px] p-8 shadow-[0_2px_16px_rgba(0,0,0,0.02)] border border-[#EDE8FC]">
-                            <div className="flex justify-between items-center mb-8">
+                        <div ref={staffSectionRef} className="bg-white rounded-[24px] p-8 shadow-[0_2px_16px_rgba(0,0,0,0.02)] border border-[#EDE8FC] min-h-[calc(100vh-240px)]">
+                            <div className="flex flex-wrap justify-between items-start gap-4 mb-6">
                                 <div>
                                     <h2 className="text-[20px] font-black text-[#28106F] mb-1">Manajemen Akun Operasional</h2>
                                     <p className="text-[13px] font-semibold text-gray-400">Manager Gudang dapat membuat akun Supervisor Gudang untuk approval harian dan Staff Operasional untuk input operasional.</p>
+                                    <div className="mt-3 flex items-center gap-2">
+                                        <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[11px] font-black text-emerald-700">
+                                            {filteredStaffUsers.filter((u) => u.status === 'active').length} Aktif
+                                        </span>
+                                        <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[11px] font-black text-slate-600">
+                                            {filteredStaffUsers.length} Total Akun
+                                        </span>
+                                    </div>
                                 </div>
                                 <button 
                                     onClick={() => setShowStaffModal(true)}
@@ -534,7 +608,7 @@ export default function Settings({ auth, categories, units, warehouse, staffUser
                                         </tr>
                                     </thead>
                                     <tbody className="bg-white">
-                                        {staffUsers.length > 0 ? staffUsers.map((user) => (
+                                        {filteredStaffUsers.length > 0 ? filteredStaffUsers.map((user) => (
                                             <tr key={user.id} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
                                                 <td className="px-6 py-4">
                                                     <div className="text-[14px] font-bold text-[#28106F]">{user.name}</div>
@@ -585,6 +659,7 @@ export default function Settings({ auth, categories, units, warehouse, staffUser
                             </div>
                         </div>
                     )}
+                    </div>
                 </div>
             </div>
 

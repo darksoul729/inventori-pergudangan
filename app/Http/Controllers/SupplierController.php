@@ -145,7 +145,7 @@ class SupplierController extends Controller
 
         $supplier = Supplier::create($validated);
 
-        return redirect()->back()->with('success', 'Supplier created successfully.');
+        return redirect()->back()->with('success', 'Pemasok berhasil ditambahkan.');
     }
 
     public function show(Supplier $supplier)
@@ -182,6 +182,6 @@ class SupplierController extends Controller
             $validated
         );
 
-        return redirect()->back()->with('success', 'Performance updated successfully.');
+        return redirect()->back()->with('success', 'Penilaian performa berhasil diperbarui.');
     }
 }

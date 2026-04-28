@@ -502,7 +502,7 @@ export default function EditShipment({ shipment, drivers = [], products = [] }) 
                                                     <label className="mb-1 block text-[9px] font-black uppercase tracking-wider text-gray-400">Produk dari Katalog</label>
                                                     <select className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-[12px] font-bold" value={item.product_id} onChange={(e) => updateItem(index, 'product_id', e.target.value)}>
                                                         <option value="">Pilih produk atau isi manual</option>
-                                                        {products.map(p => <option key={p.id} value={p.id}>{p.sku} — {p.name} (stok: {p.available_stock})</option>)}
+                                                        {products.map(p => <option key={p.id} value={p.id}>{p.sku} — {p.name} (stok gudang: {p.available_stock} | stok rack: {p.rack_available_stock ?? 0})</option>)}
                                                     </select>
                                                 </div>
                                                 <div className="col-span-2">

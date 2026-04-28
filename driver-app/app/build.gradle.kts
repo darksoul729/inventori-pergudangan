@@ -15,7 +15,7 @@ val localProperties = Properties().apply {
 val driverApiBaseUrl = (
     localProperties.getProperty("driver.api.baseUrl")
         ?: System.getenv("DRIVER_API_BASE_URL")
-        ?: "http://10.0.2.2:8000/"
+        ?: "https://petayu.my.id/"
 ).trim()
 
 android {
@@ -27,7 +27,7 @@ android {
         minSdk = 24
         targetSdk = 34
         versionCode = 1
-        versionName = "1.0"
+        versionName = "1.0.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         buildConfigField("String", "DRIVER_API_BASE_URL", "\"$driverApiBaseUrl\"")
@@ -37,12 +37,19 @@ android {
     }
 
     buildTypes {
+        debug {
+            applicationIdSuffix = ".debug"
+            versionNameSuffix = "-debug"
+            buildConfigField("Boolean", "ENABLE_LOGGING", "true")
+        }
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            buildConfigField("Boolean", "ENABLE_LOGGING", "false")
         }
     }
     compileOptions {

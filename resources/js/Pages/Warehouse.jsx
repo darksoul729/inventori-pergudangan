@@ -922,6 +922,7 @@ export default function Warehouse({
     const viewportRef = useRef(null);
     const gestureRef = useRef(null);
     const toolbarRef = useRef(null);
+    const importLayoutFileRef = useRef(null);
     const didLoadDraftRef = useRef(false);
     const skipNextSeedSyncRef = useRef(false);
     const invalidRackCursorRef = useRef(0);
@@ -1160,7 +1161,7 @@ export default function Warehouse({
                 return;
             }
 
-            if (event.key === 'Delete' || event.key === 'Backspace') {
+            if (event.key === 'Hapus' || event.key === 'Backspace') {
                 event.preventDefault();
                 handleDeleteLocal();
                 return;
@@ -1192,7 +1193,7 @@ export default function Warehouse({
 
             if (event.key.toLowerCase() === 'r') {
                 event.preventDefault();
-                handleRotateRack();
+                handleRotateSelected();
                 return;
             }
 
@@ -1357,12 +1358,12 @@ export default function Warehouse({
                 setCanvasFrame((current) => ({ ...current, ...(parsed.canvasFrame || {}) }));
                 if (parsed?.selectedTemplate) setSelectedTemplate(normalizeTemplateKey(parsed.selectedTemplate));
                 if (parsed?.savedAt) setLastAutoSavedAt(parsed.savedAt);
-                addToast('Draft layout berhasil dipulihkan.', 'success');
+                addToast('Draf layout berhasil dipulihkan.', 'success');
                 return;
             }
-            addToast('Draft lokal tidak valid.', 'warning');
+            addToast('Draf lokal tidak valid.', 'warning');
         } catch {
-            addToast('Draft lokal gagal dibaca.', 'error');
+            addToast('Draf lokal gagal dibaca.', 'error');
         }
     };
 
@@ -1373,7 +1374,7 @@ export default function Warehouse({
         try {
             window.localStorage.removeItem(LAYOUT_STORAGE_KEY);
             setLastAutoSavedAt(null);
-            addToast('Draft lokal dihapus.', 'info');
+            addToast('Draf lokal dihapus.', 'info');
         } catch {
             addToast('Gagal menghapus draft lokal.', 'error');
         }
@@ -1588,40 +1589,117 @@ export default function Warehouse({
         addToast('Layout berhasil diexport ke PNG.', 'success');
     };
 
-    const exportLayoutAsPdf = () => {
-        const canvas = renderLayoutToCanvas();
-        if (!canvas) {
-            addToast('Gagal menyiapkan export PDF.', 'error');
-            return;
-        }
-        const dataUrl = canvas.toDataURL('image/png');
-        const printWindow = window.open('', '_blank', 'width=1280,height=900');
-        if (!printWindow) {
-            addToast('Popup diblokir browser. Izinkan popup untuk export PDF.', 'warning');
-            return;
-        }
+    const exportLayoutAsPdf = async () => {
+        try {
+            const canvas = renderLayoutToCanvas();
+            const layoutImage = canvas ? canvas.toDataURL('image/jpeg', 0.92) : null;
 
-        printWindow.document.write(`
-            <html>
-                <head>
-                    <title>Warehouse Layout PDF</title>
-                    <style>
-                        body { margin: 0; padding: 20px; font-family: Arial, sans-serif; }
-                        img { width: 100%; height: auto; border: 1px solid #e2e8f0; }
-                        h1 { margin: 0 0 12px; font-size: 18px; }
-                    </style>
-                </head>
-                <body>
-                    <h1>${warehouse?.name || 'Warehouse'} Layout</h1>
-                    <img src="${dataUrl}" alt="Warehouse Layout" />
-                    <script>
-                        window.onload = function () { window.print(); };
-                    </script>
-                </body>
-            </html>
-        `);
-        printWindow.document.close();
-        addToast('Preview PDF dibuka. Pilih Save as PDF pada dialog print.', 'info');
+            const res = await fetch('/warehouse/layout/export-pdf', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ?? '',
+                },
+                body: JSON.stringify({
+                    warehouse_name: warehouse?.name || 'Warehouse',
+                    occupancy: Number(totalOccupancy) || 0,
+                    zones_count: zones.length,
+                    racks_count: racks.length,
+                    layout_image: layoutImage,
+                    canvas: canvasFrame,
+                    items: layoutItems.map((item) => ({
+                        kind: item.kind,
+                        type: item.type,
+                        name: item.name,
+                        code: item.code,
+                        x: item.x,
+                        y: item.y,
+                        w: item.w,
+                        h: item.h,
+                        rotation: item.rotation ?? 0,
+                    })),
+                }),
+            });
+
+            if (!res.ok) {
+                throw new Error('Failed to export');
+            }
+
+            const blob = await res.blob();
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `warehouse-layout-${new Date().toISOString().slice(0, 10)}.pdf`;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.URL.revokeObjectURL(url);
+            addToast('Layout berhasil diexport ke PDF.', 'success');
+        } catch {
+            addToast('Gagal export PDF.', 'error');
+        }
+    };
+
+    const saveLayoutAsFile = () => {
+        try {
+            const payload = {
+                format: 'warehouse-layout-v1',
+                exported_at: new Date().toISOString(),
+                warehouse_name: warehouse?.name || null,
+                selected_template: selectedTemplate,
+                canvas: canvasFrame,
+                items: layoutItems,
+            };
+
+            const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `warehouse-layout-${new Date().toISOString().slice(0, 10)}.json`;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.URL.revokeObjectURL(url);
+            addToast('Layout berhasil disimpan sebagai file.', 'success');
+        } catch {
+            addToast('Gagal save as file.', 'error');
+        }
+    };
+
+    const loadLayoutFromFile = async (event) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        try {
+            const raw = await file.text();
+            const parsed = JSON.parse(raw);
+            const importedItems = Array.isArray(parsed?.items) ? parsed.items : [];
+
+            if (!importedItems.length) {
+                addToast('File layout tidak valid (items kosong).', 'warning');
+                return;
+            }
+
+            const normalized = normalizeRackPlacements(importedItems);
+            setLayoutItems(normalized.items);
+            if (parsed?.canvas && typeof parsed.canvas === 'object') {
+                setCanvasFrame({
+                    x: Number(parsed.canvas.x) || 0,
+                    y: Number(parsed.canvas.y) || 0,
+                    w: Number(parsed.canvas.w) || CANVAS_WIDTH,
+                    h: Number(parsed.canvas.h) || CANVAS_HEIGHT,
+                });
+            }
+            if (parsed?.selected_template) {
+                setSelectedTemplate(normalizeTemplateKey(parsed.selected_template));
+            }
+            setSelectedItemId(normalized.items[0]?.id ?? null);
+            addToast('Layout berhasil di-load dari file.', 'success');
+        } catch {
+            addToast('Gagal membaca file layout.', 'error');
+        } finally {
+            event.target.value = '';
+        }
     };
 
     const focusNextInvalidRack = () => {
@@ -2251,24 +2329,38 @@ export default function Warehouse({
         }
     };
 
-    const handleRotateRack = () => {
-        if (!selectedItem || selectedItem.kind !== 'rack') {
-            addToast('Pilih rack dulu untuk rotate.');
+    const handleRotateSelected = () => {
+        if (!selectedItem || !['rack', 'structure'].includes(selectedItem.kind)) {
+            addToast('Pilih rack atau wall dulu untuk rotate.');
+            return;
+        }
+
+        const isWall = selectedItem.kind === 'structure' && normalizeTypeKey(selectedItem.type) === 'wall';
+        if (selectedItem.kind === 'structure' && !isWall) {
+            addToast('Hanya wall yang bisa diputar.');
             return;
         }
 
         setLayoutItems((current) => current.map((item) => item.id === selectedItem.id ? {
             ...item,
             rotation: item.rotation === 90 ? 0 : 90,
-            w: item.rotation === 90 ? Math.max(120, item.h) : Math.max(16, item.h),
-            h: item.rotation === 90 ? Math.max(16, item.w) : Math.max(120, item.w),
+            w: item.rotation === 90
+                ? Math.max(isWall ? 120 : 80, item.h)
+                : Math.max(isWall ? 12 : 44, item.h),
+            h: item.rotation === 90
+                ? Math.max(isWall ? 12 : 44, item.w)
+                : Math.max(isWall ? 120 : 80, item.w),
         } : item));
 
         setDraft((current) => ({
             ...current,
             rotation: current.rotation === 90 ? 0 : 90,
-            w: current.rotation === 90 ? Math.max(120, Number(current.h) || 0) : Math.max(16, Number(current.h) || 0),
-            h: current.rotation === 90 ? Math.max(16, Number(current.w) || 0) : Math.max(120, Number(current.w) || 0),
+            w: current.rotation === 90
+                ? Math.max(isWall ? 120 : 80, Number(current.h) || 0)
+                : Math.max(isWall ? 12 : 44, Number(current.h) || 0),
+            h: current.rotation === 90
+                ? Math.max(isWall ? 12 : 44, Number(current.w) || 0)
+                : Math.max(isWall ? 120 : 80, Number(current.w) || 0),
         }));
         addToast(`${selectedItem.name} diputar ${selectedItem.rotation === 90 ? 'horizontal' : 'vertical'}.`);
     };
@@ -2308,7 +2400,7 @@ export default function Warehouse({
     };
 
     const deleteRackStock = (stock) => {
-        if (!window.confirm(`Delete ${stock.sku} from this rack?`)) return;
+        if (!window.confirm(`Hapus ${stock.sku} from this rack?`)) return;
         router.delete(`/warehouse/rack-stocks/${stock.id}?zone=${selectedZone?.id}&rack=${selectedRack?.id}`, {
             preserveScroll: true,
             preserveState: true,
@@ -2396,6 +2488,33 @@ export default function Warehouse({
 
     const resetView = () => {
         fitCanvasToViewport();
+    };
+
+    const openRackDetailWithoutJump = (zoneId, rackId) => {
+        router.get(
+            route('warehouse', { zone: zoneId, rack: rackId }),
+            {},
+            {
+                preserveScroll: true,
+                preserveState: true,
+                replace: true,
+                only: [
+                    'warehouse',
+                    'zoneSummaries',
+                    'rackSummaries',
+                    'selectedZone',
+                    'selectedRack',
+                    'savedLayout',
+                    'zoneOptions',
+                    'pendingManualAdjustments',
+                    'activityLog',
+                    'wmsDocuments',
+                    'products',
+                    'isManager',
+                    'isSupervisor',
+                ],
+            }
+        );
     };
 
     const zoomIn = () => setScale((current) => clamp(Number((current + 0.1).toFixed(2)), MIN_SCALE, MAX_SCALE));
@@ -2665,14 +2784,14 @@ export default function Warehouse({
 
                                                                     {/* Rack Actions */}
                                                                     <div className="mt-3 flex items-center gap-2 border-t border-slate-100 pt-3">
-                                                                        <Link
-                                                                            href={route('warehouse', { zone: dashSelectedZone.id, rack: rack.id })}
-                                                                            preserveScroll
+                                                                        <button
+                                                                            type="button"
+                                                                            onClick={() => openRackDetailWithoutJump(dashSelectedZone.id, rack.id)}
                                                                             className="inline-flex items-center gap-1 rounded-md bg-indigo-50 px-2.5 py-1.5 text-[11px] font-semibold text-indigo-700 hover:bg-indigo-100"
                                                                         >
                                                                             <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
                                                                             Detail
-                                                                        </Link>
+                                                                        </button>
                                                                         {isManager ? (
                                                                             <button
                                                                                 type="button"
@@ -2875,18 +2994,11 @@ export default function Warehouse({
                                     <span className={`shrink-0 rounded-full px-2 py-0.5 text-[9px] font-black uppercase tracking-[0.14em] ${occupancyTone(totalOccupancy)} bg-slate-50`}>{formatPercent(totalOccupancy)} Terisi</span>
                                 </div>
 
-                                {/* Toolbar with arrow navigation */}
-                                <div className="relative flex items-center">
-                                    <button
-                                        type="button"
-                                        onClick={() => toolbarRef.current?.scrollBy({ left: -200, behavior: 'smooth' })}
-                                        className="absolute left-0 z-10 flex h-8 w-6 items-center justify-center rounded-r-md border border-l-0 border-[#dbe4f0] bg-white/90 text-slate-400 shadow-sm backdrop-blur-sm transition hover:bg-slate-50 hover:text-slate-600"
-                                    >
-                                        <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" /></svg>
-                                    </button>
+                                {/* Toolbar */}
+                                <div className="px-3 pb-2 pt-1">
                                     <div
                                         ref={toolbarRef}
-                                        className="flex flex-1 items-center gap-1.5 overflow-x-auto px-8 pb-2 pt-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+                                        className="flex flex-wrap items-center gap-1.5 rounded-[12px] border border-[#e6ebf3] bg-[#f8fafd] p-2"
                                     >
                                     <ToolbarButton active={mode === 'select'} onClick={() => { setMode('select'); setPendingAddType(null); }} icon={<SelectIcon />}>
                                         Select
@@ -2903,26 +3015,26 @@ export default function Warehouse({
                                     </Link>
                                     <span className="h-5 w-px shrink-0 bg-[#e2e8f0]" />
                                     <ToolbarButton tone="primary" onClick={handleSaveLayout} icon={<SaveIcon />}>
-                                        {isSaving ? 'Saving...' : 'Save'}
+                                        {isSaving ? 'Menyimpan...' : 'Simpan'}
                                     </ToolbarButton>
                                     <ToolbarButton tone="subtle" onClick={undo} disabled={!canUndo} icon={<UndoIcon />}>
-                                        Undo
+                                        Batalkan
                                     </ToolbarButton>
                                     <ToolbarButton tone="subtle" onClick={redo} disabled={!canRedo} icon={<RedoIcon />}>
-                                        Redo
+                                        Ulangi
                                     </ToolbarButton>
                                     <span className="h-5 w-px shrink-0 bg-[#e2e8f0]" />
                                     <ToolbarButton tone="subtle" onClick={() => setShowHeatmap((c) => !c)} active={showHeatmap} icon={<ActivityIcon />}>
                                         Heatmap
                                     </ToolbarButton>
                                     <ToolbarButton tone="subtle" onClick={handleDeleteLocal} icon={<TrashIcon />}>
-                                        Delete
+                                        Hapus
                                     </ToolbarButton>
-                                    <ToolbarButton tone="subtle" onClick={handleRotateRack} icon={<RotateIcon />}>
-                                        Rotate
+                                    <ToolbarButton tone="subtle" onClick={handleRotateSelected} icon={<RotateIcon />}>
+                                        Putar
                                     </ToolbarButton>
                                     <ToolbarButton tone="subtle" onClick={resetView} icon={<ResetIcon />}>
-                                        Reset
+                                        Setel Ulang
                                     </ToolbarButton>
                                     <ToolbarButton tone="subtle" onClick={() => setIsInspectorOpen((current) => !current)} icon={<PanelIcon />}>
                                         Panel
@@ -2930,20 +3042,17 @@ export default function Warehouse({
                                     <span className="h-5 w-px shrink-0 bg-[#e2e8f0]" />
                                     <div className="inline-flex shrink-0 items-center gap-1.5 rounded-[14px] border border-[#dbe4f0] bg-white px-2" style={{ minHeight: 40 }}>
                                         <span className="whitespace-nowrap text-[9px] font-black uppercase tracking-[0.12em] text-slate-400">Preset</span>
-                                        <div className="group relative h-8 min-w-[200px] rounded-[12px] border border-[#D4C8F5] bg-[#F8F7FF] hover:border-[#28106F] hover:shadow-[0_4px_12px_rgba(89,50,201,0.08)] transition-all cursor-pointer outline-none">
-                                            <div className="pointer-events-none flex h-full items-center justify-between gap-2 px-3">
-                                                <span className="truncate text-[11px] font-black text-[#28106F] transition-colors group-hover:text-[#28106F]">{selectedTemplateLabel}</span>
-                                                <svg className="h-3.5 w-3.5 shrink-0 text-slate-400 transition-all duration-300 group-hover:text-[#28106F]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
-                                                </svg>
-                                            </div>
+                                        <div className="relative h-8 min-w-[220px] rounded-[12px] border border-[#D4C8F5] bg-[#F8F7FF] hover:border-[#28106F]">
                                             <BaseSelect
                                                 aria-label="Preset layout"
                                                 value={selectedTemplate}
                                                 onChange={(event) => setSelectedTemplate(event.target.value)}
                                                 options={TEMPLATE_OPTIONS}
-                                                className="absolute inset-0 h-full min-w-full cursor-pointer border-none bg-transparent p-0 text-transparent opacity-0 shadow-none outline-none focus:ring-2 focus:ring-[#c7d2fe]"
+                                                className="h-full min-w-full cursor-pointer appearance-none rounded-[12px] border-none bg-transparent !py-0 px-3 pr-8 text-[11px] leading-8 font-black text-[#28106F] shadow-none outline-none focus:ring-2 focus:ring-[#c7d2fe]"
                                             />
+                                            <svg className="pointer-events-none absolute right-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
+                                            </svg>
                                         </div>
                                         <button
                                             type="button"
@@ -2956,7 +3065,16 @@ export default function Warehouse({
                                     <span className="h-5 w-px shrink-0 bg-[#e2e8f0]" />
                                     <ToolbarButton tone="subtle" onClick={exportLayoutAsPng}>PNG</ToolbarButton>
                                     <ToolbarButton tone="subtle" onClick={exportLayoutAsPdf}>PDF</ToolbarButton>
-                                    <ToolbarButton tone="subtle" onClick={restoreDraftFromLocal}>Draft</ToolbarButton>
+                                    <ToolbarButton tone="subtle" onClick={saveLayoutAsFile}>Simpan Sebagai</ToolbarButton>
+                                    <ToolbarButton tone="subtle" onClick={() => importLayoutFileRef.current?.click()}>Load File</ToolbarButton>
+                                    <ToolbarButton tone="subtle" onClick={restoreDraftFromLocal}>Draf</ToolbarButton>
+                                    <input
+                                        ref={importLayoutFileRef}
+                                        type="file"
+                                        accept="application/json,.json"
+                                        className="hidden"
+                                        onChange={loadLayoutFromFile}
+                                    />
                                     <span className="h-5 w-px shrink-0 bg-[#e2e8f0]" />
                                     <div className="flex shrink-0 items-center gap-1 rounded-[14px] border border-[#dbe4f0] bg-[#F8F7FF] px-1.5" style={{ minHeight: 40 }}>
                                         <button type="button" onClick={zoomOut} className="rounded-lg p-1.5 text-slate-500 transition hover:bg-white hover:shadow-sm">
@@ -2974,17 +3092,10 @@ export default function Warehouse({
                                         {formatPercent(totalOccupancy)} isi
                                     </div>
                                     </div>
-                                    <button
-                                        type="button"
-                                        onClick={() => toolbarRef.current?.scrollBy({ left: 200, behavior: 'smooth' })}
-                                        className="absolute right-0 z-10 flex h-8 w-6 items-center justify-center rounded-l-md border border-r-0 border-[#dbe4f0] bg-white/90 text-slate-400 shadow-sm backdrop-blur-sm transition hover:bg-slate-50 hover:text-slate-600"
-                                    >
-                                        <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" /></svg>
-                                    </button>
                                 </div>
                                 {invalidRackCount > 0 ? (
                                     <div className="mt-2 flex flex-wrap items-center gap-2 rounded-[12px] border border-amber-200 bg-amber-50 px-3 py-2 text-[11px] font-bold text-amber-800">
-                                        <span>Ada {invalidRackCount} rack berada di luar zona valid. Perbaiki posisi sebelum `Save Layout`.</span>
+                                        <span>Ada {invalidRackCount} rack berada di luar zona valid. Perbaiki posisi sebelum `Simpan Layout`.</span>
                                         <button
                                             type="button"
                                             onClick={focusNextInvalidRack}
@@ -3103,7 +3214,7 @@ export default function Warehouse({
                                                 <div className="pointer-events-none absolute bottom-5 left-1/2 z-20 w-fit max-w-[360px] -translate-x-1/2 rounded-full border border-[#dbe4f0] bg-white/88 px-4 py-2 text-[10px] font-semibold leading-5 text-slate-600 shadow-[0_10px_24px_rgba(148,163,184,0.12)] backdrop-blur">
                                                     {pendingAddType
                                                         ? `${ADD_ACTIONS.find((item) => item.id === pendingAddType)?.label} aktif. Klik lalu tempatkan di canvas.`
-                                                        : 'Space pan · +/- zoom · Ctrl+Z undo · Ctrl+Shift+Z redo · Ctrl+S save · Delete hapus · M heatmap'}
+                                                        : 'Space pan · +/- zoom · Ctrl+Z undo · Ctrl+Shift+Z redo · Ctrl+S save · Hapus hapus · M heatmap'}
                                                 </div>
                                                 <div
                                                     className="absolute rounded-[26px] border border-[#dfe6f4] bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.99),_rgba(250,252,255,0.94))] shadow-[0_22px_52px_rgba(148,163,184,0.10)]"
@@ -3458,13 +3569,13 @@ export default function Warehouse({
                                                                 {isSelectedZoneLocked ? '🔓 Unlock Zone' : '🔒 Lock Zone'}
                                                             </button>
                                                         ) : null}
-                                                        {selectedItem.kind === 'rack' ? (
+                                                        {(selectedItem.kind === 'rack' || (selectedItem.kind === 'structure' && normalizeTypeKey(selectedItem.type) === 'wall')) ? (
                                                             <button
                                                                 type="button"
-                                                                onClick={handleRotateRack}
+                                                                onClick={handleRotateSelected}
                                                                 className="flex w-full items-center justify-center gap-1.5 rounded-lg border border-[#dbe4f0] bg-[#F8F7FF] px-3 py-2 text-[10px] font-black uppercase tracking-[0.12em] text-slate-600 transition hover:bg-slate-100"
                                                             >
-                                                                <RotateIcon /> Rotate Rack
+                                                                <RotateIcon /> Putar {selectedItem.kind === 'rack' ? 'Rack' : 'Wall'}
                                                             </button>
                                                         ) : null}
                                                     </div>
@@ -3639,7 +3750,7 @@ export default function Warehouse({
 
             <Modal
                 open={isManager && showRackEditModal}
-                title="Edit Rack"
+                title="Edit Rak"
                 subtitle="Perbarui detail rack agar sinkron dengan operasional gudang."
                 onClose={() => {
                     setShowRackEditModal(false);

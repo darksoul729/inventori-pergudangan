@@ -63,7 +63,7 @@ class DriverApiController extends Controller
         ]);
 
         return response()->json([
-            'message' => 'Driver registered successfully. Please wait for admin approval.',
+            'message' => 'Driver berhasil terdaftar. Mohon tunggu persetujuan admin.',
             'driver' => $driver
         ], 201);
     }
@@ -234,7 +234,7 @@ class DriverApiController extends Controller
         $shipment->save();
 
         return response()->json([
-            'message' => 'Shipment status updated',
+            'message' => 'Status pengiriman diperbarui',
             'shipment' => $this->transformShipment($shipment->fresh()),
         ]);
     }

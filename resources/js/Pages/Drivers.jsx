@@ -1,5 +1,5 @@
 import DashboardLayout from '@/Layouts/DashboardLayout';
-import { Head, Link, router, useForm } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import React, { useEffect, useState } from 'react';
 import LiveMap from '@/Components/LiveMap';
 
@@ -30,6 +30,9 @@ const PlusIcon = ({ className }) => (
 );
 
 export default function Drivers({ drivers = [] }) {
+    const { props } = usePage();
+    const errors = props.errors || {};
+    const flash = props.flash || {};
     const [activeTab, setActiveTab] = useState('list'); // 'list' or 'tracking'
     const [trackingDrivers, setTrackingDrivers] = useState([]);
     const [focusedDriverId, setFocusedDriverId] = useState(null);
@@ -58,8 +61,6 @@ export default function Drivers({ drivers = [] }) {
         const lng = Number(lngRaw);
         return Number.isFinite(lat) && Number.isFinite(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180;
     };
-
-    const { put } = useForm();
 
     useEffect(() => {
         const params = new URLSearchParams(window.location.search);
@@ -91,8 +92,11 @@ export default function Drivers({ drivers = [] }) {
 
     const handleUpdateStatus = (id, status) => {
         if (confirm(`Apakah Anda yakin ingin mengubah status driver ini menjadi ${status}?`)) {
-            put(route('drivers.status.update', id), {
-                data: { status },
+            router.put(route('drivers.status.update', id), { status }, {
+                preserveScroll: true,
+                preserveState: true,
+                only: ['drivers', 'notifications', 'errors', 'flash'],
+                onError: () => {},
             });
         }
     };
@@ -124,6 +128,11 @@ export default function Drivers({ drivers = [] }) {
             contentClassName="w-full max-w-none"
         >
             <Head title="Manajemen Driver" />
+            {(errors.status || flash.error) && (
+                <div className="mb-4 rounded-[8px] border border-red-200 bg-red-50 px-4 py-3 text-[12px] font-bold text-red-700">
+                    {errors.status || flash.error}
+                </div>
+            )}
 
             <div className="mb-6 flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
                 <div>
@@ -151,11 +160,11 @@ export default function Drivers({ drivers = [] }) {
                             onClick={() => setActiveTab('tracking')}
                             className={`h-9 px-5 rounded-[6px] text-[12px] font-black transition-all ${activeTab === 'tracking' ? 'bg-[#eef2ff] text-[#28106F]' : 'text-gray-400 hover:text-gray-600'}`}
                         >
-                            LIVE TRACKING
+                            PELACAKAN LANGSUNG
                         </button>
                     </div>
                     <div className="rounded-[8px] border border-gray-200 bg-white px-5 py-2 text-right shadow-sm">
-                        <div className="text-[11px] font-black text-gray-400 uppercase tracking-wider">Total Driver</div>
+                        <div className="text-[11px] font-black text-gray-400 uppercase tracking-wider">Total Pengemudi Aktif</div>
                         <div className="text-[20px] font-black text-[#28106F]">{drivers.length}</div>
                     </div>
                 </div>
@@ -218,11 +227,12 @@ export default function Drivers({ drivers = [] }) {
                                                 {driver.status !== 'suspended' && (
                                                     <button
                                                         onClick={() => handleUpdateStatus(driver.id, 'suspended')}
+                                                        disabled={driver.has_active_shipment}
                                                         className="inline-flex h-9 items-center gap-2 rounded-[8px] border border-red-100 bg-red-50 px-3 text-[11px] font-black text-red-600 transition-colors hover:bg-red-100"
-                                                        title="Tangguhkan Driver"
+                                                        title={driver.has_active_shipment ? 'Driver masih punya shipment aktif' : 'Tangguhkan Driver'}
                                                     >
                                                         <UserXIcon className="w-4 h-4" />
-                                                        Tahan
+                                                        {driver.has_active_shipment ? 'Masih Aktif' : 'Tahan'}
                                                     </button>
                                                 )}
                                             </div>

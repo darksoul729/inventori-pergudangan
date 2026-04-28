@@ -371,7 +371,7 @@ class StockOpnameController extends Controller
 
         if ($remaining > 0) {
             throw ValidationException::withMessages([
-                'items' => 'Unable to reduce stock because part of the stock is reserved or missing from racks.',
+                'items' => 'Tidak dapat mengurangi stok karena sebagian stok ter-reservasi atau tidak ditemukan di rak.',
             ]);
         }
     }

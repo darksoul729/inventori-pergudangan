@@ -161,7 +161,7 @@ export default function LiveMap({ onDriversLoad = () => {}, focusedDriverId = nu
                                     <div className="space-y-2">
                                         <div className="flex items-center space-x-2 px-1 inline-block">
                                             <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></div>
-                                            <span className="text-[9px] font-black text-gray-500 uppercase">Live Tracking</span>
+                                            <span className="text-[9px] font-black text-gray-500 uppercase">Pelacakan Langsung</span>
                                         </div>
 
                                         {Boolean(driver.last_location_mock) && (
@@ -189,7 +189,7 @@ export default function LiveMap({ onDriversLoad = () => {}, focusedDriverId = nu
             <div className="absolute bottom-6 left-6 z-[1000] bg-white px-4 py-2 rounded-[8px] shadow-lg border border-gray-100 flex items-center space-x-2">
                 <div className={`w-2 h-2 rounded-full ${hasFetchError ? 'bg-rose-500' : 'bg-emerald-500 animate-pulse'}`}></div>
                 <span className={`text-[11px] font-black uppercase tracking-widest ${hasFetchError ? 'text-rose-600' : 'text-gray-600'}`}>
-                    {hasFetchError ? 'Sinkronisasi GPS Bermasalah' : 'Live Monitoring Aktif'}
+                    {hasFetchError ? 'Sinkronisasi GPS Bermasalah' : 'Pemantauan Langsung Aktif'}
                 </span>
             </div>
         </div>

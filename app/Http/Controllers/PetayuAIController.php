@@ -1547,7 +1547,7 @@ class PetayuAIController extends Controller
  - Menunggu: {$shipStats->pending}
  
  ### 👨‍✈️ Armada Driver
- - Total Driver: {$drivers->total}
+ - Total Pengemudi: {$drivers->total}
  - Tersedia: {$drivers->available}
  - Sedang Bertugas: {$drivers->busy}
  

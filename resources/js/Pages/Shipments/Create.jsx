@@ -481,6 +481,9 @@ export default function CreateShipment({ drivers = [], products = [] }) {
                             ) : (
                                 <div className="space-y-3">
                                     {data.items.map((item, index) => (
+                                        (() => {
+                                            const selectedProduct = products.find((p) => String(p.id) === String(item.product_id));
+                                            return (
                                         <div key={index} className="p-4 rounded-2xl bg-gray-50 border border-gray-100 space-y-3">
                                             <div className="flex items-center justify-between">
                                                 <span className="text-[11px] font-black text-gray-500">Item #{index + 1}</span>
@@ -491,8 +494,13 @@ export default function CreateShipment({ drivers = [], products = [] }) {
                                                     <label className="mb-1 block text-[9px] font-black uppercase tracking-wider text-gray-400">Produk dari Katalog</label>
                                                     <select className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-[12px] font-bold" value={item.product_id} onChange={(e) => updateItem(index, 'product_id', e.target.value)}>
                                                         <option value="">Pilih produk atau isi manual</option>
-                                                        {products.map(p => <option key={p.id} value={p.id}>{p.sku} — {p.name} (stok: {p.available_stock})</option>)}
+                                                        {products.map(p => <option key={p.id} value={p.id}>{p.sku} — {p.name} (stok gudang: {p.available_stock} | stok rack: {p.rack_available_stock ?? 0})</option>)}
                                                     </select>
+                                                    {selectedProduct?.rack_sources?.length > 0 && (
+                                                        <div className="mt-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-[11px] font-semibold text-slate-600">
+                                                            Sumber rack/zone: {selectedProduct.rack_sources.slice(0, 3).map((src) => `${src.zone_code ?? '-'}-${src.rack_code ?? '-'} (${src.available})`).join(', ')}
+                                                        </div>
+                                                    )}
                                                 </div>
                                                 <div className="col-span-2">
                                                     <label className="mb-1 block text-[9px] font-black uppercase tracking-wider text-gray-400">Nama Produk *</label>
@@ -516,6 +524,8 @@ export default function CreateShipment({ drivers = [], products = [] }) {
                                                 </div>
                                             </div>
                                         </div>
+                                            );
+                                        })()
                                     ))}
                                 </div>
                             )}

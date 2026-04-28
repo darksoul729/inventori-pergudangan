@@ -13,14 +13,11 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import android.Manifest
-import android.content.pm.PackageManager
 import android.os.Build
 import androidx.core.app.ActivityCompat
 import com.aether.driver.data.SessionManager
 import com.aether.driver.ui.screens.LoginScreen
 import com.aether.driver.ui.screens.PetayuSplashScreen
-import com.aether.driver.ui.screens.RegisterScreen
-import com.aether.driver.ui.screens.ServerSettingsScreen
 import com.aether.driver.ui.screens.ShipmentListScreen
 import com.aether.driver.ui.screens.ShipmentHistoryScreen
 import com.aether.driver.ui.theme.AetherDriverAppTheme
@@ -51,7 +48,11 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
                     val token = sessionManager.authToken.collectAsState(initial = null).value
-                    AppNavigation(sessionManager, startDestination = "splash", isLoggedIn = token != null)
+                    AppNavigation(
+                        sessionManager = sessionManager,
+                        startDestination = "splash",
+                        isLoggedIn = token != null,
+                    )
                 }
             }
         }
@@ -59,9 +60,14 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun AppNavigation(sessionManager: SessionManager, startDestination: String, isLoggedIn: Boolean) {
+fun AppNavigation(
+    sessionManager: SessionManager,
+    startDestination: String,
+    isLoggedIn: Boolean,
+) {
     val navController = rememberNavController()
     NavHost(navController = navController, startDestination = startDestination) {
+
         composable("splash") {
             PetayuSplashScreen(
                 onSplashFinished = {
@@ -72,6 +78,8 @@ fun AppNavigation(sessionManager: SessionManager, startDestination: String, isLo
                 }
             )
         }
+
+        // Login — no register link (akun dibuat admin langsung)
         composable("login") {
             LoginScreen(
                 sessionManager = sessionManager,
@@ -79,25 +87,11 @@ fun AppNavigation(sessionManager: SessionManager, startDestination: String, isLo
                     navController.navigate("shipments") {
                         popUpTo("login") { inclusive = true }
                     }
-                },
-                onOpenRegister = {
-                    navController.navigate("register")
-                },
-                onOpenServerSettings = {
-                    navController.navigate("settings")
                 }
             )
         }
-        composable("register") {
-            RegisterScreen(sessionManager) {
-                navController.popBackStack()
-            }
-        }
-        composable("settings") {
-            ServerSettingsScreen(sessionManager) {
-                navController.popBackStack()
-            }
-        }
+
+        // Server Settings — masih bisa diakses via gear icon di ShipmentListScreen
         composable("shipments") {
             ShipmentListScreen(
                 sessionManager = sessionManager,
@@ -106,14 +100,12 @@ fun AppNavigation(sessionManager: SessionManager, startDestination: String, isLo
                         popUpTo("shipments") { inclusive = true }
                     }
                 },
-                onOpenSettings = {
-                    navController.navigate("settings")
-                },
                 onOpenHistory = {
                     navController.navigate("history")
                 }
             )
         }
+
         composable("history") {
             ShipmentHistoryScreen(
                 sessionManager = sessionManager,

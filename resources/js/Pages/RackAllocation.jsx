@@ -1,6 +1,6 @@
 import DashboardLayout from '@/Layouts/DashboardLayout';
 import { Head, Link, usePage, useForm, router } from '@inertiajs/react';
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 
 const ArrowRightIcon = ({ className }) => (
     <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -36,6 +36,11 @@ export default function RackAllocation({ warehouse, racks = [], unplacedProducts
     const { auth } = usePage().props;
     const currentUserId = Number(auth?.user?.id);
     const [activeTab, setActiveTab] = useState('transfer');
+    const [searchTerm, setSearchTerm] = useState('');
+    const normalizedQuery = searchTerm.trim().toLowerCase();
+    const unplacedSectionRef = useRef(null);
+    const racksSectionRef = useRef(null);
+    const transfersSectionRef = useRef(null);
 
     const transferForm = useForm({
         from_rack_id: '',
@@ -80,6 +85,36 @@ export default function RackAllocation({ warehouse, racks = [], unplacedProducts
         [racks, putawayForm.data.to_rack_id],
     );
 
+    const filteredRacks = useMemo(() => {
+        if (!normalizedQuery) return racks;
+        return racks.filter((rack) => `${rack.code} ${rack.name} ${rack.zone}`.toLowerCase().includes(normalizedQuery));
+    }, [normalizedQuery, racks]);
+
+    const filteredUnplacedProducts = useMemo(() => {
+        if (!normalizedQuery) return unplacedProducts;
+        return unplacedProducts.filter((product) => `${product.sku} ${product.name} ${product.category}`.toLowerCase().includes(normalizedQuery));
+    }, [normalizedQuery, unplacedProducts]);
+
+    const filteredRecentTransfers = useMemo(() => {
+        if (!normalizedQuery) return recentTransfers;
+        return recentTransfers.filter((transfer) => `${transfer.number} ${transfer.status} ${transfer.operator} ${transfer.notes}`.toLowerCase().includes(normalizedQuery));
+    }, [normalizedQuery, recentTransfers]);
+
+    useEffect(() => {
+        if (!normalizedQuery) return;
+        if (filteredUnplacedProducts.length > 0) {
+            unplacedSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            return;
+        }
+        if (filteredRacks.length > 0) {
+            racksSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            return;
+        }
+        if (filteredRecentTransfers.length > 0) {
+            transfersSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    }, [filteredRacks.length, filteredRecentTransfers.length, filteredUnplacedProducts.length, normalizedQuery]);
+
     const availableQuantity = selectedStock?.available_quantity ?? 0;
     const destinationCapacity = toRack?.available_capacity ?? 0;
 
@@ -100,21 +135,21 @@ export default function RackAllocation({ warehouse, racks = [], unplacedProducts
     };
 
     return (
-        <DashboardLayout hideSearch={true}>
-            <Head title="Rack Allocation" />
+        <DashboardLayout searchValue={searchTerm} onSearch={setSearchTerm}>
+            <Head title="Transfer Antar Rak" />
 
-            <div className="pb-12">
+            <div className="pb-4 min-h-[calc(100vh-76px)] flex flex-col">
                 <div className="flex flex-col gap-2 mb-7">
                     <div className="flex items-center gap-2 text-sm">
                         <Link href="/warehouse" className="text-gray-400 hover:text-indigo-600 font-bold transition-colors">Gudang</Link>
                         <span className="text-gray-300">/</span>
-                        <span className="text-gray-600 font-bold">Rack Allocation</span>
+                        <span className="text-gray-600 font-bold">Transfer Antar Rak</span>
                     </div>
                     <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
                         <div>
-                            <h1 className="text-[28px] font-black text-[#28106F] tracking-tight">Rack Allocation</h1>
+                            <h1 className="text-[28px] font-black text-[#28106F] tracking-tight">Transfer Antar Rak</h1>
                             <p className="text-[13px] font-semibold text-gray-500 mt-1">
-                                {warehouse?.name || 'Warehouse utama'}{warehouse?.location ? `, ${warehouse.location}` : ''} — tempatkan produk ke rack atau pindahkan antar rack.
+                                {warehouse?.name || 'Gudang utama'}{warehouse?.location ? `, ${warehouse.location}` : ''} — tempatkan produk ke rak atau pindahkan antar rak.
                             </p>
                         </div>
                         {status && (
@@ -133,7 +168,7 @@ export default function RackAllocation({ warehouse, racks = [], unplacedProducts
                         className={`inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-[12px] font-black uppercase tracking-[0.12em] transition ${activeTab === 'transfer' ? 'bg-[#5932C9] text-white shadow-[0_4px_14px_rgba(89,50,201,0.3)]' : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'}`}
                     >
                         <TransferIcon className="w-4 h-4" />
-                        Transfer Rack
+                        Transfer Rak
                     </button>
                     <button
                         type="button"
@@ -141,29 +176,29 @@ export default function RackAllocation({ warehouse, racks = [], unplacedProducts
                         className={`inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-[12px] font-black uppercase tracking-[0.12em] transition ${activeTab === 'putaway' ? 'bg-[#0f766e] text-white shadow-[0_4px_14px_rgba(15,118,110,0.3)]' : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'}`}
                     >
                         <PutawayIcon className="w-4 h-4" />
-                        Put-away
-                        {unplacedProducts.length > 0 && (
+                        Putaway
+                        {filteredUnplacedProducts.length > 0 && (
                             <span className={`rounded-full px-2 py-0.5 text-[9px] font-black ${activeTab === 'putaway' ? 'bg-white/20 text-white' : 'bg-amber-100 text-amber-700'}`}>
-                                {unplacedProducts.length}
+                                {filteredUnplacedProducts.length}
                             </span>
                         )}
                     </button>
                 </div>
 
-                <div className="grid grid-cols-12 gap-6">
+                <div className="grid flex-1 min-h-[calc(100vh-190px)] grid-cols-12 gap-6 items-stretch">
                     {/* Main Form Area */}
-                    <div className="col-span-12 xl:col-span-8">
+                    <div className="col-span-12 xl:col-span-8 h-full flex flex-col">
                         {/* Transfer Tab */}
                         {activeTab === 'transfer' && (
                         can_create ? (
-                        <form onSubmit={submitTransfer} className="bg-white rounded-[22px] p-7 border border-[#EDE8FC] shadow-[0_2px_16px_rgba(0,0,0,0.02)]">
+                        <form onSubmit={submitTransfer} className="bg-white rounded-[22px] p-7 border border-[#EDE8FC] shadow-[0_2px_16px_rgba(0,0,0,0.02)] h-full flex flex-col">
                             <div className="flex items-center gap-3 mb-7">
                                 <div className="w-11 h-11 rounded-xl bg-[#eef2ff] text-[#5932C9] flex items-center justify-center">
                                     <TransferIcon className="w-6 h-6" />
                                 </div>
                                 <div>
                                     <h2 className="text-[18px] font-black text-[#28106F]">Transfer Antar Rack</h2>
-                                    <p className="text-[12px] font-semibold text-gray-400">Pindahkan stok dari rack asal ke rack tujuan. Total stok warehouse tetap.</p>
+                                    <p className="text-[12px] font-semibold text-gray-400">Pindahkan stok dari rak asal ke rak tujuan. Total stok gudang tetap.</p>
                                 </div>
                             </div>
 
@@ -181,8 +216,8 @@ export default function RackAllocation({ warehouse, racks = [], unplacedProducts
                                         })}
                                         required
                                     >
-                                        <option value="">Pilih rack asal</option>
-                                        {racks.map((rack) => (
+                                        <option value="">Pilih rak asal</option>
+                                        {filteredRacks.map((rack) => (
                                             <option key={rack.id} value={rack.id}>
                                                 {rack.code} - {rack.name} ({rack.used}/{rack.capacity})
                                             </option>
@@ -205,8 +240,8 @@ export default function RackAllocation({ warehouse, racks = [], unplacedProducts
                                         onChange={(event) => transferForm.setData('to_rack_id', event.target.value)}
                                         required
                                     >
-                                        <option value="">Pilih rack tujuan</option>
-                                        {racks
+                                        <option value="">Pilih rak tujuan</option>
+                                        {filteredRacks
                                             .filter((rack) => String(rack.id) !== String(transferForm.data.from_rack_id))
                                             .map((rack) => (
                                                 <option key={rack.id} value={rack.id}>
@@ -228,7 +263,7 @@ export default function RackAllocation({ warehouse, racks = [], unplacedProducts
                                         required
                                         disabled={!fromRack}
                                     >
-                                        <option value="">{fromRack ? 'Pilih produk' : 'Pilih rack asal dulu'}</option>
+                                        <option value="">{fromRack ? 'Pilih produk' : 'Pilih rak asal dulu'}</option>
                                         {fromRack?.stocks?.map((stock) => (
                                             <option key={stock.product_id} value={stock.product_id}>
                                                 {stock.sku} - {stock.name} ({stock.available_quantity} tersedia)
@@ -279,7 +314,7 @@ export default function RackAllocation({ warehouse, racks = [], unplacedProducts
                                 />
                             </div>
 
-                            <div className="mt-7 pt-6 border-t border-gray-50 flex justify-end gap-3">
+                            <div className="mt-auto pt-6 border-t border-gray-50 flex justify-end gap-3">
                                 <Link href="/warehouse" className="px-6 py-3 border border-gray-200 text-[#5932C9] bg-white font-bold rounded-xl text-[14px] hover:bg-gray-50 transition-colors">
                                     Batal
                                 </Link>
@@ -293,7 +328,7 @@ export default function RackAllocation({ warehouse, racks = [], unplacedProducts
                             </div>
                         </form>
                         ) : (
-                        <div className="bg-white rounded-[22px] p-7 border border-[#EDE8FC] shadow-[0_2px_16px_rgba(0,0,0,0.02)]">
+                        <div className="bg-white rounded-[22px] p-7 border border-[#EDE8FC] shadow-[0_2px_16px_rgba(0,0,0,0.02)] h-full">
                             <div className="flex items-center gap-3 mb-4">
                                 <div className="w-11 h-11 rounded-xl bg-gray-100 text-gray-400 flex items-center justify-center">
                                     <TransferIcon className="w-6 h-6" />
@@ -307,29 +342,29 @@ export default function RackAllocation({ warehouse, racks = [], unplacedProducts
                         )
                         )}
 
-                        {/* Put-away Tab */}
+                        {/* Tab Putaway */}
                         {activeTab === 'putaway' && (
-                        <form onSubmit={submitPutaway} className="bg-white rounded-[22px] p-7 border border-[#EDE8FC] shadow-[0_2px_16px_rgba(0,0,0,0.02)]">
+                        <form onSubmit={submitPutaway} className="bg-white rounded-[22px] p-7 border border-[#EDE8FC] shadow-[0_2px_16px_rgba(0,0,0,0.02)] h-full flex flex-col">
                             <div className="flex items-center gap-3 mb-7">
                                 <div className="w-11 h-11 rounded-xl bg-teal-50 text-[#0f766e] flex items-center justify-center">
                                     <PutawayIcon className="w-6 h-6" />
                                 </div>
                                 <div>
-                                    <h2 className="text-[18px] font-black text-[#28106F]">Put-away ke Rack</h2>
-                                    <p className="text-[12px] font-semibold text-gray-400">Tempatkan produk yang belum masuk rack ke rack tujuan. Stok warehouse tidak berubah.</p>
+                                    <h2 className="text-[18px] font-black text-[#28106F]">Putaway ke Rak</h2>
+                                    <p className="text-[12px] font-semibold text-gray-400">Tempatkan produk yang belum masuk rak ke rak tujuan. Stok gudang tidak berubah.</p>
                                 </div>
                             </div>
 
-                            {unplacedProducts.length === 0 ? (
+                            {filteredUnplacedProducts.length === 0 ? (
                                 <div className="bg-emerald-50 border border-emerald-100 rounded-xl px-5 py-8 text-center">
-                                    <div className="text-[14px] font-black text-emerald-700">Semua produk sudah ditempatkan di rack</div>
+                                <div className="text-[14px] font-black text-emerald-700">Semua produk sudah ditempatkan di rak</div>
                                     <div className="text-[12px] font-semibold text-emerald-600 mt-1">Tidak ada produk yang perlu di-put-away.</div>
                                 </div>
                             ) : (
                             <>
                                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
                                     <div>
-                                        <label className="block text-[10px] font-extrabold text-gray-500 tracking-wider uppercase mb-2">Produk Belum Di-rack</label>
+                                        <label className="block text-[10px] font-extrabold text-gray-500 tracking-wider uppercase mb-2">Produk Belum di Rak</label>
                                         <select
                                             className="bg-[#f8f9fb] border border-transparent focus:border-[#0f766e] focus:ring-1 focus:ring-[#0f766e] block w-full px-4 py-3 rounded-xl font-bold text-[#28106F]"
                                             value={putawayForm.data.product_id}
@@ -337,9 +372,9 @@ export default function RackAllocation({ warehouse, racks = [], unplacedProducts
                                             required
                                         >
                                             <option value="">Pilih produk</option>
-                                            {unplacedProducts.map((product) => (
+                                            {filteredUnplacedProducts.map((product) => (
                                                 <option key={product.id} value={product.id}>
-                                                    {product.sku} - {product.name} ({product.unplaced_stock} {product.unit} belum di-rack)
+                                                    {product.sku} - {product.name} ({product.unplaced_stock} {product.unit} belum di rak)
                                                 </option>
                                             ))}
                                         </select>
@@ -347,15 +382,15 @@ export default function RackAllocation({ warehouse, racks = [], unplacedProducts
                                     </div>
 
                                     <div>
-                                        <label className="block text-[10px] font-extrabold text-gray-500 tracking-wider uppercase mb-2">Rack Tujuan</label>
+                                        <label className="block text-[10px] font-extrabold text-gray-500 tracking-wider uppercase mb-2">Rak Tujuan</label>
                                         <select
                                             className="bg-[#f8f9fb] border border-transparent focus:border-[#0f766e] focus:ring-1 focus:ring-[#0f766e] block w-full px-4 py-3 rounded-xl font-bold text-[#28106F]"
                                             value={putawayForm.data.to_rack_id}
                                             onChange={(event) => putawayForm.setData('to_rack_id', event.target.value)}
                                             required
                                         >
-                                            <option value="">Pilih rack tujuan</option>
-                                            {racks.map((rack) => (
+                                            <option value="">Pilih rak tujuan</option>
+                                            {filteredRacks.map((rack) => (
                                                 <option key={rack.id} value={rack.id}>
                                                     {rack.code} - {rack.name} ({rack.available_capacity} kosong)
                                                 </option>
@@ -380,7 +415,7 @@ export default function RackAllocation({ warehouse, racks = [], unplacedProducts
                                         {putawayForm.errors.quantity && <div className="text-red-500 text-xs font-bold mt-2">{putawayForm.errors.quantity}</div>}
                                     </div>
                                     <div className="bg-[#f8f9fb] rounded-xl px-4 py-3 border border-gray-100">
-                                        <div className="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider">Stok belum di-rack</div>
+                                        <div className="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider">Stok belum di rak</div>
                                         <div className="text-[24px] font-black text-[#28106F] mt-1">{putawayProduct?.unplaced_stock ?? 0}</div>
                                     </div>
                                     <div className="bg-[#f8f9fb] rounded-xl px-4 py-3 border border-gray-100">
@@ -390,7 +425,7 @@ export default function RackAllocation({ warehouse, racks = [], unplacedProducts
                                 </div>
 
                                 <div className="mt-6">
-                                    <label className="block text-[10px] font-extrabold text-gray-500 tracking-wider uppercase mb-2">Catatan Put-away</label>
+                                    <label className="block text-[10px] font-extrabold text-gray-500 tracking-wider uppercase mb-2">Catatan Putaway</label>
                                     <textarea
                                         rows="3"
                                         className="bg-[#f8f9fb] border border-transparent focus:border-[#0f766e] focus:ring-1 focus:ring-[#0f766e] block w-full px-4 py-3 rounded-xl font-medium text-gray-600 resize-none"
@@ -400,7 +435,7 @@ export default function RackAllocation({ warehouse, racks = [], unplacedProducts
                                     />
                                 </div>
 
-                                <div className="mt-7 pt-6 border-t border-gray-50 flex justify-end gap-3">
+                                <div className="mt-auto pt-6 border-t border-gray-50 flex justify-end gap-3">
                                     <Link href="/warehouse" className="px-6 py-3 border border-gray-200 text-[#0f766e] bg-white font-bold rounded-xl text-[14px] hover:bg-gray-50 transition-colors">
                                         Batal
                                     </Link>
@@ -419,16 +454,16 @@ export default function RackAllocation({ warehouse, racks = [], unplacedProducts
                     </div>
 
                     {/* Sidebar */}
-                    <aside className="col-span-12 xl:col-span-4 space-y-6">
+                    <aside className="col-span-12 xl:col-span-4 h-full flex flex-col gap-6">
                         {/* Unplaced Products Summary */}
-                        {unplacedProducts.length > 0 && (
-                        <div className="bg-white rounded-[22px] p-6 border border-amber-200 shadow-[0_2px_16px_rgba(0,0,0,0.02)]">
+                        {filteredUnplacedProducts.length > 0 && (
+                        <div ref={unplacedSectionRef} className="bg-white rounded-[22px] p-6 border border-amber-200 shadow-[0_2px_16px_rgba(0,0,0,0.02)]">
                             <div className="flex items-center justify-between mb-5">
                                 <h3 className="text-[11px] font-extrabold text-amber-600 tracking-[0.15em] uppercase">Belum Di-rack</h3>
-                                <span className="rounded-full bg-amber-100 px-2.5 py-0.5 text-[10px] font-black text-amber-700">{unplacedProducts.length} produk</span>
+                                <span className="rounded-full bg-amber-100 px-2.5 py-0.5 text-[10px] font-black text-amber-700">{filteredUnplacedProducts.length} produk</span>
                             </div>
-                            <div className="space-y-2 max-h-[240px] overflow-auto pr-1">
-                                {unplacedProducts.map((product) => (
+                            <div className="space-y-2 max-h-[240px] overflow-y-auto pr-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+                                {filteredUnplacedProducts.map((product) => (
                                     <div key={product.id} className="flex items-center justify-between rounded-lg border border-amber-100 bg-amber-50/50 px-3 py-2">
                                         <div>
                                             <div className="text-[12px] font-black text-[#28106F]">{product.name}</div>
@@ -443,18 +478,18 @@ export default function RackAllocation({ warehouse, racks = [], unplacedProducts
                                 onClick={() => setActiveTab('putaway')}
                                 className="mt-3 w-full rounded-xl bg-[#0f766e] px-4 py-2.5 text-[11px] font-black uppercase tracking-[0.12em] text-white transition hover:bg-teal-700"
                             >
-                                Put-away Sekarang
+                                Putaway Sekarang
                             </button>
                         </div>
                         )}
 
-                        <div className="bg-white rounded-[22px] p-6 border border-[#EDE8FC] shadow-[0_2px_16px_rgba(0,0,0,0.02)]">
+                        <div ref={racksSectionRef} className="bg-white rounded-[22px] p-6 border border-[#EDE8FC] shadow-[0_2px_16px_rgba(0,0,0,0.02)]">
                             <div className="flex items-center justify-between mb-5">
                                 <h3 className="text-[11px] font-extrabold text-gray-400 tracking-[0.15em] uppercase">Rack Aktif</h3>
                                 <BoxIcon className="w-5 h-5 text-gray-300" />
                             </div>
-                            <div className="space-y-3 max-h-[360px] overflow-auto pr-1">
-                                {racks.map((rack) => {
+                            <div className="space-y-3 max-h-[360px] overflow-y-auto pr-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+                                {filteredRacks.map((rack) => {
                                     const fill = rack.capacity > 0 ? Math.min(100, Math.round((rack.used / rack.capacity) * 100)) : 0;
                                     return (
                                         <div key={rack.id} className="border border-gray-100 rounded-xl p-3">
@@ -474,16 +509,16 @@ export default function RackAllocation({ warehouse, racks = [], unplacedProducts
                             </div>
                         </div>
 
-                        <div className="bg-white rounded-[22px] p-6 border border-[#EDE8FC] shadow-[0_2px_16px_rgba(0,0,0,0.02)]">
+                        <div ref={transfersSectionRef} className="bg-white rounded-[22px] p-6 border border-[#EDE8FC] shadow-[0_2px_16px_rgba(0,0,0,0.02)] flex-1 min-h-0">
                             <div className="flex items-center justify-between mb-5">
                                 <h3 className="text-[11px] font-extrabold text-gray-400 tracking-[0.15em] uppercase">Transfer Terakhir</h3>
                                 <ClipboardIcon className="w-5 h-5 text-gray-300" />
                             </div>
-                            <div className="space-y-3">
-                                {recentTransfers.length === 0 && (
+                            <div className="space-y-3 h-full overflow-y-auto pr-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+                                {filteredRecentTransfers.length === 0 && (
                                     <div className="text-[13px] font-semibold text-gray-400 bg-[#f8f9fb] rounded-xl p-4">Belum ada transfer rack.</div>
                                 )}
-                                {recentTransfers.map((transfer) => (
+                                {filteredRecentTransfers.map((transfer) => (
                                     <div key={transfer.id} className="border border-gray-100 rounded-xl p-3 transition hover:border-[#c7d2fe] hover:bg-[#f8f9fb]">
                                         <Link href={route('rack.allocation.transfers.show', transfer.id)} className="block">
                                             <div className="flex items-center justify-between gap-3">

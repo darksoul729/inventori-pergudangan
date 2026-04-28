@@ -108,7 +108,7 @@ export default function Index({ purchaseOrders = [] }) {
                                             </td>
                                             <td className="px-2 py-4 text-right">
                                                 <div className="inline-flex items-center gap-1">
-                                                    <a href={route('purchase-orders.pdf', po.id)} download className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 transition-colors hover:bg-slate-100" title="Download PDF">
+                                                    <a href={route('purchase-orders.pdf', po.id)} download className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 transition-colors hover:bg-slate-100" title="Unduh PDF">
                                                         <DownloadIcon className="w-4 h-4" />
                                                     </a>
                                                     <Link href={route('purchase-orders.show', po.id)} className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-indigo-500 transition-colors hover:bg-indigo-50" title="Lihat Detail">

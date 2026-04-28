@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Link, usePage } from '@inertiajs/react';
+import { Link, router, usePage } from '@inertiajs/react';
 import {
     LayoutDashboard,
     Boxes,
@@ -159,7 +159,7 @@ function QuickActionsBar({ url }) {
         },
         {
             icon: Bell,
-            label: 'Low Stock',
+            label: 'Stok Menipis',
             href: '/inventory?filter=low',
             color: 'bg-rose-50 text-rose-600 border-rose-100 hover:bg-rose-100',
             show: ['/dashboard', '/inventory', '/warehouse'].some(p => url.startsWith(p))
@@ -197,6 +197,7 @@ export default function DashboardLayout({
     contentClassName = 'max-w-[1400px] mx-auto',
     fullPage = false,
     hideSearch = false,
+    hideMainScrollbar = false,
 }) {
     const { url, props } = usePage();
     const { auth, pendingApprovals } = props;
@@ -227,6 +228,55 @@ export default function DashboardLayout({
     });
     const [helpMenuOpen, setHelpMenuOpen] = useState(() => url.startsWith('/help'));
     const [confirmingLogout, setConfirmingLogout] = useState(false);
+    const [fallbackSearch, setFallbackSearch] = useState('');
+
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        setFallbackSearch(params.get('search') || '');
+    }, [url]);
+
+    const resolveSearchTarget = () => {
+        const path = window.location.pathname;
+        if (path.startsWith('/inventory')) return '/inventory';
+        if (path.startsWith('/shipments')) return '/shipments';
+        if (path.startsWith('/drivers')) return '/drivers';
+        if (path.startsWith('/transaction')) return '/transaction';
+        if (path.startsWith('/wms-documents')) return '/wms-documents';
+        if (path.startsWith('/supplier')) return '/supplier';
+        if (path.startsWith('/purchase-orders')) return '/purchase-orders';
+        if (path.startsWith('/rack-allocation')) return '/rack-allocation';
+        if (path.startsWith('/warehouse')) return '/warehouse';
+        if (path.startsWith('/stock-opname')) return '/stock-opname';
+        if (path.startsWith('/reports')) return '/reports';
+        if (path.startsWith('/settings')) return '/settings';
+        if (path.startsWith('/help')) return '/help/documentation';
+        if (path.startsWith('/notifications')) return '/notifications';
+        return '/dashboard';
+    };
+
+    const handleSearchSubmit = (keyword) => {
+        const term = String(keyword || '').trim();
+        const target = resolveSearchTarget();
+
+        if (onSearch) {
+            onSearch(term);
+            return;
+        }
+
+        const params = new URLSearchParams(window.location.search);
+        if (term) {
+            params.set('search', term);
+        } else {
+            params.delete('search');
+        }
+        params.delete('page');
+
+        router.get(target, Object.fromEntries(params.entries()), {
+            preserveState: true,
+            preserveScroll: true,
+            replace: true,
+        });
+    };
 
     const sidebarScrollRef = useRef(null);
 
@@ -606,15 +656,27 @@ export default function DashboardLayout({
                         {headerTitle && (
                             <h2 className="text-[18px] font-black text-slate-900 mr-4">{headerTitle}</h2>
                         )}
-                        {(!hideSearch && !url.includes('/settings') && !url.includes('/rack-allocation')) ? (
+                        {!hideSearch ? (
                             <div className="flex-1 min-w-[380px] relative">
                                 <Search className="w-[17px] h-[17px] absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
                                 <input
                                     type="text"
                                     placeholder={headerSearchPlaceholder || "Cari..."}
                                     className="w-full bg-[#f4f5f9] text-[13px] text-gray-700 rounded-[12px] pl-11 pr-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-[#5932C9] border border-transparent transition-all font-bold placeholder-gray-400 shadow-[inset_0_2px_4px_rgba(0,0,0,0.01)]"
-                                    value={searchValue || ''}
-                                    onChange={(e) => onSearch && onSearch(e.target.value)}
+                                    value={onSearch ? (searchValue || '') : fallbackSearch}
+                                    onChange={(e) => {
+                                        if (onSearch) {
+                                            onSearch(e.target.value);
+                                        } else {
+                                            setFallbackSearch(e.target.value);
+                                        }
+                                    }}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter') {
+                                            e.preventDefault();
+                                            handleSearchSubmit(e.currentTarget.value);
+                                        }
+                                    }}
                                 />
                             </div>
                         ) : (
@@ -627,7 +689,7 @@ export default function DashboardLayout({
                                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                                 <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]"></span>
                             </span>
-                            <span className="text-[10px] font-black text-emerald-600 uppercase tracking-[0.1em]">Core System: Operational</span>
+                            <span className="text-[10px] font-black text-emerald-600 uppercase tracking-[0.1em]">Sistem Inti: Operasional</span>
                         </div>
                     </div>
 
@@ -709,7 +771,7 @@ export default function DashboardLayout({
                 {/* Dashboard Scrollable Area */}
                 <main
                     scroll-region="true"
-                    className={`flex-1 min-h-0 overflow-x-hidden scroll-smooth ${fullPage ? 'flex flex-col p-0 overflow-y-hidden bg-white' : 'px-10 pt-6 pb-32 overflow-y-auto bg-[#f8f9fc]'}`}
+                    className={`flex-1 min-h-0 overflow-x-hidden scroll-smooth ${fullPage ? 'flex flex-col p-0 overflow-y-hidden bg-white' : 'px-10 pt-6 pb-32 overflow-y-auto bg-[#f8f9fc]'} ${hideMainScrollbar ? '[scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden' : ''}`}
                 >
                     {fullPage ? (
                         children

@@ -7,6 +7,7 @@ use App\Models\Rack;
 use App\Models\Warehouse;
 use App\Models\WarehouseLayoutElement;
 use App\Models\WarehouseZone;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -208,5 +209,51 @@ class WarehouseLayoutController extends Controller
             ]);
 
         return response()->json(['snapshots' => $snapshots]);
+    }
+
+    public function exportPdf(Request $request)
+    {
+        $data = $request->validate([
+            'warehouse_name' => ['nullable', 'string', 'max:255'],
+            'occupancy' => ['nullable', 'numeric'],
+            'zones_count' => ['nullable', 'integer'],
+            'racks_count' => ['nullable', 'integer'],
+            'layout_image' => ['nullable', 'string'],
+            'items' => ['required', 'array'],
+            'items.*.kind' => ['required', 'string'],
+            'items.*.type' => ['nullable', 'string'],
+            'items.*.name' => ['required', 'string'],
+            'items.*.code' => ['nullable', 'string'],
+            'items.*.x' => ['required', 'numeric'],
+            'items.*.y' => ['required', 'numeric'],
+            'items.*.w' => ['required', 'numeric'],
+            'items.*.h' => ['required', 'numeric'],
+            'items.*.rotation' => ['nullable', 'numeric'],
+            'canvas' => ['nullable', 'array'],
+            'canvas.w' => ['nullable', 'numeric'],
+            'canvas.h' => ['nullable', 'numeric'],
+        ]);
+
+        $grouped = collect($data['items'])->groupBy('kind');
+        $warehouseName = $data['warehouse_name'] ?? 'Warehouse';
+        $dateLabel = now()->format('d M Y H:i');
+
+        $html = view('reports.warehouse_layout_export', [
+            'warehouseName' => $warehouseName,
+            'dateLabel' => $dateLabel,
+            'occupancy' => $data['occupancy'] ?? null,
+            'zonesCount' => $data['zones_count'] ?? $grouped->get('zone', collect())->count(),
+            'racksCount' => $data['racks_count'] ?? $grouped->get('rack', collect())->count(),
+            'layoutImage' => $data['layout_image'] ?? null,
+            'canvas' => $data['canvas'] ?? null,
+            'zones' => $grouped->get('zone', collect())->values(),
+            'racks' => $grouped->get('rack', collect())->values(),
+            'others' => $grouped->except(['zone', 'rack'])->flatten(1)->values(),
+        ])->render();
+
+        $pdf = Pdf::loadHTML($html)->setPaper('a4', 'portrait');
+        $filename = 'warehouse-layout-'.now()->format('Ymd-His').'.pdf';
+
+        return $pdf->download($filename);
     }
 }
