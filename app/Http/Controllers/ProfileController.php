@@ -77,12 +77,37 @@ class ProfileController extends Controller
     public function photo(Request $request): HttpResponse
     {
         $user = $request->user();
-        abort_unless($user && $user->profile_photo_path, 404);
+        $path = $this->normalizePublicStoragePath($user?->profile_photo_path);
+        abort_unless($user && $path, 404);
 
-        if (!Storage::disk('public')->exists($user->profile_photo_path)) {
+        if (!Storage::disk('public')->exists($path)) {
             abort(404);
         }
 
-        return Storage::disk('public')->response($user->profile_photo_path);
+        return Storage::disk('public')->response($path);
+    }
+
+    private function normalizePublicStoragePath(?string $path): ?string
+    {
+        if (!$path) {
+            return null;
+        }
+
+        $normalized = trim($path);
+        if ($normalized === '') {
+            return null;
+        }
+
+        if (str_starts_with($normalized, 'http://') || str_starts_with($normalized, 'https://')) {
+            $parsedPath = parse_url($normalized, PHP_URL_PATH);
+            $normalized = is_string($parsedPath) ? $parsedPath : $normalized;
+        }
+
+        $normalized = ltrim($normalized, '/');
+        if (str_starts_with($normalized, 'storage/')) {
+            $normalized = substr($normalized, 8);
+        }
+
+        return trim($normalized) !== '' ? $normalized : null;
     }
 }

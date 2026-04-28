@@ -324,7 +324,7 @@ class HandleInertiaRequests extends Middleware
 
     private function profilePhotoUrl($user): ?string
     {
-        $path = $user?->profile_photo_path;
+        $path = $this->normalizePublicStoragePath($user?->profile_photo_path);
         if (!$path) {
             return null;
         }
@@ -334,6 +334,30 @@ class HandleInertiaRequests extends Middleware
         }
 
         return null;
+    }
+
+    private function normalizePublicStoragePath(?string $path): ?string
+    {
+        if (!$path) {
+            return null;
+        }
+
+        $normalized = trim($path);
+        if ($normalized === '') {
+            return null;
+        }
+
+        if (str_starts_with($normalized, 'http://') || str_starts_with($normalized, 'https://')) {
+            $parsedPath = parse_url($normalized, PHP_URL_PATH);
+            $normalized = is_string($parsedPath) ? $parsedPath : $normalized;
+        }
+
+        $normalized = ltrim($normalized, '/');
+        if (str_starts_with($normalized, 'storage/')) {
+            $normalized = substr($normalized, 8);
+        }
+
+        return trim($normalized) !== '' ? $normalized : null;
     }
 
     private function distanceKm(float $lat1, float $lng1, float $lat2, float $lng2): float
