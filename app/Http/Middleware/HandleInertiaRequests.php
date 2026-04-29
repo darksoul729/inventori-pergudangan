@@ -330,7 +330,8 @@ class HandleInertiaRequests extends Middleware
         }
 
         if (Storage::disk('public')->exists($path)) {
-            return route('profile.photo', ['v' => optional($user->updated_at)?->timestamp ?? time()]);
+            $version = optional($user->updated_at)?->timestamp ?? time();
+            return "/profile/photo?v={$version}";
         }
 
         return null;
