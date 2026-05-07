@@ -47,7 +47,7 @@ export default function StockOpnameDetail({ opname, adjustment, can_approve = fa
                             <BackIcon className="h-5 w-5" />
                         </Link>
                         <div>
-                            <p className="text-[12px] font-bold uppercase tracking-[0.16em] text-slate-500">Dokumen Stock Opname</p>
+                            <p className="text-[12px] font-bold uppercase tracking-[0.16em] text-slate-500">Dokumen Cek Stok Fisik</p>
                             <h1 className="text-2xl font-black tracking-tight text-[#28106F]">{opname.number}</h1>
                         </div>
                     </div>
@@ -147,7 +147,7 @@ export default function StockOpnameDetail({ opname, adjustment, can_approve = fa
                             <aside>
                                 <h2 className="mb-4 text-[13px] font-black uppercase tracking-[0.14em] text-[#28106F]">Rincian Opname</h2>
                                 <dl className="rounded-xl border border-[#EDE8FC] px-5">
-                                    <DetailRow label="Warehouse" value={opname.warehouse?.name} />
+                                    <DetailRow label="Gudang" value={opname.warehouse?.name} />
                                     <DetailRow label="Lokasi" value={opname.warehouse?.location} />
                                     <DetailRow label="Dibuat Oleh" value={opname.operator?.name} />
                                     <DetailRow label="Disetujui Oleh" value={opname.approver?.name} />

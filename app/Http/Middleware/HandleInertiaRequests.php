@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Support\SaasEntitlement;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -37,6 +38,8 @@ class HandleInertiaRequests extends Middleware
         $pendingAdjustmentCount = 0;
         $user = $request->user()?->loadMissing('role');
         
+        $saas = app(SaasEntitlement::class)->resolveForUser($user);
+
         if ($user) {
             // Low Stock alerts
             $lowStockCount = \App\Models\Product::whereHas('productStocks', function($query) {
@@ -319,6 +322,7 @@ class HandleInertiaRequests extends Middleware
                 'transfers' => $pendingTransferCount,
                 'adjustments' => $pendingAdjustmentCount,
             ],
+            'saas' => $saas,
         ];
     }
 

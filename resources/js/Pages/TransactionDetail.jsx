@@ -94,7 +94,7 @@ export default function TransactionDetail({ transaction }) {
             case 'adjustment':
                 return { label: 'Penyesuaian', tone: 'text-[#9a3412] bg-[#fff7ed] border-[#fed7aa]', icon: <AdjustmentIcon className="h-5 w-5" />, sign: transaction.stock_after >= transaction.stock_before ? '+' : '-' };
             case 'opname':
-                return { label: 'Stock Opname', tone: 'text-[#475569] bg-[#F8F7FF] border-[#e2e8f0]', icon: <AdjustmentIcon className="h-5 w-5" />, sign: transaction.stock_after >= transaction.stock_before ? '+' : '-' };
+                return { label: 'Cek Stok Fisik', tone: 'text-[#475569] bg-[#F8F7FF] border-[#e2e8f0]', icon: <AdjustmentIcon className="h-5 w-5" />, sign: transaction.stock_after >= transaction.stock_before ? '+' : '-' };
             default:
                 return { label: 'Selesai', tone: 'text-[#475569] bg-[#F8F7FF] border-[#e2e8f0]', icon: <InboundIcon className="h-5 w-5" />, sign: '' };
         }

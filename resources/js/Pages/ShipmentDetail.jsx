@@ -117,7 +117,7 @@ export default function ShipmentDetail({ auth, shipment }) {
         printWindow.document.write(`
             <html>
                 <head>
-                    <title>Proof of Delivery ${printable(shipment.id)}</title>
+                    <title>Bukti Serah Terima ${printable(shipment.id)}</title>
                     <style>
                         body { font-family: Arial, sans-serif; margin: 32px; color: #111827; }
                         .header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:24px; }
@@ -138,8 +138,8 @@ export default function ShipmentDetail({ auth, shipment }) {
                         <div style="display:flex;align-items:flex-start;">
                             <img src="/images/logo 1.png" class="header-logo" alt="Logo" />
                             <div>
-                                <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.16em;color:#5932C9;">Proof of Delivery</div>
-                                <h1 style="margin:8px 0 4px;font-size:32px;">Shipment ${printable(shipment.id)}</h1>
+                                <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.16em;color:#5932C9;">Bukti Serah Terima</div>
+                                <h1 style="margin:8px 0 4px;font-size:32px;">Pengiriman ${printable(shipment.id)}</h1>
                                 <div style="color:#6b7280;font-weight:600;">${printable(shipment.origin_name)} (${printable(shipment.origin)}) -> ${printable(shipment.destination_name)} (${printable(shipment.destination)})</div>
                             </div>
                         </div>

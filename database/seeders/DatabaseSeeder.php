@@ -14,6 +14,7 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        $this->call(SaasSeeder::class);
         $this->call(ProfessionalCompleteSeeder::class);
     }
 }

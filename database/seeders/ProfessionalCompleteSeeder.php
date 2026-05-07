@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use App\Models\Category;
-use App\Models\Driver;
 use App\Models\Product;
 use App\Models\ProductStock;
 use App\Models\Rack;
@@ -12,12 +11,14 @@ use App\Models\Role;
 use App\Models\Shipment;
 use App\Models\Supplier;
 use App\Models\Unit;
-use App\Models\User;
 use App\Models\Warehouse;
 use App\Models\WarehouseZone;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
+use App\Models\Tenant;
+use App\Models\User;
 
 class ProfessionalCompleteSeeder extends Seeder
 {
@@ -60,85 +61,37 @@ class ProfessionalCompleteSeeder extends Seeder
 
     private function seedUsersAndDrivers(array $roles): array
     {
-        $manager = User::query()->updateOrCreate(
-            ['email' => 'manajer.gudang@petayu.co.id'],
+        $defaultTenant = Tenant::query()->updateOrCreate(
+            ['slug' => 'tenant-default'],
             [
+                'name' => 'Tenant Default',
+                'code' => 'TEN-DEFAULT',
+                'slug' => 'tenant-default',
+                'status' => 'active',
+                'timezone' => 'Asia/Makassar',
+                'locale' => 'id',
+            ]
+        );
+
+        $admin = User::query()->updateOrCreate(
+            ['email' => 'admin@petayu.com'],
+            [
+                'tenant_id' => $defaultTenant->id,
                 'role_id' => $roles['Manager']->id,
-                'name' => 'Rizky Pratama',
-                'email_verified_at' => now(),
-                'password' => Hash::make('password'),
-                'phone' => '081251110001',
+                'name' => 'Admin Petayu',
+                'phone' => '081200000001',
+                'password' => Hash::make('password123'),
                 'status' => 'active',
+                'email_verified_at' => now(),
+                'remember_token' => Str::random(10),
             ]
         );
-
-        $supervisor = User::query()->updateOrCreate(
-            ['email' => 'supervisor.operasional@petayu.co.id'],
-            [
-                'role_id' => $roles['Supervisor']->id,
-                'name' => 'Dewi Anggraini',
-                'email_verified_at' => now(),
-                'password' => Hash::make('password'),
-                'phone' => '081251110002',
-                'status' => 'active',
-            ]
-        );
-
-        $staff = User::query()->updateOrCreate(
-            ['email' => 'staff.gudang@petayu.co.id'],
-            [
-                'role_id' => $roles['Staff']->id,
-                'name' => 'Fajar Hidayat',
-                'email_verified_at' => now(),
-                'password' => Hash::make('password'),
-                'phone' => '081251110003',
-                'status' => 'active',
-            ]
-        );
-
-        $driverSeed = [
-            ['email' => 'ahmad.nur.driver@petayu.co.id', 'name' => 'Ahmad Nurdin', 'license' => 'KT-12345-AB', 'phone' => '081251220001'],
-            ['email' => 'budi.santoso.driver@petayu.co.id', 'name' => 'Budi Santoso', 'license' => 'KT-67890-CD', 'phone' => '081251220002'],
-            ['email' => 'andi.prakoso.driver@petayu.co.id', 'name' => 'Andi Prakoso', 'license' => 'KT-11223-EF', 'phone' => '081251220003'],
-            ['email' => 'citra.lestari.driver@petayu.co.id', 'name' => 'Citra Lestari', 'license' => 'KT-44556-GH', 'phone' => '081251220004'],
-            ['email' => 'eko.wibowo.driver@petayu.co.id', 'name' => 'Eko Wibowo', 'license' => 'KT-77889-IJ', 'phone' => '081251220005'],
-        ];
-
-        $drivers = collect();
-        foreach ($driverSeed as $item) {
-            $user = User::query()->updateOrCreate(
-                ['email' => $item['email']],
-                [
-                    'role_id' => $roles['Driver']->id,
-                    'name' => $item['name'],
-                    'email_verified_at' => now(),
-                    'password' => Hash::make('password'),
-                    'phone' => $item['phone'],
-                    'status' => 'active',
-                ]
-            );
-
-            $driver = Driver::query()->updateOrCreate(
-                ['user_id' => $user->id],
-                [
-                    'license_number' => $item['license'],
-                    'phone' => $item['phone'],
-                    'status' => 'approved',
-                    'is_active' => true,
-                    'latitude' => null,
-                    'longitude' => null,
-                    'last_location_mock' => false,
-                ]
-            );
-
-            $drivers->push($driver);
-        }
 
         return [
-            'manager' => $manager,
-            'supervisor' => $supervisor,
-            'staff' => $staff,
-            'drivers' => $drivers,
+            'manager' => $admin,
+            'supervisor' => null,
+            'staff' => null,
+            'drivers' => collect(),
         ];
     }
 

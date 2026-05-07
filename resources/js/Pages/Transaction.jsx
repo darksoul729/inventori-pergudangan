@@ -211,7 +211,7 @@ export default function Transaction({ movements, stats, filters }) {
             saveAs(new Blob([buffer]), `riwayat-transaksi-${new Date().toISOString().slice(0, 10)}.xlsx`);
 
         } catch (error) {
-            console.error('Export failed:', error);
+            console.error('Ekspor gagal:', error);
             alert('Gagal mengekspor data. Silakan coba lagi.');
         }
     };
@@ -348,7 +348,7 @@ export default function Transaction({ movements, stats, filters }) {
                                             handleFilterChange(e.target.value);
                                         }}
                                     >
-                                        <option value="all">Filter: Semua Jenis</option>
+                                        <option value="all">Semua Jenis</option>
                                         <option value="in">Barang Masuk</option>
                                         <option value="out">Barang Keluar</option>
                                         <option value="transfer">Transfer Stok</option>

@@ -35,6 +35,12 @@ Route::get('/dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth', 'verified', 'role:manager,supervisor,staff'])
     ->name('dashboard');
 
+Route::get('/mulai-di-sini', function () {
+    return Inertia::render('GettingStarted');
+})
+    ->middleware(['auth', 'verified', 'role:manager,supervisor,staff'])
+    ->name('getting-started');
+
 Route::middleware(['auth', 'verified', 'role:manager,supervisor,staff'])->prefix('help')->name('help.')->group(function () {
     Route::redirect('/', '/help/documentation')->name('index');
     Route::get('/live-support', [HelpCenterController::class, 'liveSupport'])->name('live-support');
@@ -49,7 +55,7 @@ Route::get('/notifications/{notificationId}', [NotificationCenterController::cla
     ->middleware(['auth', 'verified', 'role:manager,supervisor,staff'])
     ->name('notifications.show');
 
-Route::middleware(['auth', 'verified', 'role:manager,supervisor,staff'])->group(function () {
+Route::middleware(['auth', 'verified', 'role:manager,supervisor,staff', 'module:invoicing'])->group(function () {
     Route::get('/warehouse', [WarehouseController::class, 'index'])->name('warehouse');
     Route::post('/warehouse/zones', [WarehouseController::class, 'storeZone'])->middleware('role:manager')->name('warehouse.zones.store');
     Route::put('/warehouse/zones/{zone}', [WarehouseController::class, 'updateZone'])->middleware('role:manager')->name('warehouse.zones.update');
@@ -103,6 +109,7 @@ Route::middleware(['auth', 'verified', 'role:manager,supervisor,staff'])->group(
 
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\PurchaseOrderController;
+use App\Http\Controllers\InvoiceController;
 
 Route::middleware(['auth', 'verified', 'role:manager,supervisor,staff'])->group(function () {
     Route::get('/supplier', [SupplierController::class, 'index'])->name('supplier');
@@ -116,7 +123,7 @@ Route::middleware(['auth', 'verified', 'role:manager,supervisor,staff'])->group(
     Route::get('/purchase-orders', [PurchaseOrderController::class, 'index'])->name('purchase-orders.index');
 });
 
-Route::middleware(['auth', 'verified', 'role:manager,supervisor'])->group(function () {
+Route::middleware(['auth', 'verified', 'role:manager,supervisor', 'module:invoicing'])->group(function () {
     Route::get('/purchase-orders/create', [PurchaseOrderController::class, 'create'])->name('purchase-orders.create');
     Route::post('/purchase-orders', [PurchaseOrderController::class, 'store'])->name('purchase-orders.store');
     Route::put('/purchase-orders/{purchaseOrder}/status', [PurchaseOrderController::class, 'updateStatus'])
@@ -130,7 +137,21 @@ Route::get('/purchase-orders/{purchaseOrder}/pdf', [PurchaseOrderController::cla
     ->middleware(['auth', 'verified', 'role:manager,supervisor,staff'])
     ->name('purchase-orders.pdf');
 
+Route::middleware(['auth', 'verified', 'role:manager,supervisor,staff'])->group(function () {
+    Route::get('/invoices', [InvoiceController::class, 'index'])->name('invoices.index');
+    Route::get('/tagihan', [InvoiceController::class, 'index'])->name('invoices.index.alias');
+    Route::get('/invoice', [InvoiceController::class, 'index'])->name('invoices.index.alias2');
+    Route::get('/invoices/{invoice}', [InvoiceController::class, 'show'])->whereNumber('invoice')->name('invoices.show');
+    Route::get('/invoices/{invoice}/pdf', [InvoiceController::class, 'downloadPdf'])->whereNumber('invoice')->name('invoices.pdf');
+});
+
 Route::middleware(['auth', 'verified', 'role:manager,supervisor'])->group(function () {
+    Route::get('/invoices/create', [InvoiceController::class, 'create'])->name('invoices.create');
+    Route::post('/invoices', [InvoiceController::class, 'store'])->name('invoices.store');
+    Route::put('/invoices/{invoice}/status', [InvoiceController::class, 'updateStatus'])->whereNumber('invoice')->name('invoices.update-status');
+});
+
+Route::middleware(['auth', 'verified', 'role:manager,supervisor', 'module:warehouse_ops'])->group(function () {
     Route::get('/wms-documents', [WmsDocumentController::class, 'index'])->name('wms-documents.index');
     Route::get('/wms-documents/export', [WmsDocumentController::class, 'export'])->name('wms-documents.export');
     Route::get('/wms-documents/pdf', [WmsDocumentController::class, 'downloadPdf'])->name('wms-documents.pdf');
@@ -145,11 +166,11 @@ Route::middleware(['auth', 'verified', 'role:manager,supervisor,staff'])->group(
 
 use App\Http\Controllers\ShipmentsController;
 
-Route::middleware(['auth', 'verified', 'role:manager,supervisor,staff'])->group(function () {
+Route::middleware(['auth', 'verified', 'role:manager,supervisor,staff', 'module:shipment'])->group(function () {
     Route::get('/shipments', [ShipmentsController::class, 'index'])->name('shipments.index');
 });
 
-Route::middleware(['auth', 'verified', 'role:manager,supervisor'])->group(function () {
+Route::middleware(['auth', 'verified', 'role:manager,supervisor', 'module:shipment'])->group(function () {
     Route::get('/shipments/create', [ShipmentsController::class, 'create'])->name('shipments.create');
     Route::post('/shipments', [ShipmentsController::class, 'store'])->name('shipments.store');
     Route::get('/shipments/{shipment}/edit', [ShipmentsController::class, 'edit'])->name('shipments.edit');
@@ -161,14 +182,14 @@ Route::middleware(['auth', 'verified', 'role:manager,supervisor'])->group(functi
         ->name('shipments.verify-proof');
 });
 
-Route::middleware(['auth', 'verified', 'role:manager,supervisor,staff'])->group(function () {
+Route::middleware(['auth', 'verified', 'role:manager,supervisor,staff', 'module:shipment'])->group(function () {
     Route::get('/shipments/{shipment}/proof-pdf', [ShipmentsController::class, 'downloadProofPdf'])->name('shipments.proof-pdf');
     Route::get('/shipments/{shipment}', [ShipmentsController::class, 'show'])->name('shipments.show');
 });
 
 use App\Http\Controllers\DriverController;
 
-Route::middleware(['auth', 'verified', 'role:manager'])->group(function () {
+Route::middleware(['auth', 'verified', 'role:manager', 'module:driver_management'])->group(function () {
     Route::get('/drivers', [DriverController::class, 'index'])->name('drivers.index');
     Route::get('/drivers/create', [DriverController::class, 'create'])->name('drivers.create');
     Route::post('/drivers', [DriverController::class, 'store'])->name('drivers.store');
@@ -177,20 +198,22 @@ Route::middleware(['auth', 'verified', 'role:manager'])->group(function () {
     Route::put('/drivers/{driver}/status', [DriverController::class, 'updateStatus'])->name('drivers.status.update');
 });
 
-Route::middleware(['auth', 'verified', 'role:manager,supervisor,staff'])->group(function () {
-    // Staff can view rack allocation & stock opname (read-only)
+Route::middleware(['auth', 'verified', 'role:manager,supervisor', 'module:warehouse_ops'])->group(function () {
     Route::get('/rack-allocation', [StockTransferController::class, 'index'])->name('rack.allocation');
     Route::get('/rack-allocation/transfers/{stockTransfer}/pdf', [StockTransferController::class, 'downloadPdf'])->name('rack.allocation.transfers.pdf');
     Route::get('/rack-allocation/transfers/{stockTransfer}', [StockTransferController::class, 'show'])->name('rack.allocation.transfers.show');
     Route::get('/stock-opname', [StockOpnameController::class, 'index'])->name('stock-opname.index');
     Route::get('/stock-opname/{stockOpname}/pdf', [StockOpnameController::class, 'downloadPdf'])->name('stock-opname.pdf');
     Route::get('/stock-opname/{stockOpname}', [StockOpnameController::class, 'show'])->name('stock-opname.show');
+});
+
+Route::middleware(['auth', 'verified', 'role:manager,supervisor,staff', 'module:warehouse_ops'])->group(function () {
     Route::get('/stock-adjustments/{stockAdjustment}/pdf', [StockAdjustmentController::class, 'downloadPdf'])->name('stock-adjustments.pdf');
     Route::get('/stock-adjustments/{stockAdjustment}', [StockAdjustmentController::class, 'show'])->name('stock-adjustments.show');
 });
 
 // Supervisor+ can create, approve, reject
-Route::middleware(['auth', 'verified', 'role:manager,supervisor'])->group(function () {
+Route::middleware(['auth', 'verified', 'role:manager,supervisor', 'module:warehouse_ops'])->group(function () {
     Route::post('/rack-allocation/transfers', [StockTransferController::class, 'store'])->name('rack.allocation.transfers.store');
     Route::post('/rack-allocation/transfers/{stockTransfer}/approve', [StockTransferController::class, 'approve'])->name('rack.allocation.transfers.approve');
     Route::post('/rack-allocation/transfers/{stockTransfer}/reject', [StockTransferController::class, 'reject'])->name('rack.allocation.transfers.reject');
@@ -203,7 +226,7 @@ Route::middleware(['auth', 'verified', 'role:manager,supervisor'])->group(functi
 
 use App\Http\Controllers\ReportController;
 
-Route::middleware(['auth', 'verified', 'role:manager,supervisor'])->group(function () {
+Route::middleware(['auth', 'verified', 'role:manager,supervisor', 'module:reports_advanced'])->group(function () {
     Route::get('/reports', [ReportController::class, 'index'])->name('reports');
     Route::post('/reports/generate', [ReportController::class, 'generatePdf'])->name('reports.generate');
     Route::get('/reports/download/{report}', [ReportController::class, 'download'])->name('reports.download');
@@ -218,6 +241,8 @@ Route::middleware('auth')->group(function () {
 );
 
 use App\Http\Controllers\SettingsController;
+use App\Http\Controllers\SaasAdminController;
+use App\Http\Controllers\BillingController;
 
 Route::middleware(['auth', 'verified', 'role:manager'])->group(function () {
     Route::get('/settings', [SettingsController::class, 'index'])->name('settings');
@@ -232,13 +257,23 @@ Route::middleware(['auth', 'verified', 'role:manager'])->group(function () {
     Route::post('/settings/units', [SettingsController::class, 'storeUnit'])->name('settings.units.store');
     Route::put('/settings/units/{id}', [SettingsController::class, 'updateUnit'])->name('settings.units.update');
     Route::delete('/settings/units/{id}', [SettingsController::class, 'destroyUnit'])->name('settings.units.destroy');
+
+    Route::get('/settings/saas', [SaasAdminController::class, 'index'])->name('settings.saas');
+    Route::put('/settings/saas/{tenant}/modules', [SaasAdminController::class, 'updateModules'])->name('settings.saas.modules.update');
+    Route::put('/settings/saas/{tenant}/subscription', [SaasAdminController::class, 'updateSubscriptionStatus'])->name('settings.saas.subscription.update');
+
+    Route::get('/settings/billing', [BillingController::class, 'index'])->name('settings.billing');
+    Route::post('/settings/billing/checkout', [BillingController::class, 'checkout'])->name('settings.billing.checkout');
+    Route::get('/settings/billing/payments/{payment}/invoice', [BillingController::class, 'invoice'])->name('settings.billing.invoice');
 });
+
+Route::post('/webhooks/midtrans', [BillingController::class, 'webhook'])->name('webhooks.midtrans');
 
 
 use App\Http\Controllers\PetayuAIController;
 
 // ─── PETAYU AI Assistant ───────────────────────────────────────────────────────
-Route::middleware(['auth', 'verified', 'role:manager,supervisor,staff'])->prefix('petayu-ai')->name('petayu.')->group(function () {
+Route::middleware(['auth', 'verified', 'role:manager,supervisor,staff', 'module:ai_contextual'])->prefix('petayu-ai')->name('petayu.')->group(function () {
     Route::get('/',                                    [PetayuAIController::class, 'index'])->name('index');
     Route::get('/dashboard-insight',                   [PetayuAIController::class, 'dashboardInsight'])->name('dashboard-insight');
     Route::get('/conversations',                       [PetayuAIController::class, 'conversations'])->name('conversations');
@@ -253,7 +288,7 @@ Route::middleware(['auth', 'verified', 'role:manager,supervisor,staff'])->prefix
 });
 
 // Legacy compatibility for old /petayu endpoints.
-Route::middleware(['auth', 'verified', 'role:manager,supervisor,staff'])->prefix('petayu')->group(function () {
+Route::middleware(['auth', 'verified', 'role:manager,supervisor,staff', 'module:ai_contextual'])->prefix('petayu')->group(function () {
     Route::get('/',                                    [PetayuAIController::class, 'index']);
     Route::get('/dashboard-insight',                   [PetayuAIController::class, 'dashboardInsight']);
     Route::get('/conversations',                       [PetayuAIController::class, 'conversations']);

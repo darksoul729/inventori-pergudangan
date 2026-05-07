@@ -27,7 +27,7 @@ const DetailRow = ({ label, value }) => (
 export default function GoodsReceiptDetail({ receipt }) {
     return (
         <DashboardLayout contentClassName="max-w-[1180px] mx-auto">
-            <Head title={`Goods Receipt ${receipt.number}`} />
+            <Head title={`Barang Masuk ${receipt.number}`} />
 
             <div className="pb-12 pt-2">
                 <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -119,7 +119,7 @@ export default function GoodsReceiptDetail({ receipt }) {
                                 <DetailRow label="PO Sumber" value={receipt.purchase_order?.po_number} />
                                 <DetailRow label="Supplier" value={receipt.supplier?.name} />
                                 <DetailRow label="Kontak Supplier" value={receipt.supplier?.contact_person || receipt.supplier?.email} />
-                                <DetailRow label="Warehouse" value={receipt.warehouse?.name} />
+                                <DetailRow label="Gudang" value={receipt.warehouse?.name} />
                                 <DetailRow label="Lokasi" value={receipt.warehouse?.location} />
                                 <DetailRow label="Email Operator" value={receipt.operator?.email} />
                                 <DetailRow label="Catatan" value={receipt.notes} />

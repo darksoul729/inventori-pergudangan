@@ -1373,12 +1373,12 @@ class PetayuAIController extends Controller
         $normalized = mb_strtolower(trim($message));
 
         $guides = [
-            'po' => "📋 **Purchase Order (PO):**\n- Manager & Supervisor bisa buat PO di menu Purchase Order → Buat PO\n- Isi supplier, produk, jumlah, harga, batch, dan tanggal kedaluarsa\n- PO butuh approval Manager sebelum bisa di-receive\n- Supervisor/Manager bisa confirm receive setelah PO disetujui\n- Goods Receipt otomatis dibuat saat receive",
-            'receive' => "📦 **Receive PO:**\n- Pastikan PO sudah di-approve Manager\n- Buka detail PO → klik 'Confirm Received'\n- Stok otomatis masuk ke gudang dan Goods Receipt dibuat\n- Batch & expired date dari PO item akan diteruskan",
-            'opname' => "📝 **Stock Opname:**\n- Supervisor/Staff bisa buat opname di menu Stock Opname\n- Catat stok fisik vs sistem per produk\n- Manager auto-approve saat buat, Staff butuh approval Manager\n- Selisih otomatis dikoreksi setelah approval",
+            'po' => "📋 **Pesanan Pembelian (PO):**\n- Manager & Supervisor bisa buat PO di menu Pesanan Pembelian → Buat PO\n- Isi supplier, produk, jumlah, harga, batch, dan tanggal kedaluwarsa\n- PO butuh persetujuan Manager sebelum bisa diterima\n- Supervisor/Manager bisa konfirmasi penerimaan setelah PO disetujui\n- Dokumen Barang Masuk otomatis dibuat saat penerimaan",
+            'receive' => "📦 **Penerimaan PO:**\n- Pastikan PO sudah disetujui Manager\n- Buka detail PO → klik 'Konfirmasi Diterima'\n- Stok otomatis masuk ke gudang dan dokumen Barang Masuk dibuat\n- Batch & tanggal kedaluwarsa dari item PO akan diteruskan",
+            'opname' => "📝 **Cek Stok Fisik:**\n- Supervisor/Staff bisa buat dokumen di menu Cek Stok Fisik\n- Catat stok fisik vs stok sistem per produk\n- Manager auto-approve saat buat, Staff butuh persetujuan Manager\n- Selisih otomatis dikoreksi setelah disetujui",
             'transfer' => "🔄 **Transfer Rak:**\n- Supervisor/Staff bisa buat transfer di menu Rack Allocation\n- Pilih rak asal, rak tujuan, produk, dan jumlah\n- Manager auto-approve, lainnya butuh approval\n- Stok otomatis berpindah setelah approval",
-            'outbound' => "📤 **Barang Keluar (Stock Out):**\n- Bisa dibuat di menu Stock Out\n- Pilih produk, jumlah, tujuan/customer, dan tujuan pengeluaran\n- Sistem otomatis mengambil stok berdasarkan FEFO (First Expired First Out)\n- Stok berkurang otomatis setelah dibuat",
-            'approve' => "✅ **Approval:**\n- Hanya Manager yang bisa approve/reject PO, Stock Opname, dan Transfer\n- Tombol approve/reject muncul di halaman detail dokumen\n- Manager tidak bisa approve dokumen yang dibuat sendiri (anti self-approval)",
+            'outbound' => "📤 **Barang Keluar:**\n- Bisa dibuat di menu Barang Keluar\n- Pilih produk, jumlah, tujuan/customer, dan tujuan pengeluaran\n- Sistem otomatis mengambil stok berdasarkan FEFO (First Expired First Out)\n- Stok berkurang otomatis setelah dibuat",
+            'approve' => "✅ **Persetujuan Dokumen:**\n- Hanya Manager yang bisa setujui/tolak PO, Cek Stok Fisik, dan Pindah Rak\n- Tombol Setujui/Tolak muncul di halaman detail dokumen\n- Manager tidak bisa menyetujui dokumen yang dibuat sendiri (anti self-approval)",
             'default' => "🆘 **Pusat Bantuan PETAYU:**\n\nSaya bisa membantu dengan:\n- **Ringkasan stok** — ketik `ringkasan stok`\n- **Produk rendah stok** — ketik `stok menipis`\n- **Cari produk** — ketik nama/SKU produk\n- **Prediksi stok** — ketik `prediksi stok [nama] 7 hari`\n- **Stok kadaluarsa** — ketik `stok kadaluarsa`\n- **Produk keluar terbanyak** — ketik `produk keluar terbanyak`\n- **Cara pakai fitur** — ketik `cara [fitur]` (contoh: `cara receive PO`)\n- **Hak akses role** — ketik `hak akses` atau `role`\n\nAtau eskalasi ke atasan sesuai alur:\n- Staff → Supervisor → Manager",
         ];
 
@@ -1420,8 +1420,8 @@ class PetayuAIController extends Controller
         $role = ucfirst($user->role?->name ?? 'Staff');
 
         $text = "🔐 **Hak Akses Role di PETAYU:**\n\n"
-            . "- **Manager Gudang**: Akses penuh — master data, pengaturan, driver, approval PO/Opname/Transfer, laporan, koreksi stok final, semua fitur dashboard & analitik.\n"
-            . "- **Supervisor Gudang**: Validasi transaksi, laporan, Dokumen WMS, pengiriman, receive PO (setelah approval Manager), Transfer Rack, Stock Opname.\n"
+            . "- **Manager Gudang**: Akses penuh — master data, pengaturan, driver, persetujuan PO/Cek Stok Fisik/Pindah Rak, laporan, koreksi stok final, semua fitur dashboard & analitik.\n"
+            . "- **Supervisor Gudang**: Validasi transaksi, laporan, Dokumen WMS, pengiriman, penerimaan PO (setelah disetujui Manager), Pindah Rak, Cek Stok Fisik.\n"
             . "- **Staff Operasional**: Dashboard, inventory view, outbound, transaksi harian, supplier/PO view, shipment view, input operasional (tanpa approval).\n"
             . "- **Driver**: Mobile/API — shipment assigned, claim, update status, POD, lokasi, history.\n\n"
             . "Role Anda saat ini: **{$role}**";
@@ -1565,7 +1565,7 @@ class PetayuAIController extends Controller
     - Operasional gudang, inventaris, logistik, stok, driver, pengiriman
     - Manajemen WMS (Warehouse Management System) PETAYU
     - Data produk, supplier, customer, rak, zona, kapasitas
-    - Purchase Order, Goods Receipt, Stock Out, Stock Opname, Stock Transfer, Stock Adjustment
+    - Pesanan Pembelian, Barang Masuk, Barang Keluar, Cek Stok Fisik, Pindah Rak, Penyesuaian Stok
     - Dashboard, laporan, analisis, prediksi stok
     - Hak akses role, alur kerja, dan cara pakai fitur sistem PETAYU
 
@@ -1582,7 +1582,7 @@ class PetayuAIController extends Controller
     - Format laporan kendala yang baik: menu terkait, nomor dokumen, nama produk/rack/supplier/driver/shipment, deskripsi masalah, screenshot, waktu kejadian, dan akun pengguna.
  9. Hak akses standar:
     - Manager Gudang: akses penuh, master data, pengaturan, driver, approval PO, laporan, dan koreksi final.
-    - Supervisor Gudang: validasi transaksi, laporan, Dokumen WMS, pengiriman, receive PO setelah approval Manager, Transfer Rack, dan Stock Opname.
+    - Supervisor Gudang: validasi transaksi, laporan, Dokumen WMS, pengiriman, penerimaan PO setelah disetujui Manager, Pindah Rak, dan Cek Stok Fisik.
     - Staff Operasional: dashboard, inventory view, outbound, transaksi, supplier/PO view, shipment view, dan input operasional non-approval.
     - Driver: mobile/API untuk shipment assigned/claim/status/POD/location/history.
  10. Jika pengguna menanyakan hal di luar urusan gudang (seperti membuat kode program, pertanyaan umum, matematika murni, sains, atau tips gaya hidup yang tidak relevan dengan gudang), kamu WAJIB menjawab bahwa kamu tidak bisa menjawab pertanyaan tersebut karena fokus utama kamu hanya pada manajemen sistem gudang PETAYU. 

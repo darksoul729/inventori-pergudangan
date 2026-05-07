@@ -1,0 +1,307 @@
+- generic [ref=e3]:
+  - generic [ref=e4]:
+    - button [ref=e5] [cursor=pointer]:
+      - img [ref=e6]
+    - generic [ref=e8]:
+      - generic [ref=e9]:
+        - img "Logo PETAYU" [ref=e11]
+        - generic [ref=e12]:
+          - heading "PETAYU" [level=1] [ref=e13]
+          - paragraph [ref=e14]: SMART STORAGE, SMOOTH FLOW
+      - navigation [ref=e15]:
+        - link "Dasbor" [ref=e16] [cursor=pointer]:
+          - /url: /dashboard
+          - img [ref=e17]
+          - generic [ref=e22]: Dasbor
+        - link "Bantuan AI" [ref=e23] [cursor=pointer]:
+          - /url: /petayu-ai
+          - img [ref=e24]
+          - generic [ref=e27]: Bantuan AI
+        - generic [ref=e28]:
+          - button "Operasional Gudang" [ref=e29] [cursor=pointer]:
+            - generic [ref=e30]:
+              - img [ref=e31]
+              - generic [ref=e34]: Operasional Gudang
+            - img [ref=e36]
+          - generic [ref=e39]:
+            - link "Layout Gudang" [ref=e40] [cursor=pointer]:
+              - /url: /warehouse
+              - generic [ref=e41]: Layout Gudang
+            - link "Pindah Rak" [ref=e42] [cursor=pointer]:
+              - /url: /rack-allocation
+              - generic [ref=e43]: Pindah Rak
+            - link "Cek Stok" [ref=e44] [cursor=pointer]:
+              - /url: /stock-opname
+              - generic [ref=e45]: Cek Stok
+        - link "Stok Barang" [ref=e46] [cursor=pointer]:
+          - /url: /inventory
+          - img [ref=e47]
+          - generic [ref=e57]: Stok Barang
+        - generic [ref=e58]:
+          - button "Pembelian" [ref=e59] [cursor=pointer]:
+            - generic [ref=e60]:
+              - img [ref=e61]
+              - generic [ref=e65]: Pembelian
+            - img [ref=e67]
+          - generic [ref=e70]:
+            - link "Order Beli" [ref=e71] [cursor=pointer]:
+              - /url: /purchase-orders
+              - generic [ref=e72]: Order Beli
+            - link "Pemasok" [ref=e73] [cursor=pointer]:
+              - /url: /supplier
+              - generic [ref=e74]: Pemasok
+            - link "Tagihan" [ref=e75] [cursor=pointer]:
+              - /url: /tagihan
+              - generic [ref=e76]: Tagihan
+        - generic [ref=e77]:
+          - button "Riwayat" [ref=e78] [cursor=pointer]:
+            - generic [ref=e79]:
+              - img [ref=e80]
+              - generic [ref=e83]: Riwayat
+            - img [ref=e85]
+          - generic [ref=e88]:
+            - link "Riwayat Stok" [ref=e89] [cursor=pointer]:
+              - /url: /transaction
+              - generic [ref=e90]: Riwayat Stok
+            - link "Dokumen" [ref=e91] [cursor=pointer]:
+              - /url: /wms-documents
+              - generic [ref=e92]: Dokumen
+        - generic [ref=e93]:
+          - button "Pengiriman" [ref=e94] [cursor=pointer]:
+            - generic [ref=e95]:
+              - img [ref=e96]
+              - generic [ref=e101]: Pengiriman
+            - img [ref=e103]
+          - generic [ref=e106]:
+            - link "Pengiriman" [ref=e107] [cursor=pointer]:
+              - /url: /shipments
+              - generic [ref=e108]: Pengiriman
+            - link "Driver" [ref=e109] [cursor=pointer]:
+              - /url: /drivers
+              - generic [ref=e110]: Driver
+        - generic [ref=e111]:
+          - button "Sistem" [ref=e112] [cursor=pointer]:
+            - generic [ref=e113]:
+              - img [ref=e114]
+              - generic [ref=e117]: Sistem
+            - img [ref=e119]
+          - generic [ref=e122]:
+            - link "Laporan" [ref=e123] [cursor=pointer]:
+              - /url: /reports
+              - generic [ref=e124]: Laporan
+            - link "Pengaturan" [ref=e125] [cursor=pointer]:
+              - /url: /settings
+              - generic [ref=e126]: Pengaturan
+        - generic [ref=e127]:
+          - button "Bantuan" [ref=e128] [cursor=pointer]:
+            - generic [ref=e129]:
+              - img [ref=e130]
+              - generic [ref=e133]: Bantuan
+            - img [ref=e134]
+          - generic [ref=e136]:
+            - link "Tanya Tim" [ref=e137] [cursor=pointer]:
+              - /url: /help/live-support
+            - link "Cara Pakai" [ref=e138] [cursor=pointer]:
+              - /url: /help/documentation
+  - generic [ref=e139]:
+    - banner [ref=e140]:
+      - generic [ref=e141]:
+        - heading "Tambah Item Inventaris Baru" [level=2] [ref=e142]
+        - generic [ref=e147]: "Sistem Inti: Operasional"
+      - generic [ref=e148]:
+        - generic [ref=e149]:
+          - link "3" [ref=e150] [cursor=pointer]:
+            - /url: /notifications
+            - img [ref=e152]
+            - generic [ref=e157]: "3"
+          - link [ref=e158] [cursor=pointer]:
+            - /url: /help/live-support
+            - img [ref=e160]
+        - generic [ref=e166] [cursor=pointer]:
+          - generic [ref=e167]:
+            - generic [ref=e168]: Rizky Pratama
+            - generic [ref=e169]: Manager Gudang
+          - generic [ref=e170]: R
+    - navigation [ref=e171]:
+      - link "Beranda" [ref=e172] [cursor=pointer]:
+        - /url: /dashboard
+        - img [ref=e173]
+        - generic [ref=e178]: Beranda
+      - img [ref=e179]
+      - link "Stok Barang" [ref=e181] [cursor=pointer]:
+        - /url: /inventory
+      - img [ref=e182]
+      - generic [ref=e184]: Create
+    - generic [ref=e186]:
+      - generic [ref=e187]: "Aksi Cepat:"
+      - link "Barang Masuk" [ref=e188] [cursor=pointer]:
+        - /url: /inventory?mode=inbound
+        - img [ref=e189]
+        - generic [ref=e193]: Barang Masuk
+      - link "Pengiriman" [ref=e194] [cursor=pointer]:
+        - /url: /shipments/create
+        - img [ref=e195]
+        - generic [ref=e200]: Pengiriman
+      - link "Cek Stok" [ref=e201] [cursor=pointer]:
+        - /url: /stock-opname
+        - img [ref=e202]
+        - generic [ref=e206]: Cek Stok
+      - link "Laporan Stok" [ref=e207] [cursor=pointer]:
+        - /url: /reports?type=inventory
+        - img [ref=e208]
+        - generic [ref=e210]: Laporan Stok
+      - link "Stok Menipis" [ref=e211] [cursor=pointer]:
+        - /url: /inventory?filter=low
+        - img [ref=e212]
+        - generic [ref=e215]: Stok Menipis
+    - main [ref=e216]:
+      - generic [ref=e218]:
+        - generic [ref=e220]:
+          - link "Kembali" [ref=e221] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/inventory
+            - img [ref=e222]
+            - text: Kembali
+          - generic [ref=e224]:
+            - generic [ref=e225]: Registrasi Produk
+            - generic [ref=e226]: Gudang Utama Samarinda
+          - heading "Tambah Item Inventaris Baru" [level=1] [ref=e227]
+          - paragraph [ref=e228]: Lengkapi data master, harga, batas stok, dan penempatan awal produk.
+        - generic [ref=e229]:
+          - generic [ref=e230]:
+            - generic [ref=e232]:
+              - generic [ref=e233]:
+                - heading "Informasi Produk" [level=2] [ref=e234]
+                - paragraph [ref=e235]: Identitas utama untuk pencarian, pencatatan transaksi, dan relasi supplier.
+              - generic [ref=e237]:
+                - generic [ref=e238]:
+                  - generic [ref=e239]: Nama Produk*
+                  - 'textbox "misal: AX900 Sensor Module" [ref=e240]'
+                - generic [ref=e241]:
+                  - generic [ref=e242]: SKU / Barcode*
+                  - 'textbox "misal: HP-AX900" [ref=e243]'
+                - generic [ref=e244]:
+                  - generic [ref=e245]: Kategori*
+                  - generic [ref=e246]:
+                    - combobox [ref=e247] [cursor=pointer]:
+                      - option "Pilih kategori" [selected]
+                      - option "Elektronik"
+                      - option "Barang Industri"
+                      - option "Bahan Kimia"
+                      - option "Kayu / Bahan Baku"
+                      - option "Packaging"
+                    - img
+                - generic [ref=e248]:
+                  - generic [ref=e249]: Satuan Unit*
+                  - generic [ref=e250]:
+                    - combobox [ref=e251] [cursor=pointer]:
+                      - option "Pilih satuan" [selected]
+                      - option "Pallet"
+                      - option "Box"
+                      - option "Batang"
+                      - option "Unit"
+                      - option "Kilogram"
+                    - img
+                - generic [ref=e252]:
+                  - generic [ref=e253]: Pemasok Default
+                  - generic [ref=e254]:
+                    - combobox [ref=e255] [cursor=pointer]:
+                      - option "Tanpa pemasok default" [selected]
+                      - option "PT Komponen Axis Nusantara"
+                      - option "PT Manufaktur Bulkchain"
+                      - option "PT Kayu Lestari Timur"
+                    - img
+            - generic [ref=e257]:
+              - generic [ref=e258]:
+                - heading "Harga dan Stok" [level=2] [ref=e259]
+                - paragraph [ref=e260]: Nilai komersial dan batas minimum yang dipakai untuk monitoring inventaris.
+              - generic [ref=e262]:
+                - generic [ref=e263]:
+                  - generic [ref=e264]: Stok Awal
+                  - spinbutton [ref=e265]: "0"
+                - generic [ref=e266]:
+                  - generic [ref=e267]: Harga Beli
+                  - spinbutton [ref=e268]: "0"
+                - generic [ref=e269]:
+                  - generic [ref=e270]: Harga Jual
+                  - spinbutton [ref=e271]: "0"
+                - generic [ref=e272]:
+                  - generic [ref=e273]: Stok Minimum*
+                  - spinbutton [ref=e274]: "10"
+            - generic [ref=e276]:
+              - generic [ref=e277]:
+                - heading "Profil Volume (Opsional)" [level=2] [ref=e278]
+                - paragraph [ref=e279]: Dipakai untuk perhitungan volume m3 per unit. Cocok untuk kayu, box, pallet, dan barang non-kayu yang butuh analitik ruang.
+              - generic [ref=e282]:
+                - generic [ref=e283]: Mode Input Volume
+                - generic [ref=e284]:
+                  - combobox [ref=e285] [cursor=pointer]:
+                    - option "Tidak dipakai" [selected]
+                    - option "Hitung otomatis dari dimensi"
+                    - option "Input manual (m3 per unit)"
+                  - img
+            - generic [ref=e287]:
+              - generic [ref=e288]:
+                - heading "Penempatan Awal" [level=2] [ref=e289]
+                - paragraph [ref=e290]: Pilih rak hanya saat produk memiliki stok awal.
+              - generic [ref=e292]:
+                - generic [ref=e293]:
+                  - generic [ref=e294]: Lokasi Gudang
+                  - generic [ref=e295]: Gudang Utama Samarinda
+                - generic [ref=e296]:
+                  - generic [ref=e297]: Lokasi Rak
+                  - generic [ref=e298]:
+                    - combobox [ref=e299] [cursor=pointer]:
+                      - option "Pilih rak" [selected]
+                      - option "A1-A12 - Rak A1-A12"
+                      - option "A13-A24 - Rak A13-A24"
+                      - option "B-BULK - Rak Curah Zona B"
+                      - option "C-SHELF - Rak Shelving Zona C"
+                      - option "D-DOCK - Lajur Dock Zona D"
+                      - option "E-HAZ1 - Rak Hazmat Zona E"
+                    - img
+                  - generic [ref=e300]: Opsional bila stok awal nol.
+            - generic [ref=e302]:
+              - generic [ref=e303]:
+                - heading "Catatan" [level=2] [ref=e304]
+                - paragraph [ref=e305]: Tambahkan informasi teknis, instruksi penanganan, atau kebutuhan penyimpanan khusus.
+              - generic [ref=e307]:
+                - generic [ref=e308]: Deskripsi Item
+                - textbox "Jelaskan spesifikasi, instruksi penanganan, atau kebutuhan penyimpanan..." [ref=e309]
+          - complementary [ref=e310]:
+            - generic [ref=e311]:
+              - heading "Gambar Produk" [level=2] [ref=e312]
+              - paragraph [ref=e313]: Gunakan gambar produk yang jelas agar mudah dikenali.
+              - button "Unggah gambar produk PNG, JPG, JPEG, GIF maksimal 2 MB" [ref=e314] [cursor=pointer]:
+                - img [ref=e316]
+                - generic [ref=e318]: Unggah gambar produk
+                - generic [ref=e319]: PNG, JPG, JPEG, GIF maksimal 2 MB
+            - generic [ref=e320]:
+              - heading "Ringkasan" [level=2] [ref=e321]
+              - generic [ref=e322]:
+                - generic [ref=e323]:
+                  - term [ref=e324]: SKU
+                  - definition [ref=e325]: "-"
+                - generic [ref=e326]:
+                  - term [ref=e327]: Kategori
+                  - definition [ref=e328]: "-"
+                - generic [ref=e329]:
+                  - term [ref=e330]: Unit
+                  - definition [ref=e331]: "-"
+                - generic [ref=e332]:
+                  - term [ref=e333]: Stok Fisik
+                  - definition [ref=e334]: 0 unit
+                - generic [ref=e335]:
+                  - term [ref=e336]: Volume m3/Unit
+                  - definition [ref=e337]: "-"
+        - generic [ref=e339]:
+          - link "Batal" [ref=e340] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/inventory
+          - button "Tambah Item" [ref=e341] [cursor=pointer]:
+            - img [ref=e342]
+            - text: Tambah Item
+  - button "Buka PETAYU AI" [ref=e344] [cursor=pointer]:
+    - generic [ref=e345]:
+      - generic [ref=e348]:
+        - img [ref=e350]
+        - img [ref=e356]
+      - generic: ✦ PETAYU AI

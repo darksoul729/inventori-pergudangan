@@ -85,7 +85,7 @@ class InventoryFilterTest extends TestCase
                 ->where('products.data.0.current_stock', 45)
                 ->where('products.data.0.max_stock', 3800)
                 ->where('products.data.0.percentage', 1)
-                ->where('products.data.0.status', 'Low Stock')
+                ->where('products.data.0.status', 'Stok Menipis')
                 ->where('stats.low_stock', 1)
                 ->where('stats.storage_efficiency', 1.2)
                 ->where('stats.occupied_storage', 45)
@@ -95,7 +95,7 @@ class InventoryFilterTest extends TestCase
         $this->actingAs($staff)->get(route('inventory', ['status' => 'LowStock']))
             ->assertOk()
             ->assertInertia(fn(Assert $page) => $page
-                ->where('products.data.0.status', 'Low Stock')
+                ->where('products.data.0.status', 'Stok Menipis')
             );
 
         $this->actingAs($staff)->get(route('inventory', ['status' => 'Healthy']))

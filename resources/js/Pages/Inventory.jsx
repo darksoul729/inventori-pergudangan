@@ -203,12 +203,12 @@ export default function Inventory({ products, stats, categories, units, supplier
 
     return (
         <DashboardLayout
-            headerTitle="Manajemen Inventaris"
-            headerSearchPlaceholder="Cari di inventaris..."
+            headerTitle="Stok Barang"
+            headerSearchPlaceholder="Cari barang..."
             searchValue={searchTerm}
             onSearch={setSearchTerm}
         >
-            <Head title="Manajemen Inventaris" />
+            <Head title="Stok Barang" />
 
             {/* Flash Messages */}
             {flash.success && (
@@ -228,7 +228,7 @@ export default function Inventory({ products, stats, categories, units, supplier
 
                     {/* Header Row */}
                     <div className="flex justify-between items-center mb-2">
-                        <h1 className="text-[28px] font-black text-[#28106F] tracking-tight">Manajemen Inventaris</h1>
+                        <h1 className="text-[28px] font-black text-[#28106F] tracking-tight">Stok Barang</h1>
 
                         <div className="flex items-center space-x-4">
                             {isManager && (
@@ -253,7 +253,7 @@ export default function Inventory({ products, stats, categories, units, supplier
                                     className="flex items-center space-x-2 px-6 py-3 border border-[#EDE8FC] bg-white hover:bg-indigo-50 text-[#5932C9] font-bold rounded-xl text-[14px] transition-all"
                                 >
                                     <AuditIcon className="w-4 h-4" />
-                                    <span>Stock Opname</span>
+                                    <span>Cek Stok Fisik</span>
                                 </Link>
                             )}
                             {isManager && (
@@ -262,7 +262,7 @@ export default function Inventory({ products, stats, categories, units, supplier
                                     className="flex items-center space-x-2 px-6 py-3 bg-[#5932C9] shadow-[0_4px_14px_rgba(89,50,201,0.3)] hover:bg-indigo-700 text-white font-bold rounded-xl text-[14px] transition-colors"
                                 >
                                     <span className="text-lg leading-none font-medium">+</span>
-                                    <span>Tambah Entri Baru</span>
+                                    <span>Tambah Barang Baru</span>
                                 </Link>
                             )}
                         </div>
@@ -270,11 +270,11 @@ export default function Inventory({ products, stats, categories, units, supplier
 
                     {/* 4 Stat Cards */}
                     <div className="grid grid-cols-4 gap-4">
-                        {/* 1. Total SKUs */}
+                        {/* 1. Total Kode Barang */}
                         <div className="bg-white rounded-[20px] p-5 shadow-[0_2px_16px_rgba(0,0,0,0.02)] border border-[#EDE8FC]">
                             <div className="flex items-center space-x-2 mb-3">
                                 <BoxIcon2 className="w-4 h-4 text-indigo-500" />
-                                <span className="text-[12px] font-extrabold text-gray-500 tracking-wide">Total SKU</span>
+                                <span className="text-[12px] font-extrabold text-gray-500 tracking-wide">Total Kode Barang</span>
                             </div>
                             <div className="flex items-baseline space-x-3">
                                 <span className="text-[26px] font-black text-[#28106F]">{stats.total_skus.toLocaleString()}</span>
@@ -480,7 +480,7 @@ export default function Inventory({ products, stats, categories, units, supplier
                                             </div>
                                             <div>
                                                 <div className="text-[14px] font-black text-[#28106F] mb-1">{item.name}</div>
-                                                <div className="text-[11px] font-bold text-gray-400 tracking-wide">SKU: {item.sku}</div>
+                                                <div className="text-[11px] font-bold text-gray-400 tracking-wide">Kode: {item.sku}</div>
                                             </div>
                                         </div>
                                         <div className="col-span-4 flex flex-col justify-center pr-8">

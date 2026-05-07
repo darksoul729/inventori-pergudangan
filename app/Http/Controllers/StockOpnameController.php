@@ -272,7 +272,7 @@ class StockOpnameController extends Controller
             'generatedAt' => now(),
         ])->setPaper('a4', 'portrait');
 
-        return $pdf->download('Stock_Opname_'.$stockOpname->opname_number.'.pdf');
+        return $pdf->download('Cek_Stok_Fisik_'.$stockOpname->opname_number.'.pdf');
     }
 
     private function documentPayload(StockOpname $stockOpname): array
@@ -285,7 +285,7 @@ class StockOpnameController extends Controller
         ]);
 
         return [
-            'title' => 'Stock Opname',
+            'title' => 'Cek Stok Fisik',
             'subtitle' => 'Dokumen hasil hitung fisik stok gudang',
             'number' => $stockOpname->opname_number,
             'status' => $stockOpname->items->sum('difference') == 0 ? 'Balanced' : 'Variance',
@@ -296,7 +296,7 @@ class StockOpnameController extends Controller
                 ['label' => 'Operator', 'value' => $stockOpname->creator?->name ?? 'Sistem'],
             ],
             'details' => [
-                ['label' => 'Warehouse', 'value' => $stockOpname->warehouse?->name],
+                ['label' => 'Gudang', 'value' => $stockOpname->warehouse?->name],
                 ['label' => 'Lokasi', 'value' => $stockOpname->warehouse?->location],
                 ['label' => 'Dibuat Oleh', 'value' => $stockOpname->creator?->name],
                 ['label' => 'Disetujui Oleh', 'value' => $stockOpname->approver?->name],

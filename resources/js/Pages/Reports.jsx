@@ -112,15 +112,15 @@ export default function Reports({ data, reports, filters }) {
     }, [inventoryDistribution, costDistributionMax]);
 
     const sourceOptions = [
-        { id: 'inventory', label: 'Level Inventaris', enabled: inventoryDistribution.length > 0 },
+        { id: 'inventory', label: 'Ringkasan Stok', enabled: inventoryDistribution.length > 0 },
         { id: 'fleet', label: 'Armada Pengiriman', enabled: (data?.shipment_stats?.total || 0) > 0 },
-        { id: 'cost', label: 'Analisis Biaya', enabled: inventoryDistribution.some((i) => i.total_value > 0) },
+        { id: 'cost', label: 'Nilai Persediaan', enabled: inventoryDistribution.some((i) => i.total_value > 0) },
     ];
 
     const visualizationOptions = [
         { id: 'bar', label: 'Batang' },
-        { id: 'kinetic', label: 'Arus' },
-        { id: 'distribution', label: 'Distribusi' },
+        { id: 'kinetic', label: 'Ringkas' },
+        { id: 'distribution', label: 'Perbandingan' },
     ];
 
     const currentDataset = useMemo(() => {
@@ -169,6 +169,14 @@ export default function Reports({ data, reports, filters }) {
     const handleDownload = (report) => {
         if (report?.status !== 'COMPLETED') return;
         window.location.href = route('reports.download', report.id);
+    };
+
+    const formatReportStatus = (status) => {
+        const value = String(status || '').toUpperCase();
+        if (value === 'COMPLETED') return 'SELESAI';
+        if (value === 'PENDING') return 'MENUNGGU';
+        if (value === 'FAILED') return 'GAGAL';
+        return value || '-';
     };
 
     const handleGoToInventory = () => {
@@ -273,7 +281,7 @@ export default function Reports({ data, reports, filters }) {
                     return;
                 }
 
-                const ws = workbook.addWorksheet('Level Inventaris');
+                const ws = workbook.addWorksheet('Ringkasan Stok');
                 addTitle(ws, [
                     { header: 'NO', key: 'no', width: 6 },
                     { header: 'KATEGORI', key: 'category', width: 32 },
@@ -334,7 +342,7 @@ export default function Reports({ data, reports, filters }) {
                 ws.addRow({ no: 'RINGKASAN', date: '', count: '' });
 
                 [
-                    ['Total Trip', data?.shipment_stats?.total || 0],
+                    ['Total Pengiriman', data?.shipment_stats?.total || 0],
                     ['Sedang Transit', data?.shipment_stats?.transit || 0],
                     ['Terkirim', data?.shipment_stats?.delivered || 0],
                 ].forEach(([label, val]) => {
@@ -447,7 +455,7 @@ export default function Reports({ data, reports, filters }) {
             ctx.fillStyle = '#475569';
             ctx.font = '600 24px Arial';
             const subtitle = selectedDataSource === 'inventory'
-                ? 'Sumber: Level Inventaris'
+                ? 'Sumber: Ringkasan Stok'
                 : selectedDataSource === 'fleet'
                     ? 'Sumber: Armada Pengiriman'
                     : 'Sumber: Analisis Biaya';
@@ -517,25 +525,25 @@ export default function Reports({ data, reports, filters }) {
                                 onClick={handleGenerate}
                                 className="inline-flex items-center rounded-xl bg-indigo-500 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-600"
                             >
-                                Buat PDF Status Gudang
+                                Buat Laporan PDF
                             </button>
                             <button
                                 onClick={handleExportCurrentView}
                                 className="inline-flex items-center rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
                             >
-                                Ekspor Excel
+                                Unduh Excel
                             </button>
                             <button
                                 onClick={handleExportAnalysisImage}
                                 className="inline-flex items-center rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
                             >
-                                Ekspor Gambar
+                                Unduh Gambar
                             </button>
                         </div>
                     </div>
                 </section>
 
-                <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+                <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                     <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
                         <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Total Produk</p>
                         <p className="mt-2 text-3xl font-bold text-slate-900">{(data?.total_products || 0).toLocaleString('id-ID')}</p>
@@ -548,10 +556,6 @@ export default function Reports({ data, reports, filters }) {
                         <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Efisiensi Rak</p>
                         <p className="mt-2 text-3xl font-bold text-slate-900">{Number(data?.efficiency || 0).toLocaleString('id-ID')}%</p>
                     </article>
-                    <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-                        <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Total Trip Pengiriman</p>
-                        <p className="mt-2 text-3xl font-bold text-slate-900">{(data?.shipment_stats?.total || 0).toLocaleString('id-ID')}</p>
-                    </article>
                 </section>
 
                 <section className="grid gap-6 xl:grid-cols-3">
@@ -559,7 +563,7 @@ export default function Reports({ data, reports, filters }) {
                         <div className="mb-4 flex items-center justify-between">
                             <div>
                                 <h2 className="text-lg font-bold text-slate-900">Tren Barang Masuk vs Keluar (7 Hari)</h2>
-                                <p className="mt-1 text-sm text-slate-500">Perbandingan unit inbound dan outbound.</p>
+                                <p className="mt-1 text-sm text-slate-500">Perbandingan barang masuk dan barang keluar.</p>
                             </div>
                             <div className="text-right text-sm text-slate-500">
                                 <p>Masuk: <span className="font-semibold text-slate-800">{throughputSummary.inbound.toLocaleString('id-ID')}</span></p>
@@ -587,7 +591,7 @@ export default function Reports({ data, reports, filters }) {
                             </div>
                         ) : (
                             <div className="rounded-xl border border-dashed border-slate-300 p-10 text-center text-sm text-slate-500">
-                                Belum ada data throughput.
+                                Belum ada data pergerakan barang.
                             </div>
                         )}
                     </article>
@@ -758,7 +762,7 @@ export default function Reports({ data, reports, filters }) {
                                 <p className="text-xs uppercase tracking-wider text-slate-400">Ringkasan</p>
                                 <p className="mt-2 text-sm text-slate-600">
                                     {selectedDataSource === 'fleet'
-                                        ? `${(data?.shipment_stats?.total || 0).toLocaleString('id-ID')} total trip, ${(data?.shipment_stats?.delivered || 0).toLocaleString('id-ID')} selesai`
+                                        ? `${(data?.shipment_stats?.total || 0).toLocaleString('id-ID')} total pengiriman, ${(data?.shipment_stats?.delivered || 0).toLocaleString('id-ID')} selesai`
                                         : selectedDataSource === 'cost'
                                             ? `Total valuasi Rp ${costDistributionSummary.totalValue.toLocaleString('id-ID')}`
                                             : `Total unit ${inventoryDistributionSummary.totalUnits.toLocaleString('id-ID')}`}
@@ -824,7 +828,7 @@ export default function Reports({ data, reports, filters }) {
                                             <td className="py-4 pr-3 text-sm text-slate-600">{report.by}</td>
                                             <td className="py-4 pr-3">
                                                 <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${completed ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
-                                                    {completed ? 'SELESAI' : report.status}
+                                                    {formatReportStatus(report.status)}
                                                 </span>
                                             </td>
                                             <td className="py-4 pr-3 text-sm text-slate-600">{report.date}</td>
@@ -859,14 +863,14 @@ export default function Reports({ data, reports, filters }) {
                                 Menampilkan {reportRangeStart}-{reportRangeEnd} dari {reportTotal} laporan
                             </p>
                             <div className="flex items-center gap-2">
-                                <button
-                                    onClick={() => handleReportPageChange(currentReportPage - 1)}
+                        <button
+                            onClick={() => handleReportPageChange(currentReportPage - 1)}
                                     disabled={currentReportPage === 1}
                                     className={`rounded-lg px-3 py-1.5 text-sm font-semibold transition ${currentReportPage === 1
                                         ? 'cursor-not-allowed border border-slate-200 bg-slate-100 text-slate-400'
                                         : 'border border-slate-300 bg-white text-slate-700 hover:bg-slate-50'}`}
                                 >
-                                    Prev
+                                    Sebelumnya
                                 </button>
                                 {paginationButtons.map((page) => (
                                     <button
@@ -886,7 +890,7 @@ export default function Reports({ data, reports, filters }) {
                                         ? 'cursor-not-allowed border border-slate-200 bg-slate-100 text-slate-400'
                                         : 'border border-slate-300 bg-white text-slate-700 hover:bg-slate-50'}`}
                                 >
-                                    Next
+                                    Berikutnya
                                 </button>
                             </div>
                         </div>

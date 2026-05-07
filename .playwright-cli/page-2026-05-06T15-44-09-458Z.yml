@@ -1,0 +1,184 @@
+- generic [ref=e3]:
+  - generic [ref=e4]:
+    - button [ref=e5] [cursor=pointer]:
+      - img [ref=e6]
+    - generic [ref=e8]:
+      - generic [ref=e9]:
+        - img "Logo PETAYU" [ref=e11]
+        - generic [ref=e12]:
+          - heading "PETAYU" [level=1] [ref=e13]
+          - paragraph [ref=e14]: SMART STORAGE, SMOOTH FLOW
+      - navigation [ref=e15]:
+        - link "Dasbor" [ref=e16] [cursor=pointer]:
+          - /url: /dashboard
+          - img [ref=e17]
+          - generic [ref=e22]: Dasbor
+        - link "Bantuan AI" [ref=e23] [cursor=pointer]:
+          - /url: /petayu-ai
+          - img [ref=e24]
+          - generic [ref=e27]: Bantuan AI
+        - generic [ref=e28]:
+          - button "Operasional Gudang" [ref=e29] [cursor=pointer]:
+            - generic [ref=e30]:
+              - img [ref=e31]
+              - generic [ref=e34]: Operasional Gudang
+            - img [ref=e36]
+          - generic [ref=e39]:
+            - link "Layout Gudang" [ref=e40] [cursor=pointer]:
+              - /url: /warehouse
+              - generic [ref=e41]: Layout Gudang
+            - link "Pindah Rak" [ref=e42] [cursor=pointer]:
+              - /url: /rack-allocation
+              - generic [ref=e43]: Pindah Rak
+            - link "Cek Stok" [ref=e44] [cursor=pointer]:
+              - /url: /stock-opname
+              - generic [ref=e45]: Cek Stok
+        - link "Stok Barang" [ref=e46] [cursor=pointer]:
+          - /url: /inventory
+          - img [ref=e47]
+          - generic [ref=e57]: Stok Barang
+        - generic [ref=e58]:
+          - button "Pembelian" [ref=e59] [cursor=pointer]:
+            - generic [ref=e60]:
+              - img [ref=e61]
+              - generic [ref=e65]: Pembelian
+            - img [ref=e67]
+          - generic [ref=e70]:
+            - link "Order Beli" [ref=e71] [cursor=pointer]:
+              - /url: /purchase-orders
+              - generic [ref=e72]: Order Beli
+            - link "Pemasok" [ref=e73] [cursor=pointer]:
+              - /url: /supplier
+              - generic [ref=e74]: Pemasok
+            - link "Tagihan" [ref=e75] [cursor=pointer]:
+              - /url: /tagihan
+              - generic [ref=e76]: Tagihan
+        - generic [ref=e77]:
+          - button "Riwayat" [ref=e78] [cursor=pointer]:
+            - generic [ref=e79]:
+              - img [ref=e80]
+              - generic [ref=e83]: Riwayat
+            - img [ref=e85]
+          - generic [ref=e88]:
+            - link "Riwayat Stok" [ref=e89] [cursor=pointer]:
+              - /url: /transaction
+              - generic [ref=e90]: Riwayat Stok
+            - link "Dokumen" [ref=e91] [cursor=pointer]:
+              - /url: /wms-documents
+              - generic [ref=e92]: Dokumen
+        - generic [ref=e93]:
+          - button "Pengiriman" [ref=e94] [cursor=pointer]:
+            - generic [ref=e95]:
+              - img [ref=e96]
+              - generic [ref=e101]: Pengiriman
+            - img [ref=e103]
+          - generic [ref=e106]:
+            - link "Pengiriman" [ref=e107] [cursor=pointer]:
+              - /url: /shipments
+              - generic [ref=e108]: Pengiriman
+            - link "Driver" [ref=e109] [cursor=pointer]:
+              - /url: /drivers
+              - generic [ref=e110]: Driver
+        - generic [ref=e111]:
+          - button "Sistem" [ref=e112] [cursor=pointer]:
+            - generic [ref=e113]:
+              - img [ref=e114]
+              - generic [ref=e117]: Sistem
+            - img [ref=e119]
+          - generic [ref=e122]:
+            - link "Laporan" [ref=e123] [cursor=pointer]:
+              - /url: /reports
+              - generic [ref=e124]: Laporan
+            - link "Pengaturan" [ref=e125] [cursor=pointer]:
+              - /url: /settings
+              - generic [ref=e126]: Pengaturan
+        - generic [ref=e127]:
+          - button "Bantuan" [ref=e128] [cursor=pointer]:
+            - generic [ref=e129]:
+              - img [ref=e130]
+              - generic [ref=e133]: Bantuan
+            - img [ref=e134]
+          - generic [ref=e136]:
+            - link "Tanya Tim" [ref=e137] [cursor=pointer]:
+              - /url: /help/live-support
+            - link "Cara Pakai" [ref=e138] [cursor=pointer]:
+              - /url: /help/documentation
+  - generic [ref=e139]:
+    - banner [ref=e140]:
+      - generic [ref=e141]:
+        - heading "Pengaturan Sistem" [level=2] [ref=e142]
+        - generic [ref=e143]:
+          - img [ref=e144]
+          - textbox "Cari..." [ref=e147]
+        - generic [ref=e152]: "Sistem Inti: Operasional"
+      - generic [ref=e153]:
+        - generic [ref=e154]:
+          - link "3" [ref=e155] [cursor=pointer]:
+            - /url: /notifications
+            - img [ref=e157]
+            - generic [ref=e162]: "3"
+          - link [ref=e163] [cursor=pointer]:
+            - /url: /help/live-support
+            - img [ref=e165]
+        - generic [ref=e171] [cursor=pointer]:
+          - generic [ref=e172]:
+            - generic [ref=e173]: Rizky Pratama
+            - generic [ref=e174]: Manager Gudang
+          - generic [ref=e175]: R
+    - navigation [ref=e176]:
+      - link "Beranda" [ref=e177] [cursor=pointer]:
+        - /url: /dashboard
+        - img [ref=e178]
+        - generic [ref=e183]: Beranda
+      - img [ref=e184]
+      - link "Dasbor" [ref=e186] [cursor=pointer]:
+        - /url: /dashboard
+      - img [ref=e187]
+      - generic [ref=e189]: Pengaturan
+    - main [ref=e190]:
+      - generic [ref=e193]:
+        - generic [ref=e194]:
+          - heading "Menu Konfigurasi" [level=3] [ref=e195]
+          - generic [ref=e196]:
+            - button "Gudang Utama Profil & Lokasi Samarinda" [ref=e197] [cursor=pointer]:
+              - img [ref=e199]
+              - generic [ref=e201]:
+                - generic [ref=e202]: Gudang Utama
+                - generic [ref=e203]: Profil & Lokasi Samarinda
+            - button "Daftar Kategori Klasifikasi Inventaris" [ref=e204] [cursor=pointer]:
+              - img [ref=e206]
+              - generic [ref=e208]:
+                - generic [ref=e209]: Daftar Kategori
+                - generic [ref=e210]: Klasifikasi Inventaris
+            - button "Satuan Metrik Unit Perhitungan Barcode" [ref=e211] [cursor=pointer]:
+              - img [ref=e213]
+              - generic [ref=e215]:
+                - generic [ref=e216]: Satuan Metrik
+                - generic [ref=e217]: Unit Perhitungan Barcode
+            - button "Akun Operasional Login Operasional Terbatas" [ref=e218] [cursor=pointer]:
+              - img [ref=e220]
+              - generic [ref=e222]:
+                - generic [ref=e223]: Akun Operasional
+                - generic [ref=e224]: Login Operasional Terbatas
+        - generic [ref=e226]:
+          - generic [ref=e227]:
+            - heading "Gudang Utama" [level=2] [ref=e228]
+            - generic [ref=e229]: Gudang Tunggal
+          - paragraph [ref=e230]: Sistem ini beroperasi dengan 1 gudang utama di Samarinda, Kalimantan Timur. Semua pengiriman berasal dari gudang ini.
+          - generic [ref=e231]:
+            - generic [ref=e232]:
+              - generic [ref=e233]: NAMA GUDANG
+              - textbox [ref=e234]: Gudang Utama Samarinda
+            - generic [ref=e235]:
+              - generic [ref=e236]: LOKASI / ALAMAT
+              - textbox [ref=e237]: Samarinda, Kalimantan Timur
+            - generic [ref=e238]:
+              - generic [ref=e239]: DESKRIPSI (ОPSIONAL)
+              - textbox [ref=e240]: Gudang utama dan satu-satunya fasilitas penyimpanan di Samarinda, Kaltim.
+            - button "Simpan Perubahan" [ref=e242] [cursor=pointer]
+  - button "Buka PETAYU AI" [ref=e243] [cursor=pointer]:
+    - generic [ref=e244]:
+      - generic [ref=e247]:
+        - img [ref=e249]
+        - img [ref=e255]
+      - generic: ✦ PETAYU AI

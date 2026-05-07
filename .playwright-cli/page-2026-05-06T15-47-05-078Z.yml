@@ -1,0 +1,258 @@
+- generic [ref=e3]:
+  - generic [ref=e4]:
+    - button [ref=e5] [cursor=pointer]:
+      - img [ref=e6]
+    - generic [ref=e8]:
+      - generic [ref=e9]:
+        - img "Logo PETAYU" [ref=e11]
+        - generic [ref=e12]:
+          - heading "PETAYU" [level=1] [ref=e13]
+          - paragraph [ref=e14]: SMART STORAGE, SMOOTH FLOW
+      - navigation [ref=e15]:
+        - link "Dasbor" [ref=e16] [cursor=pointer]:
+          - /url: /dashboard
+          - img [ref=e17]
+          - generic [ref=e22]: Dasbor
+        - link "Bantuan AI" [ref=e23] [cursor=pointer]:
+          - /url: /petayu-ai
+          - img [ref=e24]
+          - generic [ref=e27]: Bantuan AI
+        - generic [ref=e28]:
+          - button "Operasional Gudang" [ref=e29] [cursor=pointer]:
+            - generic [ref=e30]:
+              - img [ref=e31]
+              - generic [ref=e34]: Operasional Gudang
+            - img [ref=e36]
+          - generic [ref=e39]:
+            - link "Layout Gudang" [ref=e40] [cursor=pointer]:
+              - /url: /warehouse
+              - generic [ref=e41]: Layout Gudang
+            - link "Pindah Rak" [ref=e42] [cursor=pointer]:
+              - /url: /rack-allocation
+              - generic [ref=e43]: Pindah Rak
+            - link "Cek Stok" [ref=e44] [cursor=pointer]:
+              - /url: /stock-opname
+              - generic [ref=e45]: Cek Stok
+        - link "Stok Barang" [ref=e46] [cursor=pointer]:
+          - /url: /inventory
+          - img [ref=e47]
+          - generic [ref=e57]: Stok Barang
+        - generic [ref=e58]:
+          - button "Pembelian" [ref=e59] [cursor=pointer]:
+            - generic [ref=e60]:
+              - img [ref=e61]
+              - generic [ref=e65]: Pembelian
+            - img [ref=e67]
+          - generic [ref=e70]:
+            - link "Order Beli" [ref=e71] [cursor=pointer]:
+              - /url: /purchase-orders
+              - generic [ref=e72]: Order Beli
+            - link "Pemasok" [ref=e73] [cursor=pointer]:
+              - /url: /supplier
+              - generic [ref=e74]: Pemasok
+            - link "Tagihan" [ref=e75] [cursor=pointer]:
+              - /url: /tagihan
+              - generic [ref=e76]: Tagihan
+        - generic [ref=e77]:
+          - button "Riwayat" [ref=e78] [cursor=pointer]:
+            - generic [ref=e79]:
+              - img [ref=e80]
+              - generic [ref=e83]: Riwayat
+            - img [ref=e85]
+          - generic [ref=e88]:
+            - link "Riwayat Stok" [ref=e89] [cursor=pointer]:
+              - /url: /transaction
+              - generic [ref=e90]: Riwayat Stok
+            - link "Dokumen" [ref=e91] [cursor=pointer]:
+              - /url: /wms-documents
+              - generic [ref=e92]: Dokumen
+        - generic [ref=e93]:
+          - button "Pengiriman" [ref=e94] [cursor=pointer]:
+            - generic [ref=e95]:
+              - img [ref=e96]
+              - generic [ref=e101]: Pengiriman
+            - img [ref=e103]
+          - generic [ref=e106]:
+            - link "Pengiriman" [ref=e107] [cursor=pointer]:
+              - /url: /shipments
+              - generic [ref=e108]: Pengiriman
+            - link "Driver" [ref=e109] [cursor=pointer]:
+              - /url: /drivers
+              - generic [ref=e110]: Driver
+        - generic [ref=e111]:
+          - button "Sistem" [ref=e112] [cursor=pointer]:
+            - generic [ref=e113]:
+              - img [ref=e114]
+              - generic [ref=e117]: Sistem
+            - img [ref=e119]
+          - generic [ref=e122]:
+            - link "Laporan" [ref=e123] [cursor=pointer]:
+              - /url: /reports
+              - generic [ref=e124]: Laporan
+            - link "Pengaturan" [ref=e125] [cursor=pointer]:
+              - /url: /settings
+              - generic [ref=e126]: Pengaturan
+        - generic [ref=e127]:
+          - button "Bantuan" [ref=e128] [cursor=pointer]:
+            - generic [ref=e129]:
+              - img [ref=e130]
+              - generic [ref=e133]: Bantuan
+            - img [ref=e134]
+          - generic [ref=e136]:
+            - link "Tanya Tim" [ref=e137] [cursor=pointer]:
+              - /url: /help/live-support
+            - link "Cara Pakai" [ref=e138] [cursor=pointer]:
+              - /url: /help/documentation
+  - generic [ref=e139]:
+    - banner [ref=e140]:
+      - generic [ref=e141]:
+        - generic [ref=e142]:
+          - img [ref=e143]
+          - textbox "Cari..." [ref=e146]
+        - generic [ref=e151]: "Sistem Inti: Operasional"
+      - generic [ref=e152]:
+        - generic [ref=e153]:
+          - link "3" [ref=e154] [cursor=pointer]:
+            - /url: /notifications
+            - img [ref=e156]
+            - generic [ref=e161]: "3"
+          - link [ref=e162] [cursor=pointer]:
+            - /url: /help/live-support
+            - img [ref=e164]
+        - generic [ref=e170] [cursor=pointer]:
+          - generic [ref=e171]:
+            - generic [ref=e172]: Rizky Pratama
+            - generic [ref=e173]: Manager Gudang
+          - generic [ref=e174]: R
+    - navigation [ref=e175]:
+      - link "Beranda" [ref=e176] [cursor=pointer]:
+        - /url: /dashboard
+        - img [ref=e177]
+        - generic [ref=e182]: Beranda
+      - img [ref=e183]
+      - link "Dasbor" [ref=e185] [cursor=pointer]:
+        - /url: /dashboard
+      - img [ref=e186]
+      - link "Layout Gudang" [ref=e188] [cursor=pointer]:
+        - /url: /warehouse
+      - img [ref=e189]
+      - generic [ref=e191]: Pindah Rak
+    - main [ref=e192]:
+      - generic [ref=e194]:
+        - generic [ref=e195]:
+          - generic [ref=e196]:
+            - link "Gudang" [ref=e197] [cursor=pointer]:
+              - /url: /warehouse
+            - generic [ref=e198]: /
+            - generic [ref=e199]: Transfer Antar Rak
+          - generic [ref=e201]:
+            - heading "Transfer Antar Rak" [level=1] [ref=e202]
+            - paragraph [ref=e203]: Gudang Utama Samarinda, Samarinda, Kalimantan Timur — tempatkan produk ke rak atau pindahkan antar rak.
+        - generic [ref=e204]:
+          - button "Transfer Rak" [ref=e205] [cursor=pointer]:
+            - img [ref=e206]
+            - text: Transfer Rak
+          - button "Putaway" [ref=e208] [cursor=pointer]:
+            - img [ref=e209]
+            - text: Putaway
+        - generic [ref=e211]:
+          - generic [ref=e213]:
+            - generic [ref=e214]:
+              - img [ref=e216]
+              - generic [ref=e218]:
+                - heading "Transfer Antar Rack" [level=2] [ref=e219]
+                - paragraph [ref=e220]: Pindahkan stok dari rak asal ke rak tujuan. Total stok gudang tetap.
+            - generic [ref=e221]:
+              - generic [ref=e222]:
+                - generic [ref=e223]: Rack Asal
+                - combobox [ref=e224]:
+                  - option "Pilih rak asal" [selected]
+                  - option "A1-A12 - Rak A1-A12 (1240/1300)"
+                  - option "A13-A24 - Rak A13-A24 (1330/1400)"
+                  - option "B-BULK - Rak Curah Zona B (1125/2500)"
+                  - option "C-SHELF - Rak Shelving Zona C (1360/2000)"
+                  - option "D-DOCK - Lajur Dock Zona D (225/1500)"
+                  - option "E-HAZ1 - Rak Hazmat Zona E (820/1000)"
+              - img [ref=e227]
+              - generic [ref=e229]:
+                - generic [ref=e230]: Rack Tujuan
+                - combobox [ref=e231]:
+                  - option "Pilih rak tujuan" [selected]
+                  - option "A1-A12 - Rak A1-A12 (60 kosong)"
+                  - option "A13-A24 - Rak A13-A24 (70 kosong)"
+                  - option "B-BULK - Rak Curah Zona B (1375 kosong)"
+                  - option "C-SHELF - Rak Shelving Zona C (640 kosong)"
+                  - option "D-DOCK - Lajur Dock Zona D (1275 kosong)"
+                  - option "E-HAZ1 - Rak Hazmat Zona E (180 kosong)"
+            - generic [ref=e232]:
+              - generic [ref=e233]:
+                - generic [ref=e234]: Produk di Rack Asal
+                - combobox [disabled] [ref=e235]:
+                  - option "Pilih rak asal dulu" [selected]
+              - generic [ref=e236]:
+                - generic [ref=e237]: Kuantitas
+                - spinbutton [ref=e238]: "1"
+            - generic [ref=e239]:
+              - generic [ref=e240]:
+                - generic [ref=e241]: Stok tersedia
+                - generic [ref=e242]: "0"
+              - generic [ref=e243]:
+                - generic [ref=e244]: Kapasitas tujuan
+                - generic [ref=e245]: "0"
+              - generic [ref=e246]:
+                - generic [ref=e247]: Total warehouse
+                - generic [ref=e248]: Tetap
+            - generic [ref=e249]:
+              - generic [ref=e250]: Catatan Transfer
+              - 'textbox "Contoh: redistribusi stok high-pick, relokasi karena kapasitas rack, atau balancing zona." [ref=e251]'
+            - generic [ref=e252]:
+              - link "Batal" [ref=e253] [cursor=pointer]:
+                - /url: /warehouse
+              - button "Konfirmasi Transfer" [ref=e254] [cursor=pointer]
+          - complementary [ref=e255]:
+            - generic [ref=e256]:
+              - generic [ref=e257]:
+                - heading "Rack Aktif" [level=3] [ref=e258]
+                - img [ref=e259]
+              - generic [ref=e261]:
+                - generic [ref=e263]:
+                  - generic [ref=e264]:
+                    - generic [ref=e265]: A1-A12
+                    - generic [ref=e266]: ZONE A - Zona A
+                  - generic [ref=e267]: 1240/1300
+                - generic [ref=e271]:
+                  - generic [ref=e272]:
+                    - generic [ref=e273]: A13-A24
+                    - generic [ref=e274]: ZONE A - Zona A
+                  - generic [ref=e275]: 1330/1400
+                - generic [ref=e279]:
+                  - generic [ref=e280]:
+                    - generic [ref=e281]: B-BULK
+                    - generic [ref=e282]: ZONE B - Zona B
+                  - generic [ref=e283]: 1125/2500
+                - generic [ref=e287]:
+                  - generic [ref=e288]:
+                    - generic [ref=e289]: C-SHELF
+                    - generic [ref=e290]: ZONE C - Zona C
+                  - generic [ref=e291]: 1360/2000
+                - generic [ref=e295]:
+                  - generic [ref=e296]:
+                    - generic [ref=e297]: D-DOCK
+                    - generic [ref=e298]: ZONE D - Zona D
+                  - generic [ref=e299]: 225/1500
+                - generic [ref=e303]:
+                  - generic [ref=e304]:
+                    - generic [ref=e305]: E-HAZ1
+                    - generic [ref=e306]: ZONE E - Zona E
+                  - generic [ref=e307]: 820/1000
+            - generic [ref=e310]:
+              - generic [ref=e311]:
+                - heading "Transfer Terakhir" [level=3] [ref=e312]
+                - img [ref=e313]
+              - generic [ref=e316]: Belum ada transfer rack.
+  - button "Buka PETAYU AI" [ref=e317] [cursor=pointer]:
+    - generic [ref=e318]:
+      - generic [ref=e321]:
+        - img [ref=e323]
+        - img [ref=e329]
+      - generic: ✦ PETAYU AI

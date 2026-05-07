@@ -11,6 +11,8 @@ use App\Models\StockMovement;
 use App\Models\StockOpname;
 use App\Models\StockOut;
 use App\Models\StockTransfer;
+use App\Models\Shipment;
+use App\Models\Invoice;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -30,7 +32,12 @@ class DashboardController extends Controller
         $canViewOperationalDocs = str_contains($roleName, 'manager')
             || str_contains($roleName, 'supervisor');
 
-        $operationalWarehouse = \App\Models\Warehouse::orderBy('id')->firstOrFail();
+        $operationalWarehouse = \App\Models\Warehouse::orderBy('id')->first()
+            ?? \App\Models\Warehouse::create([
+                'code' => 'WH-DEFAULT',
+                'name' => 'Gudang Operasional',
+                'location' => 'Belum diatur',
+            ]);
 
         // 1. TOTAL INVENTORY (operational warehouse stock, including unplaced)
         $totalInventory = (int) \App\Models\ProductStock::where('warehouse_id', $operationalWarehouse->id)->sum('current_stock');
@@ -159,6 +166,13 @@ class DashboardController extends Controller
                 ->whereNotNull('expired_date')
                 ->where('expired_date', '<', $today)
                 ->count(),
+            'low_stock_count' => $lowStockCount,
+            'delayed_shipments' => Shipment::where('status', '!=', 'delivered')
+                ->whereNotNull('estimated_arrival')
+                ->where('estimated_arrival', '<', $now)
+                ->count(),
+            'unpaid_invoices' => Invoice::whereIn('payment_status', ['belum_dibayar', 'pending', 'jatuh_tempo'])
+                ->count(),
         ];
 
         // Trends for KPI Cards (percentage change)
@@ -202,7 +216,7 @@ class DashboardController extends Controller
                 ->limit(5)
                 ->get()
                 ->map(fn (GoodsReceipt $receipt) => [
-                    'type' => 'Goods Receipt',
+                    'type' => 'Barang Masuk',
                     'number' => $receipt->receipt_number,
                     'date' => $receipt->receipt_date?->format('d M Y'),
                     'party' => $receipt->supplier?->name ?? 'Pemasok',
@@ -215,7 +229,7 @@ class DashboardController extends Controller
                 ->limit(5)
                 ->get()
                 ->map(fn (StockOut $stockOut) => [
-                    'type' => 'Stock Out',
+                    'type' => 'Barang Keluar',
                     'number' => $stockOut->stock_out_number,
                     'date' => $stockOut->out_date?->format('d M Y'),
                     'party' => $stockOut->customer?->name ?? 'Umum',
@@ -227,7 +241,7 @@ class DashboardController extends Controller
                 ->limit(5)
                 ->get()
                 ->map(fn (StockOpname $opname) => [
-                    'type' => 'Stock Opname',
+                    'type' => 'Cek Stok Fisik',
                     'number' => $opname->opname_number,
                     'date' => $opname->opname_date?->format('d M Y'),
                     'party' => 'Audit stok',
@@ -239,7 +253,7 @@ class DashboardController extends Controller
                 ->limit(5)
                 ->get()
                 ->map(fn (StockAdjustment $adjustment) => [
-                    'type' => 'Stock Adjustment',
+                    'type' => 'Penyesuaian Stok',
                     'number' => $adjustment->adjustment_number,
                     'date' => $adjustment->adjustment_date?->format('d M Y'),
                     'party' => 'Koreksi stok',

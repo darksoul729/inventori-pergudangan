@@ -55,7 +55,7 @@ const modules = [
         ],
     },
     {
-        title: 'Transfer Rack',
+        title: 'Pindah Rak',
         href: '/rack-allocation',
         icon: PackageCheck,
         access: 'Manager, Supervisor',
@@ -67,7 +67,7 @@ const modules = [
         ],
     },
     {
-        title: 'Stock Opname',
+        title: 'Cek Stok Fisik',
         href: '/stock-opname',
         icon: ClipboardCheck,
         access: 'Manager, Supervisor',
@@ -193,10 +193,52 @@ const modules = [
 
 const flowSteps = [
     'Manager menyiapkan master gudang, kategori, satuan, produk, supplier, dan driver.',
-    'Supervisor atau Manager membuat PO, menerima barang, melakukan transfer rack, dan menjalankan stock opname.',
+    'Supervisor atau Manager membuat PO, menerima barang, melakukan pindah rak, dan menjalankan cek stok fisik.',
     'Staff menjalankan transaksi keluar dan membantu pengiriman berdasarkan data stok per rak.',
     'Supervisor memverifikasi transaksi, POD, opname, dan adjustment.',
     'Manager membaca dasbor dan laporan untuk mengambil keputusan operasional.',
+];
+
+const umkmSop = [
+    {
+        title: 'SOP Harian Admin Gudang',
+        items: [
+            'Cek barang masuk hari ini lalu input ke sistem.',
+            'Pastikan jumlah fisik sama dengan jumlah di sistem.',
+            'Jika ada selisih, catat penyebab dan laporkan di hari yang sama.',
+            'Sebelum tutup toko/gudang, cek stok barang cepat laku.',
+        ],
+    },
+    {
+        title: 'SOP Penjualan & Tagihan',
+        items: [
+            'Setiap order keluar wajib dibuatkan tagihan.',
+            'Status tagihan harus diperbarui: Belum Dibayar, Sebagian, atau Lunas.',
+            'Tagihan jatuh tempo ditindaklanjuti maksimal H+1.',
+            'Simpan bukti kirim tagihan (PDF/WhatsApp) untuk arsip.',
+        ],
+    },
+    {
+        title: 'SOP Pengiriman',
+        items: [
+            'Isi tujuan kirim dengan jelas (kode lokasi + nama lokasi).',
+            'Pastikan driver dan barang sudah sesuai sebelum kirim.',
+            'Update status kiriman sesuai tahap perjalanan.',
+            'Selesai kirim wajib ada bukti terima (POD).',
+        ],
+    },
+];
+
+const dailyChecklist = [
+    'Cek barang masuk hari ini sudah diinput ke sistem.',
+    'Cek stok fisik cepat untuk barang yang paling sering keluar.',
+    'Buat dan kirim tagihan untuk order hari ini.',
+    'Perbarui status pembayaran: Belum Dibayar / Sebagian / Lunas.',
+    'Siapkan barang kirim dan pastikan tujuan pengiriman sudah benar.',
+    'Pastikan driver/tim kirim sudah ditugaskan sebelum barang keluar.',
+    'Perbarui status pengiriman sesuai kondisi lapangan.',
+    'Catat kendala hari ini: selisih stok, retur, atau kirim terlambat.',
+    'Tutup hari kerja dengan cek laporan ringkas harian.',
 ];
 
 export default function Documentation() {
@@ -273,6 +315,60 @@ export default function Documentation() {
                                         </div>
                                         <p className="text-[12px] font-bold leading-6 text-gray-600">{step}</p>
                                     </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section className="mb-8 rounded-[8px] border border-gray-100 bg-white p-6 shadow-sm">
+                    <div className="flex items-start gap-4">
+                        <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-[8px] bg-emerald-50 text-emerald-700">
+                            <ClipboardCheck className="h-6 w-6" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                            <h2 className="text-[18px] font-black text-gray-900">SOP Ringkas UMKM / Toko</h2>
+                            <p className="mt-2 text-[13px] font-semibold leading-6 text-gray-500">
+                                Standar operasional sederhana untuk gudang kecil-menengah agar tim tidak bingung dan kerja lebih rapi.
+                            </p>
+                            <div className="mt-4 grid gap-4 md:grid-cols-3">
+                                {umkmSop.map((section) => (
+                                    <div key={section.title} className="rounded-[8px] border border-gray-100 bg-[#F8FAFC] p-4">
+                                        <h3 className="text-[13px] font-black text-gray-900">{section.title}</h3>
+                                        <div className="mt-3 space-y-2">
+                                            {section.items.map((line) => (
+                                                <div key={line} className="flex gap-2 text-[12px] font-bold leading-6 text-gray-600">
+                                                    <span className="mt-2 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-emerald-600" />
+                                                    <span>{line}</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section className="mb-8 rounded-[8px] border border-gray-100 bg-white p-6 shadow-sm">
+                    <div className="flex items-start gap-4">
+                        <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-[8px] bg-amber-50 text-amber-700">
+                            <ClipboardCheck className="h-6 w-6" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                            <h2 className="text-[18px] font-black text-gray-900">Checklist Harian Operasional</h2>
+                            <p className="mt-2 text-[13px] font-semibold leading-6 text-gray-500">
+                                Gunakan daftar ini setiap hari agar proses gudang dan toko berjalan rapi dan tidak ada langkah yang terlewat.
+                            </p>
+                            <div className="mt-4 grid gap-3 md:grid-cols-2">
+                                {dailyChecklist.map((item) => (
+                                    <label
+                                        key={item}
+                                        className="flex items-start gap-3 rounded-[8px] border border-gray-100 bg-[#FFFBEB] px-4 py-3"
+                                    >
+                                        <input type="checkbox" className="mt-1 h-4 w-4 rounded border-amber-300 text-amber-600 focus:ring-amber-500" />
+                                        <span className="text-[12px] font-bold leading-6 text-gray-700">{item}</span>
+                                    </label>
                                 ))}
                             </div>
                         </div>

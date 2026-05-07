@@ -1,0 +1,386 @@
+- generic [ref=e3]:
+  - generic [ref=e4]:
+    - button [ref=e5] [cursor=pointer]:
+      - img [ref=e6]
+    - generic [ref=e8]:
+      - generic [ref=e9]:
+        - img "Logo PETAYU" [ref=e11]
+        - generic [ref=e12]:
+          - heading "PETAYU" [level=1] [ref=e13]
+          - paragraph [ref=e14]: SMART STORAGE, SMOOTH FLOW
+      - navigation [ref=e15]:
+        - link "Dasbor" [ref=e16] [cursor=pointer]:
+          - /url: /dashboard
+          - img [ref=e17]
+          - generic [ref=e22]: Dasbor
+        - link "Bantuan AI" [ref=e23] [cursor=pointer]:
+          - /url: /petayu-ai
+          - img [ref=e24]
+          - generic [ref=e27]: Bantuan AI
+        - generic [ref=e28]:
+          - button "Operasional Gudang" [ref=e29] [cursor=pointer]:
+            - generic [ref=e30]:
+              - img [ref=e31]
+              - generic [ref=e34]: Operasional Gudang
+            - img [ref=e36]
+          - generic [ref=e39]:
+            - link "Layout Gudang" [ref=e40] [cursor=pointer]:
+              - /url: /warehouse
+              - generic [ref=e41]: Layout Gudang
+            - link "Pindah Rak" [ref=e42] [cursor=pointer]:
+              - /url: /rack-allocation
+              - generic [ref=e43]: Pindah Rak
+            - link "Cek Stok" [ref=e44] [cursor=pointer]:
+              - /url: /stock-opname
+              - generic [ref=e45]: Cek Stok
+        - link "Stok Barang" [ref=e46] [cursor=pointer]:
+          - /url: /inventory
+          - img [ref=e47]
+          - generic [ref=e57]: Stok Barang
+        - generic [ref=e58]:
+          - button "Pembelian" [ref=e59] [cursor=pointer]:
+            - generic [ref=e60]:
+              - img [ref=e61]
+              - generic [ref=e65]: Pembelian
+            - img [ref=e67]
+          - generic [ref=e70]:
+            - link "Order Beli" [ref=e71] [cursor=pointer]:
+              - /url: /purchase-orders
+              - generic [ref=e72]: Order Beli
+            - link "Pemasok" [ref=e73] [cursor=pointer]:
+              - /url: /supplier
+              - generic [ref=e74]: Pemasok
+            - link "Tagihan" [ref=e75] [cursor=pointer]:
+              - /url: /tagihan
+              - generic [ref=e76]: Tagihan
+        - generic [ref=e77]:
+          - button "Riwayat" [ref=e78] [cursor=pointer]:
+            - generic [ref=e79]:
+              - img [ref=e80]
+              - generic [ref=e83]: Riwayat
+            - img [ref=e85]
+          - generic [ref=e88]:
+            - link "Riwayat Stok" [ref=e89] [cursor=pointer]:
+              - /url: /transaction
+              - generic [ref=e90]: Riwayat Stok
+            - link "Dokumen" [ref=e91] [cursor=pointer]:
+              - /url: /wms-documents
+              - generic [ref=e92]: Dokumen
+        - generic [ref=e93]:
+          - button "Pengiriman" [ref=e94] [cursor=pointer]:
+            - generic [ref=e95]:
+              - img [ref=e96]
+              - generic [ref=e101]: Pengiriman
+            - img [ref=e103]
+          - generic [ref=e105]:
+            - link "Pengiriman" [ref=e106] [cursor=pointer]:
+              - /url: /shipments
+              - generic [ref=e107]: Pengiriman
+            - link "Driver" [ref=e108] [cursor=pointer]:
+              - /url: /drivers
+              - generic [ref=e109]: Driver
+        - generic [ref=e110]:
+          - button "Sistem" [ref=e111] [cursor=pointer]:
+            - generic [ref=e112]:
+              - img [ref=e113]
+              - generic [ref=e116]: Sistem
+            - img [ref=e118]
+          - generic [ref=e120]:
+            - link "Laporan" [ref=e121] [cursor=pointer]:
+              - /url: /reports
+              - generic [ref=e122]: Laporan
+            - link "Pengaturan" [ref=e123] [cursor=pointer]:
+              - /url: /settings
+              - generic [ref=e124]: Pengaturan
+        - generic [ref=e125]:
+          - button "Bantuan" [ref=e126] [cursor=pointer]:
+            - generic [ref=e127]:
+              - img [ref=e128]
+              - generic [ref=e131]: Bantuan
+            - img [ref=e132]
+          - generic [ref=e134]:
+            - link "Tanya Tim" [ref=e135] [cursor=pointer]:
+              - /url: /help/live-support
+            - link "Cara Pakai" [ref=e136] [cursor=pointer]:
+              - /url: /help/documentation
+  - generic [ref=e137]:
+    - banner [ref=e138]:
+      - generic [ref=e139]:
+        - generic [ref=e140]:
+          - img [ref=e141]
+          - textbox "Cari ID pengiriman, asal, tujuan, atau driver..." [ref=e144]
+        - generic [ref=e149]: "Sistem Inti: Operasional"
+      - generic [ref=e150]:
+        - generic [ref=e151]:
+          - link "3" [ref=e152] [cursor=pointer]:
+            - /url: /notifications
+            - img [ref=e154]
+            - generic [ref=e159]: "3"
+          - link [ref=e160] [cursor=pointer]:
+            - /url: /help/live-support
+            - img [ref=e162]
+        - generic [ref=e168] [cursor=pointer]:
+          - generic [ref=e169]:
+            - generic [ref=e170]: Rizky Pratama
+            - generic [ref=e171]: Manager Gudang
+          - generic [ref=e172]: R
+    - navigation [ref=e173]:
+      - link "Beranda" [ref=e174] [cursor=pointer]:
+        - /url: /dashboard
+        - img [ref=e175]
+        - generic [ref=e180]: Beranda
+      - img [ref=e181]
+      - link "Dasbor" [ref=e183] [cursor=pointer]:
+        - /url: /dashboard
+      - img [ref=e184]
+      - generic [ref=e186]: Pengiriman
+    - generic [ref=e188]:
+      - generic [ref=e189]: "Aksi Cepat:"
+      - link "Pengiriman" [ref=e190] [cursor=pointer]:
+        - /url: /shipments/create
+        - img [ref=e191]
+        - generic [ref=e196]: Pengiriman
+    - main [ref=e197]:
+      - generic [ref=e198]:
+        - generic [ref=e199]:
+          - generic [ref=e200]:
+            - heading "Pengiriman Aktif" [level=1] [ref=e201]
+            - paragraph [ref=e202]: Pantau status pengiriman barang keluar dari gudang operasional.
+          - link "Tambah Pengiriman" [ref=e203] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/shipments/create
+            - img [ref=e204]
+            - generic [ref=e205]: Tambah Pengiriman
+        - generic [ref=e206]:
+          - generic [ref=e207]:
+            - generic [ref=e208]:
+              - img [ref=e210]
+              - generic [ref=e215]: +12%
+            - generic [ref=e216]: Dalam Perjalanan
+            - generic [ref=e217]: "2"
+          - generic [ref=e218]:
+            - generic [ref=e219]:
+              - img [ref=e221]
+              - generic [ref=e223]: "-3%"
+            - generic [ref=e224]: Terlambat
+            - generic [ref=e225]: "0"
+          - generic [ref=e226]:
+            - generic [ref=e227]:
+              - img [ref=e229]
+              - generic [ref=e232]: Optimal
+            - generic [ref=e233]: Terkirim Hari Ini
+            - generic [ref=e234]: "0"
+          - generic [ref=e235]:
+            - generic [ref=e236]: Jaringan Global
+            - generic [ref=e237]:
+              - generic [ref=e238]:
+                - generic [ref=e239]: Kargo Laut
+                - generic [ref=e240]: "2"
+              - generic [ref=e241]:
+                - generic [ref=e242]: Kargo Udara
+                - generic [ref=e243]: "0"
+              - generic [ref=e244]:
+                - generic [ref=e245]: Kargo Darat
+                - generic [ref=e246]: "2"
+        - generic [ref=e247]:
+          - generic [ref=e248]:
+            - generic [ref=e249]:
+              - heading "JARINGAN GLOBAL LANGSUNG" [level=2] [ref=e250]
+              - paragraph [ref=e251]: Pantau lintasan aktif, posisi driver, dan anomali rute secara real-time.
+            - generic [ref=e252]:
+              - button [ref=e253] [cursor=pointer]:
+                - img [ref=e254]
+              - button [ref=e257] [cursor=pointer]:
+                - img [ref=e258]
+          - generic [ref=e262]:
+            - generic [ref=e264]:
+              - link "Leaflet" [ref=e265] [cursor=pointer]:
+                - /url: https://leafletjs.com
+                - img [ref=e266]
+                - text: Leaflet
+              - text: "| Tiles © Esri, Labels © Esri"
+            - generic [ref=e270]:
+              - generic [ref=e271]: GPS Driver Belum Masuk
+              - generic [ref=e272]: Marker driver akan muncul setelah driver app mengirim lokasi ke server.
+            - generic [ref=e274]:
+              - generic [ref=e277]: Darat
+              - generic [ref=e280]: Laut
+        - generic [ref=e281]:
+          - generic [ref=e282]:
+            - heading "JALUR PENGIRIMAN" [level=2] [ref=e283]
+            - generic [ref=e284]:
+              - generic [ref=e285]: "ID: Semua"
+              - button "Filter" [ref=e286] [cursor=pointer]:
+                - img [ref=e287]
+                - generic [ref=e289]: Filter
+          - table [ref=e291]:
+            - rowgroup [ref=e292]:
+              - row "ID Pengiriman Asal / Tujuan Barang Dikirim Driver / Kurir Status Progress Driver Perkiraan Tiba Jenis Kargo Aksi" [ref=e293]:
+                - columnheader "ID Pengiriman" [ref=e294]
+                - columnheader "Asal / Tujuan" [ref=e295]
+                - columnheader "Barang Dikirim" [ref=e296]
+                - columnheader "Driver / Kurir" [ref=e297]
+                - columnheader "Status" [ref=e298]
+                - columnheader "Progress Driver" [ref=e299]
+                - columnheader "Perkiraan Tiba" [ref=e300]
+                - columnheader "Jenis Kargo" [ref=e301]
+                - columnheader "Aksi" [ref=e302]
+            - rowgroup [ref=e303]:
+              - row "#TRK-10293 SMD → BPN Gudang Samarinda, Kaltim — Balikpapan, Kaltim 2 produk · 200 box 1,120 kg total Modul Sensor AX900 ×120 Kabel Industri 24m ×80 A Ahmad Nurdin DALAM PERJALANAN Dalam Perjalanan ETA Lewat Apr 29, 05:00 TRACK EDIT DELETE" [ref=e304]:
+                - cell "#TRK-10293" [ref=e305]
+                - cell "SMD → BPN Gudang Samarinda, Kaltim — Balikpapan, Kaltim" [ref=e306]:
+                  - generic [ref=e307]: SMD → BPN
+                  - generic [ref=e308]: Gudang Samarinda, Kaltim — Balikpapan, Kaltim
+                - cell "2 produk · 200 box 1,120 kg total Modul Sensor AX900 ×120 Kabel Industri 24m ×80" [ref=e309]:
+                  - generic [ref=e310]:
+                    - generic [ref=e311]: 2 produk · 200 box
+                    - generic [ref=e312]: 1,120 kg total
+                    - generic [ref=e313]:
+                      - generic [ref=e314]: Modul Sensor AX900 ×120
+                      - generic [ref=e315]: Kabel Industri 24m ×80
+                - cell "A Ahmad Nurdin" [ref=e316]:
+                  - generic [ref=e317]:
+                    - generic [ref=e318]: A
+                    - generic [ref=e319]: Ahmad Nurdin
+                - cell "DALAM PERJALANAN" [ref=e320]
+                - cell "Dalam Perjalanan ETA Lewat" [ref=e321]:
+                  - generic [ref=e322]:
+                    - generic [ref=e323]:
+                      - img [ref=e324]
+                      - text: Dalam Perjalanan
+                    - generic [ref=e329]: ETA Lewat
+                - cell "Apr 29, 05:00" [ref=e330]:
+                  - generic [ref=e331]: Apr 29, 05:00
+                - cell [ref=e332]:
+                  - img [ref=e334]
+                - cell "TRACK EDIT DELETE" [ref=e339]:
+                  - generic [ref=e340]:
+                    - link "TRACK" [ref=e341] [cursor=pointer]:
+                      - /url: http://127.0.0.1:8000/shipments/TRK-10293
+                    - link "EDIT" [ref=e342] [cursor=pointer]:
+                      - /url: http://127.0.0.1:8000/shipments/TRK-10293/edit?page=1
+                    - button "DELETE" [ref=e343] [cursor=pointer]:
+                      - img [ref=e344]
+                      - generic [ref=e347]: DELETE
+                    - link "Lacak Pengiriman" [ref=e348] [cursor=pointer]:
+                      - /url: http://127.0.0.1:8000/shipments/TRK-10293
+                      - img [ref=e349]
+              - row "#TRK-10297 SMD → TGR Gudang Samarinda, Kaltim — Tenggarong, Kaltim 1 produk · 50 box 150 kg total Papan Kontrol PCB ×50 B Budi Santoso DALAM PERJALANAN Sudah Diambil ETA Lewat Apr 29, 01:00 TRACK EDIT DELETE" [ref=e351]:
+                - cell "#TRK-10297" [ref=e352]
+                - cell "SMD → TGR Gudang Samarinda, Kaltim — Tenggarong, Kaltim" [ref=e353]:
+                  - generic [ref=e354]: SMD → TGR
+                  - generic [ref=e355]: Gudang Samarinda, Kaltim — Tenggarong, Kaltim
+                - cell "1 produk · 50 box 150 kg total Papan Kontrol PCB ×50" [ref=e356]:
+                  - generic [ref=e357]:
+                    - generic [ref=e358]: 1 produk · 50 box
+                    - generic [ref=e359]: 150 kg total
+                    - generic [ref=e361]: Papan Kontrol PCB ×50
+                - cell "B Budi Santoso" [ref=e362]:
+                  - generic [ref=e363]:
+                    - generic [ref=e364]: B
+                    - generic [ref=e365]: Budi Santoso
+                - cell "DALAM PERJALANAN" [ref=e366]
+                - cell "Sudah Diambil ETA Lewat" [ref=e367]:
+                  - generic [ref=e368]:
+                    - generic [ref=e369]:
+                      - img [ref=e370]
+                      - text: Sudah Diambil
+                    - generic [ref=e376]: ETA Lewat
+                - cell "Apr 29, 01:00" [ref=e377]:
+                  - generic [ref=e378]: Apr 29, 01:00
+                - cell [ref=e379]:
+                  - img [ref=e381]
+                - cell "TRACK EDIT DELETE" [ref=e386]:
+                  - generic [ref=e387]:
+                    - link "TRACK" [ref=e388] [cursor=pointer]:
+                      - /url: http://127.0.0.1:8000/shipments/TRK-10297
+                    - link "EDIT" [ref=e389] [cursor=pointer]:
+                      - /url: http://127.0.0.1:8000/shipments/TRK-10297/edit?page=1
+                    - button "DELETE" [ref=e390] [cursor=pointer]:
+                      - img [ref=e391]
+                      - generic [ref=e394]: DELETE
+                    - link "Lacak Pengiriman" [ref=e395] [cursor=pointer]:
+                      - /url: http://127.0.0.1:8000/shipments/TRK-10297
+                      - img [ref=e396]
+              - row "#TRK-10299 SMD → SUB Gudang Samarinda, Kaltim — Surabaya, Jatim 1 produk · 500 box 2,000 kg total Modul Sensor AX900 ×500 A Andi Prakoso TERKIRIM Terkirim Apr 27, 23:00 TRACK EDIT DELETE" [ref=e398]:
+                - cell "#TRK-10299" [ref=e399]
+                - cell "SMD → SUB Gudang Samarinda, Kaltim — Surabaya, Jatim" [ref=e400]:
+                  - generic [ref=e401]: SMD → SUB
+                  - generic [ref=e402]: Gudang Samarinda, Kaltim — Surabaya, Jatim
+                - cell "1 produk · 500 box 2,000 kg total Modul Sensor AX900 ×500" [ref=e403]:
+                  - generic [ref=e404]:
+                    - generic [ref=e405]: 1 produk · 500 box
+                    - generic [ref=e406]: 2,000 kg total
+                    - generic [ref=e408]: Modul Sensor AX900 ×500
+                - cell "A Andi Prakoso" [ref=e409]:
+                  - generic [ref=e410]:
+                    - generic [ref=e411]: A
+                    - generic [ref=e412]: Andi Prakoso
+                - cell "TERKIRIM" [ref=e413]
+                - cell "Terkirim" [ref=e414]:
+                  - generic [ref=e416]:
+                    - img [ref=e417]
+                    - text: Terkirim
+                - cell "Apr 27, 23:00" [ref=e420]:
+                  - generic [ref=e421]: Apr 27, 23:00
+                - cell [ref=e422]:
+                  - img [ref=e424]
+                - cell "TRACK EDIT DELETE" [ref=e428]:
+                  - generic [ref=e429]:
+                    - link "TRACK" [ref=e430] [cursor=pointer]:
+                      - /url: http://127.0.0.1:8000/shipments/TRK-10299
+                    - link "EDIT" [ref=e431] [cursor=pointer]:
+                      - /url: http://127.0.0.1:8000/shipments/TRK-10299/edit?page=1
+                    - button "DELETE" [ref=e432] [cursor=pointer]:
+                      - img [ref=e433]
+                      - generic [ref=e436]: DELETE
+                    - link "Lacak Pengiriman" [ref=e437] [cursor=pointer]:
+                      - /url: http://127.0.0.1:8000/shipments/TRK-10299
+                      - img [ref=e438]
+              - row "#TRK-10300 SMD → JKT Gudang Samarinda, Kaltim — Jakarta, DKI 1 produk · 300 box 2,400 kg total Kabel Industri 24m ×300 C Citra Lestari TERKIRIM Terkirim Apr 26, 23:00 TRACK EDIT DELETE" [ref=e440]:
+                - cell "#TRK-10300" [ref=e441]
+                - cell "SMD → JKT Gudang Samarinda, Kaltim — Jakarta, DKI" [ref=e442]:
+                  - generic [ref=e443]: SMD → JKT
+                  - generic [ref=e444]: Gudang Samarinda, Kaltim — Jakarta, DKI
+                - cell "1 produk · 300 box 2,400 kg total Kabel Industri 24m ×300" [ref=e445]:
+                  - generic [ref=e446]:
+                    - generic [ref=e447]: 1 produk · 300 box
+                    - generic [ref=e448]: 2,400 kg total
+                    - generic [ref=e450]: Kabel Industri 24m ×300
+                - cell "C Citra Lestari" [ref=e451]:
+                  - generic [ref=e452]:
+                    - generic [ref=e453]: C
+                    - generic [ref=e454]: Citra Lestari
+                - cell "TERKIRIM" [ref=e455]
+                - cell "Terkirim" [ref=e456]:
+                  - generic [ref=e458]:
+                    - img [ref=e459]
+                    - text: Terkirim
+                - cell "Apr 26, 23:00" [ref=e462]:
+                  - generic [ref=e463]: Apr 26, 23:00
+                - cell [ref=e464]:
+                  - img [ref=e466]
+                - cell "TRACK EDIT DELETE" [ref=e470]:
+                  - generic [ref=e471]:
+                    - link "TRACK" [ref=e472] [cursor=pointer]:
+                      - /url: http://127.0.0.1:8000/shipments/TRK-10300
+                    - link "EDIT" [ref=e473] [cursor=pointer]:
+                      - /url: http://127.0.0.1:8000/shipments/TRK-10300/edit?page=1
+                    - button "DELETE" [ref=e474] [cursor=pointer]:
+                      - img [ref=e475]
+                      - generic [ref=e478]: DELETE
+                    - link "Lacak Pengiriman" [ref=e479] [cursor=pointer]:
+                      - /url: http://127.0.0.1:8000/shipments/TRK-10300
+                      - img [ref=e480]
+          - generic [ref=e482]:
+            - generic [ref=e483]: Menampilkan 1-4 dari 4 pengiriman
+            - generic [ref=e484]:
+              - generic [ref=e485]: Sebelumnya
+              - link "1" [ref=e486] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/shipments?page=1
+              - generic [ref=e487]: Berikutnya
+  - button "Buka PETAYU AI" [ref=e488] [cursor=pointer]:
+    - generic [ref=e489]:
+      - generic [ref=e492]:
+        - img [ref=e494]
+        - img [ref=e500]
+      - generic: ✦ PETAYU AI

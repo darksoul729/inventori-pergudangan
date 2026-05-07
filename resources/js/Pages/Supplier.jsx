@@ -136,11 +136,10 @@ export default function Supplier({ suppliers = [], stats = {}, chartData = [], a
     };
 
     const handleExportAudit = async () => {
-        console.log('Export audit button clicked');
         try {
             const { ExcelJS, saveAs } = await loadExportTools();
             const workbook = new ExcelJS.Workbook();
-            const worksheet = workbook.addWorksheet('Audit Snapshot');
+            const worksheet = workbook.addWorksheet('Ringkasan Audit Pemasok');
 
             // Styles based on User Image
             const headerStyle = {
@@ -153,17 +152,17 @@ export default function Supplier({ suppliers = [], stats = {}, chartData = [], a
 
             // Define Columns (Matching Image 2 Data & Image 1 Style)
             worksheet.columns = [
-                { header: 'Partner Code', key: 'code', width: 15 },
-                { header: 'Company Name', key: 'name', width: 25 },
-                { header: 'Category', key: 'category', width: 20 },
+                { header: 'Kode Pemasok', key: 'code', width: 15 },
+                { header: 'Nama Perusahaan', key: 'name', width: 25 },
+                { header: 'Kategori', key: 'category', width: 20 },
                 { header: 'Status', key: 'status', width: 12 },
-                { header: 'Performance Score (%)', key: 'score', width: 20 },
-                { header: 'Avg Lead Time (Days)', key: 'leadTime', width: 20 },
-                { header: 'Total Orders', key: 'orders', width: 15 },
-                { header: 'On-Time Deliveries', key: 'onTime', width: 18 },
-                { header: 'Late Deliveries', key: 'late', width: 15 },
+                { header: 'Skor Performa (%)', key: 'score', width: 20 },
+                { header: 'Rata-rata Lead Time (Hari)', key: 'leadTime', width: 24 },
+                { header: 'Total Pesanan', key: 'orders', width: 15 },
+                { header: 'Pengiriman Tepat Waktu', key: 'onTime', width: 22 },
+                { header: 'Pengiriman Terlambat', key: 'late', width: 20 },
                 { header: 'Email', key: 'email', width: 25 },
-                { header: 'Contact Person', key: 'contact', width: 20 },
+                { header: 'PIC', key: 'contact', width: 20 },
             ];
 
             // Style the Header Row
@@ -208,14 +207,12 @@ export default function Supplier({ suppliers = [], stats = {}, chartData = [], a
                 });
             });
 
-            console.log('Generating buffer...');
             // Generate & Download
             const buffer = await workbook.xlsx.writeBuffer();
             const dateStr = new Date().toISOString().split('T')[0];
-            console.log('Initiating download...');
             saveAs(new Blob([buffer]), `audit-supplier-${dateStr}.xlsx`);
         } catch (err) {
-            console.error('Excel export error:', err);
+            console.error('Ekspor Excel gagal:', err);
             alert('Gagal mengekspor file: ' + err.message);
         }
     };

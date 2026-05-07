@@ -8,8 +8,8 @@ import { ChevronLeft, Crosshair, MapPinned, Save, Search } from 'lucide-react';
 
 const LOCATION_INPUT_MODES = [
     { id: 'city', label: 'Cari Kota', icon: Search },
-    { id: 'map', label: 'Pin Map', icon: MapPinned },
-    { id: 'manual', label: 'Manual', icon: Crosshair },
+    { id: 'map', label: 'Pilih di Peta', icon: MapPinned },
+    { id: 'manual', label: 'Isi Manual', icon: Crosshair },
 ];
 
 const TRACKING_STAGE_OPTIONS = [
@@ -218,7 +218,7 @@ export default function CreateShipment({ drivers = [], products = [] }) {
                 <div className="flex items-center justify-between gap-3">
                     <div>
                         <div className="text-[10px] font-black uppercase tracking-[0.24em] text-slate-500">{title}</div>
-                        <p className="mt-1 text-[13px] font-semibold text-slate-500">Cari kota cepat, klik peta, atau isi koordinat manual.</p>
+                        <p className="mt-1 text-[13px] font-semibold text-slate-500">Cari kota cepat, pilih titik di peta, atau isi koordinat manual.</p>
                     </div>
                     <span className="rounded-full bg-white px-3 py-1 text-[10px] font-black text-indigo-600 border border-indigo-100">
                         {latValue && lngValue ? 'Koordinat siap' : 'Belum dipilih'}
@@ -273,7 +273,7 @@ export default function CreateShipment({ drivers = [], products = [] }) {
                             <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" strokeWidth={2.1} />
                             <input
                                 type="text"
-                                placeholder="Cari kota, kode bandara, atau hub"
+                                placeholder="Cari kota atau kode lokasi"
                                 className="w-full rounded-2xl border border-gray-200 bg-white py-3 pl-11 pr-4 text-[13px] font-semibold text-slate-700"
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
@@ -312,7 +312,7 @@ export default function CreateShipment({ drivers = [], products = [] }) {
                         <input
                             type="number"
                             step="any"
-                            placeholder="Latitude / Lat"
+                            placeholder="Koordinat Utara/Selatan (Lat)"
                             className="px-4 py-3 border border-gray-200 rounded-2xl text-[12px] font-bold"
                             value={latValue}
                             onChange={(e) => setData(isOrigin ? 'origin_lat' : 'dest_lat', e.target.value)}
@@ -320,7 +320,7 @@ export default function CreateShipment({ drivers = [], products = [] }) {
                         <input
                             type="number"
                             step="any"
-                            placeholder="Longitude / Lng"
+                            placeholder="Koordinat Timur/Barat (Lng)"
                             className="px-4 py-3 border border-gray-200 rounded-2xl text-[12px] font-bold"
                             value={lngValue}
                             onChange={(e) => setData(isOrigin ? 'origin_lng' : 'dest_lng', e.target.value)}

@@ -1,0 +1,421 @@
+- generic [ref=e3]:
+  - generic [ref=e4]:
+    - button [ref=e5] [cursor=pointer]:
+      - img [ref=e6]
+    - generic [ref=e8]:
+      - generic [ref=e9]:
+        - img "Logo PETAYU" [ref=e11]
+        - generic [ref=e12]:
+          - heading "PETAYU" [level=1] [ref=e13]
+          - paragraph [ref=e14]: SMART STORAGE, SMOOTH FLOW
+      - navigation [ref=e15]:
+        - link "Dasbor" [ref=e16] [cursor=pointer]:
+          - /url: /dashboard
+          - img [ref=e17]
+          - generic [ref=e22]: Dasbor
+        - link "Bantuan AI" [ref=e23] [cursor=pointer]:
+          - /url: /petayu-ai
+          - img [ref=e24]
+          - generic [ref=e27]: Bantuan AI
+        - generic [ref=e28]:
+          - button "Operasional Gudang" [ref=e29] [cursor=pointer]:
+            - generic [ref=e30]:
+              - img [ref=e31]
+              - generic [ref=e34]: Operasional Gudang
+            - img [ref=e36]
+          - generic [ref=e38]:
+            - link "Layout Gudang" [ref=e39] [cursor=pointer]:
+              - /url: /warehouse
+              - generic [ref=e40]: Layout Gudang
+            - link "Pindah Rak" [ref=e41] [cursor=pointer]:
+              - /url: /rack-allocation
+              - generic [ref=e42]: Pindah Rak
+            - link "Cek Stok" [ref=e43] [cursor=pointer]:
+              - /url: /stock-opname
+              - generic [ref=e44]: Cek Stok
+        - link "Stok Barang" [ref=e45] [cursor=pointer]:
+          - /url: /inventory
+          - img [ref=e46]
+          - generic [ref=e56]: Stok Barang
+        - generic [ref=e57]:
+          - button "Pembelian" [ref=e58] [cursor=pointer]:
+            - generic [ref=e59]:
+              - img [ref=e60]
+              - generic [ref=e64]: Pembelian
+            - img [ref=e66]
+          - generic [ref=e68]:
+            - link "Order Beli" [ref=e69] [cursor=pointer]:
+              - /url: /purchase-orders
+              - generic [ref=e70]: Order Beli
+            - link "Pemasok" [ref=e71] [cursor=pointer]:
+              - /url: /supplier
+              - generic [ref=e72]: Pemasok
+            - link "Tagihan" [ref=e73] [cursor=pointer]:
+              - /url: /tagihan
+              - generic [ref=e74]: Tagihan
+        - generic [ref=e75]:
+          - button "Riwayat" [ref=e76] [cursor=pointer]:
+            - generic [ref=e77]:
+              - img [ref=e78]
+              - generic [ref=e81]: Riwayat
+            - img [ref=e83]
+          - generic [ref=e85]:
+            - link "Riwayat Stok" [ref=e86] [cursor=pointer]:
+              - /url: /transaction
+              - generic [ref=e87]: Riwayat Stok
+            - link "Dokumen" [ref=e88] [cursor=pointer]:
+              - /url: /wms-documents
+              - generic [ref=e89]: Dokumen
+        - generic [ref=e90]:
+          - button "Pengiriman" [ref=e91] [cursor=pointer]:
+            - generic [ref=e92]:
+              - img [ref=e93]
+              - generic [ref=e98]: Pengiriman
+            - img [ref=e100]
+          - generic [ref=e102]:
+            - link "Pengiriman" [ref=e103] [cursor=pointer]:
+              - /url: /shipments
+              - generic [ref=e104]: Pengiriman
+            - link "Driver" [ref=e105] [cursor=pointer]:
+              - /url: /drivers
+              - generic [ref=e106]: Driver
+        - generic [ref=e107]:
+          - button "Sistem" [ref=e108] [cursor=pointer]:
+            - generic [ref=e109]:
+              - img [ref=e110]
+              - generic [ref=e113]: Sistem
+            - img [ref=e115]
+          - generic [ref=e117]:
+            - link "Laporan" [ref=e118] [cursor=pointer]:
+              - /url: /reports
+              - generic [ref=e119]: Laporan
+            - link "Pengaturan" [ref=e120] [cursor=pointer]:
+              - /url: /settings
+              - generic [ref=e121]: Pengaturan
+        - generic [ref=e122]:
+          - button "Bantuan" [ref=e123] [cursor=pointer]:
+            - generic [ref=e124]:
+              - img [ref=e125]
+              - generic [ref=e128]: Bantuan
+            - img [ref=e129]
+          - generic [ref=e131]:
+            - link "Tanya Tim" [ref=e132] [cursor=pointer]:
+              - /url: /help/live-support
+            - link "Cara Pakai" [ref=e133] [cursor=pointer]:
+              - /url: /help/documentation
+  - generic [ref=e134]:
+    - banner [ref=e135]:
+      - generic [ref=e136]:
+        - generic [ref=e137]:
+          - img [ref=e138]
+          - textbox "Cari zona, rak, kode, atau aktivitas..." [ref=e141]
+        - generic [ref=e146]: "Sistem Inti: Operasional"
+      - generic [ref=e147]:
+        - generic [ref=e148]:
+          - link "3" [ref=e149] [cursor=pointer]:
+            - /url: /notifications
+            - img [ref=e151]
+            - generic [ref=e156]: "3"
+          - link [ref=e157] [cursor=pointer]:
+            - /url: /help/live-support
+            - img [ref=e159]
+        - generic [ref=e165] [cursor=pointer]:
+          - generic [ref=e166]:
+            - generic [ref=e167]: Rizky Pratama
+            - generic [ref=e168]: Manager Gudang
+          - generic [ref=e169]: R
+    - navigation [ref=e170]:
+      - link "Beranda" [ref=e171] [cursor=pointer]:
+        - /url: /dashboard
+        - img [ref=e172]
+        - generic [ref=e177]: Beranda
+      - img [ref=e178]
+      - link "Dasbor" [ref=e180] [cursor=pointer]:
+        - /url: /dashboard
+      - img [ref=e181]
+      - generic [ref=e183]: Layout Gudang
+    - generic [ref=e185]:
+      - generic [ref=e186]: "Aksi Cepat:"
+      - link "Barang Masuk" [ref=e187] [cursor=pointer]:
+        - /url: /inventory?mode=inbound
+        - img [ref=e188]
+        - generic [ref=e192]: Barang Masuk
+      - link "Pengiriman" [ref=e193] [cursor=pointer]:
+        - /url: /shipments/create
+        - img [ref=e194]
+        - generic [ref=e199]: Pengiriman
+      - link "Cek Stok" [ref=e200] [cursor=pointer]:
+        - /url: /stock-opname
+        - img [ref=e201]
+        - generic [ref=e205]: Cek Stok
+      - link "Laporan Stok" [ref=e206] [cursor=pointer]:
+        - /url: /reports?type=inventory
+        - img [ref=e207]
+        - generic [ref=e209]: Laporan Stok
+      - link "Stok Menipis" [ref=e210] [cursor=pointer]:
+        - /url: /inventory?filter=low
+        - img [ref=e211]
+        - generic [ref=e214]: Stok Menipis
+    - main [ref=e215]:
+      - generic [ref=e217]:
+        - generic [ref=e220]:
+          - generic [ref=e221]:
+            - generic [ref=e222]:
+              - heading "Gudang Utama Samarinda" [level=1] [ref=e223]
+              - generic [ref=e224]: Samarinda, Kalimantan Timur
+            - paragraph [ref=e225]: Overview zona, rak, dan stok gudang secara real-time
+          - generic [ref=e226]:
+            - button "Tambah Zona" [ref=e227] [cursor=pointer]:
+              - img [ref=e228]
+              - text: Tambah Zona
+            - link "Transfer Rack" [ref=e230] [cursor=pointer]:
+              - /url: http://127.0.0.1:8000/rack-allocation
+              - img [ref=e231]
+              - text: Transfer Rack
+            - button "Layout Editor" [ref=e233] [cursor=pointer]:
+              - img [ref=e234]
+              - text: Layout Editor
+        - generic [ref=e238]:
+          - generic [ref=e239]:
+            - img [ref=e241]
+            - generic [ref=e243]:
+              - generic [ref=e244]: "5"
+              - generic [ref=e245]: Zona Aktif
+          - generic [ref=e246]:
+            - img [ref=e248]
+            - generic [ref=e250]:
+              - generic [ref=e251]: "6"
+              - generic [ref=e252]: Total Rak
+          - generic [ref=e253]:
+            - img [ref=e255]
+            - generic [ref=e257]:
+              - generic [ref=e258]: "6.100"
+              - generic [ref=e259]: Total Item
+          - generic [ref=e260]:
+            - img [ref=e262]
+            - generic [ref=e264]:
+              - generic [ref=e265]: 63%
+              - generic [ref=e266]: Keterisian
+        - generic [ref=e267]:
+          - generic [ref=e268]:
+            - generic [ref=e269]:
+              - paragraph [ref=e270]: Zona Aktif
+              - paragraph [ref=e271]: Zona A
+            - generic [ref=e272]:
+              - paragraph [ref=e273]: Rack Di Zona
+              - paragraph [ref=e274]: "2"
+            - generic [ref=e275]:
+              - paragraph [ref=e276]: Occupancy Zona
+              - paragraph [ref=e277]: 95%
+          - generic [ref=e278]:
+            - generic [ref=e280]:
+              - generic [ref=e281]:
+                - heading "Zona Gudang" [level=2] [ref=e282]
+                - button "+ Zona" [ref=e283] [cursor=pointer]
+              - generic [ref=e284]:
+                - button "HIGH-PICK ZONE A Zona A 95% 2.570 / 2.700 unit 2 rak" [ref=e285] [cursor=pointer]:
+                  - generic [ref=e286]:
+                    - generic [ref=e287]:
+                      - generic [ref=e288]:
+                        - generic [ref=e289]: HIGH-PICK
+                        - generic [ref=e290]: ZONE A
+                      - generic [ref=e291]: Zona A
+                    - generic [ref=e292]: 95%
+                  - generic [ref=e296]:
+                    - generic [ref=e297]: 2.570 / 2.700 unit
+                    - generic [ref=e298]: 2 rak
+                - button "BULK-STORAGE ZONE B Zona B 45% 1.125 / 2.500 unit 1 rak" [ref=e299] [cursor=pointer]:
+                  - generic [ref=e300]:
+                    - generic [ref=e301]:
+                      - generic [ref=e302]:
+                        - generic [ref=e303]: BULK-STORAGE
+                        - generic [ref=e304]: ZONE B
+                      - generic [ref=e305]: Zona B
+                    - generic [ref=e306]: 45%
+                  - generic [ref=e310]:
+                    - generic [ref=e311]: 1.125 / 2.500 unit
+                    - generic [ref=e312]: 1 rak
+                - button "ELECTRONICS ZONE C Zona C 68% 1.360 / 2.000 unit 1 rak" [ref=e313] [cursor=pointer]:
+                  - generic [ref=e314]:
+                    - generic [ref=e315]:
+                      - generic [ref=e316]:
+                        - generic [ref=e317]: ELECTRONICS
+                        - generic [ref=e318]: ZONE C
+                      - generic [ref=e319]: Zona C
+                    - generic [ref=e320]: 68%
+                  - generic [ref=e324]:
+                    - generic [ref=e325]: 1.360 / 2.000 unit
+                    - generic [ref=e326]: 1 rak
+                - button "CROSS-DOCK ZONE D Zona D 15% 225 / 1.500 unit 1 rak" [ref=e327] [cursor=pointer]:
+                  - generic [ref=e328]:
+                    - generic [ref=e329]:
+                      - generic [ref=e330]:
+                        - generic [ref=e331]: CROSS-DOCK
+                        - generic [ref=e332]: ZONE D
+                      - generic [ref=e333]: Zona D
+                    - generic [ref=e334]: 15%
+                  - generic [ref=e338]:
+                    - generic [ref=e339]: 225 / 1.500 unit
+                    - generic [ref=e340]: 1 rak
+                - button "HAZMAT ZONE E Zona E 82% 820 / 1.000 unit 1 rak" [ref=e341] [cursor=pointer]:
+                  - generic [ref=e342]:
+                    - generic [ref=e343]:
+                      - generic [ref=e344]:
+                        - generic [ref=e345]: HAZMAT
+                        - generic [ref=e346]: ZONE E
+                      - generic [ref=e347]: Zona E
+                    - generic [ref=e348]: 82%
+                  - generic [ref=e352]:
+                    - generic [ref=e353]: 820 / 1.000 unit
+                    - generic [ref=e354]: 1 rak
+            - generic [ref=e356]:
+              - generic [ref=e357]:
+                - generic [ref=e358]:
+                  - generic [ref=e359]:
+                    - generic [ref=e360]:
+                      - heading "Zona A" [level=2] [ref=e361]
+                      - generic [ref=e362]: HIGH-PICK
+                    - paragraph [ref=e363]: "Kode: ZONE A · Kapasitas: 2.700 unit · Terisi: 2.570 unit"
+                  - generic [ref=e364]:
+                    - button "Tambah Rak" [ref=e365] [cursor=pointer]:
+                      - img [ref=e366]
+                      - text: Tambah Rak
+                    - button "Edit Zona" [ref=e368] [cursor=pointer]
+                - generic [ref=e372]:
+                  - generic [ref=e373]: "Keterisian: 95%"
+                  - generic [ref=e374]: 2 rak terdaftar
+              - generic [ref=e375]:
+                - heading "Rak di Zona A" [level=3] [ref=e376]
+                - generic [ref=e377]:
+                  - generic [ref=e378]:
+                    - generic [ref=e379]:
+                      - generic [ref=e380]:
+                        - generic [ref=e381]:
+                          - generic [ref=e382]:
+                            - generic [ref=e383]: A1-A12
+                            - generic [ref=e384]: HIGH PICK AREA
+                            - generic [ref=e385]: Kritis
+                          - generic [ref=e386]: Rak A1-A12
+                        - generic [ref=e387]: 95%
+                      - generic [ref=e391]:
+                        - generic [ref=e392]: 1.240 / 1.300 item
+                        - generic [ref=e393]: 2 SKU
+                    - generic [ref=e394]:
+                      - generic [ref=e395]:
+                        - generic [ref=e396]: Produk Teratas
+                        - generic [ref=e397]:
+                          - generic [ref=e398]:
+                            - generic [ref=e399]: Modul Sensor AX900
+                            - generic [ref=e400]: HP-AX900
+                          - generic [ref=e401]: "680"
+                        - generic [ref=e402]:
+                          - generic [ref=e403]:
+                            - generic [ref=e404]: Kabel Industri 24m
+                            - generic [ref=e405]: HP-CBL24
+                          - generic [ref=e406]: "560"
+                      - generic [ref=e407]:
+                        - button "Detail" [ref=e408] [cursor=pointer]:
+                          - img [ref=e409]
+                          - text: Detail
+                        - button "Edit" [ref=e412] [cursor=pointer]
+                        - button "Stok" [ref=e413] [cursor=pointer]:
+                          - img [ref=e414]
+                          - text: Stok
+                  - generic [ref=e416]:
+                    - generic [ref=e417]:
+                      - generic [ref=e418]:
+                        - generic [ref=e419]:
+                          - generic [ref=e420]:
+                            - generic [ref=e421]: A13-A24
+                            - generic [ref=e422]: HIGH PICK AREA
+                            - generic [ref=e423]: Kritis
+                          - generic [ref=e424]: Rak A13-A24
+                        - generic [ref=e425]: 95%
+                      - generic [ref=e429]:
+                        - generic [ref=e430]: 1.330 / 1.400 item
+                        - generic [ref=e431]: 3 SKU
+                    - generic [ref=e432]:
+                      - generic [ref=e433]:
+                        - generic [ref=e434]: Produk Teratas
+                        - generic [ref=e435]:
+                          - generic [ref=e436]:
+                            - generic [ref=e437]: Kabel Industri 24m
+                            - generic [ref=e438]: HP-CBL24
+                          - generic [ref=e439]: "660"
+                        - generic [ref=e440]:
+                          - generic [ref=e441]:
+                            - generic [ref=e442]: Modul Sensor AX900
+                            - generic [ref=e443]: HP-AX900
+                          - generic [ref=e444]: "520"
+                        - generic [ref=e445]:
+                          - generic [ref=e446]:
+                            - generic [ref=e447]: Papan Kontrol PCB
+                            - generic [ref=e448]: EL-PCB77
+                          - generic [ref=e449]: "150"
+                      - generic [ref=e450]:
+                        - button "Detail" [ref=e451] [cursor=pointer]:
+                          - img [ref=e452]
+                          - text: Detail
+                        - button "Edit" [ref=e455] [cursor=pointer]
+                        - button "Stok" [ref=e456] [cursor=pointer]:
+                          - img [ref=e457]
+                          - text: Stok
+              - generic [ref=e459]:
+                - generic [ref=e460]:
+                  - generic [ref=e461]:
+                    - heading "A1-A12 — Rak A1-A12" [level=3] [ref=e462]
+                    - paragraph [ref=e463]: "Kapasitas: 1.300 · Tipe: high_pick_area · Status: active"
+                  - button "Tambah Stok" [ref=e464] [cursor=pointer]:
+                    - img [ref=e465]
+                    - text: Tambah Stok
+                - table [ref=e468]:
+                  - rowgroup [ref=e469]:
+                    - row "Produk Qty Reserved Tersedia Batch Exp Aksi" [ref=e470]:
+                      - columnheader "Produk" [ref=e471]
+                      - columnheader "Qty" [ref=e472]
+                      - columnheader "Reserved" [ref=e473]
+                      - columnheader "Tersedia" [ref=e474]
+                      - columnheader "Batch" [ref=e475]
+                      - columnheader "Exp" [ref=e476]
+                      - columnheader "Aksi" [ref=e477]
+                  - rowgroup [ref=e478]:
+                    - row "Kabel Industri 24m HP-CBL24 560 70 490 BATCH-A1A12 - Edit Hapus" [ref=e479]:
+                      - cell "Kabel Industri 24m HP-CBL24" [ref=e480]:
+                        - generic [ref=e481]: Kabel Industri 24m
+                        - generic [ref=e482]: HP-CBL24
+                      - cell "560" [ref=e483]
+                      - cell "70" [ref=e484]
+                      - cell "490" [ref=e485]
+                      - cell "BATCH-A1A12" [ref=e486]
+                      - cell "-" [ref=e487]
+                      - cell "Edit Hapus" [ref=e488]:
+                        - generic [ref=e489]:
+                          - button "Edit" [ref=e490] [cursor=pointer]
+                          - button "Hapus" [ref=e491] [cursor=pointer]
+                    - row "Modul Sensor AX900 HP-AX900 680 95 585 BATCH-A1A12 - Edit Hapus" [ref=e492]:
+                      - cell "Modul Sensor AX900 HP-AX900" [ref=e493]:
+                        - generic [ref=e494]: Modul Sensor AX900
+                        - generic [ref=e495]: HP-AX900
+                      - cell "680" [ref=e496]
+                      - cell "95" [ref=e497]
+                      - cell "585" [ref=e498]
+                      - cell "BATCH-A1A12" [ref=e499]
+                      - cell "-" [ref=e500]
+                      - cell "Edit Hapus" [ref=e501]:
+                        - generic [ref=e502]:
+                          - button "Edit" [ref=e503] [cursor=pointer]
+                          - button "Hapus" [ref=e504] [cursor=pointer]
+              - generic [ref=e505]:
+                - generic [ref=e506]:
+                  - heading "Manual Adjustment Pending" [level=3] [ref=e507]
+                  - generic [ref=e508]: 0 menunggu
+                - generic [ref=e509]: Tidak ada koreksi stok manual yang menunggu approval.
+              - generic [ref=e510]:
+                - heading "Aktivitas Terakhir" [level=3] [ref=e511]
+                - generic [ref=e512]: Belum ada aktivitas
+  - button "Buka PETAYU AI" [ref=e513] [cursor=pointer]:
+    - generic [ref=e514]:
+      - generic [ref=e517]:
+        - img [ref=e519]
+        - img [ref=e525]
+      - generic: ✦ PETAYU AI

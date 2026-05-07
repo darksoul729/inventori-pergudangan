@@ -108,18 +108,18 @@ export default function StockOpname({ warehouse, products = [], recentOpnames = 
             searchValue={search}
             onSearch={setSearch}
         >
-            <Head title="Stock Opname" />
+            <Head title="Cek Stok Fisik" />
 
             <div className="pb-12">
                 <div className="flex flex-col gap-2 mb-7">
                     <div className="flex items-center gap-2 text-sm">
                         <Link href="/inventory" className="text-gray-400 hover:text-indigo-600 font-bold transition-colors">Inventaris</Link>
                         <span className="text-gray-300">/</span>
-                        <span className="text-gray-600 font-bold">Stock Opname</span>
+                        <span className="text-gray-600 font-bold">Cek Stok Fisik</span>
                     </div>
                     <div className="flex flex-col xl:flex-row xl:items-end xl:justify-between gap-4">
                         <div>
-                            <h1 className="text-[28px] font-black text-[#28106F] tracking-tight">Stock Opname</h1>
+                            <h1 className="text-[28px] font-black text-[#28106F] tracking-tight">Cek Stok Fisik</h1>
                             <p className="text-[13px] font-semibold text-gray-500 mt-1">
                                 {warehouse?.name || 'Warehouse utama'}{warehouse?.location ? `, ${warehouse.location}` : ''} - hitung stok fisik, sistem akan membuat adjustment untuk selisih.
                             </p>

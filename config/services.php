@@ -47,4 +47,10 @@ return [
         'transcription_url' => 'https://api.groq.com/openai/v1/audio/transcriptions',
     ],
 
+    'midtrans' => [
+        'server_key' => env('MIDTRANS_SERVER_KEY'),
+        'client_key' => env('MIDTRANS_CLIENT_KEY'),
+        'base_url' => env('MIDTRANS_BASE_URL', 'https://api.sandbox.midtrans.com'),
+    ],
+
 ];

@@ -1,0 +1,267 @@
+- generic [ref=e3]:
+  - generic [ref=e4]:
+    - button [ref=e5] [cursor=pointer]:
+      - img [ref=e6]
+    - generic [ref=e8]:
+      - generic [ref=e9]:
+        - img "Logo PETAYU" [ref=e11]
+        - generic [ref=e12]:
+          - heading "PETAYU" [level=1] [ref=e13]
+          - paragraph [ref=e14]: SMART STORAGE, SMOOTH FLOW
+      - navigation [ref=e15]:
+        - link "Dasbor" [ref=e16] [cursor=pointer]:
+          - /url: /dashboard
+          - img [ref=e17]
+          - generic [ref=e22]: Dasbor
+        - link "Bantuan AI" [ref=e23] [cursor=pointer]:
+          - /url: /petayu-ai
+          - img [ref=e24]
+          - generic [ref=e27]: Bantuan AI
+        - generic [ref=e28]:
+          - button "Operasional Gudang" [ref=e29] [cursor=pointer]:
+            - generic [ref=e30]:
+              - img [ref=e31]
+              - generic [ref=e34]: Operasional Gudang
+            - img [ref=e36]
+          - generic [ref=e39]:
+            - link "Layout Gudang" [ref=e40] [cursor=pointer]:
+              - /url: /warehouse
+              - generic [ref=e41]: Layout Gudang
+            - link "Pindah Rak" [ref=e42] [cursor=pointer]:
+              - /url: /rack-allocation
+              - generic [ref=e43]: Pindah Rak
+            - link "Cek Stok" [ref=e44] [cursor=pointer]:
+              - /url: /stock-opname
+              - generic [ref=e45]: Cek Stok
+        - link "Stok Barang" [ref=e46] [cursor=pointer]:
+          - /url: /inventory
+          - img [ref=e47]
+          - generic [ref=e57]: Stok Barang
+        - generic [ref=e58]:
+          - button "Pembelian" [ref=e59] [cursor=pointer]:
+            - generic [ref=e60]:
+              - img [ref=e61]
+              - generic [ref=e65]: Pembelian
+            - img [ref=e67]
+          - generic [ref=e70]:
+            - link "Order Beli" [ref=e71] [cursor=pointer]:
+              - /url: /purchase-orders
+              - generic [ref=e72]: Order Beli
+            - link "Pemasok" [ref=e73] [cursor=pointer]:
+              - /url: /supplier
+              - generic [ref=e74]: Pemasok
+            - link "Tagihan" [ref=e75] [cursor=pointer]:
+              - /url: /tagihan
+              - generic [ref=e76]: Tagihan
+        - generic [ref=e77]:
+          - button "Riwayat" [ref=e78] [cursor=pointer]:
+            - generic [ref=e79]:
+              - img [ref=e80]
+              - generic [ref=e83]: Riwayat
+            - img [ref=e85]
+          - generic [ref=e88]:
+            - link "Riwayat Stok" [ref=e89] [cursor=pointer]:
+              - /url: /transaction
+              - generic [ref=e90]: Riwayat Stok
+            - link "Dokumen" [ref=e91] [cursor=pointer]:
+              - /url: /wms-documents
+              - generic [ref=e92]: Dokumen
+        - generic [ref=e93]:
+          - button "Pengiriman" [ref=e94] [cursor=pointer]:
+            - generic [ref=e95]:
+              - img [ref=e96]
+              - generic [ref=e101]: Pengiriman
+            - img [ref=e103]
+          - generic [ref=e106]:
+            - link "Pengiriman" [ref=e107] [cursor=pointer]:
+              - /url: /shipments
+              - generic [ref=e108]: Pengiriman
+            - link "Driver" [ref=e109] [cursor=pointer]:
+              - /url: /drivers
+              - generic [ref=e110]: Driver
+        - generic [ref=e111]:
+          - button "Sistem" [ref=e112] [cursor=pointer]:
+            - generic [ref=e113]:
+              - img [ref=e114]
+              - generic [ref=e117]: Sistem
+            - img [ref=e119]
+          - generic [ref=e121]:
+            - link "Laporan" [ref=e122] [cursor=pointer]:
+              - /url: /reports
+              - generic [ref=e123]: Laporan
+            - link "Pengaturan" [ref=e124] [cursor=pointer]:
+              - /url: /settings
+              - generic [ref=e125]: Pengaturan
+        - generic [ref=e126]:
+          - button "Bantuan" [ref=e127] [cursor=pointer]:
+            - generic [ref=e128]:
+              - img [ref=e129]
+              - generic [ref=e132]: Bantuan
+            - img [ref=e133]
+          - generic [ref=e135]:
+            - link "Tanya Tim" [ref=e136] [cursor=pointer]:
+              - /url: /help/live-support
+            - link "Cara Pakai" [ref=e137] [cursor=pointer]:
+              - /url: /help/documentation
+  - generic [ref=e138]:
+    - banner [ref=e139]:
+      - generic [ref=e140]:
+        - heading "Manajemen Driver" [level=2] [ref=e141]
+        - generic [ref=e142]:
+          - img [ref=e143]
+          - textbox "Cari driver, kontak, atau nomor SIM..." [ref=e146]
+        - generic [ref=e151]: "Sistem Inti: Operasional"
+      - generic [ref=e152]:
+        - generic [ref=e153]:
+          - link "3" [ref=e154] [cursor=pointer]:
+            - /url: /notifications
+            - img [ref=e156]
+            - generic [ref=e161]: "3"
+          - link [ref=e162] [cursor=pointer]:
+            - /url: /help/live-support
+            - img [ref=e164]
+        - generic [ref=e170] [cursor=pointer]:
+          - generic [ref=e171]:
+            - generic [ref=e172]: Rizky Pratama
+            - generic [ref=e173]: Manager Gudang
+          - generic [ref=e174]: R
+    - navigation [ref=e175]:
+      - link "Beranda" [ref=e176] [cursor=pointer]:
+        - /url: /dashboard
+        - img [ref=e177]
+        - generic [ref=e182]: Beranda
+      - img [ref=e183]
+      - link "Dasbor" [ref=e185] [cursor=pointer]:
+        - /url: /dashboard
+      - img [ref=e186]
+      - link "Pengiriman" [ref=e188] [cursor=pointer]:
+        - /url: /shipments
+      - img [ref=e189]
+      - generic [ref=e191]: Driver
+    - main [ref=e192]:
+      - generic [ref=e193]:
+        - generic [ref=e194]:
+          - generic [ref=e195]:
+            - heading "Daftar Driver" [level=1] [ref=e196]
+            - paragraph [ref=e197]: Kelola verifikasi dan status aktif driver di lapangan.
+          - generic [ref=e198]:
+            - link "Buat Driver" [ref=e199] [cursor=pointer]:
+              - /url: http://127.0.0.1:8000/drivers/create
+              - img [ref=e200]
+              - generic [ref=e202]: Buat Driver
+            - generic [ref=e203]:
+              - button "DAFTAR DRIVER" [ref=e204] [cursor=pointer]
+              - button "PELACAKAN LANGSUNG" [ref=e205] [cursor=pointer]
+            - generic [ref=e206]:
+              - generic [ref=e207]: Total Pengemudi Aktif
+              - generic [ref=e208]: "5"
+        - table [ref=e211]:
+          - rowgroup [ref=e212]:
+            - row "Driver Kontak No. SIM Status Aksi" [ref=e213]:
+              - columnheader "Driver" [ref=e214]
+              - columnheader "Kontak" [ref=e215]
+              - columnheader "No. SIM" [ref=e216]
+              - columnheader "Status" [ref=e217]
+              - columnheader "Aksi" [ref=e218]
+          - rowgroup [ref=e219]:
+            - row "A Ahmad Nurdin ahmad.nur.driver@petayu.co.id 081251220001 KT-12345-AB TERVERIFIKASI Detail Masih Aktif" [ref=e220]:
+              - cell "A Ahmad Nurdin ahmad.nur.driver@petayu.co.id" [ref=e221]:
+                - generic [ref=e222]:
+                  - generic [ref=e223]: A
+                  - generic [ref=e224]:
+                    - generic [ref=e225]: Ahmad Nurdin
+                    - generic [ref=e226]: ahmad.nur.driver@petayu.co.id
+              - cell "081251220001" [ref=e227]
+              - cell "KT-12345-AB" [ref=e228]
+              - cell "TERVERIFIKASI" [ref=e229]
+              - cell "Detail Masih Aktif" [ref=e230]:
+                - generic [ref=e231]:
+                  - link "Detail" [ref=e232] [cursor=pointer]:
+                    - /url: http://127.0.0.1:8000/drivers/1
+                    - img [ref=e233]
+                    - text: Detail
+                  - button "Masih Aktif" [disabled] [ref=e236]:
+                    - img [ref=e237]
+                    - text: Masih Aktif
+            - row "B Budi Santoso budi.santoso.driver@petayu.co.id 081251220002 KT-67890-CD TERVERIFIKASI Detail Masih Aktif" [ref=e239]:
+              - cell "B Budi Santoso budi.santoso.driver@petayu.co.id" [ref=e240]:
+                - generic [ref=e241]:
+                  - generic [ref=e242]: B
+                  - generic [ref=e243]:
+                    - generic [ref=e244]: Budi Santoso
+                    - generic [ref=e245]: budi.santoso.driver@petayu.co.id
+              - cell "081251220002" [ref=e246]
+              - cell "KT-67890-CD" [ref=e247]
+              - cell "TERVERIFIKASI" [ref=e248]
+              - cell "Detail Masih Aktif" [ref=e249]:
+                - generic [ref=e250]:
+                  - link "Detail" [ref=e251] [cursor=pointer]:
+                    - /url: http://127.0.0.1:8000/drivers/2
+                    - img [ref=e252]
+                    - text: Detail
+                  - button "Masih Aktif" [disabled] [ref=e255]:
+                    - img [ref=e256]
+                    - text: Masih Aktif
+            - row "A Andi Prakoso andi.prakoso.driver@petayu.co.id 081251220003 KT-11223-EF TERVERIFIKASI Detail Tahan" [ref=e258]:
+              - cell "A Andi Prakoso andi.prakoso.driver@petayu.co.id" [ref=e259]:
+                - generic [ref=e260]:
+                  - generic [ref=e261]: A
+                  - generic [ref=e262]:
+                    - generic [ref=e263]: Andi Prakoso
+                    - generic [ref=e264]: andi.prakoso.driver@petayu.co.id
+              - cell "081251220003" [ref=e265]
+              - cell "KT-11223-EF" [ref=e266]
+              - cell "TERVERIFIKASI" [ref=e267]
+              - cell "Detail Tahan" [ref=e268]:
+                - generic [ref=e269]:
+                  - link "Detail" [ref=e270] [cursor=pointer]:
+                    - /url: http://127.0.0.1:8000/drivers/3
+                    - img [ref=e271]
+                    - text: Detail
+                  - button "Tahan" [ref=e274] [cursor=pointer]:
+                    - img [ref=e275]
+                    - text: Tahan
+            - row "C Citra Lestari citra.lestari.driver@petayu.co.id 081251220004 KT-44556-GH TERVERIFIKASI Detail Tahan" [ref=e277]:
+              - cell "C Citra Lestari citra.lestari.driver@petayu.co.id" [ref=e278]:
+                - generic [ref=e279]:
+                  - generic [ref=e280]: C
+                  - generic [ref=e281]:
+                    - generic [ref=e282]: Citra Lestari
+                    - generic [ref=e283]: citra.lestari.driver@petayu.co.id
+              - cell "081251220004" [ref=e284]
+              - cell "KT-44556-GH" [ref=e285]
+              - cell "TERVERIFIKASI" [ref=e286]
+              - cell "Detail Tahan" [ref=e287]:
+                - generic [ref=e288]:
+                  - link "Detail" [ref=e289] [cursor=pointer]:
+                    - /url: http://127.0.0.1:8000/drivers/4
+                    - img [ref=e290]
+                    - text: Detail
+                  - button "Tahan" [ref=e293] [cursor=pointer]:
+                    - img [ref=e294]
+                    - text: Tahan
+            - row "E Eko Wibowo eko.wibowo.driver@petayu.co.id 081251220005 KT-77889-IJ TERVERIFIKASI Detail Tahan" [ref=e296]:
+              - cell "E Eko Wibowo eko.wibowo.driver@petayu.co.id" [ref=e297]:
+                - generic [ref=e298]:
+                  - generic [ref=e299]: E
+                  - generic [ref=e300]:
+                    - generic [ref=e301]: Eko Wibowo
+                    - generic [ref=e302]: eko.wibowo.driver@petayu.co.id
+              - cell "081251220005" [ref=e303]
+              - cell "KT-77889-IJ" [ref=e304]
+              - cell "TERVERIFIKASI" [ref=e305]
+              - cell "Detail Tahan" [ref=e306]:
+                - generic [ref=e307]:
+                  - link "Detail" [ref=e308] [cursor=pointer]:
+                    - /url: http://127.0.0.1:8000/drivers/5
+                    - img [ref=e309]
+                    - text: Detail
+                  - button "Tahan" [ref=e312] [cursor=pointer]:
+                    - img [ref=e313]
+                    - text: Tahan
+  - button "Buka PETAYU AI" [ref=e315] [cursor=pointer]:
+    - generic [ref=e316]:
+      - generic [ref=e319]:
+        - img [ref=e321]
+        - img [ref=e327]
+      - generic: ✦ PETAYU AI

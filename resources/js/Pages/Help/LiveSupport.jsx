@@ -304,7 +304,7 @@ export default function LiveSupport() {
                         </p>
                         <div className="mt-6 space-y-3 text-[13px] font-bold leading-6 text-gray-600">
                             <div className="rounded-[8px] border border-gray-100 bg-[#F8F7FF] p-4">Menu: contoh Inventaris, Pengiriman, Laporan</div>
-                            <div className="rounded-[8px] border border-gray-100 bg-[#F8F7FF] p-4">Nomor dokumen: PO, Stock Out, Shipment, Opname, atau Adjustment</div>
+                            <div className="rounded-[8px] border border-gray-100 bg-[#F8F7FF] p-4">Nomor dokumen: PO, Barang Keluar, Pengiriman, Cek Stok Fisik, atau Penyesuaian Stok</div>
                             <div className="rounded-[8px] border border-gray-100 bg-[#F8F7FF] p-4">Masalah: data tidak sesuai, akses ditolak, gagal submit, atau laporan tidak sinkron</div>
                             <div className="rounded-[8px] border border-gray-100 bg-[#F8F7FF] p-4">Bukti: screenshot, waktu kejadian, dan akun pengguna</div>
                         </div>

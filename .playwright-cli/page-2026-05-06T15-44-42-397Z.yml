@@ -1,0 +1,171 @@
+- generic [ref=e237]:
+  - generic [ref=e238]:
+    - button [ref=e239] [cursor=pointer]:
+      - img [ref=e240]
+    - generic [ref=e242]:
+      - generic [ref=e243]:
+        - img "Logo PETAYU" [ref=e245]
+        - generic [ref=e246]:
+          - heading "PETAYU" [level=1] [ref=e247]
+          - paragraph [ref=e248]: SMART STORAGE, SMOOTH FLOW
+      - navigation [ref=e249]:
+        - link "Dasbor" [ref=e250] [cursor=pointer]:
+          - /url: /dashboard
+          - img [ref=e251]
+          - generic [ref=e256]: Dasbor
+        - link "Bantuan AI" [ref=e257] [cursor=pointer]:
+          - /url: /petayu-ai
+          - img [ref=e258]
+          - generic [ref=e261]: Bantuan AI
+        - generic [ref=e262]:
+          - button "Operasional Gudang" [ref=e263] [cursor=pointer]:
+            - generic [ref=e264]:
+              - img [ref=e265]
+              - generic [ref=e268]: Operasional Gudang
+            - img [ref=e270]
+          - generic [ref=e273]:
+            - link "Layout Gudang" [ref=e274] [cursor=pointer]:
+              - /url: /warehouse
+              - generic [ref=e275]: Layout Gudang
+            - link "Pindah Rak" [ref=e276] [cursor=pointer]:
+              - /url: /rack-allocation
+              - generic [ref=e277]: Pindah Rak
+            - link "Cek Stok" [ref=e278] [cursor=pointer]:
+              - /url: /stock-opname
+              - generic [ref=e279]: Cek Stok
+        - link "Stok Barang" [ref=e280] [cursor=pointer]:
+          - /url: /inventory
+          - img [ref=e281]
+          - generic [ref=e291]: Stok Barang
+        - generic [ref=e292]:
+          - button "Pembelian" [ref=e293] [cursor=pointer]:
+            - generic [ref=e294]:
+              - img [ref=e295]
+              - generic [ref=e299]: Pembelian
+            - img [ref=e301]
+          - generic [ref=e304]:
+            - link "Order Beli" [ref=e305] [cursor=pointer]:
+              - /url: /purchase-orders
+              - generic [ref=e306]: Order Beli
+            - link "Pemasok" [ref=e307] [cursor=pointer]:
+              - /url: /supplier
+              - generic [ref=e308]: Pemasok
+            - link "Tagihan" [ref=e309] [cursor=pointer]:
+              - /url: /tagihan
+              - generic [ref=e310]: Tagihan
+        - generic [ref=e311]:
+          - button "Riwayat" [ref=e312] [cursor=pointer]:
+            - generic [ref=e313]:
+              - img [ref=e314]
+              - generic [ref=e317]: Riwayat
+            - img [ref=e319]
+          - generic [ref=e322]:
+            - link "Riwayat Stok" [ref=e323] [cursor=pointer]:
+              - /url: /transaction
+              - generic [ref=e324]: Riwayat Stok
+            - link "Dokumen" [ref=e325] [cursor=pointer]:
+              - /url: /wms-documents
+              - generic [ref=e326]: Dokumen
+        - generic [ref=e327]:
+          - button "Pengiriman" [ref=e328] [cursor=pointer]:
+            - generic [ref=e329]:
+              - img [ref=e330]
+              - generic [ref=e335]: Pengiriman
+            - img [ref=e337]
+          - generic [ref=e340]:
+            - link "Pengiriman" [ref=e341] [cursor=pointer]:
+              - /url: /shipments
+              - generic [ref=e342]: Pengiriman
+            - link "Driver" [ref=e343] [cursor=pointer]:
+              - /url: /drivers
+              - generic [ref=e344]: Driver
+        - generic [ref=e345]:
+          - button "Sistem" [ref=e346] [cursor=pointer]:
+            - generic [ref=e347]:
+              - img [ref=e348]
+              - generic [ref=e351]: Sistem
+            - img [ref=e353]
+          - generic [ref=e356]:
+            - link "Laporan" [ref=e357] [cursor=pointer]:
+              - /url: /reports
+              - generic [ref=e358]: Laporan
+            - link "Pengaturan" [ref=e359] [cursor=pointer]:
+              - /url: /settings
+              - generic [ref=e360]: Pengaturan
+        - generic [ref=e361]:
+          - button "Bantuan" [ref=e362] [cursor=pointer]:
+            - generic [ref=e363]:
+              - img [ref=e364]
+              - generic [ref=e367]: Bantuan
+            - img [ref=e368]
+          - generic [ref=e370]:
+            - link "Tanya Tim" [ref=e371] [cursor=pointer]:
+              - /url: /help/live-support
+            - link "Cara Pakai" [ref=e372] [cursor=pointer]:
+              - /url: /help/documentation
+  - generic [ref=e373]:
+    - banner [ref=e374]:
+      - generic [ref=e375]:
+        - generic [ref=e376]:
+          - img [ref=e377]
+          - textbox "Cari..." [ref=e380]
+        - generic [ref=e385]: "Sistem Inti: Operasional"
+      - generic [ref=e386]:
+        - generic [ref=e387]:
+          - link "3" [ref=e388] [cursor=pointer]:
+            - /url: /notifications
+            - img [ref=e390]
+            - generic [ref=e395]: "3"
+          - link [ref=e396] [cursor=pointer]:
+            - /url: /help/live-support
+            - img [ref=e398]
+        - generic [ref=e404] [cursor=pointer]:
+          - generic [ref=e405]:
+            - generic [ref=e406]: Rizky Pratama
+            - generic [ref=e407]: Manager Gudang
+          - generic [ref=e408]: R
+    - navigation [ref=e409]:
+      - link "Beranda" [ref=e410] [cursor=pointer]:
+        - /url: /dashboard
+        - img [ref=e411]
+        - generic [ref=e416]: Beranda
+      - img [ref=e417]
+      - link "Dasbor" [ref=e419] [cursor=pointer]:
+        - /url: /dashboard
+      - img [ref=e420]
+      - generic [ref=e422]: Tagihan
+    - main [ref=e423]:
+      - generic [ref=e425]:
+        - generic [ref=e426]:
+          - generic [ref=e427]:
+            - heading "Tagihan" [level=1] [ref=e428]
+            - paragraph [ref=e429]: Buat dan pantau status pembayaran pelanggan.
+          - link "Buat Tagihan" [ref=e430] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/invoices/create
+        - table [ref=e432]:
+          - rowgroup [ref=e433]:
+            - row "Nomor Pelanggan Tanggal Jatuh Tempo Total Status Aksi" [ref=e434]:
+              - columnheader "Nomor" [ref=e435]
+              - columnheader "Pelanggan" [ref=e436]
+              - columnheader "Tanggal" [ref=e437]
+              - columnheader "Jatuh Tempo" [ref=e438]
+              - columnheader "Total" [ref=e439]
+              - columnheader "Status" [ref=e440]
+              - columnheader "Aksi" [ref=e441]
+          - rowgroup [ref=e442]:
+            - row "INV-20260506-FYET PT Operasi Nusantara 6/5/2026 - Rp 300.000,00 Belum Dibayar Lihat" [ref=e443]:
+              - cell "INV-20260506-FYET" [ref=e444]
+              - cell "PT Operasi Nusantara" [ref=e445]
+              - cell "6/5/2026" [ref=e446]
+              - cell "-" [ref=e447]
+              - cell "Rp 300.000,00" [ref=e448]
+              - cell "Belum Dibayar" [ref=e449]
+              - cell "Lihat" [ref=e450]:
+                - link "Lihat" [ref=e451] [cursor=pointer]:
+                  - /url: http://127.0.0.1:8000/invoices/1
+  - button "Buka PETAYU AI" [ref=e452] [cursor=pointer]:
+    - generic [ref=e453]:
+      - generic [ref=e456]:
+        - img [ref=e458]
+        - img [ref=e464]
+      - generic: ✦ PETAYU AI

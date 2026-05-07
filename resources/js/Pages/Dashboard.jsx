@@ -46,12 +46,6 @@ const RackIcon = ({ className }) => (
     </svg>
 );
 
-const CheckCircleIcon = ({ className }) => (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-    </svg>
-);
-
 
 export default function Dashboard({ stats = {}, trends = [], racks = [], wmsKpis = {} }) {
     const [selectedRack, setSelectedRack] = useState(null);
@@ -70,21 +64,21 @@ export default function Dashboard({ stats = {}, trends = [], racks = [], wmsKpis
         );
     }, [wmsKpis.latest_documents, searchTerm]);
 
-    const [aiInsight, setAiInsight] = useState('Analisis koneksi PETAYU AI sedang memproses data...');
+    const [aiInsight, setAiInsight] = useState('AI sedang menyiapkan ringkasan data...');
     const [aiLoading, setAiLoading] = useState(true);
 
     const fetchAiInsight = (refresh = false) => {
         if (refresh) {
             setAiLoading(true);
-            setAiInsight('Menghubungkan ulang ke PETAYU AI untuk menyusun analitik terbaru...');
+            setAiInsight('Memuat ulang ringkasan AI terbaru...');
         }
         fetch(`/petayu-ai/dashboard-insight${refresh ? '?refresh=1' : ''}`)
             .then(res => res.json())
             .then(data => {
-                setAiInsight(data.text || 'Sistem Prediksi AI beroperasi dalam mode pemantauan rutin.');
+                setAiInsight(data.text || 'AI aktif dan siap membantu ringkasan operasional.');
             })
             .catch(() => {
-                setAiInsight('Sistem dalam mode luring jarak jauh. Pemantauan lokal aktif secara fallback.');
+                setAiInsight('AI tidak tersedia sementara. Sistem tetap berjalan normal.');
             })
             .finally(() => setAiLoading(false));
     };
@@ -104,7 +98,6 @@ export default function Dashboard({ stats = {}, trends = [], racks = [], wmsKpis
     // Rack Calculations
     const totalRacks = racks.length;
     const occupiedRacks = racks.filter((r) => r.is_occupied).length;
-    const emptyRacks = Math.max(totalRacks - occupiedRacks, 0);
     const alertRacks = racks.filter((r) => r.has_alert).length;
     
     const utilizationRaw = wmsKpis.rack_utilization || (totalRacks > 0 ? Math.round((occupiedRacks / totalRacks) * 100) : 0);
@@ -118,9 +111,6 @@ export default function Dashboard({ stats = {}, trends = [], racks = [], wmsKpis
         return { bg: 'bg-emerald-50', border: 'border-emerald-100', text: 'text-emerald-600', iconBg: 'bg-emerald-100', dot: 'bg-emerald-500' };
     };
     const utilColors = getUtilColorObj(rackUtilization);
-
-    // Alerts Combined (System + Audit Queue)
-    const combinedAlertsTotal = (stats.system_alerts || 0) + (wmsKpis.audit_queue || 0);
 
     // Visualizer Sorting Logic
     const getProcessedRacks = () => {
@@ -176,21 +166,33 @@ export default function Dashboard({ stats = {}, trends = [], racks = [], wmsKpis
 
     return (
         <DashboardLayout headerSearchPlaceholder="Cari dokumen aktivitas..." searchValue={searchTerm} onSearch={setSearchTerm}>
-            <Head title="WMS Dashboard" />
+            <Head title="Dasbor Gudang" />
             
             <div className="max-w-[1500px] mx-auto pb-12 space-y-6 animate-in fade-in duration-500">
                 {/* --- 0. Page Header (Consistent) --- */}
                 <PageHeader
-                    title="Dashboard Operasional"
-                    subtitle="Status gudang dan ringkasan aktivitas harian. Pantau KPI real-time dan tren aktivitas WMS."
+                    title="Dasbor Operasional"
+                    subtitle="Lihat kondisi gudang hari ini: barang masuk, barang keluar, dan stok yang perlu perhatian."
                     primaryAction={
-                        <PageHeaderActions.Add href="/inventory" label="Receiving Baru" />
+                        <PageHeaderActions.Add href="/inventory" label="Input Barang Masuk" />
                     }
                     secondaryActions={[
                         <PageHeaderActions.Refresh key="refresh" onClick={() => fetchAiInsight(true)} />,
-                        <PageHeaderActions.Export key="export" onClick={() => window.print()} label="Print" />,
+                        <Link key="getting-started" href="/mulai-di-sini" className="inline-flex items-center space-x-2 px-4 py-2.5 rounded-[10px] text-[12px] font-black uppercase tracking-wider transition-all bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 hover:border-gray-300">
+                            <span>Mulai di Sini</span>
+                        </Link>,
+                        <PageHeaderActions.Export key="export" onClick={() => window.print()} label="Cetak" />,
                     ]}
                 />
+
+                <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
+                    <p className="text-[11px] font-black uppercase tracking-[0.14em] text-emerald-700">Checklist Hari Ini</p>
+                    <div className="mt-2 grid gap-2 text-sm font-semibold text-emerald-900 md:grid-cols-3">
+                        <p>Stok menipis: <span className="font-black">{wmsKpis.low_stock_count || 0}</span></p>
+                        <p>Pengiriman terlambat: <span className="font-black">{wmsKpis.delayed_shipments || 0}</span></p>
+                        <p>Tagihan belum lunas: <span className="font-black">{wmsKpis.unpaid_invoices || 0}</span></p>
+                    </div>
+                </div>
 
                 {/* Status Badge */}
                 {stats.active_nodes !== undefined && (
@@ -208,7 +210,7 @@ export default function Dashboard({ stats = {}, trends = [], racks = [], wmsKpis
                 )}
 
                 {/* --- 1. KPI Utama (5 Cards) --- */}
-                <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4">
+                <div className="grid grid-cols-2 md:grid-cols-2 xl:grid-cols-4 gap-4">
                     {/* Inbound */}
                     <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm flex flex-col justify-between group">
                         <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center mb-4">
@@ -266,75 +268,23 @@ export default function Dashboard({ stats = {}, trends = [], racks = [], wmsKpis
                         </div>
                     </div>
 
-                    {/* Peringatan Sistem (Digabung) */}
-                    <div className={`bg-white rounded-2xl p-5 border shadow-sm flex flex-col justify-between group ${combinedAlertsTotal > 0 ? 'border-rose-300 bg-rose-50/20' : 'border-slate-200'}`}>
-                        <div className="flex justify-between items-start mb-4">
-                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${combinedAlertsTotal > 0 ? 'bg-rose-50 text-rose-600' : 'bg-emerald-50 text-emerald-600'}`}>
-                                {combinedAlertsTotal > 0 ? <AlertCircleIcon className="w-5 h-5" /> : <CheckCircleIcon className="w-5 h-5" />}
-                            </div>
-                            {(wmsKpis.audit_queue || 0) > 0 && (
-                                <span className="bg-rose-50 text-rose-600 border border-rose-100 text-[9px] font-black px-2 py-1 rounded-md tracking-wide">
-                                    {wmsKpis.audit_queue} AUDIT
-                                </span>
-                            )}
-                        </div>
-                        <div>
-                            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Peringatan Sistem</p>
-                            <h3 className={`text-2xl font-black ${combinedAlertsTotal > 0 ? 'text-rose-600' : 'text-slate-900'}`}>
-                                {formatPreciseNumber(combinedAlertsTotal)}
-                            </h3>
-                        </div>
-                    </div>
                 </div>
 
-                {/* --- 2. Rack Summary (1 Row) --- */}
-                <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                    <div className="px-6 py-3 border-b border-slate-100 flex items-center justify-between bg-slate-50">
-                        <h2 className="text-[12px] font-bold text-slate-600 uppercase tracking-wide">Ringkasan Rack Gudang</h2>
+                {/* Info kedaluwarsa dipisah agar tidak duplikatif dengan KPI utama */}
+                {(wmsKpis.expired_stock > 0 || wmsKpis.expiring_soon > 0) && (
+                    <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                        <div className={`rounded-xl border px-4 py-3 ${wmsKpis.expired_stock > 0 ? 'border-red-200 bg-red-50 text-red-700' : 'border-slate-200 bg-white text-slate-600'}`}>
+                            <p className="text-[10px] font-black uppercase tracking-wider">Stok Kedaluwarsa</p>
+                            <p className="mt-1 text-xl font-black">{wmsKpis.expired_stock || 0}</p>
+                        </div>
+                        <div className={`rounded-xl border px-4 py-3 ${wmsKpis.expiring_soon > 0 ? 'border-amber-200 bg-amber-50 text-amber-700' : 'border-slate-200 bg-white text-slate-600'}`}>
+                            <p className="text-[10px] font-black uppercase tracking-wider">Segera Kedaluwarsa</p>
+                            <p className="mt-1 text-xl font-black">{wmsKpis.expiring_soon || 0}</p>
+                        </div>
                     </div>
-                    <div className="grid grid-cols-2 lg:grid-cols-5 divide-y lg:divide-y-0 lg:divide-x divide-slate-100">
-                        <div className="px-6 py-4 flex items-center justify-between">
-                            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Total Rack</span>
-                            <span className="text-xl font-black text-slate-800">{formatPreciseNumber(totalRacks)}</span>
-                        </div>
-                        <div className="px-6 py-4 flex items-center justify-between">
-                            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Terisi</span>
-                            <span className="text-xl font-black text-blue-600">{formatPreciseNumber(occupiedRacks)}</span>
-                        </div>
-                        <div className="px-6 py-4 flex items-center justify-between">
-                            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Kosong</span>
-                            <span className="text-xl font-black text-emerald-600">{formatPreciseNumber(emptyRacks)}</span>
-                        </div>
-                        <div className={`px-6 py-4 flex items-center justify-between transition-colors ${unplacedStock > 0 ? 'bg-amber-50/60' : ''}`}>
-                            <span className={`text-[11px] font-bold uppercase tracking-widest ${unplacedStock > 0 ? 'text-amber-500' : 'text-slate-400'}`}>Belum Di-rack</span>
-                            <span className={`text-xl font-black ${unplacedStock > 0 ? 'text-amber-600' : 'text-slate-400'}`}>{formatNumber(unplacedStock)}</span>
-                        </div>
-                        <div className={`px-6 py-4 flex items-center justify-between transition-colors ${alertRacks > 0 ? 'bg-rose-50/60' : ''}`}>
-                            <span className={`text-[11px] font-bold uppercase tracking-widest ${alertRacks > 0 ? 'text-rose-500' : 'text-slate-400'}`}>Perlu Tinjau</span>
-                            <div className="flex items-center gap-2">
-                                <span className={`text-xl font-black ${alertRacks > 0 ? 'text-rose-600' : 'text-slate-400'}`}>{formatPreciseNumber(alertRacks)}</span>
-                                {alertRacks > 0 && <span className="flex h-2 w-2 rounded-full bg-rose-500 animate-ping"></span>}
-                            </div>
-                        </div>
-                        {(wmsKpis.expired_stock > 0 || wmsKpis.expiring_soon > 0) && (
-                            <>
-                                <div className={`px-6 py-4 flex items-center justify-between transition-colors ${wmsKpis.expired_stock > 0 ? 'bg-red-50/60' : ''}`}>
-                                    <span className={`text-[11px] font-bold uppercase tracking-widest ${wmsKpis.expired_stock > 0 ? 'text-red-500' : 'text-slate-400'}`}>Kadaluarsa</span>
-                                    <div className="flex items-center gap-2">
-                                        <span className={`text-xl font-black ${wmsKpis.expired_stock > 0 ? 'text-red-600' : 'text-slate-400'}`}>{wmsKpis.expired_stock || 0}</span>
-                                        {wmsKpis.expired_stock > 0 && <span className="flex h-2 w-2 rounded-full bg-red-500 animate-ping"></span>}
-                                    </div>
-                                </div>
-                                <div className={`px-6 py-4 flex items-center justify-between transition-colors ${wmsKpis.expiring_soon > 0 ? 'bg-amber-50/60' : ''}`}>
-                                    <span className={`text-[11px] font-bold uppercase tracking-widest ${wmsKpis.expiring_soon > 0 ? 'text-amber-500' : 'text-slate-400'}`}>Segera Expired</span>
-                                    <span className={`text-xl font-black ${wmsKpis.expiring_soon > 0 ? 'text-amber-600' : 'text-slate-400'}`}>{wmsKpis.expiring_soon || 0}</span>
-                                </div>
-                            </>
-                        )}
-                    </div>
-                </div>
+                )}
 
-                {/* --- 3. Middle Section: Visualisasi Gudang & Pusat AI --- */}
+                {/* --- 2. Middle Section: Visualisasi Gudang & Pusat AI --- */}
                 <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
                     
                     {/* Visualisasi Lantai Gudang */}

@@ -136,8 +136,8 @@ export default function StockTransferDetail({ transfer, can_approve = false }) {
                         <aside>
                             <h2 className="mb-4 text-[13px] font-black uppercase tracking-[0.14em] text-[#28106F]">Rincian Operasional</h2>
                             <dl className="rounded-xl border border-[#EDE8FC] px-5">
-                                <DetailRow label="Warehouse Asal" value={transfer.from_warehouse?.name} />
-                                <DetailRow label="Warehouse Tujuan" value={transfer.to_warehouse?.name} />
+                                <DetailRow label="Gudang Asal" value={transfer.from_warehouse?.name} />
+                                <DetailRow label="Gudang Tujuan" value={transfer.to_warehouse?.name} />
                                 <DetailRow label="Lokasi" value={transfer.from_warehouse?.location || transfer.to_warehouse?.location} />
                                 <DetailRow label="Email Operator" value={transfer.operator?.email} />
                                 <DetailRow label="Catatan" value={transfer.notes} />

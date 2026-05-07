@@ -1,0 +1,272 @@
+- generic [ref=e3]:
+  - generic [ref=e4]:
+    - button [ref=e5] [cursor=pointer]:
+      - img [ref=e6]
+    - generic [ref=e8]:
+      - generic [ref=e9]:
+        - img "Logo PETAYU" [ref=e11]
+        - generic [ref=e12]:
+          - heading "PETAYU" [level=1] [ref=e13]
+          - paragraph [ref=e14]: SMART STORAGE, SMOOTH FLOW
+      - navigation [ref=e15]:
+        - link "Dasbor" [ref=e16] [cursor=pointer]:
+          - /url: /dashboard
+          - img [ref=e17]
+          - generic [ref=e22]: Dasbor
+        - link "Bantuan AI" [ref=e23] [cursor=pointer]:
+          - /url: /petayu-ai
+          - img [ref=e24]
+          - generic [ref=e27]: Bantuan AI
+        - generic [ref=e28]:
+          - button "Operasional Gudang" [ref=e29] [cursor=pointer]:
+            - generic [ref=e30]:
+              - img [ref=e31]
+              - generic [ref=e34]: Operasional Gudang
+            - img [ref=e36]
+          - generic [ref=e39]:
+            - link "Layout Gudang" [ref=e40] [cursor=pointer]:
+              - /url: /warehouse
+              - generic [ref=e41]: Layout Gudang
+            - link "Pindah Rak" [ref=e42] [cursor=pointer]:
+              - /url: /rack-allocation
+              - generic [ref=e43]: Pindah Rak
+            - link "Cek Stok" [ref=e44] [cursor=pointer]:
+              - /url: /stock-opname
+              - generic [ref=e45]: Cek Stok
+        - link "Stok Barang" [ref=e46] [cursor=pointer]:
+          - /url: /inventory
+          - img [ref=e47]
+          - generic [ref=e57]: Stok Barang
+        - generic [ref=e58]:
+          - button "Pembelian" [ref=e59] [cursor=pointer]:
+            - generic [ref=e60]:
+              - img [ref=e61]
+              - generic [ref=e65]: Pembelian
+            - img [ref=e67]
+          - generic [ref=e69]:
+            - link "Order Beli" [ref=e70] [cursor=pointer]:
+              - /url: /purchase-orders
+              - generic [ref=e71]: Order Beli
+            - link "Pemasok" [ref=e72] [cursor=pointer]:
+              - /url: /supplier
+              - generic [ref=e73]: Pemasok
+            - link "Tagihan" [ref=e74] [cursor=pointer]:
+              - /url: /tagihan
+              - generic [ref=e75]: Tagihan
+        - generic [ref=e76]:
+          - button "Riwayat" [ref=e77] [cursor=pointer]:
+            - generic [ref=e78]:
+              - img [ref=e79]
+              - generic [ref=e82]: Riwayat
+            - img [ref=e84]
+          - generic [ref=e86]:
+            - link "Riwayat Stok" [ref=e87] [cursor=pointer]:
+              - /url: /transaction
+              - generic [ref=e88]: Riwayat Stok
+            - link "Dokumen" [ref=e89] [cursor=pointer]:
+              - /url: /wms-documents
+              - generic [ref=e90]: Dokumen
+        - generic [ref=e91]:
+          - button "Pengiriman" [ref=e92] [cursor=pointer]:
+            - generic [ref=e93]:
+              - img [ref=e94]
+              - generic [ref=e99]: Pengiriman
+            - img [ref=e101]
+          - generic [ref=e103]:
+            - link "Pengiriman" [ref=e104] [cursor=pointer]:
+              - /url: /shipments
+              - generic [ref=e105]: Pengiriman
+            - link "Driver" [ref=e106] [cursor=pointer]:
+              - /url: /drivers
+              - generic [ref=e107]: Driver
+        - generic [ref=e108]:
+          - button "Sistem" [ref=e109] [cursor=pointer]:
+            - generic [ref=e110]:
+              - img [ref=e111]
+              - generic [ref=e114]: Sistem
+            - img [ref=e116]
+          - generic [ref=e118]:
+            - link "Laporan" [ref=e119] [cursor=pointer]:
+              - /url: /reports
+              - generic [ref=e120]: Laporan
+            - link "Pengaturan" [ref=e121] [cursor=pointer]:
+              - /url: /settings
+              - generic [ref=e122]: Pengaturan
+        - generic [ref=e123]:
+          - button "Bantuan" [ref=e124] [cursor=pointer]:
+            - generic [ref=e125]:
+              - img [ref=e126]
+              - generic [ref=e129]: Bantuan
+            - img [ref=e130]
+          - generic [ref=e132]:
+            - link "Tanya Tim" [ref=e133] [cursor=pointer]:
+              - /url: /help/live-support
+            - link "Cara Pakai" [ref=e134] [cursor=pointer]:
+              - /url: /help/documentation
+  - generic [ref=e135]:
+    - banner [ref=e136]:
+      - generic [ref=e137]:
+        - generic [ref=e138]:
+          - img [ref=e139]
+          - textbox "Cari SKU, produk, kategori..." [ref=e142]
+        - generic [ref=e147]: "Sistem Inti: Operasional"
+      - generic [ref=e148]:
+        - generic [ref=e149]:
+          - link "3" [ref=e150] [cursor=pointer]:
+            - /url: /notifications
+            - img [ref=e152]
+            - generic [ref=e157]: "3"
+          - link [ref=e158] [cursor=pointer]:
+            - /url: /help/live-support
+            - img [ref=e160]
+        - generic [ref=e166] [cursor=pointer]:
+          - generic [ref=e167]:
+            - generic [ref=e168]: Rizky Pratama
+            - generic [ref=e169]: Manager Gudang
+          - generic [ref=e170]: R
+    - navigation [ref=e171]:
+      - link "Beranda" [ref=e172] [cursor=pointer]:
+        - /url: /dashboard
+        - img [ref=e173]
+        - generic [ref=e178]: Beranda
+      - img [ref=e179]
+      - link "Dasbor" [ref=e181] [cursor=pointer]:
+        - /url: /dashboard
+      - img [ref=e182]
+      - link "Layout Gudang" [ref=e184] [cursor=pointer]:
+        - /url: /warehouse
+      - img [ref=e185]
+      - generic [ref=e187]: Cek Stok
+    - main [ref=e188]:
+      - generic [ref=e190]:
+        - generic [ref=e191]:
+          - generic [ref=e192]:
+            - link "Inventaris" [ref=e193] [cursor=pointer]:
+              - /url: /inventory
+            - generic [ref=e194]: /
+            - generic [ref=e195]: Stock Opname
+          - generic [ref=e197]:
+            - heading "Stock Opname" [level=1] [ref=e198]
+            - paragraph [ref=e199]: Gudang Utama Samarinda, Samarinda, Kalimantan Timur - hitung stok fisik, sistem akan membuat adjustment untuk selisih.
+        - generic [ref=e200]:
+          - generic [ref=e201]:
+            - generic [ref=e203]:
+              - img [ref=e205]
+              - generic [ref=e207]:
+                - heading "Form Hitung Fisik" [level=2] [ref=e208]
+                - paragraph [ref=e209]: Input stok fisik hasil hitung lapangan per SKU.
+            - generic [ref=e210]:
+              - generic [ref=e211]:
+                - generic [ref=e212]: SKU dihitung
+                - generic [ref=e213]: "8"
+              - generic [ref=e214]:
+                - generic [ref=e215]: Selisih masuk
+                - generic [ref=e216]: "+0"
+              - generic [ref=e217]:
+                - generic [ref=e218]: Selisih keluar
+                - generic [ref=e219]: "-0"
+            - generic [ref=e220]:
+              - generic [ref=e221]:
+                - generic [ref=e222]: Produk
+                - generic [ref=e223]: Sistem
+                - generic [ref=e224]: Fisik
+                - generic [ref=e225]: Selisih
+                - generic [ref=e226]: Catatan
+              - generic [ref=e227]:
+                - generic [ref=e228]:
+                  - generic [ref=e229]:
+                    - generic [ref=e230]: Drum Kimia Solvent
+                    - generic [ref=e231]: HZ-SOL88 - Bahan Kimia - 1 rack
+                  - generic [ref=e232]: "820"
+                  - spinbutton [ref=e233]: "820"
+                  - generic [ref=e234]: "0"
+                  - textbox "Opsional" [ref=e235]
+                - generic [ref=e236]:
+                  - generic [ref=e237]:
+                    - generic [ref=e238]: Kabel Industri 24m
+                    - generic [ref=e239]: HP-CBL24 - Barang Industri - 2 rack
+                  - generic [ref=e240]: "1220"
+                  - spinbutton [ref=e241]: "1220"
+                  - generic [ref=e242]: "0"
+                  - textbox "Opsional" [ref=e243]
+                - generic [ref=e244]:
+                  - generic [ref=e245]:
+                    - generic [ref=e246]: KAYU MERANTI 4M (INPUT MANUAL)
+                    - generic [ref=e247]: MERANTI-M02-MANUAL - Kayu / Bahan Baku - 0 rack
+                  - generic [ref=e248]: "0"
+                  - spinbutton [ref=e249]: "0"
+                  - generic [ref=e250]: "0"
+                  - textbox "Opsional" [ref=e251]
+                - generic [ref=e252]:
+                  - generic [ref=e253]:
+                    - generic [ref=e254]: KAYU ULIN 4M x 5CM x 2.5CM
+                    - generic [ref=e255]: ULIN-E46-4000x50x25 - Kayu / Bahan Baku - 0 rack
+                  - generic [ref=e256]: "0"
+                  - spinbutton [ref=e257]: "0"
+                  - generic [ref=e258]: "0"
+                  - textbox "Opsional" [ref=e259]
+                - generic [ref=e260]:
+                  - generic [ref=e261]:
+                    - generic [ref=e262]: Modul Sensor AX900
+                    - generic [ref=e263]: HP-AX900 - Elektronik - 3 rack
+                  - generic [ref=e264]: "1580"
+                  - spinbutton [ref=e265]: "1580"
+                  - generic [ref=e266]: "0"
+                  - textbox "Opsional" [ref=e267]
+                - generic [ref=e268]:
+                  - generic [ref=e269]:
+                    - generic [ref=e270]: Paket Cross Dock
+                    - generic [ref=e271]: CD-DOCK1 - Barang Industri - 1 rack
+                  - generic [ref=e272]: "225"
+                  - spinbutton [ref=e273]: "225"
+                  - generic [ref=e274]: "0"
+                  - textbox "Opsional" [ref=e275]
+                - generic [ref=e276]:
+                  - generic [ref=e277]:
+                    - generic [ref=e278]: Papan Kontrol PCB
+                    - generic [ref=e279]: EL-PCB77 - Elektronik - 2 rack
+                  - generic [ref=e280]: "1130"
+                  - spinbutton [ref=e281]: "1130"
+                  - generic [ref=e282]: "0"
+                  - textbox "Opsional" [ref=e283]
+                - generic [ref=e284]:
+                  - generic [ref=e285]:
+                    - generic [ref=e286]: Resin Curah Pallet
+                    - generic [ref=e287]: BK-PLT55 - Barang Industri - 1 rack
+                  - generic [ref=e288]: "1125"
+                  - spinbutton [ref=e289]: "1125"
+                  - generic [ref=e290]: "0"
+                  - textbox "Opsional" [ref=e291]
+            - generic [ref=e292]:
+              - generic [ref=e293]: Catatan Opname
+              - 'textbox "Contoh: cycle count zona A, audit bulanan, atau koreksi hasil hitung fisik." [ref=e294]'
+            - generic [ref=e295]:
+              - link "Batal" [ref=e296] [cursor=pointer]:
+                - /url: /inventory
+              - button "Simpan Opname" [ref=e297] [cursor=pointer]
+          - complementary [ref=e298]:
+            - generic [ref=e299]:
+              - generic [ref=e300]:
+                - heading "Ringkasan Audit" [level=3] [ref=e301]
+                - img [ref=e302]
+              - generic [ref=e304]:
+                - generic [ref=e305]:
+                  - generic [ref=e306]: SKU berubah
+                  - generic [ref=e307]: "0"
+                - generic [ref=e308]:
+                  - generic [ref=e309]: Adjustment otomatis
+                  - generic [ref=e310]: Aktif
+                - generic [ref=e311]:
+                  - generic [ref=e312]: Ledger
+                  - generic [ref=e313]: stock_adjustment
+            - generic [ref=e314]:
+              - generic [ref=e315]:
+                - heading "Opname Terakhir" [level=3] [ref=e316]
+                - img [ref=e317]
+              - generic [ref=e320]: Belum ada stock opname.
+  - button "Buka PETAYU AI" [ref=e321] [cursor=pointer]:
+    - generic [ref=e322]:
+      - generic [ref=e325]:
+        - img [ref=e327]
+        - img [ref=e333]
+      - generic: ✦ PETAYU AI

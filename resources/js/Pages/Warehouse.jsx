@@ -14,43 +14,43 @@ const MIN_SCALE = 0.6;
 const MAX_SCALE = 1.75;
 
 const TYPE_STYLES = {
-    storage: { label: 'Storage', bg: '#f8dcdc', border: '#f1b9b8', badge: '#fff1f2', text: '#9f1239', chip: '#fbe7e7' },
-    high_pick: { label: 'High Pick', bg: '#ffe8c8', border: '#f6c98f', badge: '#fff7ed', text: '#9a3412', chip: '#ffedd5' },
-    bulk_storage: { label: 'Bulk Storage', bg: '#dce9fb', border: '#abc9f4', badge: '#eff6ff', text: '#1d4ed8', chip: '#dbeafe' },
-    electronics: { label: 'Electronics', bg: '#e5dcff', border: '#c9b8ff', badge: '#f5f3ff', text: '#6d28d9', chip: '#ede9fe' },
-    cross_dock: { label: 'Cross Dock', bg: '#d8f1ea', border: '#9fddca', badge: '#ecfdf5', text: '#0f766e', chip: '#d1fae5' },
-    hazmat: { label: 'Hazmat', bg: '#ffd9da', border: '#ffaaaa', badge: '#fff1f2', text: '#dc2626', chip: '#ffe4e6' },
-    inbound: { label: 'Inbound', bg: '#d8f0ff', border: '#8dd0ff', badge: '#eff6ff', text: '#0369a1', chip: '#e0f2fe' },
-    outbound: { label: 'Outbound', bg: '#ede9fe', border: '#c4b5fd', badge: '#f5f3ff', text: '#6d28d9', chip: '#ede9fe' },
-    rack: { label: 'Rack', bg: '#F8F7FF', border: '#cbd5e1', badge: '#F8F7FF', text: '#334155', chip: '#f1f5f9' },
-    wall: { label: 'Wall', bg: '#334155', border: '#0f172a', badge: '#e2e8f0', text: '#0f172a', chip: '#cbd5e1' },
+    storage: { label: 'Penyimpanan', bg: '#f8dcdc', border: '#f1b9b8', badge: '#fff1f2', text: '#9f1239', chip: '#fbe7e7' },
+    high_pick: { label: 'Ambil Cepat', bg: '#ffe8c8', border: '#f6c98f', badge: '#fff7ed', text: '#9a3412', chip: '#ffedd5' },
+    bulk_storage: { label: 'Simpan Massal', bg: '#dce9fb', border: '#abc9f4', badge: '#eff6ff', text: '#1d4ed8', chip: '#dbeafe' },
+    electronics: { label: 'Elektronik', bg: '#e5dcff', border: '#c9b8ff', badge: '#f5f3ff', text: '#6d28d9', chip: '#ede9fe' },
+    cross_dock: { label: 'Lintas Muat', bg: '#d8f1ea', border: '#9fddca', badge: '#ecfdf5', text: '#0f766e', chip: '#d1fae5' },
+    hazmat: { label: 'Bahan Berbahaya', bg: '#ffd9da', border: '#ffaaaa', badge: '#fff1f2', text: '#dc2626', chip: '#ffe4e6' },
+    inbound: { label: 'Area Masuk', bg: '#d8f0ff', border: '#8dd0ff', badge: '#eff6ff', text: '#0369a1', chip: '#e0f2fe' },
+    outbound: { label: 'Area Keluar', bg: '#ede9fe', border: '#c4b5fd', badge: '#f5f3ff', text: '#6d28d9', chip: '#ede9fe' },
+    rack: { label: 'Rak', bg: '#F8F7FF', border: '#cbd5e1', badge: '#F8F7FF', text: '#334155', chip: '#f1f5f9' },
+    wall: { label: 'Dinding', bg: '#334155', border: '#0f172a', badge: '#e2e8f0', text: '#0f172a', chip: '#cbd5e1' },
 };
 
 const TYPE_OPTIONS = [
-    { value: 'storage', label: 'Storage' },
-    { value: 'high_pick', label: 'High Pick' },
-    { value: 'bulk_storage', label: 'Bulk Storage' },
-    { value: 'electronics', label: 'Electronics' },
-    { value: 'cross_dock', label: 'Cross Dock' },
-    { value: 'hazmat', label: 'Hazmat' },
-    { value: 'wall', label: 'Wall' },
+    { value: 'storage', label: 'Penyimpanan' },
+    { value: 'high_pick', label: 'Ambil Cepat' },
+    { value: 'bulk_storage', label: 'Simpan Massal' },
+    { value: 'electronics', label: 'Elektronik' },
+    { value: 'cross_dock', label: 'Lintas Muat' },
+    { value: 'hazmat', label: 'Bahan Berbahaya' },
+    { value: 'wall', label: 'Dinding' },
 ];
 
 const ADD_ACTIONS = [
-    { id: 'zone', label: 'Add Zone', type: 'storage', kind: 'zone' },
-    { id: 'rack', label: 'Add Rack', type: 'rack', kind: 'rack' },
-    { id: 'wall', label: 'Add Wall', type: 'wall', kind: 'structure' },
-    { id: 'inbound', label: 'Add Area Inbound', type: 'inbound', kind: 'area' },
-    { id: 'outbound', label: 'Add Area Outbound', type: 'outbound', kind: 'area' },
-    { id: 'cross_dock', label: 'Add Cross Dock', type: 'cross_dock', kind: 'zone' },
-    { id: 'hazmat', label: 'Add Hazmat Area', type: 'hazmat', kind: 'zone' },
+    { id: 'zone', label: 'Tambah Zona', type: 'storage', kind: 'zone' },
+    { id: 'rack', label: 'Tambah Rak', type: 'rack', kind: 'rack' },
+    { id: 'wall', label: 'Tambah Dinding', type: 'wall', kind: 'structure' },
+    { id: 'inbound', label: 'Tambah Area Masuk', type: 'inbound', kind: 'area' },
+    { id: 'outbound', label: 'Tambah Area Keluar', type: 'outbound', kind: 'area' },
+    { id: 'cross_dock', label: 'Tambah Lintas Muat', type: 'cross_dock', kind: 'zone' },
+    { id: 'hazmat', label: 'Tambah Area Bahan Berbahaya', type: 'hazmat', kind: 'zone' },
 ];
 
 const STATUS_OPTIONS = [
     { value: 'active', label: 'Aktif' },
-    { value: 'planned', label: 'Planned' },
-    { value: 'maintenance', label: 'Maintenance' },
-    { value: 'inactive', label: 'Inactive' },
+    { value: 'planned', label: 'Rencana' },
+    { value: 'maintenance', label: 'Perawatan' },
+    { value: 'inactive', label: 'Nonaktif' },
 ];
 
 const RESIZE_DIRECTIONS = ['nw', 'n', 'ne', 'e', 'se', 's', 'sw', 'w'];
@@ -859,6 +859,12 @@ export default function Warehouse({
     const canApproveAdjustments = isManager || isSupervisor;
 
     const [searchTerm, setSearchTerm] = useState('');
+    const [isAdvancedWarehouseMode, setIsAdvancedWarehouseMode] = useState(() => {
+        if (typeof window !== 'undefined') {
+            return localStorage.getItem('warehouse_advanced_mode') === '1';
+        }
+        return false;
+    });
     const [viewMode, setViewMode] = useState(() => {
         if (typeof window !== 'undefined') {
             return localStorage.getItem('warehouse-view-mode') || 'dashboard';
@@ -1061,6 +1067,18 @@ export default function Warehouse({
             localStorage.setItem('warehouse-view-mode', viewMode);
         }
     }, [viewMode]);
+
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            localStorage.setItem('warehouse_advanced_mode', isAdvancedWarehouseMode ? '1' : '0');
+        }
+    }, [isAdvancedWarehouseMode]);
+
+    useEffect(() => {
+        if (!isAdvancedWarehouseMode && viewMode === 'editor') {
+            setViewMode('dashboard');
+        }
+    }, [isAdvancedWarehouseMode, viewMode]);
 
     useEffect(() => {
         if (!didLoadDraftRef.current) return;
@@ -2543,9 +2561,26 @@ export default function Warehouse({
                                         <h1 className="text-3xl font-black tracking-tight text-slate-900">{warehouse?.name || 'Gudang'}</h1>
                                         <span className="rounded-full border border-indigo-100 bg-indigo-50 px-3 py-1 text-xs font-bold text-indigo-700">{warehouse?.location}</span>
                                     </div>
-                                    <p className="mt-2 text-sm font-semibold text-slate-500">Overview zona, rak, dan stok gudang secara real-time</p>
+                                    <p className="mt-2 text-sm font-semibold text-slate-500">Ringkasan zona, rak, dan stok gudang untuk operasional harian.</p>
                                 </div>
-                                <div className="flex items-center gap-2">
+                                <div className="flex flex-wrap items-center gap-2">
+                                    {(isManager || isSupervisor) ? (
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                const next = !isAdvancedWarehouseMode;
+                                                setIsAdvancedWarehouseMode(next);
+                                                if (next) setViewMode('editor');
+                                            }}
+                                            className={`inline-flex items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-semibold shadow-sm transition ${
+                                                isAdvancedWarehouseMode
+                                                    ? 'border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100'
+                                                    : 'border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
+                                            }`}
+                                        >
+                                            {isAdvancedWarehouseMode ? 'Mode Lanjutan Aktif' : 'Mode Operasional Harian Aktif'}
+                                        </button>
+                                    ) : null}
                                     {isManager ? (
                                         <button type="button" onClick={() => setShowZoneModal(true)} className="inline-flex items-center gap-2 rounded-xl bg-[#3f4fda] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#3443c4]">
                                             <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
@@ -2554,12 +2589,14 @@ export default function Warehouse({
                                     ) : null}
                                     <Link href={route('rack.allocation')} className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50">
                                         <TransferIcon className="h-4 w-4" />
-                                        Transfer Rack
+                                        Pindah Rak
                                     </Link>
-                                    <button type="button" onClick={() => setViewMode('editor')} className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50">
-                                        <LayersIcon className="h-4 w-4" />
-                                        Layout Editor
-                                    </button>
+                                    {(isManager || isSupervisor) && isAdvancedWarehouseMode ? (
+                                        <button type="button" onClick={() => setViewMode('editor')} className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50">
+                                            <LayersIcon className="h-4 w-4" />
+                                            Editor Layout
+                                        </button>
+                                    ) : null}
                                 </div>
                             </div>
                         </div>
@@ -2611,20 +2648,13 @@ export default function Warehouse({
 
                     {/* Main Content */}
                     <div className="w-full px-4 py-6 sm:px-6">
-                        <div className="mb-6 grid gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm md:grid-cols-3">
-                            <div>
-                                <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">Zona Aktif</p>
-                                <p className="mt-1 text-[18px] font-black tracking-tight text-slate-900">{dashSelectedZone?.name || '-'}</p>
-                            </div>
-                            <div>
-                                <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">Rack Di Zona</p>
-                                <p className="mt-1 text-[18px] font-black tracking-tight text-slate-900">{dashZoneRacks.length}</p>
-                            </div>
-                            <div>
-                                <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">Occupancy Zona</p>
-                                <p className={`mt-1 text-[18px] font-black tracking-tight ${occupancyTone(dashSelectedZone?.occupancy ?? 0)}`}>
-                                    {dashSelectedZone ? formatPercent(dashSelectedZone.occupancy) : '-'}
-                                </p>
+                        <div className="mb-4 rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
+                            <p className="text-[11px] font-black uppercase tracking-[0.14em] text-emerald-700">Panduan Alur Harian</p>
+                            <div className="mt-2 grid gap-2 text-sm font-semibold text-emerald-900 md:grid-cols-4">
+                                <p>1. Cek zona yang padat (keterisian merah).</p>
+                                <p>2. Pindahkan stok antar rak bila perlu.</p>
+                                <p>3. Tambah/ubah rak hanya saat ada perubahan fisik.</p>
+                                <p>4. Gunakan Editor Layout hanya untuk ubah denah besar.</p>
                             </div>
                         </div>
 
@@ -2702,7 +2732,7 @@ export default function Warehouse({
                                                             onClick={() => openZoneEditModal(dashSelectedZone)}
                                                             className="inline-flex items-center gap-1.5 rounded-xl border border-slate-300 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
                                                         >
-                                                            Edit Zona
+                                                            Ubah Zona
                                                         </button>
                                                     ) : null}
                                                 </div>
@@ -2710,10 +2740,6 @@ export default function Warehouse({
                                             <div className="mt-4">
                                                 <div className="h-3 w-full overflow-hidden rounded-full bg-slate-100/90">
                                                     <div className="h-full rounded-full transition-all" style={{ width: `${Math.min(dashSelectedZone.occupancy, 100)}%`, backgroundColor: dashSelectedZone.accent?.bar || '#28106F' }} />
-                                                </div>
-                                                <div className="mt-1 flex items-center justify-between text-xs text-slate-500">
-                                                    <span>Keterisian: {formatPercent(dashSelectedZone.occupancy)}</span>
-                                                    <span>{dashSelectedZone.rack_count} rak terdaftar</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -2798,7 +2824,7 @@ export default function Warehouse({
                                                                                 onClick={() => openRackEditModal(rack)}
                                                                                 className="inline-flex items-center gap-1 rounded-md border border-slate-200 bg-white px-2.5 py-1.5 text-[11px] font-semibold text-slate-700 hover:bg-slate-50"
                                                                             >
-                                                                                Edit
+                                                                                Ubah
                                                                             </button>
                                                                         ) : null}
                                                                         {canManageRackStock ? (
@@ -2868,7 +2894,7 @@ export default function Warehouse({
                                                                         {canManageRackStock ? (
                                                                             <td className="whitespace-nowrap px-4 py-3 text-right">
                                                                                 <div className="flex items-center justify-end gap-2">
-                                                                                    <button type="button" onClick={() => openRackStockEditModal(stock)} className="text-xs font-semibold text-indigo-600 hover:text-indigo-500">Edit</button>
+                                                                                    <button type="button" onClick={() => openRackStockEditModal(stock)} className="text-xs font-semibold text-indigo-600 hover:text-indigo-500">Ubah</button>
                                                                                     <button type="button" onClick={() => deleteRackStock(stock)} className="text-xs font-semibold text-red-600 hover:text-red-500">Hapus</button>
                                                                                 </div>
                                                                             </td>
@@ -3011,7 +3037,7 @@ export default function Warehouse({
                                         className="inline-flex shrink-0 items-center gap-1.5 rounded-[14px] border border-[#dbe4f0] bg-white px-3 text-[11px] font-black uppercase tracking-[0.15em] text-[#28106F] transition hover:bg-indigo-50"
                                     >
                                         <TransferIcon />
-                                        Transfer Rack
+                                        Pindah Rak
                                     </Link>
                                     <span className="h-5 w-px shrink-0 bg-[#e2e8f0]" />
                                     <ToolbarButton tone="primary" onClick={handleSaveLayout} icon={<SaveIcon />}>
@@ -3643,7 +3669,7 @@ export default function Warehouse({
 
             <Modal
                 open={isManager && showZoneEditModal}
-                title="Edit Zona"
+                title="Ubah Zona"
                 subtitle="Perbarui data zona agar konsisten dengan layout operasional."
                 onClose={() => {
                     setShowZoneEditModal(false);
@@ -3743,14 +3769,14 @@ export default function Warehouse({
                         disabled={rackCreateForm.processing}
                         className="rounded-[14px] bg-[#28106F] px-5 py-3 text-[12px] font-black uppercase tracking-[0.16em] text-white shadow-[0_10px_20px_rgba(89,50,201,0.18)] disabled:opacity-60"
                     >
-                        Simpan Rack
+                        Simpan Rak
                     </button>
                 </form>
             </Modal>
 
             <Modal
                 open={isManager && showRackEditModal}
-                title="Edit Rak"
+                title="Ubah Rak"
                 subtitle="Perbarui detail rack agar sinkron dengan operasional gudang."
                 onClose={() => {
                     setShowRackEditModal(false);
@@ -3815,15 +3841,15 @@ export default function Warehouse({
                         disabled={rackEditForm.processing || !editingRackId}
                         className="rounded-[14px] bg-[#28106F] px-5 py-3 text-[12px] font-black uppercase tracking-[0.16em] text-white shadow-[0_10px_20px_rgba(89,50,201,0.18)] disabled:opacity-60"
                     >
-                        Simpan Perubahan Rack
+                        Simpan Perubahan Rak
                     </button>
                 </form>
             </Modal>
 
             <Modal
                 open={canManageRackStock && showRackStockModal}
-                title={editingRackStock ? 'Ubah Produk Rack' : 'Tambahkan Produk ke Rack'}
-                subtitle={editingRackStock ? 'Ubah detail stok produk pada rack aktif.' : 'Tambah stok produk langsung dari inspector rack.'}
+                title={editingRackStock ? 'Ubah Produk Rak' : 'Tambah Produk ke Rak'}
+                subtitle={editingRackStock ? 'Ubah detail stok produk pada rak aktif.' : 'Tambah stok produk langsung dari panel rak.'}
                 onClose={() => setShowRackStockModal(false)}
             >
                 <form
@@ -3879,7 +3905,7 @@ export default function Warehouse({
                         disabled={rackStockCreateForm.processing}
                         className="rounded-[14px] bg-[#28106F] px-5 py-3 text-[12px] font-black uppercase tracking-[0.16em] text-white shadow-[0_10px_20px_rgba(89,50,201,0.18)] disabled:opacity-60"
                     >
-                        {editingRackStock ? 'Perbarui Produk' : 'Tambahkan Produk'}
+                        {editingRackStock ? 'Simpan Perubahan' : 'Tambah Produk'}
                     </button>
                 </form>
             </Modal>

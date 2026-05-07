@@ -49,7 +49,7 @@ class ShipmentStockTest extends TestCase
             'origin_name' => 'Gudang Utama Samarinda',
             'destination' => '-6.9175,106.8311',
             'destination_name' => 'Jakarta Test',
-            'status' => 'on-time',
+            'tracking_stage' => 'ready_for_pickup',
             'estimated_arrival' => now()->addDays(3)->format('Y-m-d\TH:i'),
             'load_type' => 'ground',
             'driver_id' => null,
@@ -201,6 +201,6 @@ class ShipmentStockTest extends TestCase
             'items' => [],
         ]);
 
-        $response->assertSessionHasErrors('status');
+        $response->assertSessionHasErrors('tracking_stage');
     }
 }

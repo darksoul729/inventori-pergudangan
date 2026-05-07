@@ -160,7 +160,11 @@ export default function Welcome({ auth, stats }) {
 
     return (
         <div className="min-h-screen bg-slate-50 font-sans text-slate-800 selection:bg-violet-600 selection:text-white">
-            <Head title="Petayu - Platform Gudang" />
+            <Head title="PETAYU SaaS - Gudang Modular" />
+
+            <div className="bg-[#28106F] px-6 py-3 text-center text-xs font-bold text-white">
+                SaaS Modular: Trial 3 hari, setelah itu berlangganan sesuai paket. Perusahaan wajib punya akun untuk mulai.
+            </div>
 
             {/* --- TOP INFO BAR (Light Solid Mode) --- */}
             <div className="hidden bg-slate-100 border-b border-slate-200 py-2 text-xs text-slate-500 lg:block">
@@ -225,9 +229,9 @@ export default function Welcome({ auth, stats }) {
                                 <Link href={route('login')} className="font-bold text-slate-600 py-2.5 px-4 rounded-xl border-2 border-transparent hover:text-violet-600 transition-colors">
                                     Log In
                                 </Link>
-                                <Link href={route('login')}>
+                                <Link href={route('register')}>
                                     <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="rounded-xl border-2 border-violet-600 bg-violet-600 px-6 py-2.5 font-bold text-white transition-all shadow-sm">
-                                        Minta Demo
+                                        Daftar Gratis
                                     </motion.button>
                                 </Link>
                             </>
@@ -282,7 +286,7 @@ export default function Welcome({ auth, stats }) {
                                 className="inline-flex items-center gap-2 rounded-full border-2 border-slate-200 bg-white px-4 py-1.5 text-sm font-bold text-slate-600 mb-8 mx-auto lg:mx-0"
                             >
                                 <div className="w-2 h-2 rounded-full bg-violet-600"></div>
-                                Ekosistem Logistik Modern
+                                WMS SaaS untuk UMKM & Gudang Menengah
                             </motion.div>
                             
                             <motion.h1 
@@ -291,7 +295,7 @@ export default function Welcome({ auth, stats }) {
                                 transition={{ duration: 0.7, delay: 0.1 }}
                                 className="text-5xl lg:text-6xl xl:text-7xl font-black leading-tight tracking-tight text-slate-900 mb-6"
                             >
-                                Kontrol <span className="text-violet-600">Inventori</span><br/> Tanpa Batas.
+                                Kontrol <span className="text-violet-600">Inventori</span><br/> Lebih Rapi & Terukur.
                             </motion.h1>
                             
                             <motion.p 
@@ -300,7 +304,8 @@ export default function Welcome({ auth, stats }) {
                                 transition={{ duration: 0.7, delay: 0.2 }}
                                 className="text-lg text-slate-600 mb-10 leading-relaxed font-medium"
                             >
-                                Petayu membangun pondasi yang kuat untuk distribusi barang. Alokasi rak otomatis, Proof of Delivery digital, hingga asisten AI pelaporan siap pakai.
+                                Petayu membantu operasional gudang harian: stok, order beli, pengiriman, tagihan, dan laporan. Mulai trial 3 hari, kemudian lanjut paket sesuai kebutuhan.
+                                <span className="block mt-2 text-sm text-slate-500">Catatan: rilis saat ini fokus 1 gudang aktif (single warehouse).</span>
                             </motion.p>
                             
                             <motion.div 
@@ -312,10 +317,10 @@ export default function Welcome({ auth, stats }) {
                                 <motion.a 
                                     whileHover={{ scale: 1.05 }}
                                     whileTap={{ scale: 0.95 }}
-                                    href="#features" 
+                                    href={route('register')} 
                                     className="rounded-full bg-violet-600 px-8 py-4 font-bold text-white hover:bg-violet-700 border-2 border-violet-600 transition-colors flex items-center justify-center gap-2 shadow-lg shadow-violet-600/20"
                                 >
-                                    Eksplorasi Fitur
+                                    Daftar Trial 3 Hari
                                     <ArrowRight size={18} />
                                 </motion.a>
                                 <motion.a 
@@ -340,7 +345,7 @@ export default function Welcome({ auth, stats }) {
                     <div className="mx-auto max-w-7xl px-6">
                         <FadeIn className="text-center max-w-3xl mx-auto mb-20">
                             <h2 className="text-sm font-bold uppercase tracking-widest text-cyan-600 mb-3">Keunggulan Core</h2>
-                            <h3 className="text-4xl font-black text-slate-900 tracking-tight">Setiap Modul Didesain Untuk Efisiensi</h3>
+                            <h3 className="text-4xl font-black text-slate-900 tracking-tight">Fitur Inti untuk Operasional Gudang</h3>
                         </FadeIn>
 
                         <StaggerContainer className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -377,8 +382,8 @@ export default function Welcome({ auth, stats }) {
                             {[
                                 { val: stats?.transactions || 0, label: "Total Transaksi Lintas Gudang" },
                                 { val: stats?.products || 0, label: "Produk Master Tersedia" },
-                                { val: stats?.accuracy || 99, label: "Akurasi Distribusi Server", suffix: "%" },
-                                { val: 24, label: "Aksesibilitas Uptime", suffix: "/7" },
+                                { val: stats?.accuracy || 99, label: "Akurasi Data Stok", suffix: "%" },
+                                { val: 24, label: "Akses Sistem", suffix: "/7" },
                             ].map((stat, i) => (
                                 <FadeIn key={i} delay={i * 0.1}>
                                     <div className="flex flex-col items-center bg-white p-8 rounded-3xl border border-slate-200 shadow-sm">

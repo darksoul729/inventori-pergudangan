@@ -1,0 +1,219 @@
+- generic [ref=e3]:
+  - generic [ref=e4]:
+    - button [ref=e5] [cursor=pointer]:
+      - img [ref=e6]
+    - generic [ref=e8]:
+      - generic [ref=e9]:
+        - img "Logo PETAYU" [ref=e11]
+        - generic [ref=e12]:
+          - heading "PETAYU" [level=1] [ref=e13]
+          - paragraph [ref=e14]: SMART STORAGE, SMOOTH FLOW
+      - navigation [ref=e15]:
+        - link "Dasbor" [ref=e16] [cursor=pointer]:
+          - /url: /dashboard
+          - img [ref=e17]
+          - generic [ref=e22]: Dasbor
+        - link "Bantuan AI" [ref=e23] [cursor=pointer]:
+          - /url: /petayu-ai
+          - img [ref=e24]
+          - generic [ref=e27]: Bantuan AI
+        - generic [ref=e28]:
+          - button "Operasional Gudang" [ref=e29] [cursor=pointer]:
+            - generic [ref=e30]:
+              - img [ref=e31]
+              - generic [ref=e34]: Operasional Gudang
+            - img [ref=e36]
+          - generic [ref=e39]:
+            - link "Layout Gudang" [ref=e40] [cursor=pointer]:
+              - /url: /warehouse
+              - generic [ref=e41]: Layout Gudang
+            - link "Pindah Rak" [ref=e42] [cursor=pointer]:
+              - /url: /rack-allocation
+              - generic [ref=e43]: Pindah Rak
+            - link "Cek Stok" [ref=e44] [cursor=pointer]:
+              - /url: /stock-opname
+              - generic [ref=e45]: Cek Stok
+        - link "Stok Barang" [ref=e46] [cursor=pointer]:
+          - /url: /inventory
+          - img [ref=e47]
+          - generic [ref=e57]: Stok Barang
+        - generic [ref=e58]:
+          - button "Pembelian" [ref=e59] [cursor=pointer]:
+            - generic [ref=e60]:
+              - img [ref=e61]
+              - generic [ref=e65]: Pembelian
+            - img [ref=e67]
+          - generic [ref=e70]:
+            - link "Order Beli" [ref=e71] [cursor=pointer]:
+              - /url: /purchase-orders
+              - generic [ref=e72]: Order Beli
+            - link "Pemasok" [ref=e73] [cursor=pointer]:
+              - /url: /supplier
+              - generic [ref=e74]: Pemasok
+            - link "Tagihan" [ref=e75] [cursor=pointer]:
+              - /url: /tagihan
+              - generic [ref=e76]: Tagihan
+        - generic [ref=e77]:
+          - button "Riwayat" [ref=e78] [cursor=pointer]:
+            - generic [ref=e79]:
+              - img [ref=e80]
+              - generic [ref=e83]: Riwayat
+            - img [ref=e85]
+          - generic [ref=e88]:
+            - link "Riwayat Stok" [ref=e89] [cursor=pointer]:
+              - /url: /transaction
+              - generic [ref=e90]: Riwayat Stok
+            - link "Dokumen" [ref=e91] [cursor=pointer]:
+              - /url: /wms-documents
+              - generic [ref=e92]: Dokumen
+        - generic [ref=e93]:
+          - button "Pengiriman" [ref=e94] [cursor=pointer]:
+            - generic [ref=e95]:
+              - img [ref=e96]
+              - generic [ref=e101]: Pengiriman
+            - img [ref=e103]
+          - generic [ref=e106]:
+            - link "Pengiriman" [ref=e107] [cursor=pointer]:
+              - /url: /shipments
+              - generic [ref=e108]: Pengiriman
+            - link "Driver" [ref=e109] [cursor=pointer]:
+              - /url: /drivers
+              - generic [ref=e110]: Driver
+        - generic [ref=e111]:
+          - button "Sistem" [ref=e112] [cursor=pointer]:
+            - generic [ref=e113]:
+              - img [ref=e114]
+              - generic [ref=e117]: Sistem
+            - img [ref=e119]
+          - generic [ref=e122]:
+            - link "Laporan" [ref=e123] [cursor=pointer]:
+              - /url: /reports
+              - generic [ref=e124]: Laporan
+            - link "Pengaturan" [ref=e125] [cursor=pointer]:
+              - /url: /settings
+              - generic [ref=e126]: Pengaturan
+        - generic [ref=e127]:
+          - button "Bantuan" [ref=e128] [cursor=pointer]:
+            - generic [ref=e129]:
+              - img [ref=e130]
+              - generic [ref=e133]: Bantuan
+            - img [ref=e134]
+          - generic [ref=e136]:
+            - link "Tanya Tim" [ref=e137] [cursor=pointer]:
+              - /url: /help/live-support
+            - link "Cara Pakai" [ref=e138] [cursor=pointer]:
+              - /url: /help/documentation
+  - generic [ref=e139]:
+    - banner [ref=e140]:
+      - generic [ref=e141]:
+        - generic [ref=e142]:
+          - img [ref=e143]
+          - textbox "Buat pesanan pembelian..." [ref=e146]
+        - generic [ref=e151]: "Sistem Inti: Operasional"
+      - generic [ref=e152]:
+        - generic [ref=e153]:
+          - link "3" [ref=e154] [cursor=pointer]:
+            - /url: /notifications
+            - img [ref=e156]
+            - generic [ref=e161]: "3"
+          - link [ref=e162] [cursor=pointer]:
+            - /url: /help/live-support
+            - img [ref=e164]
+        - generic [ref=e170] [cursor=pointer]:
+          - generic [ref=e171]:
+            - generic [ref=e172]: Rizky Pratama
+            - generic [ref=e173]: Manager Gudang
+          - generic [ref=e174]: R
+    - navigation [ref=e175]:
+      - link "Beranda" [ref=e176] [cursor=pointer]:
+        - /url: /dashboard
+        - img [ref=e177]
+        - generic [ref=e182]: Beranda
+      - img [ref=e183]
+      - link "Order Beli" [ref=e185] [cursor=pointer]:
+        - /url: /purchase-orders
+      - img [ref=e186]
+      - generic [ref=e188]: Create
+    - main [ref=e189]:
+      - generic [ref=e191]:
+        - generic [ref=e192]:
+          - link [ref=e193] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/purchase-orders
+            - img [ref=e194]
+          - generic [ref=e196]:
+            - heading "Buat Pesanan Pembelian" [level=1] [ref=e197]
+            - paragraph [ref=e198]: Buat pesanan stok untuk gudang operasional.
+        - generic [ref=e199]:
+          - generic [ref=e200]:
+            - generic [ref=e201]:
+              - generic [ref=e202]:
+                - generic [ref=e203]:
+                  - generic [ref=e204]: Nomor PO
+                  - textbox [ref=e205]: PO-20260506-NN7M
+                - generic [ref=e206]:
+                  - generic [ref=e207]: Pemasok
+                  - combobox [ref=e208]:
+                    - option "Pilih Pemasok" [selected]
+                    - option "PT Komponen Axis Nusantara (SUP-AXIS)"
+                    - option "PT Manufaktur Bulkchain (SUP-BULK)"
+                    - option "PT Kayu Lestari Timur (SUP-KAYU)"
+              - generic [ref=e209]:
+                - generic [ref=e210]:
+                  - generic [ref=e211]: Gudang Tujuan
+                  - generic [ref=e212]: Gudang Utama Samarinda
+                  - paragraph [ref=e213]: "Lokasi operasional: Samarinda, Kalimantan Timur"
+                - generic [ref=e214]:
+                  - generic [ref=e215]: Tanggal PO
+                  - textbox [ref=e216]: 2026-05-06
+              - generic [ref=e217]:
+                - generic [ref=e218]:
+                  - generic [ref=e219]: Perkiraan Tiba
+                  - textbox [ref=e220]
+                - generic [ref=e221]:
+                  - generic [ref=e222]: Catatan (Opsional)
+                  - textbox [ref=e223]
+            - generic [ref=e224]:
+              - generic [ref=e225]:
+                - heading "Item Pesanan" [level=3] [ref=e226]
+                - button "+ Tambah Baris Item" [ref=e227] [cursor=pointer]
+              - generic [ref=e229]:
+                - generic [ref=e230]:
+                  - generic [ref=e231]: Produk
+                  - combobox [ref=e232]:
+                    - option "Pilih Produk" [selected]
+                    - option "Modul Sensor AX900 (HP-AX900)"
+                    - option "Kabel Industri 24m (HP-CBL24)"
+                    - option "Resin Curah Pallet (BK-PLT55)"
+                    - option "Papan Kontrol PCB (EL-PCB77)"
+                    - option "Paket Cross Dock (CD-DOCK1)"
+                    - option "Drum Kimia Solvent (HZ-SOL88)"
+                    - option "KAYU ULIN 4M x 5CM x 2.5CM (ULIN-E46-4000x50x25)"
+                    - option "KAYU MERANTI 4M (INPUT MANUAL) (MERANTI-M02-MANUAL)"
+                - generic [ref=e233]:
+                  - generic [ref=e234]: Jumlah
+                  - spinbutton [ref=e235]: "1"
+                - generic [ref=e236]:
+                  - generic [ref=e237]: Harga Satuan
+                  - spinbutton [ref=e238]: "0"
+                - generic [ref=e239]:
+                  - generic [ref=e240]: Subtotal
+                  - generic [ref=e241]: "0"
+                - generic [ref=e242]:
+                  - generic [ref=e243]: Batch
+                  - textbox "B-YYYYMMDD-X" [ref=e244]
+                - generic [ref=e245]:
+                  - generic [ref=e246]: Exp. Date
+                  - textbox [ref=e247]
+              - generic [ref=e249]:
+                - generic [ref=e250]: Perkiraan Total
+                - generic [ref=e251]: Rp 0
+          - generic [ref=e252]:
+            - link "Batal" [ref=e253] [cursor=pointer]:
+              - /url: http://127.0.0.1:8000/purchase-orders
+            - button "Simpan & Kirim PO" [ref=e254] [cursor=pointer]
+  - button "Buka PETAYU AI" [ref=e255] [cursor=pointer]:
+    - generic [ref=e256]:
+      - generic [ref=e259]:
+        - img [ref=e261]
+        - img [ref=e267]
+      - generic: ✦ PETAYU AI

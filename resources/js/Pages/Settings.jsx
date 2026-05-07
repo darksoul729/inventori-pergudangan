@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import DashboardLayout from '@/Layouts/DashboardLayout';
-import { Head, useForm, router, usePage } from '@inertiajs/react';
+import { Head, Link, useForm, router, usePage } from '@inertiajs/react';
 import Modal from '@/Components/Modal';
 
 // Icons
@@ -335,6 +335,32 @@ export default function Settings({ auth, categories, units, warehouse, staffUser
                                     <div className={`text-[11px] font-semibold ${activeTab === 'staff' ? 'text-indigo-400' : 'text-gray-400'}`}>Login Operasional Terbatas</div>
                                 </div>
                             </button>
+
+                            <Link
+                                href={route('settings.saas')}
+                                className="w-full flex items-center space-x-3 px-5 py-4 rounded-2xl font-bold text-[14px] transition-all text-left text-gray-500 hover:bg-[#F8F7FF] hover:text-gray-900 border border-transparent"
+                            >
+                                <div className="p-2 rounded-xl flex-shrink-0 bg-gray-100 text-gray-400">
+                                    <BuildingIcon className="w-5 h-5" />
+                                </div>
+                                <div>
+                                    <div className="mb-0.5">SaaS & Modul</div>
+                                    <div className="text-[11px] font-semibold text-gray-400">Paket, Billing, Entitlement</div>
+                                </div>
+                            </Link>
+
+                            <Link
+                                href={route('settings.billing')}
+                                className="w-full flex items-center space-x-3 px-5 py-4 rounded-2xl font-bold text-[14px] transition-all text-left text-gray-500 hover:bg-[#F8F7FF] hover:text-gray-900 border border-transparent"
+                            >
+                                <div className="p-2 rounded-xl flex-shrink-0 bg-gray-100 text-gray-400">
+                                    <ScaleIcon className="w-5 h-5" />
+                                </div>
+                                <div>
+                                    <div className="mb-0.5">Billing SaaS</div>
+                                    <div className="text-[11px] font-semibold text-gray-400">Pembayaran & Langganan</div>
+                                </div>
+                            </Link>
                         </div>
                     </div>
 

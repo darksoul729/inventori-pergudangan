@@ -1,0 +1,293 @@
+- generic [ref=e3]:
+  - generic [ref=e4]:
+    - button [ref=e5] [cursor=pointer]:
+      - img [ref=e6]
+    - generic [ref=e8]:
+      - generic [ref=e9]:
+        - img "Logo PETAYU" [ref=e11]
+        - generic [ref=e12]:
+          - heading "PETAYU" [level=1] [ref=e13]
+          - paragraph [ref=e14]: SMART STORAGE, SMOOTH FLOW
+      - navigation [ref=e15]:
+        - link "Dasbor" [ref=e16] [cursor=pointer]:
+          - /url: /dashboard
+          - img [ref=e17]
+          - generic [ref=e22]: Dasbor
+        - link "Bantuan AI" [ref=e23] [cursor=pointer]:
+          - /url: /petayu-ai
+          - img [ref=e24]
+          - generic [ref=e27]: Bantuan AI
+        - generic [ref=e28]:
+          - button "Operasional Gudang" [ref=e29] [cursor=pointer]:
+            - generic [ref=e30]:
+              - img [ref=e31]
+              - generic [ref=e34]: Operasional Gudang
+            - img [ref=e36]
+          - generic [ref=e39]:
+            - link "Layout Gudang" [ref=e40] [cursor=pointer]:
+              - /url: /warehouse
+              - generic [ref=e41]: Layout Gudang
+            - link "Pindah Rak" [ref=e42] [cursor=pointer]:
+              - /url: /rack-allocation
+              - generic [ref=e43]: Pindah Rak
+            - link "Cek Stok" [ref=e44] [cursor=pointer]:
+              - /url: /stock-opname
+              - generic [ref=e45]: Cek Stok
+        - link "Stok Barang" [ref=e46] [cursor=pointer]:
+          - /url: /inventory
+          - img [ref=e47]
+          - generic [ref=e57]: Stok Barang
+        - generic [ref=e58]:
+          - button "Pembelian" [ref=e59] [cursor=pointer]:
+            - generic [ref=e60]:
+              - img [ref=e61]
+              - generic [ref=e65]: Pembelian
+            - img [ref=e67]
+          - generic [ref=e70]:
+            - link "Order Beli" [ref=e71] [cursor=pointer]:
+              - /url: /purchase-orders
+              - generic [ref=e72]: Order Beli
+            - link "Pemasok" [ref=e73] [cursor=pointer]:
+              - /url: /supplier
+              - generic [ref=e74]: Pemasok
+            - link "Tagihan" [ref=e75] [cursor=pointer]:
+              - /url: /tagihan
+              - generic [ref=e76]: Tagihan
+        - generic [ref=e77]:
+          - button "Riwayat" [ref=e78] [cursor=pointer]:
+            - generic [ref=e79]:
+              - img [ref=e80]
+              - generic [ref=e83]: Riwayat
+            - img [ref=e85]
+          - generic [ref=e88]:
+            - link "Riwayat Stok" [ref=e89] [cursor=pointer]:
+              - /url: /transaction
+              - generic [ref=e90]: Riwayat Stok
+            - link "Dokumen" [ref=e91] [cursor=pointer]:
+              - /url: /wms-documents
+              - generic [ref=e92]: Dokumen
+        - generic [ref=e93]:
+          - button "Pengiriman" [ref=e94] [cursor=pointer]:
+            - generic [ref=e95]:
+              - img [ref=e96]
+              - generic [ref=e101]: Pengiriman
+            - img [ref=e103]
+          - generic [ref=e105]:
+            - link "Pengiriman" [ref=e106] [cursor=pointer]:
+              - /url: /shipments
+              - generic [ref=e107]: Pengiriman
+            - link "Driver" [ref=e108] [cursor=pointer]:
+              - /url: /drivers
+              - generic [ref=e109]: Driver
+        - generic [ref=e110]:
+          - button "Sistem" [ref=e111] [cursor=pointer]:
+            - generic [ref=e112]:
+              - img [ref=e113]
+              - generic [ref=e116]: Sistem
+            - img [ref=e118]
+          - generic [ref=e120]:
+            - link "Laporan" [ref=e121] [cursor=pointer]:
+              - /url: /reports
+              - generic [ref=e122]: Laporan
+            - link "Pengaturan" [ref=e123] [cursor=pointer]:
+              - /url: /settings
+              - generic [ref=e124]: Pengaturan
+        - generic [ref=e125]:
+          - button "Bantuan" [ref=e126] [cursor=pointer]:
+            - generic [ref=e127]:
+              - img [ref=e128]
+              - generic [ref=e131]: Bantuan
+            - img [ref=e132]
+          - generic [ref=e134]:
+            - link "Tanya Tim" [ref=e135] [cursor=pointer]:
+              - /url: /help/live-support
+            - link "Cara Pakai" [ref=e136] [cursor=pointer]:
+              - /url: /help/documentation
+  - generic [ref=e137]:
+    - banner [ref=e138]:
+      - generic [ref=e139]:
+        - heading "Dokumen WMS" [level=2] [ref=e140]
+        - generic [ref=e141]:
+          - img [ref=e142]
+          - textbox "Cari nomor dokumen, pihak, atau jenis..." [ref=e145]
+        - generic [ref=e150]: "Sistem Inti: Operasional"
+      - generic [ref=e151]:
+        - generic [ref=e152]:
+          - link "3" [ref=e153] [cursor=pointer]:
+            - /url: /notifications
+            - img [ref=e155]
+            - generic [ref=e160]: "3"
+          - link [ref=e161] [cursor=pointer]:
+            - /url: /help/live-support
+            - img [ref=e163]
+        - generic [ref=e169] [cursor=pointer]:
+          - generic [ref=e170]:
+            - generic [ref=e171]: Rizky Pratama
+            - generic [ref=e172]: Manager Gudang
+          - generic [ref=e173]: R
+    - navigation [ref=e174]:
+      - link "Beranda" [ref=e175] [cursor=pointer]:
+        - /url: /dashboard
+        - img [ref=e176]
+        - generic [ref=e181]: Beranda
+      - img [ref=e182]
+      - link "Dasbor" [ref=e184] [cursor=pointer]:
+        - /url: /dashboard
+      - img [ref=e185]
+      - link "Riwayat Stok" [ref=e187] [cursor=pointer]:
+        - /url: /transaction
+      - img [ref=e188]
+      - generic [ref=e190]: Dokumen
+    - main [ref=e191]:
+      - generic [ref=e194]:
+        - generic [ref=e195]:
+          - generic [ref=e196]:
+            - paragraph [ref=e197]: Pusat Dokumen Gudang
+            - heading "Daftar dokumen operasional" [level=2] [ref=e198]
+            - paragraph [ref=e199]: Pantau dokumen penerimaan, barang keluar, transfer rak, stok opname, dan koreksi stok.
+          - generic [ref=e200]:
+            - link "Unduh CSV" [ref=e201] [cursor=pointer]:
+              - /url: http://127.0.0.1:8000/wms-documents/export?type=all&search=&date_from=&date_to=
+              - img [ref=e202]
+              - text: Unduh CSV
+            - link "Unduh PDF" [ref=e204] [cursor=pointer]:
+              - /url: http://127.0.0.1:8000/wms-documents/pdf?type=all&search=&date_from=&date_to=
+              - img [ref=e205]
+              - text: Unduh PDF
+        - generic [ref=e207]:
+          - generic [ref=e208]:
+            - paragraph [ref=e209]: Total Dokumen
+            - paragraph [ref=e210]: "4"
+          - generic [ref=e211]:
+            - paragraph [ref=e212]: Penerimaan
+            - paragraph [ref=e213]: "0"
+          - generic [ref=e214]:
+            - paragraph [ref=e215]: Barang Keluar
+            - paragraph [ref=e216]: "0"
+          - generic [ref=e217]:
+            - paragraph [ref=e218]: Transfer Rak
+            - paragraph [ref=e219]: "0"
+          - generic [ref=e220]:
+            - paragraph [ref=e221]: Stok Opname
+            - paragraph [ref=e222]: "0"
+          - generic [ref=e223]:
+            - paragraph [ref=e224]: Koreksi Stok
+            - paragraph [ref=e225]: "0"
+        - generic [ref=e226]:
+          - generic [ref=e227]:
+            - button "Semua" [ref=e228] [cursor=pointer]
+            - button "Penerimaan" [ref=e229] [cursor=pointer]
+            - button "Barang Keluar" [ref=e230] [cursor=pointer]
+            - button "Transfer Rak" [ref=e231] [cursor=pointer]
+            - button "Stok Opname" [ref=e232] [cursor=pointer]
+            - button "Koreksi Stok" [ref=e233] [cursor=pointer]
+            - button "Manual Rack Stock" [ref=e234] [cursor=pointer]
+          - generic [ref=e236]:
+            - generic [ref=e237]:
+              - text: Dari Tanggal
+              - textbox "Dari Tanggal" [ref=e238]
+            - generic [ref=e239]:
+              - text: Sampai Tanggal
+              - textbox "Sampai Tanggal" [ref=e240]
+        - table [ref=e242]:
+          - rowgroup [ref=e243]:
+            - row "Dokumen Tanggal Asal / Tujuan Gudang Item Jumlah Operator Aksi" [ref=e244]:
+              - columnheader "Dokumen" [ref=e245]
+              - columnheader "Tanggal" [ref=e246]
+              - columnheader "Asal / Tujuan" [ref=e247]
+              - columnheader "Gudang" [ref=e248]
+              - columnheader "Item" [ref=e249]
+              - columnheader "Jumlah" [ref=e250]
+              - columnheader "Operator" [ref=e251]
+              - columnheader "Aksi" [ref=e252]
+          - rowgroup [ref=e253]:
+            - row "TRK-10300 Pengiriman Gudang Samarinda, Kaltim → Jakarta, DKI (Sea) Sampai Tujuan 28 Apr 2026 Citra Lestari Gudang Samarinda, Kaltim 1 300 Citra Lestari Lihat" [ref=e254]:
+              - cell "TRK-10300 Pengiriman Gudang Samarinda, Kaltim → Jakarta, DKI (Sea) Sampai Tujuan" [ref=e255]:
+                - generic [ref=e256]:
+                  - img [ref=e258]
+                  - generic [ref=e260]:
+                    - generic [ref=e261]:
+                      - paragraph [ref=e262]: TRK-10300
+                      - generic [ref=e263]: Pengiriman
+                    - paragraph [ref=e264]: Gudang Samarinda, Kaltim → Jakarta, DKI (Sea)
+                    - paragraph [ref=e265]: Sampai Tujuan
+              - cell "28 Apr 2026" [ref=e266]
+              - cell "Citra Lestari" [ref=e267]
+              - cell "Gudang Samarinda, Kaltim" [ref=e268]
+              - cell "1" [ref=e269]
+              - cell "300" [ref=e270]
+              - cell "Citra Lestari" [ref=e271]
+              - cell "Lihat" [ref=e272]:
+                - link "Lihat" [ref=e274] [cursor=pointer]:
+                  - /url: http://127.0.0.1:8000/shipments/TRK-10300
+                  - text: Lihat
+                  - img [ref=e275]
+            - row "TRK-10299 Pengiriman Gudang Samarinda, Kaltim → Surabaya, Jatim (Sea) Sampai Tujuan 28 Apr 2026 Andi Prakoso Gudang Samarinda, Kaltim 1 500 Andi Prakoso Lihat" [ref=e277]:
+              - cell "TRK-10299 Pengiriman Gudang Samarinda, Kaltim → Surabaya, Jatim (Sea) Sampai Tujuan" [ref=e278]:
+                - generic [ref=e279]:
+                  - img [ref=e281]
+                  - generic [ref=e283]:
+                    - generic [ref=e284]:
+                      - paragraph [ref=e285]: TRK-10299
+                      - generic [ref=e286]: Pengiriman
+                    - paragraph [ref=e287]: Gudang Samarinda, Kaltim → Surabaya, Jatim (Sea)
+                    - paragraph [ref=e288]: Sampai Tujuan
+              - cell "28 Apr 2026" [ref=e289]
+              - cell "Andi Prakoso" [ref=e290]
+              - cell "Gudang Samarinda, Kaltim" [ref=e291]
+              - cell "1" [ref=e292]
+              - cell "500" [ref=e293]
+              - cell "Andi Prakoso" [ref=e294]
+              - cell "Lihat" [ref=e295]:
+                - link "Lihat" [ref=e297] [cursor=pointer]:
+                  - /url: http://127.0.0.1:8000/shipments/TRK-10299
+                  - text: Lihat
+                  - img [ref=e298]
+            - row "TRK-10297 Pengiriman Gudang Samarinda, Kaltim → Tenggarong, Kaltim (Ground) Dalam Perjalanan 28 Apr 2026 Budi Santoso Gudang Samarinda, Kaltim 1 50 Budi Santoso Lihat" [ref=e300]:
+              - cell "TRK-10297 Pengiriman Gudang Samarinda, Kaltim → Tenggarong, Kaltim (Ground) Dalam Perjalanan" [ref=e301]:
+                - generic [ref=e302]:
+                  - img [ref=e304]
+                  - generic [ref=e306]:
+                    - generic [ref=e307]:
+                      - paragraph [ref=e308]: TRK-10297
+                      - generic [ref=e309]: Pengiriman
+                    - paragraph [ref=e310]: Gudang Samarinda, Kaltim → Tenggarong, Kaltim (Ground)
+                    - paragraph [ref=e311]: Dalam Perjalanan
+              - cell "28 Apr 2026" [ref=e312]
+              - cell "Budi Santoso" [ref=e313]
+              - cell "Gudang Samarinda, Kaltim" [ref=e314]
+              - cell "1" [ref=e315]
+              - cell "50" [ref=e316]
+              - cell "Budi Santoso" [ref=e317]
+              - cell "Lihat" [ref=e318]:
+                - link "Lihat" [ref=e320] [cursor=pointer]:
+                  - /url: http://127.0.0.1:8000/shipments/TRK-10297
+                  - text: Lihat
+                  - img [ref=e321]
+            - row "TRK-10293 Pengiriman Gudang Samarinda, Kaltim → Balikpapan, Kaltim (Ground) Dalam Perjalanan 28 Apr 2026 Ahmad Nurdin Gudang Samarinda, Kaltim 2 200 Ahmad Nurdin Lihat" [ref=e323]:
+              - cell "TRK-10293 Pengiriman Gudang Samarinda, Kaltim → Balikpapan, Kaltim (Ground) Dalam Perjalanan" [ref=e324]:
+                - generic [ref=e325]:
+                  - img [ref=e327]
+                  - generic [ref=e329]:
+                    - generic [ref=e330]:
+                      - paragraph [ref=e331]: TRK-10293
+                      - generic [ref=e332]: Pengiriman
+                    - paragraph [ref=e333]: Gudang Samarinda, Kaltim → Balikpapan, Kaltim (Ground)
+                    - paragraph [ref=e334]: Dalam Perjalanan
+              - cell "28 Apr 2026" [ref=e335]
+              - cell "Ahmad Nurdin" [ref=e336]
+              - cell "Gudang Samarinda, Kaltim" [ref=e337]
+              - cell "2" [ref=e338]
+              - cell "200" [ref=e339]
+              - cell "Ahmad Nurdin" [ref=e340]
+              - cell "Lihat" [ref=e341]:
+                - link "Lihat" [ref=e343] [cursor=pointer]:
+                  - /url: http://127.0.0.1:8000/shipments/TRK-10293
+                  - text: Lihat
+                  - img [ref=e344]
+  - button "Buka PETAYU AI" [ref=e346] [cursor=pointer]:
+    - generic [ref=e347]:
+      - generic [ref=e350]:
+        - img [ref=e352]
+        - img [ref=e358]
+      - generic: ✦ PETAYU AI

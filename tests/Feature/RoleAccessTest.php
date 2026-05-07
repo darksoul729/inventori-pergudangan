@@ -279,11 +279,8 @@ class RoleAccessTest extends TestCase
             'created_by' => $staff->id,
         ]);
 
-        $this->assertDatabaseHas('product_stocks', [
-            'product_id' => $product->id,
-            'warehouse_id' => $warehouse->id,
-            'current_stock' => 7,
-        ]);
+        $updatedRackStock = RackStock::where('product_id', $product->id)->sum('quantity');
+        $this->assertSame(7, (int) $updatedRackStock);
 
         $this->actingAs($staff)->post(route('inventory.store'), [])->assertForbidden();
     }

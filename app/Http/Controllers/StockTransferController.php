@@ -285,7 +285,7 @@ class StockTransferController extends Controller
             'generatedAt' => now(),
         ])->setPaper('a4', 'portrait');
 
-        return $pdf->download('Stock_Transfer_'.$stockTransfer->transfer_number.'.pdf');
+        return $pdf->download('Pindah_Rak_'.$stockTransfer->transfer_number.'.pdf');
     }
 
     private function documentPayload(StockTransfer $stockTransfer): array
@@ -300,7 +300,7 @@ class StockTransferController extends Controller
         ]);
 
         return [
-            'title' => 'Transfer Rack',
+            'title' => 'Pindah Rak',
             'subtitle' => 'Dokumen perpindahan stok internal dalam satu warehouse',
             'number' => $stockTransfer->transfer_number,
             'status' => ucfirst($stockTransfer->status ?? 'completed'),
@@ -320,8 +320,8 @@ class StockTransferController extends Controller
             'columns' => [
                 ['key' => 'product', 'label' => 'Produk'],
                 ['key' => 'sku', 'label' => 'SKU'],
-                ['key' => 'from_rack', 'label' => 'Rack Asal'],
-                ['key' => 'to_rack', 'label' => 'Rack Tujuan'],
+                ['key' => 'from_rack', 'label' => 'Rak Asal'],
+                ['key' => 'to_rack', 'label' => 'Rak Tujuan'],
                 ['key' => 'quantity', 'label' => 'Qty', 'align' => 'right'],
             ],
             'rows' => $stockTransfer->items->map(fn (StockTransferItem $item) => [
