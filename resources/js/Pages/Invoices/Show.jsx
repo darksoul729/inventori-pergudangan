@@ -1,9 +1,15 @@
 import DashboardLayout from '@/Layouts/DashboardLayout';
-import { Head, useForm } from '@inertiajs/react';
+import CustomDropdown from '@/Components/CustomDropdown';
+import { Head, useForm, usePage } from '@inertiajs/react';
 
 export default function Show({ invoice }) {
+    const { props } = usePage();
+    const tenantNotifyPartial = Boolean(props.invoiceNotificationSettings?.notify_partial ?? true);
+    const tenantNotifyPaid = Boolean(props.invoiceNotificationSettings?.notify_paid ?? true);
     const { data, setData, put, processing } = useForm({
         payment_status: invoice.payment_status,
+        notify_lunas: tenantNotifyPaid,
+        notify_sebagian: tenantNotifyPartial,
     });
 
     const formatCurrency = (amount) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(amount || 0);
@@ -25,7 +31,7 @@ export default function Show({ invoice }) {
             <Head title={`Tagihan ${invoice.invoice_number}`} />
             <div className="space-y-6 pb-12">
                 <div>
-                    <h1 className="text-[28px] font-black text-[#28106F]">Detail Tagihan</h1>
+                    <h1 className="text-[28px] font-black text-[#4722B3]">Detail Tagihan</h1>
                     <p className="text-sm text-gray-500 font-semibold mt-1">{invoice.invoice_number} - {invoice.customer?.name}</p>
                 </div>
                 <div className="flex gap-3">
@@ -39,15 +45,15 @@ export default function Show({ invoice }) {
                     )}
                 </div>
 
-                <div className="bg-white border border-[#EDE8FC] rounded-2xl p-6 space-y-3">
+                <div className="bg-white border border-[#E5EAF3] rounded-2xl p-6 space-y-3">
                     <div className="text-sm"><b>Tanggal:</b> {new Date(invoice.invoice_date).toLocaleDateString('id-ID')}</div>
                     <div className="text-sm"><b>Jatuh tempo:</b> {invoice.due_date ? new Date(invoice.due_date).toLocaleDateString('id-ID') : '-'}</div>
                     <div className="text-sm"><b>Total:</b> {formatCurrency(invoice.total_amount)}</div>
                     <div className="text-sm"><b>Catatan:</b> {invoice.notes || '-'}</div>
                 </div>
 
-                <div className="bg-white border border-[#EDE8FC] rounded-2xl p-6">
-                    <h2 className="text-lg font-black text-[#28106F] mb-4">Item</h2>
+                <div className="bg-white border border-[#E5EAF3] rounded-2xl p-6">
+                    <h2 className="text-lg font-black text-[#4722B3] mb-4">Item</h2>
                     <table className="w-full text-sm">
                         <thead>
                             <tr className="text-left border-b text-gray-400 text-xs uppercase">
@@ -70,18 +76,45 @@ export default function Show({ invoice }) {
                     </table>
                 </div>
 
-                <form onSubmit={updateStatus} className="bg-white border border-[#EDE8FC] rounded-2xl p-6 flex items-end gap-3">
-                    <div>
-                        <label className="text-xs font-bold text-gray-500">Status Pembayaran</label>
-                        <select value={data.payment_status} onChange={(e) => setData('payment_status', e.target.value)} className="block mt-1 rounded-xl border-gray-200">
-                            <option value="belum_dibayar">Belum Dibayar</option>
-                            <option value="sebagian">Sebagian</option>
-                            <option value="lunas">Lunas</option>
-                        </select>
+                <form onSubmit={updateStatus} className="bg-white border border-[#E5EAF3] rounded-2xl p-6 space-y-4">
+                    <div className="flex flex-wrap items-end gap-3">
+                        <div>
+                            <label className="text-xs font-bold text-gray-500">Status Pembayaran</label>
+                            <CustomDropdown
+                                value={data.payment_status}
+                                onChange={(value) => setData('payment_status', value)}
+                                options={[
+                                    { value: 'belum_dibayar', label: 'Belum Dibayar' },
+                                    { value: 'sebagian', label: 'Sebagian' },
+                                    { value: 'lunas', label: 'Lunas' },
+                                ]}
+                                className="mt-1 min-w-[220px]"
+                            />
+                        </div>
+                        <button disabled={processing} className="px-4 py-2 rounded-xl bg-[#5B33CC] text-white text-sm font-bold">
+                            {processing ? 'Menyimpan...' : 'Simpan Status'}
+                        </button>
                     </div>
-                    <button disabled={processing} className="px-4 py-2 rounded-xl bg-[#5932C9] text-white text-sm font-bold">
-                        {processing ? 'Menyimpan...' : 'Simpan Status'}
-                    </button>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                        <label className="inline-flex items-center gap-2 text-sm font-semibold text-slate-700">
+                            <input
+                                type="checkbox"
+                                className="rounded border-gray-300 text-[#5B33CC] focus:ring-[#5B33CC]"
+                                checked={data.notify_lunas}
+                                onChange={(e) => setData('notify_lunas', e.target.checked)}
+                            />
+                            Kirim email saat status jadi Lunas
+                        </label>
+                        <label className="inline-flex items-center gap-2 text-sm font-semibold text-slate-700">
+                            <input
+                                type="checkbox"
+                                className="rounded border-gray-300 text-[#5B33CC] focus:ring-[#5B33CC]"
+                                checked={data.notify_sebagian}
+                                onChange={(e) => setData('notify_sebagian', e.target.checked)}
+                            />
+                            Kirim email saat status jadi Sebagian
+                        </label>
+                    </div>
                 </form>
             </div>
         </DashboardLayout>

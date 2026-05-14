@@ -6,6 +6,7 @@ use App\Models\PetayuConversation;
 use App\Models\Shipment;
 use App\Policies\PetayuConversationPolicy;
 use App\Policies\ShipmentPolicy;
+use App\Support\RoleCapability;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Vite;
@@ -36,8 +37,7 @@ class AppServiceProvider extends ServiceProvider
 
         // Allow managers to do everything by default
         Gate::before(function ($user, $ability) {
-            $role = strtolower($user->role?->name ?? '');
-            if (str_contains($role, 'manager') || str_contains($role, 'admin gudang') || str_contains($role, 'manajer')) {
+            if (RoleCapability::isManager($user->role?->name)) {
                 return true;
             }
 
@@ -47,23 +47,14 @@ class AppServiceProvider extends ServiceProvider
         // Define permissions for models without explicit policies
         // These match the route middleware role assignments
         $operationalRoles = function ($user) {
-            $role = strtolower($user->role?->name ?? '');
-            return in_array(true, [
-                str_contains($role, 'manager') || str_contains($role, 'admin gudang') || str_contains($role, 'manajer'),
-                str_contains($role, 'supervisor') || str_contains($role, 'spv'),
-                str_contains($role, 'staff') || str_contains($role, 'staf'),
-            ], true);
+            return RoleCapability::isOperational($user->role?->name);
         };
 
         $supervisorAndAbove = function ($user) {
-            $role = strtolower($user->role?->name ?? '');
-            return in_array(true, [
-                str_contains($role, 'manager') || str_contains($role, 'admin gudang') || str_contains($role, 'manajer'),
-                str_contains($role, 'supervisor') || str_contains($role, 'spv'),
-            ], true);
+            return RoleCapability::isManager($user->role?->name) || RoleCapability::isSupervisor($user->role?->name);
         };
 
-        $managerOnly = fn ($user) => in_array(true, [str_contains(strtolower($user->role?->name ?? ''), 'manager') || str_contains(strtolower($user->role?->name ?? ''), 'admin gudang') || str_contains(strtolower($user->role?->name ?? ''), 'manajer')]);
+        $managerOnly = fn ($user) => RoleCapability::isManager($user->role?->name);
 
         // Product (Inventory) — create/update = manager only
         Gate::define('create-product', $managerOnly);
@@ -72,18 +63,19 @@ class AppServiceProvider extends ServiceProvider
         // StockOut — create = all operational roles (matches route middleware)
         Gate::define('create-stockOut', $operationalRoles);
 
-        // StockTransfer, StockOpname — create = supervisor and above
-        Gate::define('create-stockTransfer', $supervisorAndAbove);
-        Gate::define('create-stockOpname', $supervisorAndAbove);
+        // StockTransfer, StockOpname — create = all operational (staff bisa input, approve tetap supervisor+)
+        Gate::define('create-stockTransfer', $operationalRoles);
+        Gate::define('create-stockOpname', $operationalRoles);
 
         // Approve/Reject — supervisor and above (but not self-approval, checked in controller)
         Gate::define('approve-stockOpname', $supervisorAndAbove);
         Gate::define('approve-stockTransfer', $supervisorAndAbove);
         Gate::define('approve-stockAdjustment', $supervisorAndAbove);
 
-        // PurchaseOrder — create/update = supervisor and above
-        Gate::define('create-purchaseOrder', $supervisorAndAbove);
-        Gate::define('update-purchaseOrder', $supervisorAndAbove);
+        // PurchaseOrder — create = all operational (staff input), update-status = operational
+        // Controller tetap membatasi aksi approval/cancel ke supervisor/manager.
+        Gate::define('create-purchaseOrder', $operationalRoles);
+        Gate::define('update-purchaseOrder', $operationalRoles);
 
         // Supplier — create = manager only
         Gate::define('create-supplier', $managerOnly);

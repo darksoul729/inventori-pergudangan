@@ -36,7 +36,7 @@ export default function PageHeader({
                     {backHref && (
                         <Link
                             href={backHref}
-                            className="inline-flex items-center space-x-1.5 text-[12px] font-bold text-gray-500 hover:text-[#28106F] transition-colors mb-3 group"
+                            className="inline-flex items-center space-x-1.5 text-[12px] font-bold text-gray-500 hover:text-[#4722B3] transition-colors mb-3 group"
                         >
                             <ChevronLeft className="w-4 h-4 transition-transform group-hover:-translate-x-0.5" />
                             <span>{backLabel}</span>
@@ -45,7 +45,7 @@ export default function PageHeader({
 
                     {/* Title & Subtitle */}
                     <div>
-                        <h1 className="text-[22px] font-black text-[#28106F] tracking-tight leading-tight">
+                        <h1 className="text-[22px] font-black text-[#4722B3] tracking-tight leading-tight">
                             {title}
                         </h1>
                         {subtitle && (
@@ -93,7 +93,7 @@ export default function PageHeader({
                                 href={tab.href}
                                 className={`px-4 py-3 text-[13px] font-bold transition-all border-b-2 ${
                                     tab.active
-                                        ? 'border-[#28106F] text-[#28106F]'
+                                        ? 'border-[#4722B3] text-[#4722B3]'
                                         : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                                 }`}
                             >
@@ -122,7 +122,7 @@ export function PageHeaderButton({
     const baseClasses = 'inline-flex items-center space-x-2 px-4 py-2.5 rounded-[10px] text-[12px] font-black uppercase tracking-wider transition-all';
     
     const variantClasses = {
-        primary: 'bg-[#28106F] text-white hover:bg-[#2d29a6] shadow-lg shadow-indigo-200/50',
+        primary: 'bg-[#4722B3] text-white hover:bg-[#2d29a6] shadow-lg shadow-indigo-200/50',
         secondary: 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 hover:border-gray-300',
         ghost: 'bg-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-100',
         danger: 'bg-rose-600 text-white hover:bg-rose-700 shadow-lg shadow-rose-200/50',
@@ -166,7 +166,7 @@ export function PageHeaderIconButton({
     const baseClasses = 'inline-flex items-center justify-center w-10 h-10 rounded-[10px] transition-all';
     
     const variantClasses = {
-        primary: 'bg-[#28106F] text-white hover:bg-[#2d29a6]',
+        primary: 'bg-[#4722B3] text-white hover:bg-[#2d29a6]',
         secondary: 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50 hover:text-gray-900',
         ghost: 'bg-transparent text-gray-400 hover:text-gray-600 hover:bg-gray-100',
         danger: 'bg-rose-50 text-rose-600 hover:bg-rose-100',

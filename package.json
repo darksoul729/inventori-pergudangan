@@ -25,14 +25,17 @@
         "vite": "^8.0.5"
     },
     "dependencies": {
+        "@heroicons/react": "^2.2.0",
         "chart.js": "^4.5.1",
         "exceljs": "^4.4.0",
         "file-saver": "^2.0.5",
+        "framer-motion": "^12.38.0",
         "leaflet": "^1.9.4",
         "lucide-react": "^1.7.0",
         "puppeteer": "^24.42.0",
         "react-is": "^19.2.5",
         "react-leaflet": "^4.2.1",
+        "react-tooltip": "^6.0.2",
         "recharts": "^3.8.1"
     }
 }

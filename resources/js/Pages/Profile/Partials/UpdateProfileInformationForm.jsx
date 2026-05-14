@@ -3,7 +3,7 @@ import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import { Transition } from '@headlessui/react';
-import { Link, useForm, usePage } from '@inertiajs/react';
+import { Link, router, useForm, usePage } from '@inertiajs/react';
 import { Camera, UploadCloud, UserRound } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
@@ -13,7 +13,9 @@ export default function UpdateProfileInformation({
     className = '',
 }) {
     const user = usePage().props.auth.user;
+    const initials = (user.name || 'Pengguna').trim().split(/\s+/).slice(0, 2).map((w) => w.charAt(0)).join('').toUpperCase();
     const [photoPreview, setPhotoPreview] = useState(user.profile_photo_url);
+    const [photoLoadError, setPhotoLoadError] = useState(false);
 
     const { data, setData, post, errors, processing, recentlySuccessful } =
         useForm({
@@ -27,11 +29,13 @@ export default function UpdateProfileInformation({
     useEffect(() => {
         if (!data.profile_photo) {
             setPhotoPreview(user.profile_photo_url);
+            setPhotoLoadError(false);
             return undefined;
         }
 
         const nextPreview = URL.createObjectURL(data.profile_photo);
         setPhotoPreview(nextPreview);
+        setPhotoLoadError(false);
 
         return () => URL.revokeObjectURL(nextPreview);
     }, [data.profile_photo, user.profile_photo_url]);
@@ -42,6 +46,9 @@ export default function UpdateProfileInformation({
         post(route('profile.update'), {
             forceFormData: true,
             preserveScroll: true,
+            onSuccess: () => {
+                router.reload({ only: ['auth'], preserveScroll: true });
+            },
         });
     };
 
@@ -49,7 +56,7 @@ export default function UpdateProfileInformation({
         <section className={`rounded-[8px] border border-slate-200 bg-white shadow-sm ${className}`}>
             <header className="border-b border-slate-100 px-6 py-5">
                 <div className="flex items-start gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-[8px] bg-[#f4f3ff] text-[#28106F]">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-[8px] bg-[#f4f3ff] text-[#4722B3]">
                         <UserRound className="h-5 w-5" />
                     </div>
                     <div>
@@ -67,15 +74,20 @@ export default function UpdateProfileInformation({
                 <div className="mb-7 rounded-[8px] border border-slate-200 bg-slate-50 p-4">
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                         <div className="flex items-center gap-4">
-                            <div className="flex h-20 w-20 flex-shrink-0 items-center justify-center overflow-hidden rounded-[8px] border border-indigo-100 bg-[#f4f3ff] text-[#28106F]">
-                                {photoPreview ? (
+                            <div className="flex h-20 w-20 flex-shrink-0 items-center justify-center overflow-hidden rounded-[8px] border border-indigo-100 bg-[#f4f3ff] text-[#4722B3]">
+                                {photoPreview && !photoLoadError ? (
                                     <img
                                         src={photoPreview}
                                         alt={`Foto profil ${user.name}`}
                                         className="h-full w-full object-cover"
+                                        onError={() => setPhotoLoadError(true)}
                                     />
                                 ) : (
-                                    <Camera className="h-8 w-8" />
+                                    <img
+                                        src="/images/image.png"
+                                        alt="Foto profil default"
+                                        className="h-full w-full object-cover opacity-85"
+                                    />
                                 )}
                             </div>
                             <div>
@@ -86,7 +98,7 @@ export default function UpdateProfileInformation({
                             </div>
                         </div>
 
-                        <label className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-[10px] border border-slate-200 bg-white px-4 py-3 text-[11px] font-black uppercase tracking-wider text-slate-700 shadow-sm transition-all hover:border-indigo-100 hover:text-[#28106F]">
+                        <label className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-[10px] border border-slate-200 bg-white px-4 py-3 text-[11px] font-black uppercase tracking-wider text-slate-700 shadow-sm transition-all hover:border-indigo-100 hover:text-[#4722B3]">
                             <UploadCloud className="h-4 w-4" />
                             Pilih Foto
                             <input

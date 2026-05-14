@@ -1,4 +1,5 @@
 import DashboardLayout from '@/Layouts/DashboardLayout';
+import CustomDropdown from '@/Components/CustomDropdown';
 import { Head, Link, useForm } from '@inertiajs/react';
 
 export default function CreateDriver() {
@@ -19,7 +20,7 @@ export default function CreateDriver() {
 
     return (
         <DashboardLayout
-            headerTitle="Manajemen Driver"
+            headerTitle="Driver Pengiriman"
             headerSearchPlaceholder="Cari driver, kontak, atau nomor SIM..."
             contentClassName="w-full max-w-none"
         >
@@ -28,7 +29,7 @@ export default function CreateDriver() {
             <div className="mx-auto w-full max-w-4xl space-y-4">
                 <div className="flex items-center justify-between gap-3">
                     <div>
-                        <h1 className="text-[30px] font-black tracking-tight text-[#28106F]">Buat Akun Driver</h1>
+                        <h1 className="text-[30px] font-black tracking-tight text-[#4722B3]">Buat Akun Driver</h1>
                         <p className="mt-1 text-[14px] font-semibold text-gray-500">
                             Akun driver dibuat oleh manager, bukan lewat register publik.
                         </p>
@@ -116,14 +117,15 @@ export default function CreateDriver() {
 
                         <div className="md:col-span-2">
                             <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">Status Awal</label>
-                            <select
+                            <CustomDropdown
                                 value={form.data.status}
-                                onChange={(event) => form.setData('status', event.target.value)}
-                                className="mt-2 w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-[14px] font-bold"
-                            >
-                                <option value="approved">Approved - bisa login langsung</option>
-                                <option value="pending">Pending - belum bisa login</option>
-                            </select>
+                                onChange={(value) => form.setData('status', value)}
+                                options={[
+                                    { value: 'approved', label: 'Approved - bisa login langsung' },
+                                    { value: 'pending', label: 'Pending - belum bisa login' },
+                                ]}
+                                className="mt-2"
+                            />
                             {form.errors.status && <p className="mt-1 text-xs font-bold text-red-500">{form.errors.status}</p>}
                         </div>
                     </div>
@@ -138,7 +140,7 @@ export default function CreateDriver() {
                         <button
                             type="submit"
                             disabled={form.processing}
-                            className="inline-flex h-11 items-center rounded-[10px] bg-[#28106F] px-6 text-[12px] font-black uppercase tracking-wider text-white transition hover:bg-[#2f2aa6] disabled:opacity-50"
+                            className="inline-flex h-11 items-center rounded-[10px] bg-[#4722B3] px-6 text-[12px] font-black uppercase tracking-wider text-white transition hover:bg-[#2f2aa6] disabled:opacity-50"
                         >
                             Buat Akun Driver
                         </button>

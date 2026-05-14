@@ -57,6 +57,15 @@ class EnsureUserHasRole
 
         $value = strtolower($roleName);
 
+        if (
+            str_contains($value, 'admin sistem')
+            || str_contains($value, 'admin system')
+            || str_contains($value, 'super admin')
+            || str_contains($value, 'system_admin')
+        ) {
+            return 'system_admin';
+        }
+
         if (str_contains($value, 'admin gudang') || str_contains($value, 'manager') || str_contains($value, 'manajer')) {
             return 'manager';
         }

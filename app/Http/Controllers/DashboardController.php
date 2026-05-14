@@ -2,7 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use Barryvdh\DomPDF\Facade\Pdf;
 use App\Models\Product;
+use App\Models\Category;
+use App\Models\Unit;
+use App\Models\WarehouseZone;
 use App\Models\GoodsReceipt;
 use App\Models\Rack;
 use App\Models\RackStock;
@@ -13,6 +17,8 @@ use App\Models\StockOut;
 use App\Models\StockTransfer;
 use App\Models\Shipment;
 use App\Models\Invoice;
+use App\Models\TenantSubscription;
+use App\Models\Warehouse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -21,6 +27,86 @@ use Carbon\Carbon;
 
 class DashboardController extends Controller
 {
+    public function operationalPdf(Request $request)
+    {
+        $now = Carbon::now();
+        $today = $now->toDateString();
+        $tenantId = (int) ($request->user()?->tenant_id ?? 0);
+
+        $warehouse = Warehouse::query()
+            ->when($tenantId > 0, fn ($q) => $q->where('tenant_id', $tenantId))
+            ->orderBy('id')
+            ->first();
+
+        $totalInventory = 0;
+        $rackCapacity = 0;
+        $rackUtilization = 0;
+        $todayInbound = 0;
+        $todayOutbound = 0;
+
+        if ($warehouse) {
+            $totalInventory = (int) \App\Models\ProductStock::where('warehouse_id', $warehouse->id)->sum('current_stock');
+            $rackCapacity = (int) Rack::whereHas('zone', fn ($q) => $q->where('warehouse_id', $warehouse->id))->sum('capacity');
+            $rackOccupiedStock = (int) RackStock::whereHas('rack.zone', fn ($q) => $q->where('warehouse_id', $warehouse->id))->sum('quantity');
+            $rackUtilization = $rackCapacity > 0 ? round(($rackOccupiedStock / $rackCapacity) * 100, 1) : 0;
+        }
+
+        $todayInbound = (int) StockMovement::where('movement_type', 'in')
+            ->whereDate('movement_date', $today)
+            ->sum('quantity');
+        $todayOutbound = (int) StockMovement::where('movement_type', 'out')
+            ->whereDate('movement_date', $today)
+            ->sum('quantity');
+
+        $lowStockCount = DB::table('products')
+            ->leftJoin('product_stocks', function ($join) use ($warehouse) {
+                $join->on('products.id', '=', 'product_stocks.product_id');
+                if ($warehouse) {
+                    $join->where('product_stocks.warehouse_id', '=', $warehouse->id);
+                }
+            })
+            ->when($tenantId > 0, fn ($q) => $q->where('products.tenant_id', $tenantId))
+            ->select('products.id')
+            ->groupBy('products.id', 'products.minimum_stock')
+            ->havingRaw('COALESCE(SUM(product_stocks.current_stock), 0) < products.minimum_stock')
+            ->count();
+
+        $delayedShipments = Shipment::where('status', '!=', 'delivered')
+            ->whereNotNull('estimated_arrival')
+            ->where('estimated_arrival', '<', $now)
+            ->count();
+        $unpaidInvoices = Invoice::whereIn('payment_status', ['belum_dibayar', 'pending', 'jatuh_tempo'])->count();
+
+        $trendRows = collect();
+        for ($i = 6; $i >= 0; $i--) {
+            $date = $now->copy()->subDays($i)->format('Y-m-d');
+            $trendRows->push([
+                'date' => $date,
+                'label' => $now->copy()->subDays($i)->translatedFormat('D'),
+                'inbound' => (int) StockMovement::where('movement_type', 'in')->whereDate('movement_date', $date)->sum('quantity'),
+                'outbound' => (int) StockMovement::where('movement_type', 'out')->whereDate('movement_date', $date)->sum('quantity'),
+            ]);
+        }
+
+        $pdf = Pdf::loadView('reports.dashboard_operational_pdf', [
+            'generatedAt' => $now,
+            'warehouseName' => $warehouse?->name ?? 'Gudang Operasional',
+            'warehouseLocation' => $warehouse?->location ?? 'Belum diatur',
+            'stats' => [
+                'today_inbound' => $todayInbound,
+                'today_outbound' => $todayOutbound,
+                'total_inventory' => $totalInventory,
+                'rack_utilization' => $rackUtilization,
+                'low_stock_count' => (int) $lowStockCount,
+                'delayed_shipments' => (int) $delayedShipments,
+                'unpaid_invoices' => (int) $unpaidInvoices,
+            ],
+            'trends' => $trendRows,
+        ])->setPaper('a4');
+
+        return $pdf->download('Laporan_Operasional_Gudang_' . $now->format('Ymd_His') . '.pdf');
+    }
+
     public function index(Request $request): Response
     {
         $now = Carbon::now();
@@ -32,8 +118,21 @@ class DashboardController extends Controller
         $canViewOperationalDocs = str_contains($roleName, 'manager')
             || str_contains($roleName, 'supervisor');
 
-        $operationalWarehouse = \App\Models\Warehouse::orderBy('id')->first()
+        $tenantId = (int) ($request->user()?->tenant_id ?? 0);
+        $subscription = $tenantId > 0
+            ? TenantSubscription::query()
+                ->with('plan')
+                ->where('tenant_id', $tenantId)
+                ->latest('id')
+                ->first()
+            : null;
+
+        $operationalWarehouse = \App\Models\Warehouse::query()
+            ->when($tenantId > 0, fn ($q) => $q->where('tenant_id', $tenantId))
+            ->orderBy('id')
+            ->first()
             ?? \App\Models\Warehouse::create([
+                'tenant_id' => $tenantId ?: null,
                 'code' => 'WH-DEFAULT',
                 'name' => 'Gudang Operasional',
                 'location' => 'Belum diatur',
@@ -56,6 +155,7 @@ class DashboardController extends Controller
                 $join->on('products.id', '=', 'product_stocks.product_id')
                     ->where('product_stocks.warehouse_id', '=', $warehouseId);
             })
+            ->when($tenantId > 0, fn ($q) => $q->where('products.tenant_id', $tenantId))
             ->select('products.id')
             ->groupBy('products.id', 'products.minimum_stock')
             ->havingRaw('COALESCE(SUM(product_stocks.current_stock), 0) < products.minimum_stock')
@@ -179,6 +279,7 @@ class DashboardController extends Controller
         $prevTwentyFourHoursAgo = $twentyFourHoursAgo->copy()->subDay();
         
         $prevInventory = (int) DB::table('stock_movements')
+            ->when($tenantId > 0, fn ($q) => $q->where('tenant_id', $tenantId))
             ->where('movement_date', '<', $twentyFourHoursAgo)
             ->sum(DB::raw("CASE WHEN movement_type = 'in' THEN quantity WHEN movement_type = 'out' THEN -quantity ELSE 0 END"));
         // Simplified trend for inventory: just compare recent movements
@@ -190,6 +291,28 @@ class DashboardController extends Controller
             ->whereBetween('movement_date', [$prevTwentyFourHoursAgo, $twentyFourHoursAgo])
             ->sum('quantity');
         $outboundTrend = $prevOutbound > 0 ? round((($outboundLast24h - $prevOutbound) / $prevOutbound) * 100, 1) : 0;
+
+        $nowDate = now();
+        $trialEndsAt = $subscription?->trial_ends_at;
+        $trialDaysLeft = $trialEndsAt ? max(0, $nowDate->startOfDay()->diffInDays($trialEndsAt->copy()->startOfDay(), false)) : null;
+        $subscriptionStatus = (string) ($subscription?->status ?? 'trialing');
+        $nextAction = match ($subscriptionStatus) {
+            'past_due', 'canceled' => [
+                'label' => 'Aktifkan kembali paket di Billing',
+                'href' => '/settings/billing',
+                'tone' => 'danger',
+            ],
+            'trialing' => [
+                'label' => 'Lihat paket dan pilih rencana langganan',
+                'href' => '/settings/billing',
+                'tone' => 'warning',
+            ],
+            default => [
+                'label' => 'Lanjutkan setup operasional gudang',
+                'href' => '/mulai-di-sini',
+                'tone' => 'info',
+            ],
+        };
 
         return Inertia::render('Dashboard', [
             'stats' => [
@@ -204,6 +327,22 @@ class DashboardController extends Controller
             'trends' => $trends,
             'racks' => $racks,
             'wmsKpis' => $wmsKpis,
+            'onboarding' => [
+                'show' => (bool) $request->session()->pull('auth_onboarding', false),
+                'email_verified' => !is_null($request->user()?->email_verified_at),
+                'subscription_status' => $subscriptionStatus,
+                'subscription_plan' => $subscription?->plan?->name ?? 'Trial',
+                'trial_ends_at' => optional($trialEndsAt)->format('d M Y'),
+                'trial_days_left' => $trialDaysLeft,
+                'next_action' => $nextAction,
+                'setup' => [
+                    'has_categories' => Category::when($tenantId > 0, fn ($q) => $q->where('tenant_id', $tenantId))->exists(),
+                    'has_units' => Unit::when($tenantId > 0, fn ($q) => $q->where('tenant_id', $tenantId))->exists(),
+                    'has_zones' => WarehouseZone::where('warehouse_id', $operationalWarehouse->id)->exists(),
+                    'has_racks' => Rack::whereHas('zone', fn ($q) => $q->where('warehouse_id', $operationalWarehouse->id))->exists(),
+                    'has_products' => Product::when($tenantId > 0, fn ($q) => $q->where('tenant_id', $tenantId))->exists(),
+                ],
+            ],
         ]);
     }
 
@@ -264,5 +403,23 @@ class DashboardController extends Controller
             ->values()
             ->take(6)
             ->map(fn (array $document) => collect($document)->except('sort_date')->all());
+    }
+
+    public function panduanSetup(Request $request): Response
+    {
+        $tenantId = (int) ($request->user()?->tenant_id ?? 0);
+        $operationalWarehouse = Warehouse::query()
+            ->when($tenantId > 0, fn ($q) => $q->where('tenant_id', $tenantId))
+            ->orderBy('id')->first();
+
+        return Inertia::render('PanduanSetup', [
+            'setup' => [
+                'has_categories' => Category::when($tenantId > 0, fn ($q) => $q->where('tenant_id', $tenantId))->exists(),
+                'has_units' => Unit::when($tenantId > 0, fn ($q) => $q->where('tenant_id', $tenantId))->exists(),
+                'has_zones' => $operationalWarehouse ? WarehouseZone::where('warehouse_id', $operationalWarehouse->id)->exists() : false,
+                'has_racks' => $operationalWarehouse ? Rack::whereHas('zone', fn ($q) => $q->where('warehouse_id', $operationalWarehouse->id))->exists() : false,
+                'has_products' => Product::when($tenantId > 0, fn ($q) => $q->where('tenant_id', $tenantId))->exists(),
+            ],
+        ]);
     }
 }

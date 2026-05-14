@@ -20,6 +20,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Database\QueryException;
 use App\Traits\HandlesStockSync;
@@ -30,9 +31,20 @@ class InventoryController extends Controller
 {
     use HandlesStockSync;
 
+    private function resolveOperationalWarehouse(Request $request): Warehouse
+    {
+        $tenantId = (int) ($request->user()?->tenant_id ?? 0);
+        abort_unless($tenantId > 0, 403, 'Akun belum terhubung ke tenant.');
+
+        return Warehouse::with('zones.racks')
+            ->where('tenant_id', $tenantId)
+            ->orderBy('id')
+            ->firstOrFail();
+    }
+
     public function index(Request $request): Response
     {
-        $operationalWarehouse = Warehouse::with('zones.racks')->orderBy('id')->firstOrFail();
+        $operationalWarehouse = $this->resolveOperationalWarehouse($request);
 
         $query = Product::query()
             ->with([
@@ -195,7 +207,12 @@ class InventoryController extends Controller
 
     public function create(): Response
     {
-        $operationalWarehouse = Warehouse::with('zones.racks')->orderBy('id')->firstOrFail();
+        $operationalWarehouse = $this->resolveOperationalWarehouse(request());
+        $tenantId = (int) (request()->user()?->tenant_id ?? 0);
+        $hasRacks = Rack::whereHas('zone', fn ($q) => $q->where('warehouse_id', $operationalWarehouse->id))->exists();
+        $hasCategories = Category::where('tenant_id', $tenantId)->exists();
+        $hasUnits = Unit::where('tenant_id', $tenantId)->exists();
+        $hasSuppliers = Supplier::where('status', 'active')->exists();
 
         return Inertia::render('Inventory/Create', [
             'categories' => Category::all(['id', 'name']),
@@ -207,12 +224,16 @@ class InventoryController extends Controller
                 'name' => $operationalWarehouse->name,
                 'location' => $operationalWarehouse->location,
             ],
+            'has_racks' => $hasRacks,
+            'has_categories' => $hasCategories,
+            'has_units' => $hasUnits,
+            'has_suppliers' => $hasSuppliers,
         ]);
     }
 
     public function edit(Product $product): Response
     {
-        $operationalWarehouse = Warehouse::with('zones.racks')->orderBy('id')->firstOrFail();
+        $operationalWarehouse = $this->resolveOperationalWarehouse(request());
         $product->load(['category', 'unit', 'defaultSupplier']);
 
         return Inertia::render('Inventory/Create', [
@@ -256,13 +277,28 @@ class InventoryController extends Controller
     public function store(Request $request): RedirectResponse
     {
         Gate::authorize('create-product');
-        $operationalWarehouse = Warehouse::orderBy('id')->firstOrFail();
+        $operationalWarehouse = $this->resolveOperationalWarehouse($request);
+        $tenantId = (int) ($request->user()?->tenant_id ?? 0);
 
         $validated = $request->validate([
-            'sku' => 'required|string|unique:products,sku',
+            'sku' => [
+                'required',
+                'string',
+                Rule::unique('products', 'sku')->where(fn ($q) => $q->where('tenant_id', $tenantId)),
+            ],
             'name' => 'required|string',
-            'category_id' => 'required|exists:categories,id',
-            'unit_id' => 'required|exists:units,id',
+            'category_id' => [
+                'required',
+                Rule::exists('categories', 'id')->where(function ($q) use ($tenantId) {
+                    $q->where('tenant_id', $tenantId)->orWhereNull('tenant_id');
+                }),
+            ],
+            'unit_id' => [
+                'required',
+                Rule::exists('units', 'id')->where(function ($q) use ($tenantId) {
+                    $q->where('tenant_id', $tenantId)->orWhereNull('tenant_id');
+                }),
+            ],
             'default_supplier_id' => 'nullable|exists:suppliers,id',
             'purchase_price' => 'nullable|numeric',
             'selling_price' => 'nullable|numeric',
@@ -285,12 +321,18 @@ class InventoryController extends Controller
 
         $validated['warehouse_id'] = $validated['warehouse_id'] ?? $operationalWarehouse->id;
 
+        if ((int) $validated['warehouse_id'] !== (int) $operationalWarehouse->id) {
+            throw ValidationException::withMessages([
+                'warehouse_id' => 'Gudang tidak valid untuk tenant Anda.',
+            ]);
+        }
+
         $imagePath = null;
         if ($request->hasFile('image')) {
             $imagePath = $request->file('image')->store('products', 'public');
         }
 
-        DB::transaction(function () use ($validated, $request, $imagePath, $volumePayload) {
+        DB::transaction(function () use ($validated, $request, $imagePath, $volumePayload, $operationalWarehouse) {
             $product = Product::create([
                 'sku' => $validated['sku'],
                 'name' => $validated['name'],
@@ -308,7 +350,8 @@ class InventoryController extends Controller
             ]);
 
             if (!empty($validated['initial_stock']) && $validated['initial_stock'] > 0) {
-                $rack = Rack::findOrFail($validated['rack_id']);
+                $rack = Rack::whereHas('zone', fn ($query) => $query->where('warehouse_id', $operationalWarehouse->id))
+                    ->findOrFail($validated['rack_id']);
 
                 // 1. Capacity Validation - use 'initial_stock' as error key for frontend mapping
                 $this->ensureRackCapacity($rack, (int) $validated['initial_stock'], $product->id, 'initial_stock');
@@ -347,11 +390,24 @@ class InventoryController extends Controller
     public function update(Request $request, Product $product): RedirectResponse
     {
         Gate::authorize('update-product');
+        $tenantId = (int) ($request->user()?->tenant_id ?? 0);
         $validated = $request->validate([
-            'sku' => 'required|string|unique:products,sku,' . $product->id,
+            'sku' => [
+                'required',
+                'string',
+                Rule::unique('products', 'sku')
+                    ->where(fn ($q) => $q->where('tenant_id', $tenantId))
+                    ->ignore($product->id),
+            ],
             'name' => 'required|string',
-            'category_id' => 'required|exists:categories,id',
-            'unit_id' => 'required|exists:units,id',
+            'category_id' => [
+                'required',
+                Rule::exists('categories', 'id')->where(fn ($q) => $q->where('tenant_id', $tenantId)),
+            ],
+            'unit_id' => [
+                'required',
+                Rule::exists('units', 'id')->where(fn ($q) => $q->where('tenant_id', $tenantId)),
+            ],
             'default_supplier_id' => 'nullable|exists:suppliers,id',
             'purchase_price' => 'nullable|numeric',
             'selling_price' => 'nullable|numeric',
@@ -394,7 +450,7 @@ class InventoryController extends Controller
         ]);
 
         return redirect()
-            ->route('inventory.show', $product)
+            ->route('inventory.show', ['product' => $product->id])
             ->with('success', 'Produk berhasil diperbarui.');
     }
 
@@ -438,7 +494,7 @@ class InventoryController extends Controller
     public function recordOutbound(Request $request): RedirectResponse
     {
         Gate::authorize('create-stockOut');
-        $operationalWarehouse = Warehouse::orderBy('id')->firstOrFail();
+        $operationalWarehouse = $this->resolveOperationalWarehouse($request);
 
         $validated = $request->validate([
             'product_id' => 'required|exists:products,id',
@@ -449,6 +505,12 @@ class InventoryController extends Controller
         ]);
 
         $validated['warehouse_id'] = $validated['warehouse_id'] ?? $operationalWarehouse->id;
+
+        if ((int) $validated['warehouse_id'] !== (int) $operationalWarehouse->id) {
+            throw ValidationException::withMessages([
+                'warehouse_id' => 'Gudang tidak valid untuk tenant Anda.',
+            ]);
+        }
 
         DB::transaction(function () use ($validated, $request) {
             $product = Product::findOrFail($validated['product_id']);
@@ -681,7 +743,7 @@ class InventoryController extends Controller
 
     public function show(Product $product): Response
     {
-        $operationalWarehouse = Warehouse::orderBy('id')->firstOrFail();
+        $operationalWarehouse = $this->resolveOperationalWarehouse(request());
 
         $product->load([
             'category',

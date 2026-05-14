@@ -1,6 +1,8 @@
 import DashboardLayout from '@/Layouts/DashboardLayout';
+import CustomDropdown from '@/Components/CustomDropdown';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import React, { useState, useEffect } from 'react';
+import { isManagerRole, isSupervisorRole } from '@/Utils/roleCapabilities';
 
 const loadExportTools = async () => {
     const [{ default: ExcelJS }, { saveAs }] = await Promise.all([
@@ -52,12 +54,6 @@ const ArrowUpRightIcon = ({ className }) => (
     </svg>
 );
 
-const AIAuditIcon = ({ className }) => (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-    </svg>
-);
-
 const AdjustmentIcon = ({ className }) => (
     <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
@@ -72,12 +68,10 @@ const TransferIcon = ({ className }) => (
 
 export default function Transaction({ movements, stats, filters }) {
     const { props } = usePage();
-    const roleName = String(props.auth?.user?.role_name || props.auth?.user?.role || '').toLowerCase();
-    const canExportTransactions = roleName.includes('manager') || roleName.includes('manajer') || roleName.includes('admin gudang') || roleName.includes('supervisor') || roleName.includes('spv');
+    const roleName = props.auth?.user?.role_name || props.auth?.user?.role || '';
+    const canExportTransactions = isManagerRole(roleName) || isSupervisorRole(roleName);
     const [searchTerm, setSearchTerm] = useState(filters.search || '');
     const [typeFilter, setTypeFilter] = useState(filters.type || 'all');
-    const [dismissedAlerts, setDismissedAlerts] = useState([]);
-
     // Debounced search
     useEffect(() => {
         const delayDebounceFn = setTimeout(() => {
@@ -112,7 +106,7 @@ export default function Transaction({ movements, stats, filters }) {
 
             const { ExcelJS, saveAs } = await loadExportTools();
             const workbook = new ExcelJS.Workbook();
-            const worksheet = workbook.addWorksheet('Riwayat Transaksi');
+            const worksheet = workbook.addWorksheet('Riwayat Stok');
 
             // 1. Set Title Row
             const titleCell = worksheet.getCell('A1');
@@ -252,216 +246,189 @@ export default function Transaction({ movements, stats, filters }) {
         >
             <Head title="Riwayat Transaksi" />
 
-            <div className="flex flex-row gap-8 pb-12 w-full pt-4 min-w-[1000px] overflow-x-auto bg-[#F8F7FF]">
-                {/* Left Column - Main Content */}
-                <div className="flex-1 flex flex-col space-y-8">
+            <div className="space-y-5 pb-10 pt-4">
+                <div className="flex flex-col gap-2">
+                    <h1 className="text-[30px] font-black tracking-tight text-[#1f2a3d]">Riwayat Transaksi Gudang</h1>
+                    <p className="text-[14px] font-semibold text-slate-500">Semua barang masuk, keluar, transfer, dan penyesuaian dicatat di sini.</p>
+                </div>
 
-                    {/* Header */}
-                    <div className="flex justify-between items-end">
-                        <div>
-                            <h1 className="text-[28px] font-black text-[#0f172a] tracking-tight mb-1">Riwayat Transaksi Gudang</h1>
-                            <p className="text-[14px] font-semibold text-slate-500">Pantau mutasi barang masuk, keluar, transfer, dan penyesuaian dari gudang operasional.</p>
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                    <div className="rounded-2xl border border-[#E5EAF3] bg-white p-5">
+                        <div className="mb-3 flex items-center justify-between">
+                            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600">
+                                <InboundIcon className="h-5 w-5" />
+                            </div>
+                            <span className={`rounded-full px-2.5 py-1 text-[10px] font-black ${stats.inbound_trend >= 0 ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'}`}>
+                                {stats.inbound_trend >= 0 ? '+' : ''}{stats.inbound_trend}%
+                            </span>
                         </div>
-                        {/* Action Buttons Removed */}
+                        <p className="text-[12px] font-bold text-slate-500">Barang Masuk (24 jam)</p>
+                        <p className="mt-1 text-[30px] font-black text-[#4722B3]">{(stats.inbound_24h || 0).toLocaleString('id-ID')}</p>
                     </div>
 
-                    {/* 3 Metric Cards */}
-                    <div className="grid grid-cols-3 gap-6">
-                        {/* 1. Inbound Units */}
-                        <div className="bg-white rounded-[20px] p-6 shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-[#EDE8FC] relative overflow-hidden">
-                            <div className="absolute inset-x-0 bottom-0 h-1 bg-indigo-600"></div>
-                            <div className="flex justify-between items-start mb-6">
-                                <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600">
-                                    <InboundIcon className="w-5 h-5" />
-                                </div>
-                                <span className={`text-[10px] font-black h-fit px-2 py-1 rounded-md tracking-wider ${stats.inbound_trend >= 0 ? 'text-emerald-600 bg-emerald-50' : 'text-red-500 bg-red-50'}`}>
-                                    {stats.inbound_trend >= 0 ? '+' : ''}{stats.inbound_trend}%
-                                </span>
+                    <div className="rounded-2xl border border-[#E5EAF3] bg-white p-5">
+                        <div className="mb-3 flex items-center justify-between">
+                            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
+                                <OutboundIcon className="h-5 w-5" />
                             </div>
-                            <div>
-                                <h3 className="text-[12px] font-extrabold text-gray-500 mb-1">Barang Masuk 24 Jam</h3>
-                                <div className="text-[28px] font-black text-[#28106F]">{stats.inbound_24h.toLocaleString()}</div>
-                            </div>
+                            <span className={`rounded-full px-2.5 py-1 text-[10px] font-black ${stats.outbound_trend >= 0 ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'}`}>
+                                {stats.outbound_trend >= 0 ? '+' : ''}{stats.outbound_trend}%
+                            </span>
                         </div>
+                        <p className="text-[12px] font-bold text-slate-500">Barang Keluar (24 jam)</p>
+                        <p className="mt-1 text-[30px] font-black text-[#1f2a3d]">{(stats.outbound_24h || 0).toLocaleString('id-ID')}</p>
+                    </div>
 
-                        {/* 2. Outbound Units */}
-                        <div className="bg-white rounded-[20px] p-6 shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-[#EDE8FC] relative overflow-hidden">
-                            <div className="absolute inset-x-0 bottom-0 h-1 bg-emerald-500"></div>
-                            <div className="flex justify-between items-start mb-6">
-                                <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-500">
-                                    <OutboundIcon className="w-5 h-5" />
-                                </div>
-                                <span className={`text-[10px] font-black h-fit px-2 py-1 rounded-md tracking-wider ${stats.outbound_trend >= 0 ? 'text-emerald-600 bg-emerald-50' : 'text-red-500 bg-red-50'}`}>
-                                    {stats.outbound_trend >= 0 ? '+' : ''}{stats.outbound_trend}%
-                                </span>
+                    <div className="rounded-2xl border border-[#E5EAF3] bg-white p-5">
+                        <div className="mb-3 flex items-center justify-between">
+                            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-50 text-amber-600">
+                                <ShieldCheckIcon className="h-5 w-5" />
                             </div>
-                            <div>
-                                <h3 className="text-[12px] font-extrabold text-gray-500 mb-1">Barang Keluar 24 Jam</h3>
-                                <div className="text-[28px] font-black text-[#28106F]">{stats.outbound_24h.toLocaleString()}</div>
-                            </div>
+                            <span className="rounded-full bg-amber-50 px-2.5 py-1 text-[10px] font-black text-amber-700">
+                                {stats.pending_audits > 5 ? 'Perlu Tindakan' : 'Normal'}
+                            </span>
                         </div>
+                        <p className="text-[12px] font-bold text-slate-500">Menunggu Verifikasi</p>
+                        <p className="mt-1 text-[30px] font-black text-amber-700">{(stats.pending_audits || 0).toLocaleString('id-ID')}</p>
+                    </div>
+                </div>
 
-                        {/* 3. Pending Audits */}
-                        <div className="bg-white rounded-[20px] p-6 shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-[#EDE8FC] relative overflow-hidden">
-                            <div className="absolute inset-x-0 bottom-0 h-1 bg-amber-500"></div>
-                            <div className="flex justify-between items-start mb-6">
-                                <div className="relative">
-                                    <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center text-amber-500">
-                                        <ShieldCheckIcon className="w-5 h-5" />
-                                    </div>
-                                    {stats.pending_audits > 0 && (
-                                        <div className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-amber-500 rounded-full border-2 border-white"></div>
-                                    )}
-                                </div>
-                                <span className="text-[10px] font-black text-amber-600 tracking-wider">
-                                    {stats.pending_audits > 5 ? 'Prioritas Tinggi' : 'Rutin'}
-                                </span>
-                            </div>
-                            <div>
-                                <h3 className="text-[12px] font-extrabold text-gray-500 mb-1">Perlu Verifikasi</h3>
-                                <div className="text-[28px] font-black text-[#28106F]">{stats.pending_audits}</div>
+                <div className="rounded-2xl border border-[#E5EAF3] bg-white p-5">
+                    <div className="mb-5 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                        <h2 className="text-[20px] font-black text-[#1f2a3d]">Daftar Mutasi Terbaru</h2>
+                        <div className="flex flex-wrap items-center gap-2">
+                            {canExportTransactions && (
+                                <button
+                                    onClick={handleExportXlsx}
+                                    className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-[13px] font-bold text-slate-600 hover:bg-slate-50"
+                                >
+                                    Ekspor Excel
+                                </button>
+                            )}
+                            <div className="relative min-w-[190px]">
+                                <FilterIcon2 className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-indigo-500" />
+                                <CustomDropdown
+                                    value={typeFilter}
+                                    onChange={(value) => {
+                                        setTypeFilter(value);
+                                        handleFilterChange(value);
+                                    }}
+                                    options={[
+                                        { value: 'all', label: 'Semua Jenis' },
+                                        { value: 'in', label: 'Barang Masuk' },
+                                        { value: 'out', label: 'Barang Keluar' },
+                                        { value: 'transfer', label: 'Transfer Stok' },
+                                        { value: 'adjustment', label: 'Penyesuaian Stok' },
+                                        { value: 'opname', label: 'Stok Opname' },
+                                    ]}
+                                    className="pl-6"
+                                />
                             </div>
                         </div>
                     </div>
 
-                    {/* Table Section */}
-                    <div className="bg-white rounded-[24px] p-8 shadow-[0_4px_24px_rgba(0,0,0,0.02)] border border-[#EDE8FC] flex-1 flex flex-col">
-
-                        {/* Table Header Row */}
-                        <div className="flex justify-between items-center mb-8">
-                            <h2 className="text-[20px] font-black text-[#0f172a]">Daftar Mutasi Terbaru</h2>
-                            <div className="flex items-center space-x-3">
-                                {canExportTransactions && (
-                                    <button
-                                        onClick={handleExportXlsx}
-                                        className="px-5 py-2.5 bg-white border border-gray-200 text-gray-600 font-bold rounded-xl text-[13px] hover:bg-gray-50 shadow-sm transition-colors flex items-center space-x-2"
-                                    >
-                                        <span>Ekspor Excel</span>
-                                    </button>
-                                )}
-                                <div className="relative group">
-                                    <select
-                                        className="flex items-center space-x-2 px-8 py-2.5 bg-indigo-50 text-indigo-600 font-black rounded-xl text-[13px] hover:bg-indigo-100 transition-colors border-none appearance-none cursor-pointer"
-                                        value={typeFilter}
-                                        onChange={(e) => {
-                                            setTypeFilter(e.target.value);
-                                            handleFilterChange(e.target.value);
-                                        }}
-                                    >
-                                        <option value="all">Semua Jenis</option>
-                                        <option value="in">Barang Masuk</option>
-                                        <option value="out">Barang Keluar</option>
-                                        <option value="transfer">Transfer Stok</option>
-                                        <option value="adjustment">Penyesuaian Stok</option>
-                                        <option value="opname">Stok Opname</option>
-                                    </select>
-                                    <FilterIcon2 className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-indigo-500" />
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Data Table */}
-                        <div className="w-full flex-1">
-                            {/* Columns */}
-                            <div className="grid grid-cols-12 gap-4 pb-4 border-b border-gray-100 text-[9px] font-black text-gray-400 tracking-widest uppercase">
-                                <div className="col-span-1">ID Log</div>
-                                <div className="col-span-3">Barang / Operator</div>
-                                <div className="col-span-2">Jenis</div>
-                                <div className="col-span-2 text-center">Waktu</div>
-                                <div className="col-span-2 text-right">Jumlah</div>
-                                <div className="col-span-2 text-right">Status</div>
-                            </div>
-
-                            {/* Rows */}
-                            <div className="divide-y divide-gray-50">
+                    <div className="overflow-x-auto">
+                        <table className="min-w-full">
+                            <thead>
+                                <tr className="border-b border-slate-100 text-left text-[11px] font-black uppercase tracking-wide text-slate-400">
+                                    <th className="px-2 py-3">ID</th>
+                                    <th className="px-2 py-3">Barang</th>
+                                    <th className="px-2 py-3">Jenis</th>
+                                    <th className="px-2 py-3">Operator</th>
+                                    <th className="px-2 py-3">Waktu</th>
+                                    <th className="px-2 py-3 text-right">Jumlah</th>
+                                    <th className="px-2 py-3 text-right">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-50">
                                 {movements.data.map((m) => {
                                     const status = getStatusInfo(m);
                                     return (
-                                        <div
+                                        <tr
                                             key={m.id}
                                             onClick={() => router.visit(route('transaction.show', m.id))}
-                                            className="grid grid-cols-12 gap-4 py-5 items-center hover:bg-indigo-50/50 transition-colors group cursor-pointer"
+                                            className="cursor-pointer hover:bg-indigo-50/50"
                                         >
-                                            <div className="col-span-1">
-                                                <span className="text-[12px] font-black text-[#5932C9]">#{m.id.toString().padStart(6, '0')}</span>
-                                            </div>
-                                            <div className="col-span-3 flex flex-col">
-                                                <span className="text-[13px] font-black text-[#28106F] leading-tight truncate">
-                                                    {m.product?.name || 'Barang Tidak Dikenal'}
-                                                </span>
-                                                <span className="text-[10px] font-bold text-gray-400 mt-0.5">
-                                                    Operator: {m.user?.name || 'Sistem'}
-                                                </span>
-                                                {m.source_document_number && (
-                                                    <span className="mt-1 w-fit rounded-md bg-slate-100 px-2 py-0.5 text-[9px] font-black text-slate-600">
-                                                        {m.source_document_label}: {m.source_document_number}
-                                                    </span>
-                                                )}
-                                            </div>
-                                            <div className="col-span-2 flex items-center space-x-2">
-                                                {getMovementIcon(m.movement_type)}
-                                                <span className="text-[12px] font-bold text-[#28106F] capitalize">{m.movement_type === 'in' ? 'Masuk' : m.movement_type === 'out' ? 'Keluar' : m.movement_type === 'transfer' ? 'Transfer' : m.movement_type === 'adjustment' ? 'Penyesuaian' : 'Opname'}</span>
-                                            </div>
-                                            <div className="col-span-2 flex flex-col justify-center text-center">
-                                                <span className="text-[11px] font-bold text-gray-500">
-                                                    {new Date(m.movement_date).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
-                                                </span>
-                                                <span className="text-[10px] font-bold text-gray-400">
-                                                    {new Date(m.movement_date).toLocaleDateString('id-ID', { day: '2-digit', month: 'short' })}
-                                                </span>
-                                            </div>
-                                            <div className="col-span-2 text-right pr-4">
-                                                <span className="text-[14px] font-black text-[#28106F]">{m.quantity.toLocaleString()}</span>
-                                            </div>
-                                            <div className="col-span-2 text-right flex justify-end">
-                                                <span className={`${status.color} text-[8px] font-black px-2 py-1 rounded-full uppercase tracking-widest text-center whitespace-nowrap`}>
+                                            <td className="px-2 py-4 text-[12px] font-black text-[#5B33CC]">#{String(m.id).padStart(6, '0')}</td>
+                                            <td className="px-2 py-4">
+                                                <div className="max-w-[280px]">
+                                                    <p className="truncate text-[13px] font-black text-[#1f2a3d]">{m.product?.name || 'Barang tidak dikenal'}</p>
+                                                    {m.source_document_number && (
+                                                        <p className="mt-0.5 truncate text-[11px] font-semibold text-slate-500">{m.source_document_label}: {m.source_document_number}</p>
+                                                    )}
+                                                </div>
+                                            </td>
+                                            <td className="px-2 py-4">
+                                                <div className="inline-flex items-center gap-2 text-[12px] font-bold text-[#4722B3]">
+                                                    {getMovementIcon(m.movement_type)}
+                                                    <span>{m.movement_type === 'in' ? 'Masuk' : m.movement_type === 'out' ? 'Keluar' : m.movement_type === 'transfer' ? 'Transfer' : m.movement_type === 'adjustment' ? 'Penyesuaian' : 'Opname'}</span>
+                                                </div>
+                                            </td>
+                                            <td className="px-2 py-4 text-[12px] font-semibold text-slate-600">{m.user?.name || 'Sistem'}</td>
+                                            <td className="px-2 py-4 text-[12px] font-semibold text-slate-600">
+                                                {new Date(m.movement_date).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })}{' '}
+                                                {new Date(m.movement_date).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
+                                            </td>
+                                            <td className="px-2 py-4 text-right text-[13px] font-black text-[#1f2a3d]">{(m.quantity || 0).toLocaleString('id-ID')}</td>
+                                            <td className="px-2 py-4 text-right">
+                                                <span className={`${status.color} rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-wide`}>
                                                     {status.label}
                                                 </span>
-                                            </div>
-                                        </div>
+                                            </td>
+                                        </tr>
                                     );
                                 })}
-
-                                {movements.data.length === 0 && (
-                                    <div className="py-20 text-center flex flex-col items-center">
-                                        <div className="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center mb-4">
-                                            <ShieldCheckIcon className="w-8 h-8 text-gray-300" />
-                                        </div>
-                                        <h3 className="text-[16px] font-black text-gray-400">Tidak ada transaksi ditemukan</h3>
-                                        <p className="text-[12px] font-bold text-gray-300">Coba ubah filter atau kata kunci pencarian.</p>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-
-                        {/* Pagination */}
-                        <div className="flex justify-between items-center mt-8 pt-6 border-t border-gray-100">
-                            <span className="text-[12px] font-bold text-gray-400">
-                                Menampilkan {movements.from || 0} - {movements.to || 0} dari {movements.total} transaksi
-                            </span>
-                            <div className="flex space-x-2">
-                                {movements.links.map((link, i) => (
-                                    <Link
-                                        key={i}
-                                        href={link.url || '#'}
-                                        className={`px-3 py-1.5 rounded-lg text-[12px] font-black transition-all ${link.active
-                                                ? 'bg-indigo-600 text-white shadow-md'
-                                                : link.url
-                                                    ? 'bg-white border border-gray-100 text-gray-500 hover:bg-gray-50'
-                                                    : 'bg-white border border-gray-100 text-gray-200 cursor-default'
-                                            }`}
-                                    >
-                                        {paginationLabel(link.label)}
-                                    </Link>
-                                ))}
-                            </div>
-                        </div>
+                            </tbody>
+                        </table>
                     </div>
 
+                    {movements.data.length === 0 && (
+                        <div className="py-16 text-center">
+                            <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-50">
+                                <ShieldCheckIcon className="h-7 w-7 text-slate-300" />
+                            </div>
+                            <p className="text-[16px] font-black text-slate-500">Belum ada transaksi sesuai filter</p>
+                            <p className="text-[13px] font-semibold text-slate-400">Coba ubah filter, atau mulai catat barang masuk/keluar terlebih dulu.</p>
+                            <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
+                                <Link
+                                    href={route('purchase-orders.create')}
+                                    className="rounded-xl bg-[#5B33CC] px-4 py-2 text-[12px] font-bold text-white hover:bg-indigo-700"
+                                >
+                                    + Catat Barang Masuk
+                                </Link>
+                                <Link
+                                    href={route('inventory.outbound.view')}
+                                    className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-[12px] font-bold text-[#5B33CC] hover:bg-slate-50"
+                                >
+                                    + Catat Barang Keluar
+                                </Link>
+                            </div>
+                        </div>
+                    )}
+
+                    <div className="mt-6 flex flex-col gap-3 border-t border-slate-100 pt-4 md:flex-row md:items-center md:justify-between">
+                        <span className="text-[12px] font-semibold text-slate-500">
+                            Menampilkan {movements.from || 0} - {movements.to || 0} dari {movements.total || 0} transaksi
+                        </span>
+                        <div className="flex flex-wrap gap-2">
+                            {movements.links.map((link, i) => (
+                                <Link
+                                    key={i}
+                                    href={link.url || '#'}
+                                    className={`rounded-lg px-3 py-1.5 text-[12px] font-black transition ${
+                                        link.active
+                                            ? 'bg-[#5B33CC] text-white'
+                                            : link.url
+                                                ? 'border border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
+                                                : 'cursor-default border border-slate-100 bg-white text-slate-300'
+                                    }`}
+                                >
+                                    {paginationLabel(link.label)}
+                                </Link>
+                            ))}
+                        </div>
+                    </div>
                 </div>
-
-
-
             </div>
         </DashboardLayout>
     );

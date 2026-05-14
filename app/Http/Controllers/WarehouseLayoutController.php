@@ -14,9 +14,19 @@ use Illuminate\Support\Facades\Auth;
 
 class WarehouseLayoutController extends Controller
 {
+    private function resolveTenantWarehouse(Request $request): ?Warehouse
+    {
+        $tenantId = (int) ($request->user()?->tenant_id ?? 0);
+
+        return Warehouse::query()
+            ->when($tenantId > 0, fn ($q) => $q->where('tenant_id', $tenantId))
+            ->orderBy('id')
+            ->first();
+    }
+
     public function show(Request $request): JsonResponse
     {
-        $warehouse = Warehouse::orderBy('id')->first();
+        $warehouse = $this->resolveTenantWarehouse($request);
 
         if (!$warehouse) {
             return response()->json(['layout' => null]);
@@ -96,7 +106,10 @@ class WarehouseLayoutController extends Controller
 
     public function store(Request $request): JsonResponse
     {
-        $warehouse = Warehouse::orderBy('id')->firstOrFail();
+        $warehouse = $this->resolveTenantWarehouse($request);
+        if (!$warehouse) {
+            abort(404, 'Gudang tenant tidak ditemukan.');
+        }
 
         $data = $request->validate([
             'zones' => ['nullable', 'array'],
@@ -190,7 +203,7 @@ class WarehouseLayoutController extends Controller
 
     public function snapshots(Request $request): JsonResponse
     {
-        $warehouse = Warehouse::orderBy('id')->first();
+        $warehouse = $this->resolveTenantWarehouse($request);
         if (!$warehouse) {
             return response()->json(['snapshots' => []]);
         }
@@ -255,5 +268,62 @@ class WarehouseLayoutController extends Controller
         $filename = 'warehouse-layout-'.now()->format('Ymd-His').'.pdf';
 
         return $pdf->download($filename);
+    }
+
+    public function advanced(Request $request)
+    {
+        $warehouse = $this->resolveTenantWarehouse($request);
+
+        $zones = $warehouse
+            ? $warehouse->zones()->with('racks')->get()
+            : collect();
+
+        $totalRacks    = $zones->flatMap->racks->count();
+        $activeRacks   = $zones->flatMap->racks->where('status', 'active')->count();
+        $totalCapacity = $zones->flatMap->racks->sum('capacity');
+
+        $snapshots = $warehouse
+            ? LayoutSnapshot::where('warehouse_id', $warehouse->id)
+                ->with('user:id,name')
+                ->latest()
+                ->limit(10)
+                ->get()
+                ->map(fn ($s) => [
+                    'id'          => $s->id,
+                    'name'        => $s->name,
+                    'action_type' => $s->action_type,
+                    'user_name'   => $s->user?->name ?? 'System',
+                    'created_at'  => $s->created_at->toIso8601String(),
+                ])
+            : collect();
+
+        return inertia('WarehouseAdvanced', [
+            'warehouse' => $warehouse ? [
+                'id'   => $warehouse->id,
+                'name' => $warehouse->name,
+            ] : null,
+            'stats' => [
+                'total_zones'    => $zones->count(),
+                'total_racks'    => $totalRacks,
+                'active_racks'   => $activeRacks,
+                'total_capacity' => $totalCapacity,
+            ],
+            'zones'     => $zones->map(fn ($z) => [
+                'id'        => $z->id,
+                'code'      => strtoupper($z->code),
+                'name'      => $z->name,
+                'type'      => $z->type,
+                'is_active' => $z->is_active,
+                'racks'     => $z->racks->map(fn ($r) => [
+                    'id'        => $r->id,
+                    'code'      => strtoupper($r->code),
+                    'name'      => $r->name,
+                    'rack_type' => $r->rack_type,
+                    'status'    => $r->status,
+                    'capacity'  => $r->capacity,
+                ])->values(),
+            ])->values(),
+            'snapshots' => $snapshots->values(),
+        ]);
     }
 }

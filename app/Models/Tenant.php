@@ -14,6 +14,8 @@ class Tenant extends Model
         'status',
         'timezone',
         'locale',
+        'invoice_email_on_partial',
+        'invoice_email_on_paid',
     ];
 
     public function users(): HasMany
@@ -31,4 +33,3 @@ class Tenant extends Model
         return $this->hasMany(TenantModule::class);
     }
 }
-

@@ -18,5 +18,15 @@ class SaasAuditLog extends Model
     protected $casts = [
         'payload' => 'array',
     ];
+
+    public function tenant()
+    {
+        return $this->belongsTo(Tenant::class);
+    }
+
+    public function actor()
+    {
+        return $this->belongsTo(User::class, 'actor_user_id');
+    }
 }
 

@@ -1,4 +1,5 @@
 import DashboardLayout from '@/Layouts/DashboardLayout';
+import CustomDropdown from '@/Components/CustomDropdown';
 import { Head, Link, useForm } from '@inertiajs/react';
 import React, { useEffect, useState } from 'react';
 import { MapContainer, Marker, TileLayer, useMapEvents } from 'react-leaflet';
@@ -22,7 +23,7 @@ const TRACKING_STAGE_OPTIONS = [
 const pickerIcon = new L.DivIcon({
     className: 'shipment-location-picker',
     html: `
-        <div style="width:18px;height:18px;border-radius:999px;background:#5932C9;border:3px solid #ffffff;box-shadow:0 6px 18px rgba(89,50,201,.35);"></div>
+        <div style="width:18px;height:18px;border-radius:999px;background:#5B33CC;border:3px solid #ffffff;box-shadow:0 6px 18px rgba(89,50,201,.35);"></div>
     `,
     iconSize: [18, 18],
     iconAnchor: [9, 9],
@@ -437,40 +438,37 @@ export default function EditShipment({ shipment, drivers = [], products = [] }) 
                                 </div>
                                 <div>
                                     <label className="mb-2 block text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Tahap Tracking</label>
-                                    <select className="w-full rounded-2xl border border-gray-200 bg-slate-50 px-4 py-3 text-[13px] font-bold" value={data.tracking_stage} onChange={(e) => setData('tracking_stage', e.target.value)}>
-                                        {TRACKING_STAGE_OPTIONS.map((option) => (
-                                            <option key={option.value} value={option.value}>{option.label}</option>
-                                        ))}
-                                    </select>
+                                    <CustomDropdown
+                                        value={data.tracking_stage}
+                                        onChange={(value) => setData('tracking_stage', value)}
+                                        options={TRACKING_STAGE_OPTIONS.map((option) => ({ value: option.value, label: option.label }))}
+                                    />
                                 </div>
                                 <div>
                                     <label className="mb-2 block text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Jenis Kargo</label>
-                                    <select className="w-full rounded-2xl border border-gray-200 bg-slate-50 px-4 py-3 text-[13px] font-bold" value={data.load_type} onChange={(e) => setData('load_type', e.target.value)}>
-                                        <option value="ground">Darat</option>
-                                        <option value="sea">Laut</option>
-                                        <option value="air">Udara</option>
-                                    </select>
+                                    <CustomDropdown
+                                        value={data.load_type}
+                                        onChange={(value) => setData('load_type', value)}
+                                        options={[
+                                            { value: 'ground', label: 'Darat' },
+                                            { value: 'sea', label: 'Laut' },
+                                            { value: 'air', label: 'Udara' },
+                                        ]}
+                                    />
                                 </div>
                                 <div>
                                     <label className="mb-2 block text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Tugaskan Driver</label>
-                                    <select className="w-full rounded-2xl border border-gray-200 bg-slate-50 px-4 py-3 text-[13px] font-bold" value={data.driver_id} onChange={(e) => setData('driver_id', e.target.value)}>
-                                        <option value="">Pilih Driver (Opsional)</option>
-                                        {drivers.map((driver) => {
-                                            // Driver is busy if is_busy is true AND they are NOT the currently assigned driver for this shipment
-                                            const isCurrentlyAssigned = driver.id === shipment.driver_id;
-                                            const showAsBusy = driver.is_busy && !isCurrentlyAssigned;
-
-                                            return (
-                                                <option
-                                                    key={driver.id}
-                                                    value={driver.id}
-                                                    disabled={showAsBusy}
-                                                >
-                                                    {driver.name} {showAsBusy ? '(SIBUK)' : ''}
-                                                </option>
-                                            );
-                                        })}
-                                    </select>
+                                    <CustomDropdown
+                                        value={data.driver_id}
+                                        onChange={(value) => setData('driver_id', value)}
+                                        options={[
+                                            { value: '', label: 'Pilih Driver (Opsional)' },
+                                            ...drivers.filter((driver) => {
+                                                const isCurrentlyAssigned = driver.id === shipment.driver_id;
+                                                return !driver.is_busy || isCurrentlyAssigned;
+                                            }).map((driver) => ({ value: driver.id, label: driver.name })),
+                                        ]}
+                                    />
                                     {errors.driver_id && <div className="mt-2 text-[11px] font-bold text-red-500">{errors.driver_id}</div>}
                                 </div>
                             </div>
@@ -500,10 +498,18 @@ export default function EditShipment({ shipment, drivers = [], products = [] }) 
                                             <div className="grid grid-cols-2 gap-3">
                                                 <div className="col-span-2">
                                                     <label className="mb-1 block text-[9px] font-black uppercase tracking-wider text-gray-400">Produk dari Katalog</label>
-                                                    <select className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-[12px] font-bold" value={item.product_id} onChange={(e) => updateItem(index, 'product_id', e.target.value)}>
-                                                        <option value="">Pilih produk atau isi manual</option>
-                                                        {products.map(p => <option key={p.id} value={p.id}>{p.sku} — {p.name} (stok gudang: {p.available_stock} | stok rack: {p.rack_available_stock ?? 0})</option>)}
-                                                    </select>
+                                                    <CustomDropdown
+                                                        value={item.product_id}
+                                                        onChange={(value) => updateItem(index, 'product_id', value)}
+                                                        options={[
+                                                            { value: '', label: 'Pilih produk atau isi manual' },
+                                                            ...products.map((p) => ({
+                                                                value: p.id,
+                                                                label: `${p.sku} — ${p.name} (stok gudang: ${p.available_stock} | stok rack: ${p.rack_available_stock ?? 0})`,
+                                                                image: p.image_url || (p.image ? `/storage/${p.image}` : null),
+                                                            })),
+                                                        ]}
+                                                    />
                                                 </div>
                                                 <div className="col-span-2">
                                                     <label className="mb-1 block text-[9px] font-black uppercase tracking-wider text-gray-400">Nama Produk *</label>

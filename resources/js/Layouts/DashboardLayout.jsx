@@ -4,6 +4,7 @@ import {
     LayoutDashboard,
     Boxes,
     ArrowRightLeft,
+    ArrowRight,
     ClipboardCheck,
     FileText,
     BarChart3,
@@ -19,22 +20,28 @@ import {
     Sparkles,
     Lock,
     LogOut,
+    ShieldAlert,
+    Users2,
+    Zap,
     ChevronRight as BreadcrumbSeparator
 } from 'lucide-react';
 
 import Dropdown from '@/Components/Dropdown';
 import FloatingBubble from '@/Components/FloatingBubble';
 import Modal from '@/Components/Modal';
+import GlobalToast from '@/Components/GlobalToast';
 
 // Breadcrumb mapping dari URL ke label
 const BREADCRUMB_MAP = {
     '/dashboard': { label: 'Dasbor', parent: null },
-    '/petayu-ai': { label: 'Bantuan AI', parent: '/dashboard' },
+    '/petayu-ai': { label: 'Asisten AI', parent: '/dashboard' },
     '/warehouse': { label: 'Layout Gudang', parent: '/dashboard' },
-    '/rack-allocation': { label: 'Pindah Rak', parent: '/warehouse' },
-    '/stock-opname': { label: 'Cek Stok Fisik', parent: '/warehouse' },
-    '/inventory': { label: 'Stok Barang', parent: '/dashboard' },
-    '/purchase-orders': { label: 'Order Beli', parent: '/dashboard' },
+    '/warehouse/advanced': { label: 'Mode Lanjutan', parent: '/warehouse' },
+    '/rack-allocation': { label: 'Atur Rak', parent: '/warehouse' },
+    '/stock-opname': { label: 'Hitung Stok', parent: '/warehouse' },
+    '/inventory': { label: 'Barang & Stok', parent: '/dashboard' },
+    '/purchase-orders': { label: 'Pesanan Beli', parent: '/dashboard' },
+    '/customers': { label: 'Pelanggan', parent: '/purchase-orders' },
     '/invoices': { label: 'Tagihan', parent: '/dashboard' },
     '/tagihan': { label: 'Tagihan', parent: '/dashboard' },
     '/invoice': { label: 'Tagihan', parent: '/dashboard' },
@@ -45,15 +52,16 @@ const BREADCRUMB_MAP = {
     '/drivers': { label: 'Driver', parent: '/shipments' },
     '/drivers/create': { label: 'Buat Driver', parent: '/drivers' },
     '/reports': { label: 'Laporan', parent: '/dashboard' },
-    '/mulai-di-sini': { label: 'Mulai di Sini', parent: '/dashboard' },
+    '/mulai-di-sini': { label: 'Panduan Mulai', parent: '/dashboard' },
     '/settings': { label: 'Pengaturan', parent: '/dashboard' },
     '/settings/saas': { label: 'SaaS & Modul', parent: '/settings' },
-    '/settings/billing': { label: 'Billing SaaS', parent: '/settings' },
+    '/admin/users': { label: 'Kelola User', parent: '/settings/saas' },
+    '/settings/billing': { label: 'Paket & Pembayaran', parent: '/settings' },
     '/notifications': { label: 'Notifikasi', parent: '/dashboard' },
     '/profile': { label: 'Profil', parent: '/dashboard' },
     '/help': { label: 'Bantuan', parent: '/dashboard' },
-    '/help/live-support': { label: 'Tanya Tim', parent: '/help' },
-    '/help/documentation': { label: 'Cara Pakai', parent: '/help' },
+    '/help/live-support': { label: 'Bantuan Cepat', parent: '/help' },
+    '/help/documentation': { label: 'Dokumentasi', parent: '/help' },
 };
 
 function buildBreadcrumbs(url) {
@@ -102,10 +110,10 @@ function Breadcrumb({ url }) {
     if (crumbs.length <= 1) return null;
 
     return (
-        <nav className="flex items-center space-x-2 text-[12px] font-semibold text-gray-500 px-10 py-3 bg-white border-b border-gray-100/50">
+        <nav className="flex items-center space-x-2 px-8 py-2.5 text-[12px] font-semibold text-gray-500 bg-white border-b border-gray-100">
             <Link
                 href="/dashboard"
-                className="flex items-center space-x-1 text-gray-400 hover:text-[#5932C9] transition-colors"
+                className="flex items-center space-x-1 text-gray-400 hover:text-[#5B33CC] transition-colors"
             >
                 <LayoutDashboard className="w-4 h-4" />
                 <span>Beranda</span>
@@ -115,11 +123,11 @@ function Breadcrumb({ url }) {
                 <React.Fragment key={index}>
                     <BreadcrumbSeparator className="w-3.5 h-3.5 text-gray-300" />
                     {crumb.isActive ? (
-                        <span className="text-[#5932C9] font-bold">{crumb.label}</span>
+                        <span className="text-[#5B33CC] font-bold">{crumb.label}</span>
                     ) : (
                         <Link
                             href={crumb.href}
-                            className="text-gray-500 hover:text-[#5932C9] transition-colors"
+                            className="text-gray-500 hover:text-[#5B33CC] transition-colors"
                         >
                             {crumb.label}
                         </Link>
@@ -127,83 +135,6 @@ function Breadcrumb({ url }) {
                 </React.Fragment>
             ))}
         </nav>
-    );
-}
-
-// Quick Actions Bar Component
-function QuickActionsBar({ url, simpleMode = true, moduleFlags = {} }) {
-    const hasModule = (code) => moduleFlags[code] !== false;
-    const billingHref = '/settings/billing?source=locked';
-    const actions = [
-        {
-            icon: Package,
-            label: simpleMode ? '1. Input Barang' : 'Barang Masuk',
-            href: '/inventory?mode=inbound',
-            color: 'bg-blue-50 text-blue-600 border-blue-100 hover:bg-blue-100',
-            show: ['/dashboard', '/warehouse', '/inventory', '/transaction'].some(p => url.startsWith(p))
-        },
-        {
-            icon: FileText,
-            label: '2. Buat Tagihan',
-            href: '/tagihan',
-            locked: !hasModule('invoicing'),
-            color: 'bg-indigo-50 text-indigo-600 border-indigo-100 hover:bg-indigo-100',
-            show: simpleMode && ['/dashboard', '/inventory', '/purchase-orders', '/tagihan'].some(p => url.startsWith(p))
-        },
-        {
-            icon: Truck,
-            label: simpleMode ? '3. Kirim Barang' : 'Pengiriman',
-            href: '/shipments/create',
-            locked: !hasModule('shipment'),
-            color: 'bg-emerald-50 text-emerald-600 border-emerald-100 hover:bg-emerald-100',
-            show: ['/dashboard', '/warehouse', '/shipments', '/inventory'].some(p => url.startsWith(p))
-        },
-        ...(!simpleMode ? [{
-            icon: ClipboardCheck,
-            label: 'Cek Stok Fisik',
-            href: '/stock-opname',
-            locked: !hasModule('warehouse_ops'),
-            color: 'bg-amber-50 text-amber-600 border-amber-100 hover:bg-amber-100',
-            show: ['/dashboard', '/warehouse', '/inventory'].some(p => url.startsWith(p))
-        }] : []),
-        {
-            icon: BarChart3,
-            label: simpleMode ? '4. Lihat Laporan' : 'Laporan Stok',
-            href: '/reports?type=inventory',
-            locked: !hasModule('reports_advanced'),
-            color: 'bg-[#F8F7FF] text-[#5932C9] border-[#D4C8F5] hover:bg-[#EDE8FC]',
-            show: ['/dashboard', '/reports', '/inventory', '/warehouse'].some(p => url.startsWith(p))
-        },
-        ...(!simpleMode ? [{
-            icon: Bell,
-            label: 'Stok Menipis',
-            href: '/inventory?filter=low',
-            color: 'bg-rose-50 text-rose-600 border-rose-100 hover:bg-rose-100',
-            show: ['/dashboard', '/inventory', '/warehouse'].some(p => url.startsWith(p))
-        }] : []),
-    ].filter(a => a.show);
-
-    if (actions.length === 0) return null;
-
-    return (
-        <div className="px-10 py-3 bg-white border-b border-gray-100/50">
-            <div className="flex items-center space-x-3">
-                <span className="text-[10px] font-black text-gray-400 uppercase tracking-wider mr-1">
-                    {simpleMode ? 'Alur Kerja Hari Ini:' : 'Aksi Cepat:'}
-                </span>
-                {actions.map((action, index) => (
-                    <Link
-                        key={index}
-                        href={action.locked ? `${billingHref}&feature=${encodeURIComponent(action.label)}` : action.href}
-                        className={`flex items-center space-x-2 px-3 py-2 rounded-lg border text-[11px] font-bold transition-all hover:scale-105 ${action.color}`}
-                    >
-                        <action.icon className="w-3.5 h-3.5" />
-                        <span>{action.label}</span>
-                        {action.locked && <Lock className="w-3 h-3" />}
-                    </Link>
-                ))}
-            </div>
-        </div>
     );
 }
 
@@ -221,13 +152,31 @@ export default function DashboardLayout({
 }) {
     const { url, props } = usePage();
     const { auth, pendingApprovals, saas } = props;
+    const forbiddenFlash = props?.flash?.forbidden_modal || null;
     const userRole = normalizeRoleKey(auth?.user?.role_name || auth?.user?.role);
     const isManager = userRole === 'manager';
     const isSupervisor = userRole === 'supervisor';
+    const isStaff = userRole === 'staff';
+    const isDriver = userRole === 'driver';
+    const isSystemAdmin = userRole === 'system_admin';
+
+    const canManageWarehouseOps = isManager || isSupervisor || isStaff;
+    const canViewWarehouseDocs = isManager || isSupervisor;
     const canViewReports = isManager || isSupervisor;
-    const canManageWarehouseOps = isManager || isSupervisor;
+    const canManageInventory = isManager || isSupervisor || isStaff;
+    const canManageShipment = isManager || isSupervisor || isDriver;
+    const canManageFinance = isManager;
+
     const moduleFlags = saas?.modules || {};
     const hasModule = (code) => moduleFlags[code] !== false;
+    const aiEnabled = hasModule('ai_contextual');
+    
+    // Helper: If a module is locked, ONLY managers can see it (as an upsell). Otherwise, base permission applies.
+    const canAccessOrUpsell = (basePermission, moduleCode) => {
+        if (!moduleCode) return basePermission;
+        if (hasModule(moduleCode)) return basePermission;
+        return isManager;
+    };
 
     // Pending approval counts for sidebar badges
     const pendingOpnameCount = pendingApprovals?.opnames || 0;
@@ -248,21 +197,27 @@ export default function DashboardLayout({
         }
         return [];
     });
-    const [simpleMode, setSimpleMode] = useState(() => {
-        if (typeof window !== 'undefined') {
-            const saved = localStorage.getItem('ui_simple_mode');
-            return saved === null ? true : saved === 'true';
-        }
-        return true;
-    });
     const [helpMenuOpen, setHelpMenuOpen] = useState(() => url.startsWith('/help'));
+    const [headerAvatarError, setHeaderAvatarError] = useState(false);
     const [confirmingLogout, setConfirmingLogout] = useState(false);
+    const [forbiddenModal, setForbiddenModal] = useState(forbiddenFlash);
+    const [lockedModuleModal, setLockedModuleModal] = useState(null);
     const [fallbackSearch, setFallbackSearch] = useState('');
+
+    useEffect(() => {
+        if (forbiddenFlash) {
+            setForbiddenModal(forbiddenFlash);
+        }
+    }, [forbiddenFlash]);
 
     useEffect(() => {
         const params = new URLSearchParams(window.location.search);
         setFallbackSearch(params.get('search') || '');
     }, [url]);
+
+    useEffect(() => {
+        setHeaderAvatarError(false);
+    }, [auth?.user?.profile_photo_url]);
 
     const resolveSearchTarget = () => {
         const path = window.location.pathname;
@@ -310,36 +265,52 @@ export default function DashboardLayout({
 
     const sidebarScrollRef = useRef(null);
 
+    // Pemetaan modul → paket terendah yang mengaktifkannya
+    const MODULE_PLAN = {
+        warehouse_ops:          { label: 'Basic',      color: 'blue'   },
+        invoicing:              { label: 'Basic',      color: 'blue'   },
+        shipment:               { label: 'Pro',        color: 'violet' },
+        reports_advanced:       { label: 'Pro',        color: 'violet' },
+        ai_contextual:          { label: 'Pro',        color: 'violet' },
+        warehouse_layout_editor:{ label: 'Enterprise', color: 'amber'  },
+    };
+
     const navMenus = [
-        { title: 'Dasbor', url: '/dashboard', icon: LayoutDashboard, show: true },
+        { title: 'Beranda', url: '/dashboard', icon: LayoutDashboard, show: !isSystemAdmin },
         {
-            title: 'Stok Barang',
+            title: 'Barang & Stok',
             icon: Boxes,
-            show: true,
+            show: (canManageInventory || isManager) && !isSystemAdmin,
             items: [
-                { title: 'Stok Barang', url: '/inventory', show: true },
-                { title: 'Order Beli', url: '/purchase-orders', show: true },
-                { title: 'Pemasok', url: '/supplier', show: !simpleMode },
-                { title: 'Layout Gudang', url: '/warehouse', show: true },
-                { title: 'Pindah Rak', url: '/rack-allocation', show: canManageWarehouseOps, badge: pendingTransferCount, locked: !hasModule('warehouse_ops') },
-                { title: 'Cek Stok Fisik', url: '/stock-opname', show: canManageWarehouseOps, badge: pendingOpnameCount, locked: !hasModule('warehouse_ops') },
-                { title: 'Riwayat Stok', url: '/transaction', show: !simpleMode },
-                { title: 'Dokumen', url: '/wms-documents', show: canManageWarehouseOps && !simpleMode, locked: !hasModule('warehouse_ops') },
+                { title: 'Semua Barang', url: '/inventory', show: canManageInventory },
+                { title: 'Beli ke Pemasok', url: '/purchase-orders', show: canManageInventory || isManager || isSupervisor },
+                { title: 'Pelanggan', url: '/customers', show: canAccessOrUpsell(canManageFinance || isSupervisor, 'invoicing'), locked: !hasModule('invoicing'), requiredModule: 'invoicing' },
+                { title: 'Pemasok', url: '/supplier', show: canManageInventory || isManager || isSupervisor },
+                { title: 'Zona & Rak', url: '/warehouse', show: canManageWarehouseOps || canManageInventory },
+                { title: 'Desain Lanjutan', url: '/warehouse/advanced', show: canAccessOrUpsell(canManageWarehouseOps, 'warehouse_layout_editor'), locked: !hasModule('warehouse_layout_editor'), requiredModule: 'warehouse_layout_editor' },
+                { title: 'Kelola Rak', url: '/rack-allocation', show: canAccessOrUpsell(canManageWarehouseOps, 'warehouse_ops'), badge: pendingTransferCount, locked: !hasModule('warehouse_ops'), requiredModule: 'warehouse_ops' },
+                { title: 'Cek Stok', url: '/stock-opname', show: canAccessOrUpsell(canManageWarehouseOps, 'warehouse_ops'), badge: pendingOpnameCount, locked: !hasModule('warehouse_ops'), requiredModule: 'warehouse_ops' },
+                { title: 'Riwayat Pergerakan', url: '/transaction', show: canManageInventory },
+                { title: 'Dokumen', url: '/wms-documents', show: canAccessOrUpsell(canViewWarehouseDocs, 'warehouse_ops'), locked: !hasModule('warehouse_ops'), requiredModule: 'warehouse_ops' },
             ]
         },
         {
             title: 'Pengiriman',
             icon: Truck,
-            show: true,
+            show: canAccessOrUpsell(canManageShipment, 'shipment') && !isSystemAdmin,
             items: [
-                { title: 'Daftar Pengiriman', url: '/shipments', show: true, locked: !hasModule('shipment') },
-                { title: 'Driver', url: '/drivers', show: isManager && !simpleMode, locked: !hasModule('driver_management') },
+                { title: 'Semua Pengiriman', url: '/shipments', show: canAccessOrUpsell(canManageShipment, 'shipment'), locked: !hasModule('shipment'), requiredModule: 'shipment' },
+                { title: 'Data Kurir', url: '/drivers', show: canAccessOrUpsell(isManager, 'shipment'), locked: !hasModule('shipment'), requiredModule: 'shipment' },
             ]
         },
-        { title: 'Tagihan', url: '/tagihan', icon: FileText, show: true, locked: !hasModule('invoicing') },
-        { title: 'Laporan', url: '/reports', icon: BarChart3, show: canViewReports, locked: !hasModule('reports_advanced') },
-        { title: 'Bantuan AI', url: '/petayu-ai', icon: Sparkles, show: !simpleMode, locked: !hasModule('ai_contextual') },
-        { title: 'Pengaturan', url: '/settings', icon: Settings, show: isManager && !simpleMode },
+        { title: 'Tagihan', url: '/tagihan', icon: FileText, show: canAccessOrUpsell(canManageFinance, 'invoicing') && !isSystemAdmin, locked: !hasModule('invoicing'), requiredModule: 'invoicing' },
+        { title: 'Laporan', url: '/reports', icon: BarChart3, show: canAccessOrUpsell(canViewReports, 'reports_advanced') && !isSystemAdmin, locked: !hasModule('reports_advanced'), requiredModule: 'reports_advanced' },
+        { title: 'Tanya AI', url: '/petayu-ai', icon: Sparkles, show: aiEnabled && !isSystemAdmin, locked: false },
+        { title: 'Pengaturan', url: '/settings', icon: Settings, show: isManager },
+        { title: 'Kelola Tenant', url: '/settings/saas', icon: Settings, show: isSystemAdmin },
+        { title: 'Kelola User', url: '/admin/users', icon: Users2, show: isSystemAdmin },
+        { title: 'Audit Log', url: '/admin/audit-log', icon: FileText, show: isSystemAdmin },
+        { title: 'Statistik Platform', url: '/admin/stats', icon: BarChart3, show: isSystemAdmin },
     ];
 
     // Initial check to ensure active menu is open
@@ -381,12 +352,6 @@ export default function DashboardLayout({
         setIsSidebarCollapsed(newVal);
         localStorage.setItem('sidebar_collapsed', newVal);
     };
-    const toggleSimpleMode = () => {
-        const next = !simpleMode;
-        setSimpleMode(next);
-        localStorage.setItem('ui_simple_mode', next ? 'true' : 'false');
-    };
-
     const toggleMenu = (title) => {
         setOpenMenus(prev => {
             const newOpen = prev.includes(title) ? prev.filter(t => t !== title) : [...prev, title];
@@ -465,14 +430,20 @@ export default function DashboardLayout({
         return url === path || url.startsWith(path + '?') || url.startsWith(path + '/');
     };
 
+    const openLockedFeatureModal = (featureName) => {
+        setLockedModuleModal({
+            featureName: featureName || 'fitur ini',
+        });
+    };
+
     return (
-        <div className="flex h-screen bg-[#f8f9fc] font-sans antialiased text-gray-900">
+        <div className="flex h-screen petayu-bg-app font-sans antialiased text-gray-900">
             {/* Sidebar */}
-            <div className={`h-screen overflow-visible bg-white flex flex-col justify-between flex-shrink-0 z-[250] shadow-[4px_0_24px_rgba(0,0,0,0.02)] relative border-r border-[#EDE8FC] transition-all duration-300 ${isSidebarCollapsed ? 'w-[84px]' : 'w-[270px]'}`}>
+            <div className={`h-screen overflow-visible bg-white flex flex-col justify-between flex-shrink-0 z-[250] shadow-[4px_0_24px_rgba(0,0,0,0.02)] relative border-r petayu-border transition-all duration-300 ${isSidebarCollapsed ? 'w-[84px]' : 'w-[270px]'}`}>
                 {/* Collapse Toggle Button */}
                 <button
                     onClick={toggleSidebar}
-                    className="absolute -right-[16px] top-7 w-8 h-8 flex items-center justify-center bg-white border border-gray-200 text-gray-500 hover:text-[#5932C9] rounded-full shadow-sm hover:shadow-md transition-all z-[300] hover:scale-105"
+                    className="absolute -right-[16px] top-7 w-8 h-8 flex items-center justify-center bg-white border border-gray-200 text-gray-500 hover:text-[#5B33CC] rounded-full shadow-sm hover:shadow-md transition-all z-[300] hover:scale-105"
                 >
                     <ChevronLeft className={`w-5 h-5 transition-transform duration-300 ${isSidebarCollapsed ? 'rotate-180' : ''}`} strokeWidth={2.5} />
                 </button>
@@ -480,7 +451,7 @@ export default function DashboardLayout({
                 <div className="flex min-h-0 flex-col h-full">
                     {/* Logo Area */}
                     <div className={`h-[88px] flex items-center shrink-0 border-b border-gray-50/50 transition-all ${isSidebarCollapsed ? 'justify-center' : 'px-5 space-x-3.5'}`}>
-                        <div className="w-[42px] h-[42px] rounded-[14px] bg-white border border-[#EDE8FC] flex items-center justify-center flex-shrink-0 shadow-lg shadow-[#5932C9]/10 overflow-hidden">
+                        <div className="w-[42px] h-[42px] rounded-[14px] bg-white border petayu-border flex items-center justify-center flex-shrink-0 shadow-lg shadow-[#5B33CC]/10 overflow-hidden">
                             <img src="/images/brand-logo.png" alt="Logo PETAYU" className="w-[30px] h-[30px] object-contain" />
                         </div>
                         {!isSidebarCollapsed && (
@@ -506,17 +477,37 @@ export default function DashboardLayout({
                                     <Link
                                         key={mIdx}
                                         href={href}
-                                        className={`group relative flex items-center ${isSidebarCollapsed ? 'w-[48px] h-[48px] mx-auto justify-center rounded-[16px]' : 'w-full space-x-3 px-4 py-3 rounded-[12px]'} font-bold text-[13px] transition-all ${active ? 'bg-[#F8F7FF] text-[#5932C9]' : 'text-gray-500 hover:text-[#5932C9] hover:bg-gray-50'}`}
+                                        title={isSidebarCollapsed ? menu.title : ''}
+                                        onClick={(event) => {
+                                            if (!menu.locked) return;
+                                            event.preventDefault();
+                                            openLockedFeatureModal(menu.title);
+                                        }}
+                                        className={`group relative flex items-center ${isSidebarCollapsed ? 'w-[48px] h-[48px] mx-auto justify-center rounded-[16px]' : 'w-full space-x-3 px-4 py-3 rounded-[12px]'} font-bold text-[13px] transition-all ${active ? 'petayu-brand-soft text-[#5B33CC]' : 'text-gray-500 hover:text-[#5B33CC] hover:bg-gray-50'} ${menu.locked ? 'opacity-60 grayscale hover:opacity-100 hover:grayscale-0' : ''}`}
                                     >
                                         <menu.icon className={`flex-shrink-0 transition-transform group-hover:scale-110 ${isSidebarCollapsed ? 'w-[22px] h-[22px]' : 'w-[18px] h-[18px]'}`} strokeWidth={active ? 2.5 : 2} />
                                         {!isSidebarCollapsed && (
-                                            <span className="whitespace-nowrap flex items-center gap-2">{menu.title}{menu.locked && <Lock className="w-3.5 h-3.5" />}</span>
-                                        )}
-                                        {/* Tooltip for collapsed mode */}
-                                        {isSidebarCollapsed && (
-                                            <div className="absolute left-[60px] opacity-0 invisible group-hover:opacity-100 group-hover:visible bg-[#28106F] text-white text-[12px] font-bold py-1.5 px-3 rounded-xl whitespace-nowrap z-[200] shadow-xl border border-gray-700/50 transition-all ml-1 pointer-events-none">
-                                                {menu.title}
-                                                <div className="absolute top-1/2 -left-1 -translate-y-1/2 w-2 h-2 bg-[#28106F] rotate-45 border-b border-l border-gray-700/50"></div>
+                                            <div className="whitespace-nowrap flex-1 flex items-center justify-between min-w-0">
+                                                <span className="truncate">{menu.title}</span>
+                                                {menu.locked && menu.requiredModule && (() => {
+                                                    const plan = MODULE_PLAN[menu.requiredModule];
+                                                    if (!plan) return null;
+                                                    const styles = {
+                                                        amber:  'text-slate-500 bg-slate-50 border-slate-200',
+                                                        violet: 'text-slate-500 bg-slate-50 border-slate-200',
+                                                        blue:   'text-slate-500 bg-slate-50 border-slate-200',
+                                                    };
+                                                    const icons = {
+                                                        amber:  <Zap className="w-2.5 h-2.5 opacity-70" />,
+                                                        violet: <Sparkles className="w-2.5 h-2.5 opacity-70" />,
+                                                        blue:   <ArrowRight className="w-2.5 h-2.5 opacity-70" />,
+                                                    };
+                                                    return (
+                                                        <span className={`ml-2 flex-shrink-0 inline-flex items-center gap-0.5 text-[9px] font-black uppercase tracking-wider border px-1.5 py-0.5 rounded-md ${styles[plan.color]}`}>
+                                                            {icons[plan.color]}{plan.label}
+                                                        </span>
+                                                    );
+                                                })()}
                                             </div>
                                         )}
                                     </Link>
@@ -534,7 +525,8 @@ export default function DashboardLayout({
                                 <div key={mIdx} className="w-full relative">
                                     <button
                                         onClick={() => isSidebarCollapsed ? toggleSidebar() : toggleMenu(menu.title)}
-                                        className={`group relative flex items-center ${isSidebarCollapsed ? 'w-[48px] h-[48px] mx-auto justify-center rounded-[16px]' : 'w-full justify-between px-4 py-3 rounded-[12px]'} font-bold text-[13px] transition-all ${hasActiveChild && !isOpen && isSidebarCollapsed ? 'bg-[#F8F7FF] text-[#5932C9]' : 'text-gray-500 hover:text-[#5932C9] hover:bg-gray-50'} ${(hasActiveChild || isOpen) && !isSidebarCollapsed ? 'text-[#5932C9]' : ''}`}
+                                        title={isSidebarCollapsed ? menu.title : ''}
+                                        className={`group relative flex items-center ${isSidebarCollapsed ? 'w-[48px] h-[48px] mx-auto justify-center rounded-[16px]' : 'w-full justify-between px-4 py-3 rounded-[12px]'} font-bold text-[13px] transition-all ${hasActiveChild && !isOpen && isSidebarCollapsed ? 'petayu-brand-soft text-[#5B33CC]' : 'text-gray-500 hover:text-[#5B33CC] hover:bg-gray-50'} ${(hasActiveChild || isOpen) && !isSidebarCollapsed ? 'text-[#5B33CC]' : ''}`}
                                     >
                                         <div className={`flex items-center ${isSidebarCollapsed ? 'justify-center' : 'space-x-3'}`}>
                                             <menu.icon className={`flex-shrink-0 transition-transform group-hover:scale-110 ${isSidebarCollapsed ? 'w-[22px] h-[22px]' : 'w-[18px] h-[18px]'}`} strokeWidth={hasActiveChild ? 2.5 : 2} />
@@ -548,12 +540,6 @@ export default function DashboardLayout({
                                             </div>
                                         )}
 
-                                        {isSidebarCollapsed && (
-                                            <div className="absolute left-[60px] opacity-0 invisible group-hover:opacity-100 group-hover:visible bg-[#28106F] text-white text-[12px] font-bold py-1.5 px-3 rounded-xl whitespace-nowrap z-[200] shadow-xl border border-gray-700/50 transition-all ml-1 pointer-events-none">
-                                                {menu.title}
-                                                <div className="absolute top-1/2 -left-1 -translate-y-1/2 w-2 h-2 bg-[#28106F] rotate-45 border-b border-l border-gray-700/50"></div>
-                                            </div>
-                                        )}
                                     </button>
 
                                     {/* Children Container with indicator line */}
@@ -566,12 +552,44 @@ export default function DashboardLayout({
                                                 return (
                                                     <Link
                                                         key={iIdx}
-                                                        href={item.locked ? `/settings/billing?source=locked&module=${encodeURIComponent(item.title)}` : item.url}
-                                                        className={`block w-full text-left px-3 py-2 rounded-lg text-[13px] font-bold transition-all ${active ? 'text-[#5932C9] bg-indigo-50/50' : 'text-gray-400 hover:text-gray-700 hover:bg-gray-50'}`}
+                                                        href={item.locked ? `/settings/billing?source=locked&module=${encodeURIComponent(item.requiredModule ?? item.title)}` : item.url}
+                                                        onClick={(event) => {
+                                                            if (!item.locked) return;
+                                                            event.preventDefault();
+                                                            openLockedFeatureModal(item.title);
+                                                        }}
+                                                        className={`block w-full text-left px-3 py-2 rounded-lg text-[13px] font-bold transition-all ${
+                                                            active
+                                                                ? 'text-[#5B33CC] bg-indigo-50/50'
+                                                                : item.locked
+                                                                    ? 'text-slate-400 hover:text-slate-600 hover:bg-slate-50/60'
+                                                                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                                                        } ${item.locked ? 'opacity-85 hover:opacity-100' : ''}`}
                                                     >
                                                         <span className="flex items-center justify-between">
-                                                            <span className="inline-flex items-center gap-2">{item.title}{item.locked && <Lock className="w-3.5 h-3.5 text-amber-600" />}</span>
-                                                            {item.badge > 0 && (
+                                                            <div className="flex-1 flex items-center justify-between min-w-0">
+                                                                <span className="truncate">{item.title}</span>
+                                                                {item.locked && item.requiredModule && (() => {
+                                                                    const plan = MODULE_PLAN[item.requiredModule];
+                                                                    if (!plan) return null;
+                                                                    const styles = {
+                                                                        amber:  'text-slate-500 bg-slate-50 border-slate-200',
+                                                                        violet: 'text-slate-500 bg-slate-50 border-slate-200',
+                                                                        blue:   'text-slate-500 bg-slate-50 border-slate-200',
+                                                                    };
+                                                                    const icons = {
+                                                                        amber:  <Zap className="w-2.5 h-2.5 opacity-70" />,
+                                                                        violet: <Sparkles className="w-2.5 h-2.5 opacity-70" />,
+                                                                        blue:   <ArrowRight className="w-2.5 h-2.5 opacity-70" />,
+                                                                    };
+                                                                    return (
+                                                                        <span className={`ml-2 flex-shrink-0 inline-flex items-center gap-0.5 text-[9px] font-black uppercase tracking-wider border px-1.5 py-0.5 rounded-md ${styles[plan.color]}`}>
+                                                                            {icons[plan.color]}{plan.label}
+                                                                        </span>
+                                                                    );
+                                                                })()}
+                                                            </div>
+                                                            {!item.locked && item.badge > 0 && (
                                                                 <span className="ml-2 inline-flex items-center justify-center min-w-[18px] h-[18px] rounded-full bg-amber-500 text-white text-[9px] font-black px-1">{item.badge}</span>
                                                             )}
                                                         </span>
@@ -583,46 +601,42 @@ export default function DashboardLayout({
                                 </div>
                             );
                         })}
-                        <div className="mt-5 pt-5 border-t border-gray-50">
+                        <div className={`mt-5 pt-5 border-t border-gray-50 ${isSystemAdmin ? 'hidden' : ''}`}>
                             <button
                                 type="button"
                                 onClick={() => isSidebarCollapsed ? toggleSidebar() : setHelpMenuOpen((open) => !open)}
-                                className={`group relative flex items-center ${isSidebarCollapsed ? 'w-[48px] h-[48px] mx-auto justify-center rounded-[16px]' : 'w-full justify-between px-4 py-3 rounded-[12px]'} text-gray-500 hover:text-[#5932C9] hover:bg-gray-50 transition-all`}
+                                title={isSidebarCollapsed ? 'Bantuan' : ''}
+                                className={`group relative flex items-center ${isSidebarCollapsed ? 'w-[48px] h-[48px] mx-auto justify-center rounded-[16px]' : 'w-full justify-between px-4 py-3 rounded-[12px]'} text-gray-500 hover:text-[#5B33CC] hover:bg-gray-50 transition-all`}
                             >
                                 <div className={`flex items-center ${isSidebarCollapsed ? 'justify-center' : 'space-x-3'}`}>
-                                    <HelpCircle className={`w-[20px] h-[20px] transition-transform group-hover:scale-110 ${isActive('/help') ? 'text-[#5932C9]' : ''}`} />
+                                    <HelpCircle className={`w-[20px] h-[20px] transition-transform group-hover:scale-110 ${isActive('/help') ? 'text-[#5B33CC]' : ''}`} />
                                     {!isSidebarCollapsed && (
-                                        <span className={`text-[12px] font-bold ${isActive('/help') ? 'text-[#5932C9]' : ''}`}>Bantuan</span>
+                                        <span className={`text-[12px] font-bold ${isActive('/help') ? 'text-[#5B33CC]' : ''}`}>Bantuan</span>
                                     )}
                                 </div>
                                 {!isSidebarCollapsed && (
                                     <ChevronRight className={`w-4 h-4 opacity-60 transition-transform duration-300 ${helpMenuOpen ? 'rotate-90' : ''}`} />
                                 )}
-                                {isSidebarCollapsed && (
-                                    <div className="absolute left-[60px] opacity-0 invisible group-hover:opacity-100 group-hover:visible bg-[#28106F] text-white text-[12px] font-bold py-1.5 px-3 rounded-xl whitespace-nowrap z-[200] shadow-xl border border-gray-700/50 transition-all ml-1 pointer-events-none">
-                                        Bantuan
-                                        <div className="absolute top-1/2 -left-1 -translate-y-1/2 w-2 h-2 bg-[#28106F] rotate-45 border-b border-l border-gray-700/50"></div>
-                                    </div>
-                                )}
                             </button>
 
                             <div className={`overflow-hidden transition-all duration-300 ease-in-out ${helpMenuOpen && !isSidebarCollapsed ? 'max-h-32 opacity-100 mt-1' : 'max-h-0 opacity-0'}`}>
                                 <div className="ml-6 pl-4 border-l-2 border-gray-100 space-y-1.5 py-1">
-                                    <Link href="/help/live-support" className={`block w-full text-left px-3 py-2 rounded-lg text-[13px] font-bold transition-all ${isActive('/help/live-support') ? 'text-[#5932C9] bg-indigo-50/50' : 'text-gray-400 hover:text-gray-700 hover:bg-gray-50'}`}>
-                                        Tanya Tim
+                                    <Link href="/help/live-support" className={`block w-full text-left px-3 py-2 rounded-lg text-[13px] font-bold transition-all ${isActive('/help/live-support') ? 'text-[#5B33CC] bg-indigo-50/50' : 'text-gray-400 hover:text-gray-700 hover:bg-gray-50'}`}>
+                                        Bantuan Cepat
                                     </Link>
-                                    <Link href="/help/documentation" className={`block w-full text-left px-3 py-2 rounded-lg text-[13px] font-bold transition-all ${isActive('/help/documentation') ? 'text-[#5932C9] bg-indigo-50/50' : 'text-gray-400 hover:text-gray-700 hover:bg-gray-50'}`}>
-                                        Cara Pakai
+                                    <Link href="/help/documentation" className={`block w-full text-left px-3 py-2 rounded-lg text-[13px] font-bold transition-all ${isActive('/help/documentation') ? 'text-[#5B33CC] bg-indigo-50/50' : 'text-gray-400 hover:text-gray-700 hover:bg-gray-50'}`}>
+                                        Dokumentasi
                                     </Link>
                                 </div>
                             </div>
                         </div>
                     </nav>
+
                 </div>
             </div>
 
             {/* Main Content Area */}
-            <div className="flex-1 flex flex-col h-full min-w-0 overflow-hidden relative bg-[#f8f9fc]">
+            <div className="flex-1 flex flex-col h-full min-w-0 overflow-hidden relative petayu-bg-app">
                 {toastNotifications.length > 0 && (
                     <div className="fixed top-24 right-8 z-[400] flex flex-col gap-3 pointer-events-none">
                         {toastNotifications.map((notif) => (
@@ -667,7 +681,7 @@ export default function DashboardLayout({
 
                 {/* Header */}
                 {!fullPage && (
-                <header className="h-[76px] flex items-center justify-between px-10 flex-shrink-0 z-[100] bg-white shadow-[0_2px_12px_rgba(0,0,0,0.015)] border-b border-[#EDE8FC]">
+                <header className="h-[76px] flex items-center justify-between px-10 flex-shrink-0 z-[100] bg-white shadow-[0_2px_12px_rgba(0,0,0,0.015)] border-b petayu-border">
                     <div className="flex items-center space-x-4">
                         {headerTitle && (
                             <h2 className="text-[18px] font-black text-slate-900 mr-4">{headerTitle}</h2>
@@ -677,8 +691,8 @@ export default function DashboardLayout({
                                 <Search className="w-[17px] h-[17px] absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
                                 <input
                                     type="text"
-                                    placeholder={headerSearchPlaceholder || "Cari..."}
-                                    className="w-full bg-[#f4f5f9] text-[13px] text-gray-700 rounded-[12px] pl-11 pr-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-[#5932C9] border border-transparent transition-all font-bold placeholder-gray-400 shadow-[inset_0_2px_4px_rgba(0,0,0,0.01)]"
+                                    placeholder={headerSearchPlaceholder || "Cari data..."}
+                                    className="w-full bg-[#f4f5f9] text-[13px] text-gray-700 rounded-[12px] pl-11 pr-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-[#5B33CC] border border-transparent transition-all font-bold placeholder-gray-400 shadow-[inset_0_2px_4px_rgba(0,0,0,0.01)]"
                                     value={onSearch ? (searchValue || '') : fallbackSearch}
                                     onChange={(e) => {
                                         if (onSearch) {
@@ -699,25 +713,7 @@ export default function DashboardLayout({
                             <div className="hidden" style={{ display: 'none' }}></div>
                         )}
 
-                        {/* Real-time System Status Indicator */}
-                        <div className="hidden lg:flex items-center space-x-2 px-4 py-2 bg-emerald-50 rounded-full border border-emerald-100/50 shadow-sm shadow-emerald-100/20">
-                            <span className="relative flex h-2.5 w-2.5">
-                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]"></span>
-                            </span>
-                            <span className="text-[10px] font-black text-emerald-600 uppercase tracking-[0.1em]">Sistem Inti: Operasional</span>
-                        </div>
-                        <button
-                            type="button"
-                            onClick={toggleSimpleMode}
-                            className={`hidden lg:flex items-center rounded-full border px-3 py-2 text-[10px] font-black uppercase tracking-[0.08em] transition-colors ${
-                                simpleMode
-                                    ? 'bg-indigo-50 text-indigo-700 border-indigo-200'
-                                    : 'bg-slate-50 text-slate-600 border-slate-200'
-                            }`}
-                        >
-                            {simpleMode ? 'Mode Sederhana Aktif' : 'Mode Lengkap Aktif'}
-                        </button>
+                        {/* Status indicators moved to sidebar */}
                     </div>
 
                     <div className="flex items-center space-x-8">
@@ -725,7 +721,7 @@ export default function DashboardLayout({
                             <>
                                 <div className="flex items-center space-x-6 text-gray-500">
                                     <Link href="/notifications" className="hover:text-gray-900 transition-all relative mt-1 group">
-                                        <div className="p-2.5 rounded-xl bg-gray-50 group-hover:bg-indigo-50 group-hover:text-[#5932C9] transition-colors">
+                                        <div className="p-2.5 rounded-xl bg-gray-50 group-hover:bg-indigo-50 group-hover:text-[#5B33CC] transition-colors">
                                             <Bell className="w-[22px] h-[22px]" />
                                         </div>
                                         {activeNotifications.length > 0 && (
@@ -739,7 +735,7 @@ export default function DashboardLayout({
                                     </Link>
 
                                     <Link href="/help/live-support" className="hover:text-gray-900 transition-all mt-1 group">
-                                        <div className="p-2.5 rounded-xl bg-gray-50 group-hover:bg-indigo-50 group-hover:text-[#5932C9] transition-colors">
+                                        <div className="p-2.5 rounded-xl bg-gray-50 group-hover:bg-indigo-50 group-hover:text-[#5B33CC] transition-colors">
                                             <HelpCircle className="w-[22px] h-[22px]" />
                                         </div>
                                     </Link>
@@ -751,22 +747,27 @@ export default function DashboardLayout({
                                     <Dropdown.Trigger>
                                         <div className="flex items-center space-x-3 pl-2 cursor-pointer group">
                                             <div className="flex flex-col text-right">
-                                                <span className="text-[13px] font-extrabold text-slate-900 group-hover:text-[#5932C9] transition-colors leading-tight">
-                                                    {auth?.user?.name || 'Pengguna Sistem'}
+                                                <span className="text-[13px] font-extrabold text-slate-900 group-hover:text-[#5B33CC] transition-colors leading-tight">
+                                                    {auth?.user?.name || 'Pengguna'}
                                                 </span>
                                                 <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
                                                     {formatRoleLabel(auth?.user?.role_name || auth?.user?.role)}
                                                 </span>
                                             </div>
                                             <div className="w-[42px] h-[42px] rounded-full bg-[#f0f4f8] flex items-center justify-center flex-shrink-0 border-2 border-white shadow-sm overflow-hidden group-hover:border-indigo-100 transition-all text-slate-900 font-black text-xs uppercase">
-                                                {auth?.user?.profile_photo_url ? (
+                                                {auth?.user?.profile_photo_url && !headerAvatarError ? (
                                                     <img
                                                         src={auth.user.profile_photo_url}
                                                         alt={`Foto profil ${auth?.user?.name || 'Pengguna Sistem'}`}
                                                         className="h-full w-full object-cover"
+                                                        onError={() => setHeaderAvatarError(true)}
                                                     />
                                                 ) : (
-                                                    auth?.user?.name ? auth.user.name.charAt(0) : 'A'
+                                                    <img
+                                                        src="/images/image.png"
+                                                        alt="Foto profil default"
+                                                        className="h-full w-full object-cover opacity-85"
+                                                    />
                                                 )}
                                             </div>
                                         </div>
@@ -792,13 +793,12 @@ export default function DashboardLayout({
                 {/* Breadcrumb Navigation */}
                 {!fullPage && <Breadcrumb url={url} />}
 
-                {/* Quick Actions Bar */}
-                {!fullPage && <QuickActionsBar url={url} simpleMode={simpleMode} moduleFlags={moduleFlags} />}
+                {/* Quick Actions Bar Removed */}
 
                 {/* Dashboard Scrollable Area */}
                 <main
                     scroll-region="true"
-                    className={`flex-1 min-h-0 overflow-x-hidden scroll-smooth ${fullPage ? 'flex flex-col p-0 overflow-y-hidden bg-white' : 'px-10 pt-6 pb-32 overflow-y-auto bg-[#f8f9fc]'} ${hideMainScrollbar ? '[scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden' : ''}`}
+                    className={`flex-1 min-h-0 overflow-x-hidden scroll-smooth ${fullPage ? 'flex flex-col p-0 overflow-y-hidden bg-white' : 'px-10 pt-6 pb-32 overflow-y-auto petayu-bg-app'} ${hideMainScrollbar ? '[scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden' : ''}`}
                 >
                     {fullPage ? (
                         children
@@ -809,7 +809,83 @@ export default function DashboardLayout({
                     )}
                 </main>
             </div>
-            {!url.startsWith('/petayu-ai') && <FloatingBubble />}
+
+            <Modal show={!!forbiddenModal} maxWidth="lg" onClose={() => setForbiddenModal(null)}>
+                <div className="border-b border-slate-100 px-6 py-5">
+                    <div className="flex items-center gap-3">
+                        <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-violet-50 text-violet-700">
+                            <ShieldAlert className="h-5 w-5" />
+                        </div>
+                        <div>
+                            <p className="text-[11px] font-extrabold uppercase tracking-[0.12em] text-slate-500">Error 403</p>
+                            <h3 className="text-[22px] font-black text-slate-900">Akses Ditolak</h3>
+                        </div>
+                    </div>
+                </div>
+                <div className="px-6 py-5">
+                    <p className="text-[14px] font-semibold leading-7 text-slate-600">
+                        {forbiddenModal?.message || 'Anda tidak memiliki akses ke fitur ini.'}
+                    </p>
+                    <div className="mt-5 flex flex-wrap gap-3">
+                        <button
+                            type="button"
+                            onClick={() => setForbiddenModal(null)}
+                            className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-[13px] font-bold text-slate-700 hover:bg-slate-50"
+                        >
+                            Tutup
+                        </button>
+                        <Link
+                            href="/dashboard"
+                            className="rounded-xl bg-[#5B33CC] px-4 py-2.5 text-[13px] font-bold text-white hover:bg-[#4a26aa]"
+                        >
+                            Ke Dasbor
+                        </Link>
+                        {forbiddenModal?.module_locked && (
+                            <Link
+                                href="/settings/billing"
+                                className="rounded-xl border border-violet-200 bg-violet-50 px-4 py-2.5 text-[13px] font-bold text-violet-700 hover:bg-violet-100"
+                            >
+                                Lihat Paket
+                            </Link>
+                        )}
+                    </div>
+                </div>
+            </Modal>
+
+            <Modal show={!!lockedModuleModal} maxWidth="lg" onClose={() => setLockedModuleModal(null)}>
+                <div className="border-b border-slate-100 px-6 py-5">
+                    <div className="flex items-center gap-3">
+                        <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-violet-50 text-violet-700">
+                            <Lock className="h-5 w-5" />
+                        </div>
+                        <div>
+                            <p className="text-[11px] font-extrabold uppercase tracking-[0.12em] text-slate-500">Fitur Terkunci</p>
+                            <h3 className="text-[22px] font-black text-slate-900">Upgrade Paket Diperlukan</h3>
+                        </div>
+                    </div>
+                </div>
+                <div className="px-6 py-5">
+                    <p className="text-[14px] font-semibold leading-7 text-slate-600">
+                        Fitur <span className="font-black text-slate-900">{lockedModuleModal?.featureName}</span> belum aktif di paket Anda saat ini.
+                        Silakan upgrade paket agar fitur ini bisa digunakan.
+                    </p>
+                    <div className="mt-5 flex flex-wrap gap-3">
+                        <button
+                            type="button"
+                            onClick={() => setLockedModuleModal(null)}
+                            className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-[13px] font-bold text-slate-700 hover:bg-slate-50"
+                        >
+                            Nanti Saja
+                        </button>
+                        <Link
+                            href={`/settings/billing?source=locked&module=${encodeURIComponent(lockedModuleModal?.featureName || 'fitur')}`}
+                            className="rounded-xl bg-[#5B33CC] px-4 py-2.5 text-[13px] font-bold text-white hover:bg-[#4a26aa]"
+                        >
+                            Lihat Paket & Upgrade
+                        </Link>
+                    </div>
+                </div>
+            </Modal>
 
             <Modal show={confirmingLogout} maxWidth="md" onClose={() => setConfirmingLogout(false)}>
                 <div className="p-6">
@@ -820,7 +896,7 @@ export default function DashboardLayout({
                         <div className="min-w-0">
                             <h2 className="text-[20px] font-black text-slate-950">Keluar dari akun?</h2>
                             <p className="mt-2 text-[14px] font-semibold leading-7 text-slate-500">
-                                Sesi kerja WMS akan ditutup. Pastikan perubahan data yang sedang dikerjakan sudah disimpan.
+                                Sesi akan ditutup. Pastikan data yang sedang dikerjakan sudah disimpan.
                             </p>
                         </div>
                     </div>
@@ -845,6 +921,7 @@ export default function DashboardLayout({
                     </div>
                 </div>
             </Modal>
+            <GlobalToast />
         </div>
     );
 }
@@ -910,6 +987,10 @@ function formatRoleLabel(role) {
         return 'Driver';
     }
 
+    if (value === 'system_admin') {
+        return 'Admin Sistem';
+    }
+
     return role;
 }
 
@@ -922,6 +1003,10 @@ function normalizeRoleKey(role) {
 
     if (value.includes('admin gudang') || value.includes('manager') || value.includes('manajer')) {
         return 'manager';
+    }
+
+    if (value.includes('admin sistem') || value.includes('admin system') || value.includes('super admin') || value.includes('system_admin')) {
+        return 'system_admin';
     }
 
     if (value.includes('supervisor') || value.includes('spv')) {

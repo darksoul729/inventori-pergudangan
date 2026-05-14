@@ -15,6 +15,8 @@ class SupplierPerformance extends Model
         'on_time_deliveries',
         'late_deliveries',
         'avg_lead_time_days',
+        'auto_score',
+        'manual_adjustment',
         'performance_score',
     ];
 

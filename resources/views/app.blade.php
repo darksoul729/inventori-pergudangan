@@ -8,11 +8,12 @@
         <link rel="shortcut icon" href="/images/logo_petayu.png">
         <link rel="apple-touch-icon" href="/images/logo_petayu.png">
 
-        <title inertia>{{ config('app.name', 'Laravel') }}</title>
+        <title inertia>{{ config('app.name', 'Petayu') }}</title>
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
+        <link rel="preload" as="image" href="/images/wms_3d_violet_transparent.png" />
 
         <!-- Scripts -->
         @routes

@@ -13,7 +13,7 @@ export const notificationMeta = {
         icon: Package,
         label: 'Inventaris',
         detail: 'Ada produk yang sudah berada di bawah atau sama dengan stok minimum. Prioritaskan pengecekan produk kritis dan rencana restock.',
-        recommendation: 'Cek SKU dengan stok minimum, validasi lokasi rack, lalu buat PO atau transfer internal bila stok tersedia di gudang lain.',
+        recommendation: 'Cek SKU dengan stok minimum, validasi lokasi rack, lalu buat pesanan beli atau transfer internal bila stok tersedia di gudang lain.',
         action: 'Buka Inventaris',
     },
     'pending-po': {
@@ -41,7 +41,7 @@ export const notificationMeta = {
         icon: CheckCircle2,
         label: 'Sistem',
         detail: 'Sinkronisasi sistem berjalan normal. Notifikasi ini menandai kondisi operasional tidak memiliki kendala kritis dari pengecekan terakhir.',
-        recommendation: 'Tidak ada tindakan mendesak. Tetap pantau perubahan stok, PO, dan pengiriman dari dasbor.',
+        recommendation: 'Tidak ada tindakan mendesak. Tetap pantau perubahan stok, pesanan beli, dan pengiriman dari dasbor.',
         action: 'Buka Dasbor',
     },
 };

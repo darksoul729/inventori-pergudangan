@@ -41,7 +41,14 @@ class HandleInertiaRequests extends Middleware
         $saas = app(SaasEntitlement::class)->resolveForUser($user);
 
         if ($user) {
-            // Low Stock alerts
+            $roleName = strtolower($user->role?->name ?? '');
+            $isManagerOrSupervisor = str_contains($roleName, 'manager')
+                || str_contains($roleName, 'manajer')
+                || str_contains($roleName, 'supervisor')
+                || str_contains($roleName, 'spv');
+            $isManager = str_contains($roleName, 'manager') || str_contains($roleName, 'manajer');
+
+            // Low Stock alerts — semua role operasional
             $lowStockCount = \App\Models\Product::whereHas('productStocks', function($query) {
                 $query->whereColumn('current_stock', '<=', 'products.minimum_stock');
             })->count();
@@ -56,7 +63,8 @@ class HandleInertiaRequests extends Middleware
             ];
             }
 
-            // Pending Purchase Orders
+            // Pending Purchase Orders — Manager/Supervisor saja yang bisa approve
+            if ($isManagerOrSupervisor) {
             $pendingPOCount = \App\Models\PurchaseOrder::where('status', 'pending')->count();
             if ($pendingPOCount > 0) {
                 $notifications[] = [
@@ -67,8 +75,10 @@ class HandleInertiaRequests extends Middleware
                     'link' => '/purchase-orders',
                 ];
             }
+            } // end isManagerOrSupervisor (PO)
 
-            // Pending Stock Opnames
+            // Pending Stock Opnames — Manager/Supervisor saja
+            if ($isManagerOrSupervisor) {
             $pendingOpnameCount = \App\Models\StockOpname::where('status', 'pending')->count();
             if ($pendingOpnameCount > 0) {
                 $notifications[] = [
@@ -79,8 +89,10 @@ class HandleInertiaRequests extends Middleware
                     'link' => '/stock-opname',
                 ];
             }
+            } // end isManagerOrSupervisor (Opname)
 
-            // Pending Stock Transfers
+            // Pending Stock Transfers — Manager/Supervisor saja
+            if ($isManagerOrSupervisor) {
             $pendingTransferCount = \App\Models\StockTransfer::where('status', 'pending')->count();
             if ($pendingTransferCount > 0) {
                 $notifications[] = [
@@ -91,8 +103,10 @@ class HandleInertiaRequests extends Middleware
                     'link' => '/rack-allocation',
                 ];
             }
+            } // end isManagerOrSupervisor (Transfer)
 
-            // Pending Manual Stock Adjustments
+            // Pending Manual Stock Adjustments — Manager/Supervisor saja
+            if ($isManagerOrSupervisor) {
             $pendingAdjustmentCount = \App\Models\StockAdjustment::where('status', 'pending')
                 ->where('reason', 'manual_rack_stock')
                 ->count();
@@ -105,12 +119,17 @@ class HandleInertiaRequests extends Middleware
                     'link' => '/wms-documents',
                 ];
             }
+            } // end isManagerOrSupervisor (Adjustment)
 
-            // Delayed Shipments
-            $delayedShipmentCount = \App\Models\Shipment::where('status', 'delayed')
-                ->orWhere(function ($query) {
-                    $query->where('status', '!=', 'delivered')
-                        ->where('estimated_arrival', '<', now());
+            // Delayed Shipments — Manager/Supervisor saja
+            if ($isManagerOrSupervisor) {
+            $delayedShipmentCount = \App\Models\Shipment::query()
+                ->where(function ($query) {
+                    $query->where('status', 'delayed')
+                        ->orWhere(function ($subQuery) {
+                            $subQuery->where('status', '!=', 'delivered')
+                                ->where('estimated_arrival', '<', now());
+                        });
                 })
                 ->count();
             if ($delayedShipmentCount > 0) {
@@ -165,8 +184,9 @@ class HandleInertiaRequests extends Middleware
                     'link' => '/shipments',
                 ];
             }
+            } // end isManagerOrSupervisor (Shipment alerts)
 
-            // Expired / Expiring Stock Alerts
+            // Expired / Expiring Stock Alerts — semua role operasional
             $operationalWarehouse = \App\Models\Warehouse::orderBy('id')->first();
             if ($operationalWarehouse) {
                 $today = now()->toDateString();
@@ -200,7 +220,8 @@ class HandleInertiaRequests extends Middleware
                 }
             }
 
-            // Warehouse Capacity State (Add a "Realtime" feel)
+            // Warehouse Capacity State — Manager/Supervisor saja
+            if ($isManagerOrSupervisor) {
             $warehouses = \App\Models\Warehouse::all();
             foreach($warehouses as $w) {
                 $totalStock = \App\Models\ProductStock::where('warehouse_id', $w->id)->sum('current_stock');
@@ -220,6 +241,7 @@ class HandleInertiaRequests extends Middleware
                     ];
                 }
             }
+            } // end isManagerOrSupervisor (Capacity)
 
             // System State "Realtime" Mock
             $notifications[] = [
@@ -231,6 +253,8 @@ class HandleInertiaRequests extends Middleware
             ];
 
             // Personal approval outcomes for creator (important for supervisor/staff follow-up)
+            // Personal approval outcomes — hanya Manager/Supervisor yang bisa buat dokumen ini
+            if ($isManagerOrSupervisor) {
             $recentWindow = now()->subDays(3);
             $creatorId = (int) $user->id;
 
@@ -294,6 +318,7 @@ class HandleInertiaRequests extends Middleware
                     'link' => "/stock-adjustments/{$adjustment->id}",
                 ];
             }
+            } // end isManagerOrSupervisor (approval outcomes)
         }
 
         return [
@@ -301,6 +326,9 @@ class HandleInertiaRequests extends Middleware
             'flash' => [
                 'success' => fn () => $request->session()->get('success'),
                 'error' => fn () => $request->session()->get('error'),
+                'forbidden_modal' => fn () => $request->session()->get('forbidden_modal'),
+                'otp_verified' => fn () => $request->session()->get('otp_verified'),
+                'reset_session_token' => fn () => $request->session()->get('reset_session_token'),
             ],
             'auth' => [
                 'user' => $user ? [
@@ -328,17 +356,19 @@ class HandleInertiaRequests extends Middleware
 
     private function profilePhotoUrl($user): ?string
     {
-        $path = $this->normalizePublicStoragePath($user?->profile_photo_path);
+        $path = $user?->profile_photo_path;
         if (!$path) {
             return null;
         }
 
-        if (Storage::disk('public')->exists($path)) {
-            $version = optional($user->updated_at)?->timestamp ?? time();
-            return "/profile/photo?v={$version}";
+        // Return relative public storage path to avoid hardcoded host/port mismatches in dev.
+        $url = Storage::disk('public')->url($path);
+        $parsedPath = parse_url($url, PHP_URL_PATH);
+        if (is_string($parsedPath) && $parsedPath !== '') {
+            return str_starts_with($parsedPath, '/') ? $parsedPath : "/{$parsedPath}";
         }
 
-        return null;
+        return str_starts_with($url, '/') ? $url : "/{$url}";
     }
 
     private function normalizePublicStoragePath(?string $path): ?string

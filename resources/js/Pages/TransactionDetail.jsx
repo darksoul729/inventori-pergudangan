@@ -2,322 +2,179 @@ import DashboardLayout from '@/Layouts/DashboardLayout';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import React from 'react';
 
-const InboundIcon = ({ className }) => (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
-    </svg>
-);
-
-const OutboundIcon = ({ className }) => (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-    </svg>
-);
-
-const AdjustmentIcon = ({ className }) => (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
-    </svg>
-);
-
-const TransferIcon = ({ className }) => (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
-    </svg>
-);
-
-const BackIcon = ({ className }) => (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.4} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-    </svg>
-);
-
-const DownloadIcon = ({ className }) => (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M12 3v12m0 0l-4-4m4 4l4-4M5 19h14" />
-    </svg>
-);
-
 const formatNumber = (value) => Number(value || 0).toLocaleString('id-ID');
 const formatMoney = (value) => `Rp ${Number(value || 0).toLocaleString('id-ID')}`;
-
 const formatDate = (value, options = {}) => {
-    const parsedDate = new Date(value);
-
-    if (Number.isNaN(parsedDate.getTime())) {
-        return '-';
-    }
-
-    return parsedDate.toLocaleString('id-ID', {
-        dateStyle: options.dateStyle || 'long',
-        timeStyle: options.timeStyle || undefined,
-    });
+    const d = new Date(value);
+    if (Number.isNaN(d.getTime())) return '-';
+    return d.toLocaleString('id-ID', { dateStyle: options.dateStyle || 'long', timeStyle: options.timeStyle || undefined });
 };
 
-const DetailRow = ({ label, value, mono = false }) => (
-    <div className="grid grid-cols-1 gap-1 border-b border-[#EDE8FC] py-3 last:border-b-0 sm:grid-cols-[190px_1fr] sm:gap-5">
-        <dt className="text-[12px] font-semibold uppercase tracking-[0.08em] text-slate-500">{label}</dt>
-        <dd className={`text-[14px] font-semibold text-[#28106F] ${mono ? 'font-mono tracking-wide' : ''}`}>{value || '-'}</dd>
-    </div>
-);
-
-const SectionTitle = ({ children }) => (
-    <h2 className="mb-4 flex items-center gap-3 text-[13px] font-black uppercase tracking-[0.14em] text-[#28106F]">
-        <span className="h-5 w-1 rounded-full bg-[#28106F]" />
-        {children}
-    </h2>
-);
+const getStatusInfo = (transaction) => {
+    const map = {
+        in: { label: 'Barang Masuk', tone: 'text-indigo-700 bg-indigo-50 border-indigo-200', sign: '+' },
+        out: { label: 'Barang Keluar', tone: 'text-rose-700 bg-rose-50 border-rose-200', sign: '-' },
+        transfer: { label: 'Transfer Stok', tone: 'text-teal-700 bg-teal-50 border-teal-200', sign: '-' },
+        adjustment: { label: 'Penyesuaian', tone: 'text-amber-700 bg-amber-50 border-amber-200', sign: transaction.stock_after >= transaction.stock_before ? '+' : '-' },
+        opname: { label: 'Hitung Stok', tone: 'text-slate-700 bg-slate-50 border-slate-200', sign: transaction.stock_after >= transaction.stock_before ? '+' : '-' },
+    };
+    return map[transaction.movement_type] || { label: 'Selesai', tone: 'text-slate-700 bg-slate-50 border-slate-200', sign: '' };
+};
 
 export default function TransactionDetail({ transaction }) {
     const { props } = usePage();
     const roleName = String(props.auth?.user?.role_name || props.auth?.user?.role || '').toLowerCase();
     const isAuditor = roleName.includes('manager') || roleName.includes('manajer') || roleName.includes('supervisor') || roleName.includes('spv');
-    
-    const { post, processing } = useForm({
-        notes: ''
-    });
+    const { post, processing } = useForm({});
 
     const handleVerify = () => {
-        if (confirm('Verifikasi transaksi ini? Tindakan ini akan mencatat nama Anda sebagai pemeriksa resmi.')) {
-            post(route('transaction.verify', transaction.id));
-        }
-    };
-
-    const getStatusInfo = (tx) => {
-        switch (tx.movement_type) {
-            case 'in':
-                return { label: 'Barang Masuk', tone: 'text-[#28106F] bg-[#eef2ff] border-[#c7d2fe]', icon: <InboundIcon className="h-5 w-5" />, sign: '+' };
-            case 'out':
-                return { label: 'Barang Keluar', tone: 'text-[#ef4444] bg-[#fef2f2] border-[#fecaca]', icon: <OutboundIcon className="h-5 w-5" />, sign: '-' };
-            case 'transfer':
-                return { label: 'Transfer Stok', tone: 'text-[#0f766e] bg-[#ecfeff] border-[#a5f3fc]', icon: <TransferIcon className="h-5 w-5" />, sign: '-' };
-            case 'adjustment':
-                return { label: 'Penyesuaian', tone: 'text-[#9a3412] bg-[#fff7ed] border-[#fed7aa]', icon: <AdjustmentIcon className="h-5 w-5" />, sign: transaction.stock_after >= transaction.stock_before ? '+' : '-' };
-            case 'opname':
-                return { label: 'Cek Stok Fisik', tone: 'text-[#475569] bg-[#F8F7FF] border-[#e2e8f0]', icon: <AdjustmentIcon className="h-5 w-5" />, sign: transaction.stock_after >= transaction.stock_before ? '+' : '-' };
-            default:
-                return { label: 'Selesai', tone: 'text-[#475569] bg-[#F8F7FF] border-[#e2e8f0]', icon: <InboundIcon className="h-5 w-5" />, sign: '' };
-        }
+        if (confirm('Verifikasi transaksi ini?')) post(route('transaction.verify', transaction.id));
     };
 
     const status = getStatusInfo(transaction);
-    const transactionNumber = `TRX-${transaction.id.toString().padStart(6, '0')}`;
-    const referenceNumber = transaction.source_document?.number || (transaction.reference_id
-        ? `REF-${transaction.reference_id.toString().padStart(5, '0')}`
-        : transactionNumber);
+    const trxNum = `TRX-${transaction.id.toString().padStart(6, '0')}`;
+    const refNum = transaction.source_document?.number || (transaction.reference_id ? `REF-${transaction.reference_id.toString().padStart(5, '0')}` : trxNum);
     const unitPrice = Number(transaction.product?.purchase_price || 0);
     const totalValue = Number(transaction.quantity || 0) * unitPrice;
-    const generatedAt = formatDate(new Date(), { dateStyle: 'medium', timeStyle: 'short' });
 
     return (
-        <DashboardLayout headerSearchPlaceholder="Cari transaksi lain..." contentClassName="w-full max-w-none">
-            <Head title={`Detail Transaksi #${transaction.id.toString().padStart(6, '0')}`} />
+        <DashboardLayout>
+            <Head title={`Detail Transaksi ${trxNum}`} />
 
-            <div className="detail-page-root w-full pb-16 pt-2">
-                <div className="action-bar mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="pb-12 pt-2 space-y-6">
+                {/* Header */}
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div className="flex items-center gap-4">
-                        <Link
-                            href={route('transaction')}
-                            aria-label="Kembali ke riwayat transaksi"
-                            className="flex h-11 w-11 items-center justify-center rounded-xl border border-[#dbe4f0] bg-white text-slate-500 shadow-[0_2px_12px_rgba(0,0,0,0.02)] transition hover:border-[#28106F] hover:text-[#28106F]"
-                        >
-                            <BackIcon className="h-5 w-5" />
+                        <Link href={route('transaction')} className="flex h-10 w-10 items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-500 hover:border-[#4722B3] hover:text-[#4722B3] transition">
+                            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.4} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
                         </Link>
                         <div>
-                            <p className="text-[12px] font-bold uppercase tracking-[0.16em] text-slate-500">Detail Transaksi</p>
-                            <h1 className="text-2xl font-black tracking-tight text-[#28106F]">Voucher Mutasi Stok</h1>
+                            <p className="text-[11px] font-bold uppercase tracking-widest text-gray-400">Detail Transaksi</p>
+                            <h1 className="text-2xl font-black text-[#4722B3]">{trxNum}</h1>
                         </div>
                     </div>
-
-                    <div className="flex flex-wrap items-center gap-2">
+                    <div className="flex items-center gap-2">
                         {transaction.verification_status === 'pending' && isAuditor && (
-                            <button
-                                onClick={handleVerify}
-                                disabled={processing}
-                                className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-emerald-600 px-5 text-[13px] font-black text-white shadow-[0_10px_20px_rgba(16,185,129,0.18)] transition hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-200 disabled:opacity-50"
-                            >
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                                </svg>
-                                Verifikasi Sekarang
+                            <button onClick={handleVerify} disabled={processing} className="inline-flex h-10 items-center gap-2 rounded-xl bg-emerald-600 px-4 text-[12px] font-black text-white hover:bg-emerald-700 disabled:opacity-50">
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
+                                Verifikasi
                             </button>
                         )}
-                        <a
-                            href={route('transaction.pdf', transaction.id)}
-                            className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-[#28106F] px-5 text-[13px] font-black text-white shadow-[0_10px_20px_rgba(89,50,201,0.18)] transition hover:bg-[#3730a3] focus:outline-none focus:ring-2 focus:ring-[#c7d2fe] focus:ring-offset-2"
-                        >
-                            <DownloadIcon className="h-4 w-4" />
+                        <a href={route('transaction.pdf', transaction.id)} className="inline-flex h-10 items-center gap-2 rounded-xl bg-[#4722B3] px-4 text-[12px] font-black text-white hover:bg-[#3730a3]">
+                            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M12 3v12m0 0l-4-4m4 4l4-4M5 19h14" /></svg>
                             Export PDF
                         </a>
                     </div>
                 </div>
 
-                <article className="w-full">
-                    <header className="border-b border-[#EDE8FC] pb-6">
-                        <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
-                            <div>
-                                <div className="mb-4 flex items-center gap-3">
-                                    <div className="flex h-11 w-11 items-center justify-center rounded-[14px] bg-[#28106F] text-white shadow-lg shadow-indigo-200/50">
-                                        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z" />
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.3 7L12 12l8.7-5M12 22V12" />
-                                        </svg>
-                                    </div>
-                                    <div>
-                                        <p className="text-[12px] font-black uppercase tracking-[0.18em] text-slate-500">PETAYU</p>
-                                        <h2 className="text-xl font-black tracking-tight text-[#28106F]">Bukti Transaksi Persediaan</h2>
-                                    </div>
-                                </div>
-                                <p className="max-w-2xl text-sm font-medium leading-6 text-slate-600">
-                                    Dokumen ini mencatat mutasi persediaan berdasarkan data transaksi yang tersimpan di sistem inventori pergudangan.
-                                </p>
-                            </div>
+                {/* Status + Verification Badge */}
+                <div className="flex flex-wrap items-center gap-2">
+                    <span className={`inline-flex items-center rounded-lg border px-3 py-1.5 text-[11px] font-black uppercase tracking-wider ${status.tone}`}>{status.label}</span>
+                    <span className={`inline-flex items-center rounded-lg border px-3 py-1.5 text-[11px] font-black uppercase tracking-wider ${transaction.verification_status === 'verified' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-amber-50 text-amber-700 border-amber-200'}`}>
+                        {transaction.verification_status === 'verified' ? '✓ Terverifikasi' : '⏳ Belum Diverifikasi'}
+                    </span>
+                </div>
 
-                            <div className="min-w-[260px] rounded-xl border border-[#EDE8FC] bg-[#f8f9fc] p-4">
-                                <div className="grid grid-cols-[92px_1fr] gap-y-2 text-sm">
-                                    <span className="font-semibold text-slate-500">No. Dokumen</span>
-                                    <span className="font-mono font-black text-[#28106F]">{transactionNumber}</span>
-                                    <span className="font-semibold text-slate-500">Tanggal</span>
-                                    <span className="font-semibold text-[#28106F]">{formatDate(transaction.movement_date, { dateStyle: 'medium', timeStyle: 'short' })}</span>
-                                    <span className="font-semibold text-slate-500">Referensi</span>
-                                    <span className="font-mono font-semibold text-[#28106F]">{referenceNumber}</span>
-                                </div>
-                            </div>
+                {/* Summary Cards */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div className="rounded-xl border border-[#E5EAF3] bg-white p-5">
+                        <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">Jumlah Mutasi</p>
+                        <p className="mt-2 font-mono text-2xl font-black text-[#4722B3]">{status.sign}{formatNumber(transaction.quantity)}</p>
+                        <p className="text-[11px] font-semibold text-gray-400 mt-1">unit</p>
+                    </div>
+                    <div className="rounded-xl border border-[#E5EAF3] bg-white p-5">
+                        <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">Harga Satuan</p>
+                        <p className="mt-2 text-2xl font-black text-slate-800">{formatMoney(unitPrice)}</p>
+                        <p className="text-[11px] font-semibold text-gray-400 mt-1">per unit</p>
+                    </div>
+                    <div className="rounded-xl border border-[#E5EAF3] bg-white p-5">
+                        <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">Estimasi Nilai</p>
+                        <p className="mt-2 text-2xl font-black text-[#4722B3]">{formatMoney(totalValue)}</p>
+                        <p className="text-[11px] font-semibold text-gray-400 mt-1">total</p>
+                    </div>
+                </div>
+
+                {/* Stock Movement Flow */}
+                <div className="rounded-xl border border-[#E5EAF3] bg-white p-6">
+                    <h2 className="text-[11px] font-black uppercase tracking-widest text-gray-400 mb-4">Pergerakan Stok</h2>
+                    <div className="grid grid-cols-3 gap-4 items-center">
+                        <div className="rounded-xl bg-slate-50 border border-slate-200 p-4 text-center">
+                            <p className="text-[10px] font-bold uppercase text-gray-400">Stok Awal</p>
+                            <p className="mt-1 font-mono text-2xl font-black text-slate-700">{formatNumber(transaction.stock_before)}</p>
                         </div>
-                    </header>
+                        <div className="rounded-xl bg-indigo-50 border border-indigo-200 p-4 text-center">
+                            <p className="text-[10px] font-bold uppercase text-indigo-500">Mutasi</p>
+                            <p className="mt-1 font-mono text-2xl font-black text-[#4722B3]">{status.sign}{formatNumber(transaction.quantity)}</p>
+                        </div>
+                        <div className="rounded-xl bg-[#4722B3] p-4 text-center shadow-lg">
+                            <p className="text-[10px] font-bold uppercase text-indigo-200">Stok Akhir</p>
+                            <p className="mt-1 font-mono text-2xl font-black text-white">{formatNumber(transaction.stock_after)}</p>
+                        </div>
+                    </div>
+                </div>
 
-                    <main className="space-y-7 py-6">
-                        <section className="document-section grid gap-4 md:grid-cols-3">
-                            <div className={`rounded-xl border px-5 py-4 ${status.tone}`}>
-                                <div className="mb-3 flex items-center gap-2">
-                                    {status.icon}
-                                    <p className="text-[12px] font-black uppercase tracking-[0.12em]">Jenis Transaksi</p>
+                {/* Detail Grid */}
+                <div className="grid gap-6 lg:grid-cols-2">
+                    {/* Informasi Barang */}
+                    <div className="rounded-xl border border-[#E5EAF3] bg-white overflow-hidden">
+                        <div className="px-5 py-3 bg-slate-50 border-b border-[#E5EAF3]">
+                            <h2 className="text-[11px] font-black uppercase tracking-widest text-[#4722B3]">Informasi Barang</h2>
+                        </div>
+                        <div className="divide-y divide-[#E5EAF3]">
+                            <div className="px-5 py-3 grid grid-cols-[120px_1fr] gap-2"><span className="text-[11px] font-bold text-gray-400 uppercase">Nama</span><span className="text-[13px] font-bold text-slate-800">{transaction.product?.name || '-'}</span></div>
+                            <div className="px-5 py-3 grid grid-cols-[120px_1fr] gap-2"><span className="text-[11px] font-bold text-gray-400 uppercase">SKU</span><span className="text-[13px] font-mono font-bold text-slate-600">{transaction.product?.sku || '-'}</span></div>
+                            <div className="px-5 py-3 grid grid-cols-[120px_1fr] gap-2"><span className="text-[11px] font-bold text-gray-400 uppercase">Harga Satuan</span><span className="text-[13px] font-bold text-slate-800">{formatMoney(unitPrice)}</span></div>
+                            <div className="px-5 py-3 grid grid-cols-[120px_1fr] gap-2"><span className="text-[11px] font-bold text-gray-400 uppercase">Total Nilai</span><span className="text-[13px] font-black text-[#4722B3]">{formatMoney(totalValue)}</span></div>
+                        </div>
+                    </div>
+
+                    {/* Data Operasional */}
+                    <div className="rounded-xl border border-[#E5EAF3] bg-white overflow-hidden">
+                        <div className="px-5 py-3 bg-slate-50 border-b border-[#E5EAF3]">
+                            <h2 className="text-[11px] font-black uppercase tracking-widest text-[#4722B3]">Data Operasional</h2>
+                        </div>
+                        <div className="divide-y divide-[#E5EAF3]">
+                            <div className="px-5 py-3 grid grid-cols-[120px_1fr] gap-2"><span className="text-[11px] font-bold text-gray-400 uppercase">Operator</span><span className="text-[13px] font-bold text-slate-800">{transaction.user?.name || 'Sistem Otomatis'}</span></div>
+                            <div className="px-5 py-3 grid grid-cols-[120px_1fr] gap-2"><span className="text-[11px] font-bold text-gray-400 uppercase">Gudang</span><span className="text-[13px] font-bold text-slate-800">{transaction.warehouse?.name || '-'}</span></div>
+                            <div className="px-5 py-3 grid grid-cols-[120px_1fr] gap-2"><span className="text-[11px] font-bold text-gray-400 uppercase">Lokasi</span><span className="text-[13px] font-bold text-slate-600">{transaction.warehouse?.location || '-'}</span></div>
+                            <div className="px-5 py-3 grid grid-cols-[120px_1fr] gap-2"><span className="text-[11px] font-bold text-gray-400 uppercase">Tanggal</span><span className="text-[13px] font-bold text-slate-800">{formatDate(transaction.movement_date, { dateStyle: 'long', timeStyle: 'short' })}</span></div>
+                            {transaction.verification_status === 'verified' && (
+                                <>
+                                    <div className="px-5 py-3 grid grid-cols-[120px_1fr] gap-2"><span className="text-[11px] font-bold text-gray-400 uppercase">Diverifikasi</span><span className="text-[13px] font-bold text-emerald-700">{transaction.verified_by_name}</span></div>
+                                    <div className="px-5 py-3 grid grid-cols-[120px_1fr] gap-2"><span className="text-[11px] font-bold text-gray-400 uppercase">Waktu</span><span className="text-[13px] font-bold text-slate-600">{formatDate(transaction.verified_at, { dateStyle: 'medium', timeStyle: 'short' })}</span></div>
+                                </>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Referensi */}
+                    <div className="rounded-xl border border-[#E5EAF3] bg-white overflow-hidden">
+                        <div className="px-5 py-3 bg-slate-50 border-b border-[#E5EAF3]">
+                            <h2 className="text-[11px] font-black uppercase tracking-widest text-[#4722B3]">Referensi Dokumen</h2>
+                        </div>
+                        <div className="divide-y divide-[#E5EAF3]">
+                            <div className="px-5 py-3 grid grid-cols-[120px_1fr] gap-2"><span className="text-[11px] font-bold text-gray-400 uppercase">No. Dokumen</span><span className="text-[13px] font-mono font-bold text-[#4722B3]">{trxNum}</span></div>
+                            <div className="px-5 py-3 grid grid-cols-[120px_1fr] gap-2"><span className="text-[11px] font-bold text-gray-400 uppercase">Tipe</span><span className="text-[13px] font-bold text-slate-800">{{ stock_adjustment: 'Penyesuaian Stok', goods_receipt: 'Penerimaan Barang', stock_out: 'Stok Keluar', stock_transfer: 'Transfer Stok', stock_opname: 'Cek Stok Fisik', purchase_order: 'Pesanan Pembelian' }[transaction.reference_type] || transaction.reference_type || 'Manual'}</span></div>
+                            <div className="px-5 py-3 grid grid-cols-[120px_1fr] gap-2"><span className="text-[11px] font-bold text-gray-400 uppercase">No. Referensi</span><span className="text-[13px] font-mono font-bold text-slate-600">{refNum}</span></div>
+                            {transaction.source_document && (
+                                <div className="px-5 py-3 grid grid-cols-[120px_1fr] gap-2">
+                                    <span className="text-[11px] font-bold text-gray-400 uppercase">Sumber</span>
+                                    <Link href={transaction.source_document.url} className="text-[13px] font-black text-[#4722B3] hover:underline">{transaction.source_document.label} — {transaction.source_document.number}</Link>
                                 </div>
-                                <p className="text-2xl font-black tracking-tight">{status.label}</p>
-                            </div>
-                            <div className="rounded-xl border border-[#EDE8FC] bg-white px-5 py-4">
-                                <p className="mb-2 text-[12px] font-black uppercase tracking-[0.12em] text-slate-500">Jumlah Mutasi</p>
-                                <p className="font-mono text-3xl font-black tracking-tight text-[#28106F]">
-                                    {status.sign}{formatNumber(transaction.quantity)} <span className="font-sans text-sm font-black text-slate-500">PCS</span>
-                                </p>
-                            </div>
-                            <div className="rounded-xl border border-[#EDE8FC] bg-white px-5 py-4">
-                                <p className="mb-2 text-[12px] font-black uppercase tracking-[0.12em] text-slate-500">Estimasi Nilai</p>
-                                <p className="text-2xl font-black tracking-tight text-[#28106F]">{formatMoney(totalValue)}</p>
-                            </div>
-                        </section>
+                            )}
+                        </div>
+                    </div>
 
-                        <section className="document-section">
-                            <SectionTitle>Rincian Barang</SectionTitle>
-                            <div className="overflow-hidden rounded-xl border border-[#EDE8FC]">
-                                <table className="w-full border-collapse text-left text-sm">
-                                    <thead className="bg-[#f8f9fc] text-[12px] uppercase tracking-[0.1em] text-slate-500">
-                                        <tr>
-                                            <th className="border-b border-[#EDE8FC] px-4 py-3 font-black">Nama Barang</th>
-                                            <th className="border-b border-[#EDE8FC] px-4 py-3 font-black">SKU</th>
-                                            <th className="border-b border-[#EDE8FC] px-4 py-3 text-right font-black">Harga Satuan</th>
-                                            <th className="border-b border-[#EDE8FC] px-4 py-3 text-right font-black">Total Nilai</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr className="align-top">
-                                            <td className="px-4 py-4 font-bold text-[#28106F]">{transaction.product?.name || 'Unidentified Item'}</td>
-                                            <td className="px-4 py-4 font-mono font-semibold text-slate-700">{transaction.product?.sku || '-'}</td>
-                                            <td className="px-4 py-4 text-right font-semibold text-slate-700">{formatMoney(unitPrice)}</td>
-                                            <td className="px-4 py-4 text-right font-black text-[#28106F]">{formatMoney(totalValue)}</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </section>
-
-                        <section className="document-section">
-                            <SectionTitle>Pergerakan Stok</SectionTitle>
-                            <div className="grid gap-4 md:grid-cols-3">
-                                <div className="rounded-xl border border-[#EDE8FC] bg-[#f8f9fc] p-5">
-                                    <p className="text-[12px] font-black uppercase tracking-[0.12em] text-slate-500">Stok Awal</p>
-                                    <p className="mt-2 font-mono text-3xl font-black text-[#28106F]">{formatNumber(transaction.stock_before)}</p>
-                                </div>
-                                <div className="rounded-xl border border-[#EDE8FC] bg-white p-5">
-                                    <p className="text-[12px] font-black uppercase tracking-[0.12em] text-slate-500">Mutasi</p>
-                                    <p className="mt-2 font-mono text-3xl font-black text-[#28106F]">{status.sign}{formatNumber(transaction.quantity)}</p>
-                                </div>
-                                <div className="rounded-xl border border-[#28106F] bg-[#28106F] p-5 text-white shadow-[0_10px_20px_rgba(89,50,201,0.18)]">
-                                    <p className="text-[12px] font-black uppercase tracking-[0.12em] text-slate-300">Stok Akhir</p>
-                                    <p className="mt-2 font-mono text-3xl font-black">{formatNumber(transaction.stock_after)}</p>
-                                </div>
-                            </div>
-                        </section>
-
-                        <section className="document-section grid gap-7 lg:grid-cols-2">
-                            <div>
-                                <SectionTitle>Data Operasional</SectionTitle>
-                                <dl className="rounded-xl border border-[#EDE8FC] px-5">
-                                    <DetailRow label="Operator" value={transaction.user?.name || 'Sistem Otomatis'} />
-                                    <DetailRow label="Email Operator" value={transaction.user?.email || 'verified_system'} />
-                                    <DetailRow label="Gudang" value={transaction.warehouse?.name || 'N/A'} />
-                                    <DetailRow label="Lokasi Gudang" value={transaction.warehouse?.location || 'Belum ditentukan'} />
-                                    {transaction.verification_status === 'verified' && (
-                                        <>
-                                            <DetailRow label="Diverifikasi Oleh" value={transaction.verified_by_name} />
-                                            <DetailRow label="Waktu Verifikasi" value={formatDate(transaction.verified_at, { dateStyle: 'medium', timeStyle: 'short' })} />
-                                        </>
-                                    )}
-                                </dl>
-                            </div>
-
-                            <div>
-                                <SectionTitle>Referensi & Catatan</SectionTitle>
-                                <dl className="rounded-xl border border-[#EDE8FC] px-5">
-                                    <DetailRow label="Tipe Referensi" value={transaction.reference_type || 'Manual Entry'} />
-                                    <DetailRow label="Nomor Referensi" value={referenceNumber} mono />
-                                    {transaction.source_document && (
-                                        <div className="grid grid-cols-1 gap-1 border-b border-[#EDE8FC] py-3 last:border-b-0 sm:grid-cols-[190px_1fr] sm:gap-5">
-                                            <dt className="text-[12px] font-semibold uppercase tracking-[0.08em] text-slate-500">Dokumen Sumber</dt>
-                                            <dd>
-                                                <Link href={transaction.source_document.url} className="text-[14px] font-black text-[#28106F] hover:text-[#3730a3]">
-                                                    {transaction.source_document.label} - {transaction.source_document.number}
-                                                </Link>
-                                            </dd>
-                                        </div>
-                                    )}
-                                    <DetailRow label="Tanggal Transaksi" value={formatDate(transaction.movement_date, { dateStyle: 'full', timeStyle: 'short' })} />
-                                    <DetailRow label="Catatan" value={transaction.notes || 'Tidak ada catatan tambahan.'} />
-                                </dl>
-                            </div>
-                        </section>
-
-                        <section className="document-section rounded-xl border border-[#EDE8FC] bg-[#f8f9fc] p-5">
-                            <p className="text-[12px] font-black uppercase tracking-[0.14em] text-slate-500">Pernyataan Dokumen</p>
-                            <p className="mt-2 text-sm font-medium leading-6 text-slate-700">
-                                Dokumen ini dibuat otomatis dari sistem dan digunakan sebagai bukti administrasi mutasi stok. Validasi akhir dapat dilakukan dengan mencocokkan nomor dokumen, referensi, operator, dan jumlah stok pada sistem.
-                            </p>
-                        </section>
-
-                        <section className="document-section grid gap-5 pt-2 sm:grid-cols-3">
-                            <div className="rounded-xl border border-[#EDE8FC] p-5 text-center">
-                                <p className="text-[12px] font-bold text-slate-500">Dibuat oleh</p>
-                                <div className="h-16" />
-                                <p className="border-t border-[#dbe4f0] pt-3 text-sm font-black text-[#28106F]">{transaction.user?.name || 'Sistem Otomatis'}</p>
-                            </div>
-                            <div className="rounded-xl border border-[#EDE8FC] p-5 text-center">
-                                <p className="text-[12px] font-bold text-slate-500">Diperiksa oleh</p>
-                                <div className="h-16" />
-                                <p className="border-t border-[#dbe4f0] pt-3 text-sm font-black text-[#28106F]">Supervisor Gudang</p>
-                            </div>
-                            <div className="rounded-xl border border-[#EDE8FC] p-5 text-center">
-                                <p className="text-[12px] font-bold text-slate-500">Disetujui oleh</p>
-                                <div className="h-16" />
-                                <p className="border-t border-[#dbe4f0] pt-3 text-sm font-black text-[#28106F]">Manager Gudang</p>
-                            </div>
-                        </section>
-                    </main>
-
-                    <footer className="flex flex-col gap-2 border-t border-[#EDE8FC] py-4 text-[12px] font-semibold text-slate-500 sm:flex-row sm:items-center sm:justify-between">
-                        <span>{transactionNumber} / {status.label} / {transaction.product?.sku || '-'}</span>
-                        <span>Siap export pada {generatedAt}</span>
-                    </footer>
-                </article>
+                    {/* Catatan */}
+                    <div className="rounded-xl border border-[#E5EAF3] bg-white overflow-hidden">
+                        <div className="px-5 py-3 bg-slate-50 border-b border-[#E5EAF3]">
+                            <h2 className="text-[11px] font-black uppercase tracking-widest text-[#4722B3]">Catatan</h2>
+                        </div>
+                        <div className="px-5 py-4">
+                            <p className="text-[13px] font-medium leading-relaxed text-slate-700">{transaction.notes || 'Tidak ada catatan tambahan.'}</p>
+                        </div>
+                    </div>
+                </div>
             </div>
         </DashboardLayout>
     );

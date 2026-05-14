@@ -34,6 +34,13 @@ use App\Http\Controllers\NotificationCenterController;
 Route::get('/dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth', 'verified', 'role:manager,supervisor,staff'])
     ->name('dashboard');
+Route::get('/dashboard/operational-pdf', [DashboardController::class, 'operationalPdf'])
+    ->middleware(['auth', 'verified', 'role:manager,supervisor,staff'])
+    ->name('dashboard.operational-pdf');
+
+Route::get('/panduan-setup', [DashboardController::class, 'panduanSetup'])
+    ->middleware(['auth', 'verified', 'role:manager,supervisor,staff'])
+    ->name('panduan-setup');
 
 Route::get('/mulai-di-sini', function () {
     return Inertia::render('GettingStarted');
@@ -55,8 +62,14 @@ Route::get('/notifications/{notificationId}', [NotificationCenterController::cla
     ->middleware(['auth', 'verified', 'role:manager,supervisor,staff'])
     ->name('notifications.show');
 
-Route::middleware(['auth', 'verified', 'role:manager,supervisor,staff', 'module:invoicing'])->group(function () {
+// Peta Gudang (view) — bagian dari core_inventory: semua user perlu ini
+// untuk mendefinisikan zona & rak sebelum bisa menaruh stok.
+Route::middleware(['auth', 'verified', 'role:manager,supervisor,staff'])->group(function () {
     Route::get('/warehouse', [WarehouseController::class, 'index'])->name('warehouse');
+});
+
+// Operasi tulis gudang (zone/rack CRUD) — butuh modul warehouse_ops
+Route::middleware(['auth', 'verified', 'role:manager,supervisor,staff', 'module:warehouse_ops'])->group(function () {
     Route::post('/warehouse/zones', [WarehouseController::class, 'storeZone'])->middleware('role:manager')->name('warehouse.zones.store');
     Route::put('/warehouse/zones/{zone}', [WarehouseController::class, 'updateZone'])->middleware('role:manager')->name('warehouse.zones.update');
     Route::delete('/warehouse/zones/{zone}', [WarehouseController::class, 'destroyZone'])->middleware('role:manager')->name('warehouse.zones.destroy');
@@ -67,11 +80,14 @@ Route::middleware(['auth', 'verified', 'role:manager,supervisor,staff', 'module:
     Route::put('/warehouse/rack-stocks/{rackStock}', [WarehouseController::class, 'updateRackStock'])->middleware('role:manager,supervisor')->name('warehouse.rack-stocks.update');
     Route::delete('/warehouse/rack-stocks/{rackStock}', [WarehouseController::class, 'destroyRackStock'])->middleware('role:manager,supervisor')->name('warehouse.rack-stocks.destroy');
 
-    Route::get('/warehouse/layout', [WarehouseLayoutController::class, 'show'])->name('warehouse.layout.show');
-    Route::post('/warehouse/layout', [WarehouseLayoutController::class, 'store'])->middleware('role:manager')->name('warehouse.layout.store');
-    Route::post('/warehouse/layout/export-pdf', [WarehouseLayoutController::class, 'exportPdf'])->name('warehouse.layout.export-pdf');
-    Route::get('/warehouse/layout/snapshots', [WarehouseLayoutController::class, 'snapshots'])->name('warehouse.layout.snapshots');
-});
+    Route::middleware('module:warehouse_layout_editor')->group(function () {
+        Route::get('/warehouse/layout', [WarehouseLayoutController::class, 'show'])->name('warehouse.layout.show');
+        Route::post('/warehouse/layout', [WarehouseLayoutController::class, 'store'])->middleware('role:manager')->name('warehouse.layout.store');
+        Route::post('/warehouse/layout/export-pdf', [WarehouseLayoutController::class, 'exportPdf'])->name('warehouse.layout.export-pdf');
+        Route::get('/warehouse/layout/snapshots', [WarehouseLayoutController::class, 'snapshots'])->name('warehouse.layout.snapshots');
+        Route::get('/warehouse/advanced', [WarehouseLayoutController::class, 'advanced'])->middleware('role:manager,supervisor')->name('warehouse.advanced');
+    });
+}); 
 
 use App\Http\Controllers\InventoryController;
 
@@ -110,34 +126,49 @@ Route::middleware(['auth', 'verified', 'role:manager,supervisor,staff'])->group(
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\PurchaseOrderController;
 use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\CustomerController;
 
+// Pemasok — bagian dari core_inventory: perlu tahu dari mana barang dibeli.
+// Tidak butuh modul invoicing; ini kebutuhan dasar manajemen stok.
 Route::middleware(['auth', 'verified', 'role:manager,supervisor,staff'])->group(function () {
     Route::get('/supplier', [SupplierController::class, 'index'])->name('supplier');
-    Route::post('/supplier', [SupplierController::class, 'store'])->middleware('role:manager')->name('supplier.store');
     Route::get('/supplier/{supplier}', [SupplierController::class, 'show'])->name('supplier.show');
+    Route::post('/supplier', [SupplierController::class, 'store'])->middleware('role:manager')->name('supplier.store');
+    Route::put('/supplier/{supplier}', [SupplierController::class, 'update'])->middleware('role:manager')->name('supplier.update');
+    Route::delete('/supplier/{supplier}', [SupplierController::class, 'destroy'])->middleware('role:manager')->name('supplier.destroy');
     Route::post('/supplier/{supplier}/performance', [SupplierController::class, 'storePerformance'])
         ->middleware('role:manager,supervisor')
         ->name('supplier.performance.store');
+});
 
-    // Purchase Orders
+
+// Purchase Orders (Beli ke Pemasok)
+// Staff operasional boleh input PO, approval tetap di controller (supervisor/manager).
+Route::middleware(['auth', 'verified', 'role:manager,supervisor,staff'])->group(function () {
+    Route::get('/purchase-orders/create', [PurchaseOrderController::class, 'create'])->name('purchase-orders.create');
+    Route::post('/purchase-orders', [PurchaseOrderController::class, 'store'])->name('purchase-orders.store');
+});
+
+Route::middleware(['auth', 'verified', 'role:manager,supervisor,staff'])->group(function () {
     Route::get('/purchase-orders', [PurchaseOrderController::class, 'index'])->name('purchase-orders.index');
+    Route::get('/purchase-orders/{purchaseOrder}', [PurchaseOrderController::class, 'show'])->name('purchase-orders.show');
+    Route::get('/purchase-orders/{purchaseOrder}/pdf', [PurchaseOrderController::class, 'downloadPdf'])->name('purchase-orders.pdf');
+});
+
+Route::middleware(['auth', 'verified', 'role:manager,supervisor,staff'])->group(function () {
+    Route::put('/purchase-orders/{purchaseOrder}/status', [PurchaseOrderController::class, 'updateStatus'])->name('purchase-orders.update-status');
+});
+
+// Customers — tetap butuh invoicing (fitur penjualan/tagihan ke pelanggan)
+Route::middleware(['auth', 'verified', 'role:manager,supervisor,staff', 'module:invoicing'])->group(function () {
+    Route::get('/customers', [CustomerController::class, 'index'])->name('customers.index');
 });
 
 Route::middleware(['auth', 'verified', 'role:manager,supervisor', 'module:invoicing'])->group(function () {
-    Route::get('/purchase-orders/create', [PurchaseOrderController::class, 'create'])->name('purchase-orders.create');
-    Route::post('/purchase-orders', [PurchaseOrderController::class, 'store'])->name('purchase-orders.store');
-    Route::put('/purchase-orders/{purchaseOrder}/status', [PurchaseOrderController::class, 'updateStatus'])
-        ->name('purchase-orders.update-status');
+    Route::post('/customers', [CustomerController::class, 'store'])->name('customers.store');
 });
 
-Route::get('/purchase-orders/{purchaseOrder}', [PurchaseOrderController::class, 'show'])
-    ->middleware(['auth', 'verified', 'role:manager,supervisor,staff'])
-    ->name('purchase-orders.show');
-Route::get('/purchase-orders/{purchaseOrder}/pdf', [PurchaseOrderController::class, 'downloadPdf'])
-    ->middleware(['auth', 'verified', 'role:manager,supervisor,staff'])
-    ->name('purchase-orders.pdf');
-
-Route::middleware(['auth', 'verified', 'role:manager,supervisor,staff'])->group(function () {
+Route::middleware(['auth', 'verified', 'role:manager,supervisor,staff', 'module:invoicing'])->group(function () {
     Route::get('/invoices', [InvoiceController::class, 'index'])->name('invoices.index');
     Route::get('/tagihan', [InvoiceController::class, 'index'])->name('invoices.index.alias');
     Route::get('/invoice', [InvoiceController::class, 'index'])->name('invoices.index.alias2');
@@ -145,7 +176,7 @@ Route::middleware(['auth', 'verified', 'role:manager,supervisor,staff'])->group(
     Route::get('/invoices/{invoice}/pdf', [InvoiceController::class, 'downloadPdf'])->whereNumber('invoice')->name('invoices.pdf');
 });
 
-Route::middleware(['auth', 'verified', 'role:manager,supervisor'])->group(function () {
+Route::middleware(['auth', 'verified', 'role:manager,supervisor', 'module:invoicing'])->group(function () {
     Route::get('/invoices/create', [InvoiceController::class, 'create'])->name('invoices.create');
     Route::post('/invoices', [InvoiceController::class, 'store'])->name('invoices.store');
     Route::put('/invoices/{invoice}/status', [InvoiceController::class, 'updateStatus'])->whereNumber('invoice')->name('invoices.update-status');
@@ -189,20 +220,25 @@ Route::middleware(['auth', 'verified', 'role:manager,supervisor,staff', 'module:
 
 use App\Http\Controllers\DriverController;
 
-Route::middleware(['auth', 'verified', 'role:manager', 'module:driver_management'])->group(function () {
-    Route::get('/drivers', [DriverController::class, 'index'])->name('drivers.index');
-    Route::get('/drivers/create', [DriverController::class, 'create'])->name('drivers.create');
-    Route::post('/drivers', [DriverController::class, 'store'])->name('drivers.store');
+// Driver management: Manager kelola driver, Supervisor bisa lihat list & lokasi
+Route::middleware(['auth', 'verified', 'role:manager,supervisor', 'module:shipment'])->group(function () {
+    Route::get('/drivers', [DriverController::class, 'index'])->middleware('role:manager')->name('drivers.index');
     Route::get('/drivers/{driver}', [DriverController::class, 'show'])->name('drivers.show');
     Route::get('/api/drivers/locations', [DriverController::class, 'getLocations'])->name('drivers.locations');
+});
+
+Route::middleware(['auth', 'verified', 'role:manager', 'module:shipment'])->group(function () {
+    Route::get('/drivers/create', [DriverController::class, 'create'])->name('drivers.create');
+    Route::post('/drivers', [DriverController::class, 'store'])->name('drivers.store');
     Route::put('/drivers/{driver}/status', [DriverController::class, 'updateStatus'])->name('drivers.status.update');
 });
 
-Route::middleware(['auth', 'verified', 'role:manager,supervisor', 'module:warehouse_ops'])->group(function () {
+Route::middleware(['auth', 'verified', 'role:manager,supervisor,staff', 'module:warehouse_ops'])->group(function () {
     Route::get('/rack-allocation', [StockTransferController::class, 'index'])->name('rack.allocation');
     Route::get('/rack-allocation/transfers/{stockTransfer}/pdf', [StockTransferController::class, 'downloadPdf'])->name('rack.allocation.transfers.pdf');
     Route::get('/rack-allocation/transfers/{stockTransfer}', [StockTransferController::class, 'show'])->name('rack.allocation.transfers.show');
     Route::get('/stock-opname', [StockOpnameController::class, 'index'])->name('stock-opname.index');
+    Route::get('/stock-opname/create', [StockOpnameController::class, 'index'])->name('stock-opname.create');
     Route::get('/stock-opname/{stockOpname}/pdf', [StockOpnameController::class, 'downloadPdf'])->name('stock-opname.pdf');
     Route::get('/stock-opname/{stockOpname}', [StockOpnameController::class, 'show'])->name('stock-opname.show');
 });
@@ -212,16 +248,24 @@ Route::middleware(['auth', 'verified', 'role:manager,supervisor,staff', 'module:
     Route::get('/stock-adjustments/{stockAdjustment}', [StockAdjustmentController::class, 'show'])->name('stock-adjustments.show');
 });
 
-// Supervisor+ can create, approve, reject
-Route::middleware(['auth', 'verified', 'role:manager,supervisor', 'module:warehouse_ops'])->group(function () {
+// Staff+ can create transfer, approval/reject tetap supervisor+
+Route::middleware(['auth', 'verified', 'role:manager,supervisor,staff', 'module:warehouse_ops'])->group(function () {
     Route::post('/rack-allocation/transfers', [StockTransferController::class, 'store'])->name('rack.allocation.transfers.store');
+});
+
+// Supervisor+ can approve/reject
+Route::middleware(['auth', 'verified', 'role:manager,supervisor', 'module:warehouse_ops'])->group(function () {
     Route::post('/rack-allocation/transfers/{stockTransfer}/approve', [StockTransferController::class, 'approve'])->name('rack.allocation.transfers.approve');
     Route::post('/rack-allocation/transfers/{stockTransfer}/reject', [StockTransferController::class, 'reject'])->name('rack.allocation.transfers.reject');
-    Route::post('/stock-opname', [StockOpnameController::class, 'store'])->name('stock-opname.store');
     Route::post('/stock-opname/{stockOpname}/approve', [StockOpnameController::class, 'approve'])->name('stock-opname.approve');
     Route::post('/stock-opname/{stockOpname}/reject', [StockOpnameController::class, 'reject'])->name('stock-opname.reject');
     Route::post('/stock-adjustments/{stockAdjustment}/approve', [StockAdjustmentController::class, 'approve'])->name('stock-adjustments.approve');
     Route::post('/stock-adjustments/{stockAdjustment}/reject', [StockAdjustmentController::class, 'reject'])->name('stock-adjustments.reject');
+});
+
+// Staff+ can create stock opname (approve tetap supervisor+)
+Route::middleware(['auth', 'verified', 'role:manager,supervisor,staff', 'module:warehouse_ops'])->group(function () {
+    Route::post('/stock-opname', [StockOpnameController::class, 'store'])->name('stock-opname.store');
 });
 
 use App\Http\Controllers\ReportController;
@@ -247,8 +291,11 @@ use App\Http\Controllers\BillingController;
 Route::middleware(['auth', 'verified', 'role:manager'])->group(function () {
     Route::get('/settings', [SettingsController::class, 'index'])->name('settings');
     Route::put('/settings/warehouse/{id}', [SettingsController::class, 'updateWarehouse'])->name('settings.warehouse.update');
+    Route::put('/settings/invoice-notifications', [SettingsController::class, 'updateInvoiceNotificationSettings'])->name('settings.invoice-notifications.update');
     Route::post('/settings/staff', [SettingsController::class, 'storeStaff'])->name('settings.staff.store');
+    Route::put('/settings/staff/{user}', [SettingsController::class, 'updateStaff'])->name('settings.staff.update');
     Route::put('/settings/staff/{user}/status', [SettingsController::class, 'updateStaffStatus'])->name('settings.staff.status');
+    Route::delete('/settings/staff/{user}', [SettingsController::class, 'destroyStaff'])->name('settings.staff.destroy');
     
     Route::post('/settings/categories', [SettingsController::class, 'storeCategory'])->name('settings.categories.store');
     Route::put('/settings/categories/{id}', [SettingsController::class, 'updateCategory'])->name('settings.categories.update');
@@ -258,16 +305,25 @@ Route::middleware(['auth', 'verified', 'role:manager'])->group(function () {
     Route::put('/settings/units/{id}', [SettingsController::class, 'updateUnit'])->name('settings.units.update');
     Route::delete('/settings/units/{id}', [SettingsController::class, 'destroyUnit'])->name('settings.units.destroy');
 
-    Route::get('/settings/saas', [SaasAdminController::class, 'index'])->name('settings.saas');
-    Route::put('/settings/saas/{tenant}/modules', [SaasAdminController::class, 'updateModules'])->name('settings.saas.modules.update');
-    Route::put('/settings/saas/{tenant}/subscription', [SaasAdminController::class, 'updateSubscriptionStatus'])->name('settings.saas.subscription.update');
-
     Route::get('/settings/billing', [BillingController::class, 'index'])->name('settings.billing');
     Route::post('/settings/billing/checkout', [BillingController::class, 'checkout'])->name('settings.billing.checkout');
     Route::get('/settings/billing/payments/{payment}/invoice', [BillingController::class, 'invoice'])->name('settings.billing.invoice');
+    Route::post('/settings/billing/payments/{payment}/cancel', [BillingController::class, 'cancelPayment'])->name('settings.billing.payments.cancel');
 });
 
-Route::post('/webhooks/midtrans', [BillingController::class, 'webhook'])->name('webhooks.midtrans');
+Route::middleware(['auth', 'verified', 'role:system_admin'])->group(function () {
+    Route::get('/settings/saas', [SaasAdminController::class, 'index'])->name('settings.saas');
+    Route::get('/admin/users', [SaasAdminController::class, 'users'])->name('admin.users');
+    Route::put('/admin/users/{user}', [SaasAdminController::class, 'updateUser'])->name('admin.users.update');
+    Route::put('/settings/saas/{tenant}/modules', [SaasAdminController::class, 'updateModules'])->name('settings.saas.modules.update');
+    Route::put('/settings/saas/{tenant}/subscription', [SaasAdminController::class, 'updateSubscriptionStatus'])->name('settings.saas.subscription.update');
+    Route::get('/admin/audit-log', [SaasAdminController::class, 'auditLog'])->name('admin.audit-log');
+    Route::get('/admin/stats', [SaasAdminController::class, 'stats'])->name('admin.stats');
+});
+
+Route::post('/webhooks/midtrans', [BillingController::class, 'webhook'])
+    ->middleware('throttle:60,1')
+    ->name('webhooks.midtrans');
 
 
 use App\Http\Controllers\PetayuAIController;

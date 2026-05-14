@@ -1,4 +1,5 @@
 import DashboardLayout from '@/Layouts/DashboardLayout';
+import CustomDropdown from '@/Components/CustomDropdown';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import React, { useEffect, useState, useRef } from 'react';
 import ShipmentMap from '@/Components/ShipmentMap';
@@ -124,40 +125,6 @@ export default function Shipments({ shipments = [], stats = {}, filters = {} }) 
 
     const currentStats = { ...defaultStats, ...stats };
 
-    // Default shipments data if not provided
-    const defaultShipments = [
-        {
-            id: 'TRK-10293',
-            origin: 'LHR',
-            origin_name: 'London, UK',
-            destination: 'JFK',
-            destination_name: 'New York, USA',
-            status: 'on-time',
-            estimated_arrival: 'Oct 24, 14:30',
-            load_type: 'air'
-        },
-        {
-            id: 'TRK-10294',
-            origin: 'SIN',
-            origin_name: 'Singapore',
-            destination: 'DXB',
-            destination_name: 'Dubai, UAE',
-            status: 'delayed',
-            estimated_arrival: 'Oct 24, 18:45',
-            load_type: 'sea'
-        },
-        {
-            id: 'TRK-10295',
-            origin: 'HAM',
-            origin_name: 'Hamburg, GER',
-            destination: 'PVG',
-            destination_name: 'Shanghai, CN',
-            status: 'on-time',
-            estimated_arrival: 'Oct 25, 09:15',
-            load_type: 'sea'
-        }
-    ];
-
     const hasPaginatedShipments =
         shipments &&
         !Array.isArray(shipments) &&
@@ -170,7 +137,7 @@ export default function Shipments({ shipments = [], stats = {}, filters = {} }) 
         ? shipmentsData
         : shipmentsData.length > 0
             ? shipmentsData
-            : defaultShipments;
+            : [];
     const currentPage = paginatedShipments?.current_page ?? 1;
     const fromItem = paginatedShipments?.from ?? (currentShipments.length ? 1 : 0);
     const toItem = paginatedShipments?.to ?? currentShipments.length;
@@ -324,36 +291,27 @@ export default function Shipments({ shipments = [], stats = {}, filters = {} }) 
         >
             <Head title="Pengiriman" />
 
-            {flash.success && (
-                <div className="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-[13px] font-bold text-emerald-700">
-                    {flash.success}
-                </div>
-            )}
-            {flash.error && (
-                <div className="mb-4 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-[13px] font-bold text-rose-700">
-                    {flash.error}
-                </div>
-            )}
+
 
             <div className="flex justify-between items-end mb-6">
                 <div>
-                    <h1 className="text-[26px] font-black text-[#28106F] tracking-tight">Pengiriman Aktif</h1>
+                    <h1 className="text-[26px] font-black text-[#4722B3] tracking-tight">Pengiriman Aktif</h1>
                     <p className="text-[14px] font-semibold text-gray-500 mt-1">Pantau status pengiriman barang keluar dari gudang operasional.</p>
                 </div>
                 {canManageShipments && (
                     <Link
                         href={route('shipments.create')}
-                        className="px-6 py-2.5 bg-[#5932C9] hover:bg-[#5932C9] text-white font-bold rounded-lg transition-colors flex items-center space-x-2"
+                        className="px-6 py-2.5 bg-[#5B33CC] hover:bg-[#5B33CC] text-white font-bold rounded-lg transition-colors flex items-center space-x-2"
                     >
                         <Plus className="w-5 h-5" strokeWidth={2.2} />
-                        <span>Tambah Pengiriman</span>
+                        <span>Buat Pengiriman</span>
                     </Link>
                 )}
             </div>
 
             {/* KPI Stats */}
             <div className="grid grid-cols-3 gap-6 mb-8">
-                <div className="bg-white rounded-[20px] p-6 shadow-[0_2px_16px_rgba(0,0,0,0.02)] border border-[#EDE8FC]">
+                <div className="bg-white rounded-[20px] p-6 shadow-[0_2px_16px_rgba(0,0,0,0.02)] border border-[#E5EAF3]">
                     <div className="flex justify-between items-start mb-5">
                         <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-blue-50 text-blue-600">
                             <Truck className="w-5 h-5" strokeWidth={2.2} />
@@ -361,10 +319,10 @@ export default function Shipments({ shipments = [], stats = {}, filters = {} }) 
                         <span className="px-2.5 py-1 text-[10px] font-black rounded-lg bg-blue-50 text-blue-600 tracking-wide">+12%</span>
                     </div>
                     <div className="text-[10px] font-extrabold text-gray-400 tracking-wider mb-1.5 uppercase">Dalam Perjalanan</div>
-                    <div className="text-[24px] font-black text-[#28106F]">{currentStats.in_transit.toLocaleString()}</div>
+                    <div className="text-[24px] font-black text-[#4722B3]">{currentStats.in_transit.toLocaleString()}</div>
                 </div>
 
-                <div className="bg-white rounded-[20px] p-6 shadow-[0_2px_16px_rgba(0,0,0,0.02)] border border-[#EDE8FC]">
+                <div className="bg-white rounded-[20px] p-6 shadow-[0_2px_16px_rgba(0,0,0,0.02)] border border-[#E5EAF3]">
                     <div className="flex justify-between items-start mb-5">
                         <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-red-50 text-red-600">
                             <AlertCircle className="w-5 h-5" strokeWidth={2.2} />
@@ -372,10 +330,10 @@ export default function Shipments({ shipments = [], stats = {}, filters = {} }) 
                         <span className="px-2.5 py-1 text-[10px] font-black rounded-lg bg-red-50 text-red-600 tracking-wide">-3%</span>
                     </div>
                     <div className="text-[10px] font-extrabold text-gray-400 tracking-wider mb-1.5 uppercase">Terlambat</div>
-                    <div className="text-[24px] font-black text-[#28106F]">{currentStats.delayed}</div>
+                    <div className="text-[24px] font-black text-[#4722B3]">{currentStats.delayed}</div>
                 </div>
 
-                <div className="bg-white rounded-[20px] p-6 shadow-[0_2px_16px_rgba(0,0,0,0.02)] border border-[#EDE8FC]">
+                <div className="bg-white rounded-[20px] p-6 shadow-[0_2px_16px_rgba(0,0,0,0.02)] border border-[#E5EAF3]">
                     <div className="flex justify-between items-start mb-5">
                         <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-yellow-50 text-yellow-600">
                             <CheckCircle2 className="w-5 h-5" strokeWidth={2.2} />
@@ -383,16 +341,16 @@ export default function Shipments({ shipments = [], stats = {}, filters = {} }) 
                         <span className="px-2.5 py-1 text-[10px] font-black rounded-lg bg-yellow-50 text-yellow-600 tracking-wide">Optimal</span>
                     </div>
                     <div className="text-[10px] font-extrabold text-gray-400 tracking-wider mb-1.5 uppercase">Terkirim Hari Ini</div>
-                    <div className="text-[24px] font-black text-[#28106F]">{currentStats.delivered_today}</div>
+                    <div className="text-[24px] font-black text-[#4722B3]">{currentStats.delivered_today}</div>
                 </div>
 
             </div>
 
             {/* Global Network Map */}
-            <div className="bg-white rounded-[28px] p-6 md:p-7 mb-8 shadow-[0_2px_16px_rgba(0,0,0,0.02)] border border-[#EDE8FC]">
+            <div className="bg-white rounded-[28px] p-6 md:p-7 mb-8 shadow-[0_2px_16px_rgba(0,0,0,0.02)] border border-[#E5EAF3]">
                 <div className="flex justify-between items-center mb-6">
                     <div>
-                        <h2 className="text-[16px] font-black text-[#28106F]">JARINGAN GLOBAL LANGSUNG</h2>
+                        <h2 className="text-[16px] font-black text-[#4722B3]">JARINGAN GLOBAL LANGSUNG</h2>
                         <p className="mt-1 text-[12px] font-semibold text-slate-500">Pantau lintasan aktif, posisi driver, dan anomali rute secara real-time.</p>
                     </div>
                     <div ref={mapToolbarRef} className="flex space-x-2">
@@ -427,7 +385,7 @@ export default function Shipments({ shipments = [], stats = {}, filters = {} }) 
                     </div>
                 </div>
 
-                {/* Map Placeholder - showing network routes */}
+                {/* Area Peta */}
                 <div className="relative h-[420px] md:h-[520px] xl:h-[620px]">
                     <ShipmentMap shipments={mapShipments} mapOptions={mapOptions} />
 
@@ -443,18 +401,18 @@ export default function Shipments({ shipments = [], stats = {}, filters = {} }) 
                                         type="text"
                                         value={mapSearchQuery}
                                         onChange={(e) => setMapSearchQuery(e.target.value)}
-                                        placeholder="ID shipment, driver, asal, tujuan..."
+                                        placeholder="ID pengiriman, driver, asal, tujuan..."
                                         className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-[13px] font-bold text-slate-700"
                                     />
                                     <div className="mt-2 text-[11px] font-semibold text-slate-500">
-                                        Menampilkan <span className="text-indigo-600">{mapShipments.length}</span> dari {currentShipments.length} shipment.
+                                        Menampilkan <span className="text-indigo-600">{mapShipments.length}</span> dari {currentShipments.length} pengiriman.
                                     </div>
                                 </>
                             )}
 
                             {isMapSettingsOpen && (
                                 <>
-                                    <div className="mb-3 text-[10px] font-black uppercase tracking-widest text-slate-500">Layer & Refresh</div>
+                                    <div className="mb-3 text-[10px] font-black uppercase tracking-widest text-slate-500">Layer & Muat Ulang</div>
                                     <div className="grid grid-cols-2 gap-2">
                                         {[
                                             ['showRoutes', 'Rute'],
@@ -462,8 +420,8 @@ export default function Shipments({ shipments = [], stats = {}, filters = {} }) 
                                             ['showDestinationMarkers', 'Tujuan'],
                                             ['showDriverMarkers', 'Driver'],
                                             ['showLegend', 'Legenda'],
-                                            ['showAlertsOnly', 'Alert Only'],
-                                            ['showGpsOnly', 'GPS Only'],
+                                            ['showAlertsOnly', 'Hanya Alert'],
+                                            ['showGpsOnly', 'Hanya GPS'],
                                         ].map(([key, label]) => (
                                             <button
                                                 key={key}
@@ -481,17 +439,18 @@ export default function Shipments({ shipments = [], stats = {}, filters = {} }) 
                                     </div>
 
                                     <div className="mt-3 flex items-center justify-between gap-2">
-                                        <label className="text-[11px] font-black uppercase tracking-wider text-slate-500">Auto Refresh</label>
-                                        <select
-                                            value={mapOptions.refreshIntervalSec}
-                                            onChange={(e) => setMapOption('refreshIntervalSec', Number(e.target.value))}
-                                            className="rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-[12px] font-bold text-slate-700"
-                                        >
-                                            <option value={10}>10 detik</option>
-                                            <option value={15}>15 detik</option>
-                                            <option value={30}>30 detik</option>
-                                            <option value={60}>60 detik</option>
-                                        </select>
+                                        <label className="text-[11px] font-black uppercase tracking-wider text-slate-500">Muat Ulang Otomatis</label>
+                                        <CustomDropdown
+                                            value={String(mapOptions.refreshIntervalSec)}
+                                            onChange={(value) => setMapOption('refreshIntervalSec', Number(value))}
+                                            options={[
+                                                { value: '10', label: '10 detik' },
+                                                { value: '15', label: '15 detik' },
+                                                { value: '30', label: '30 detik' },
+                                                { value: '60', label: '60 detik' },
+                                            ]}
+                                            className="min-w-[130px]"
+                                        />
                                     </div>
                                 </>
                             )}
@@ -539,9 +498,9 @@ export default function Shipments({ shipments = [], stats = {}, filters = {} }) 
             `}</style>
 
             {/* Shipment Pipeline Table */}
-            <div className="bg-white rounded-[24px] p-7 shadow-[0_2px_16px_rgba(0,0,0,0.02)] border border-[#EDE8FC]">
+            <div className="bg-white rounded-[24px] p-7 shadow-[0_2px_16px_rgba(0,0,0,0.02)] border border-[#E5EAF3]">
                 <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-[16px] font-black text-[#28106F]">Daftar Pengiriman</h2>
+                    <h2 className="text-[16px] font-black text-[#4722B3]">Daftar Pengiriman</h2>
                     <div className="flex items-center space-x-3">
                         <div className="text-[13px] font-bold text-gray-400 bg-gray-50 px-3 py-2 rounded-lg border border-gray-200">
                             ID: {searchTerm || 'Semua'}
@@ -714,6 +673,34 @@ export default function Shipments({ shipments = [], stats = {}, filters = {} }) 
                                     </tr>
                                 );
                             })}
+                            {filteredShipments.length === 0 && (
+                                <tr>
+                                    <td colSpan={9} className="px-4 py-12">
+                                        <div className="mx-auto max-w-xl rounded-2xl border border-dashed border-indigo-200 bg-indigo-50/40 p-7 text-center">
+                                            <p className="text-lg font-black text-[#4722B3]">Belum ada data pengiriman</p>
+                                            <p className="mt-2 text-sm font-semibold text-gray-500">
+                                                Buat pengiriman pertama agar status kirim dan pelacakan driver mulai tercatat.
+                                            </p>
+                                            {canManageShipments && (
+                                                <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
+                                                    <Link
+                                                        href={route('shipments.create')}
+                                                        className="inline-flex rounded-xl bg-[#5B33CC] px-4 py-2 text-sm font-bold text-white hover:bg-indigo-700"
+                                                    >
+                                                        Buat Pengiriman
+                                                    </Link>
+                                                    <Link
+                                                        href={route('invoices.index')}
+                                                        className="inline-flex rounded-xl border border-[#E5EAF3] bg-white px-4 py-2 text-sm font-bold text-[#5B33CC] hover:bg-gray-50"
+                                                    >
+                                                        Lihat Tagihan
+                                                    </Link>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </td>
+                                </tr>
+                            )}
                         </tbody>
                     </table>
                 </div>
@@ -753,25 +740,26 @@ export default function Shipments({ shipments = [], stats = {}, filters = {} }) 
             </div>
 
             {isManager && deleteTarget && (
-                <div className="fixed inset-0 z-[10010] flex items-center justify-center bg-black/45 backdrop-blur-sm p-4">
-                    <div className="w-full max-w-md rounded-[28px] border border-gray-200 bg-white p-6 shadow-2xl">
+                <div className="fixed inset-0 z-[999] flex items-center justify-center">
+                    <div className="absolute inset-0 bg-black/60" onClick={() => setDeleteTarget(null)}></div>
+                    <div className="relative w-full max-w-md rounded-xl border border-gray-200 bg-white p-6 shadow-2xl mx-4">
                         <div className="text-[11px] font-black uppercase tracking-[0.2em] text-red-500">Konfirmasi Hapus</div>
-                        <h3 className="mt-2 text-[20px] font-black text-[#28106F]">Hapus Pengiriman #{deleteTarget.id}?</h3>
+                        <h3 className="mt-2 text-[20px] font-black text-[#4722B3]">Hapus Pengiriman #{deleteTarget.id}?</h3>
                         <p className="mt-3 text-[13px] font-semibold leading-6 text-gray-500">
                             Data pengiriman akan dihapus permanen dan tindakan ini tidak bisa dibatalkan.
                         </p>
-                        <div className="mt-6 flex items-center justify-end gap-3">
+                        <div className="mt-6 flex items-center gap-3">
                             <button
                                 type="button"
                                 onClick={() => setDeleteTarget(null)}
-                                className="px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-[12px] font-black text-gray-600 hover:bg-gray-50"
+                                className="flex-1 px-4 py-2.5 rounded-lg border border-gray-200 bg-white text-[12px] font-black text-gray-600 hover:bg-gray-50"
                             >
                                 Batal
                             </button>
                             <button
                                 type="button"
                                 onClick={confirmDeleteShipment}
-                                className="px-4 py-2.5 rounded-xl bg-red-600 text-[12px] font-black text-white hover:bg-red-700"
+                                className="flex-1 px-4 py-2.5 rounded-lg bg-red-600 text-[12px] font-black text-white hover:bg-red-700"
                             >
                                 Ya, Hapus
                             </button>

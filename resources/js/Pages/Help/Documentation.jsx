@@ -42,10 +42,10 @@ const modules = [
         ],
     },
     {
-        title: 'Manajemen Gudang',
+        title: 'Peta Gudang',
         href: '/warehouse',
         icon: Home,
-        access: 'Manager, Supervisor',
+        access: 'Manager, Supervisor, Staff (lihat)',
         summary: 'Kelola zona, rak, kapasitas, layout gudang, serta penempatan stok di lokasi gudang.',
         steps: [
             'Manager mengatur zona dan master rak.',
@@ -55,26 +55,28 @@ const modules = [
         ],
     },
     {
-        title: 'Pindah Rak',
+        title: 'Atur Rak',
         href: '/rack-allocation',
         icon: PackageCheck,
-        access: 'Manager, Supervisor',
+        access: 'Manager, Supervisor, Staff (buat) · Approval Supervisor/Manager',
         summary: 'Pindahkan stok antar rak dan simpan bukti perpindahan untuk audit internal.',
         steps: [
-            'Pilih produk, rak asal, rak tujuan, dan jumlah yang dipindahkan.',
+            'Staff, Supervisor, atau Manager membuat perpindahan: pilih produk, rak asal, rak tujuan, dan jumlah.',
             'Pastikan kapasitas rak tujuan masih mencukupi.',
+            'Transfer yang dibuat Staff menunggu approval Supervisor/Manager.',
             'Cetak atau buka detail transfer sebagai bukti perpindahan.',
         ],
     },
     {
-        title: 'Cek Stok Fisik',
+        title: 'Hitung Stok',
         href: '/stock-opname',
         icon: ClipboardCheck,
-        access: 'Manager, Supervisor',
+        access: 'Manager, Supervisor, Staff (buat) · Approval Supervisor/Manager',
         summary: 'Cocokkan stok sistem dengan stok fisik, lalu hasilkan koreksi bila ada selisih.',
         steps: [
-            'Buat sesi opname berdasarkan area atau kebutuhan audit.',
+            'Staff, Supervisor, atau Manager membuat sesi opname berdasarkan area atau kebutuhan audit.',
             'Masukkan stok fisik yang ditemukan di lapangan.',
+            'Hasil opname dari Staff menunggu approval Supervisor/Manager.',
             'Tinjau selisih dan gunakan dokumen detail sebagai dasar koreksi stok.',
         ],
     },
@@ -96,11 +98,12 @@ const modules = [
         href: '/purchase-orders',
         icon: ShoppingCart,
         access: 'Manager, Supervisor, Staff',
-        summary: 'Pantau PO, pemasok, status pemesanan, dan proses barang masuk dari pembelian.',
+        summary: 'Pantau pesanan beli, pemasok, status pemesanan, dan proses barang masuk dari pembelian.',
         steps: [
-            'Manager atau Supervisor membuat PO baru saat stok perlu dipenuhi.',
-            'Perbarui status PO sesuai progres pengadaan.',
-            'Gunakan detail PO untuk menelusuri produk, pemasok, dan dokumen terkait.',
+            'Staff, Supervisor, atau Manager membuat pesanan beli saat stok perlu dipenuhi.',
+            'Approval/tolak/batal PO dilakukan Supervisor atau Manager.',
+            'Perbarui status pesanan sesuai progres pengadaan.',
+            'Gunakan detail pesanan untuk menelusuri produk, pemasok, dan dokumen terkait.',
         ],
     },
     {
@@ -108,11 +111,11 @@ const modules = [
         href: '/supplier',
         icon: Users,
         access: 'Manager, Supervisor, Staff',
-        summary: 'Kelola data supplier dan catatan performa pemasok untuk evaluasi pembelian.',
+        summary: 'Pantau data supplier dan catatan performa pemasok untuk evaluasi pembelian.',
         steps: [
-            'Manager menambah data pemasok baru.',
+            'Manager menambah atau mengubah data pemasok.',
             'Supervisor mencatat performa pemasok berdasarkan pengiriman dan kualitas.',
-            'Gunakan detail supplier untuk membaca histori transaksi dan evaluasi.',
+            'Staff menggunakan detail supplier untuk melihat histori transaksi dan evaluasi.',
         ],
     },
     {
@@ -143,17 +146,17 @@ const modules = [
         title: 'Pengiriman',
         href: '/shipments',
         icon: Truck,
-        access: 'Manager, Supervisor, Staff',
+        access: 'Manager, Supervisor (kelola) · Staff (lihat)',
         summary: 'Pantau pengiriman, status delivery, bukti POD, validasi stok rak, dan posisi operasional pengiriman.',
         steps: [
-            'Buat pengiriman dari data pesanan atau kebutuhan distribusi.',
+            'Manager atau Supervisor membuat pengiriman dari data pesanan atau kebutuhan distribusi.',
             'Sistem membaca ketersediaan stok per rak sebelum pengiriman diproses.',
-            'Perbarui status sesuai proses pengiriman.',
+            'Manager atau Supervisor memperbarui status sesuai proses pengiriman.',
             'Verifikasi proof of delivery sebelum pengiriman dinyatakan selesai.',
         ],
     },
     {
-        title: 'Manajemen Driver',
+        title: 'Driver Pengiriman',
         href: '/drivers',
         icon: Truck,
         access: 'Manager',
@@ -193,52 +196,11 @@ const modules = [
 
 const flowSteps = [
     'Manager menyiapkan master gudang, kategori, satuan, produk, supplier, dan driver.',
-    'Supervisor atau Manager membuat PO, menerima barang, melakukan pindah rak, dan menjalankan cek stok fisik.',
-    'Staff menjalankan transaksi keluar dan membantu pengiriman berdasarkan data stok per rak.',
-    'Supervisor memverifikasi transaksi, POD, opname, dan adjustment.',
+    'Staff, Supervisor, atau Manager dapat membuat PO, transfer rak, dan stock opname.',
+    'Supervisor/Manager menangani approval dokumen operasional (PO, transfer, opname, adjustment).',
+    'Staff menjalankan transaksi keluar dan melihat progres pengiriman berdasarkan data stok per rak.',
+    'Supervisor memverifikasi transaksi, POD, opname, dan adjustment; Manager mengambil keputusan final.',
     'Manager membaca dasbor dan laporan untuk mengambil keputusan operasional.',
-];
-
-const umkmSop = [
-    {
-        title: 'SOP Harian Admin Gudang',
-        items: [
-            'Cek barang masuk hari ini lalu input ke sistem.',
-            'Pastikan jumlah fisik sama dengan jumlah di sistem.',
-            'Jika ada selisih, catat penyebab dan laporkan di hari yang sama.',
-            'Sebelum tutup toko/gudang, cek stok barang cepat laku.',
-        ],
-    },
-    {
-        title: 'SOP Penjualan & Tagihan',
-        items: [
-            'Setiap order keluar wajib dibuatkan tagihan.',
-            'Status tagihan harus diperbarui: Belum Dibayar, Sebagian, atau Lunas.',
-            'Tagihan jatuh tempo ditindaklanjuti maksimal H+1.',
-            'Simpan bukti kirim tagihan (PDF/WhatsApp) untuk arsip.',
-        ],
-    },
-    {
-        title: 'SOP Pengiriman',
-        items: [
-            'Isi tujuan kirim dengan jelas (kode lokasi + nama lokasi).',
-            'Pastikan driver dan barang sudah sesuai sebelum kirim.',
-            'Update status kiriman sesuai tahap perjalanan.',
-            'Selesai kirim wajib ada bukti terima (POD).',
-        ],
-    },
-];
-
-const dailyChecklist = [
-    'Cek barang masuk hari ini sudah diinput ke sistem.',
-    'Cek stok fisik cepat untuk barang yang paling sering keluar.',
-    'Buat dan kirim tagihan untuk order hari ini.',
-    'Perbarui status pembayaran: Belum Dibayar / Sebagian / Lunas.',
-    'Siapkan barang kirim dan pastikan tujuan pengiriman sudah benar.',
-    'Pastikan driver/tim kirim sudah ditugaskan sebelum barang keluar.',
-    'Perbarui status pengiriman sesuai kondisi lapangan.',
-    'Catat kendala hari ini: selisih stok, retur, atau kirim terlambat.',
-    'Tutup hari kerja dengan cek laporan ringkas harian.',
 ];
 
 export default function Documentation() {
@@ -273,28 +235,28 @@ export default function Documentation() {
 
     return (
         <DashboardLayout
-            headerTitle="Dokumentasi Sistem"
+            headerTitle="Panduan Sistem"
             contentClassName="max-w-[1280px] mx-auto"
             searchValue={searchTerm}
             onSearch={setSearchTerm}
         >
-            <Head title="Dokumentasi Sistem" />
+            <Head title="Panduan Sistem" />
 
             <div className="pb-16">
                 <section className="pt-4 pb-8">
                     <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
                         <div>
-                            <p className="text-[11px] font-black uppercase tracking-[0.22em] text-[#28106F]">Pusat Bantuan</p>
+                            <p className="text-[11px] font-black uppercase tracking-[0.22em] text-[#4722B3]">Pusat Bantuan</p>
                             <h1 className="mt-3 text-[34px] font-black tracking-tight text-[#111827]">Dokumentasi Inventori Pergudangan</h1>
                             <p className="mt-3 max-w-3xl text-[14px] font-semibold leading-7 text-gray-500">
-                                Panduan ringkas untuk setiap menu di sistem WMS ini, termasuk fungsi utama, hak akses, dan langkah kerja yang dipakai dalam operasional gudang.
+                                Panduan singkat menu utama WMS agar tim UMKM, toko, dan gudang operasional bisa langsung pakai tanpa bingung.
                             </p>
                         </div>
                         <Link
                             href="/help/live-support"
-                            className="inline-flex items-center justify-center gap-2 rounded-[12px] bg-[#28106F] px-5 py-3 text-[12px] font-black uppercase tracking-wider text-white shadow-lg shadow-indigo-100 transition-all hover:bg-[#28239d]"
+                            className="inline-flex items-center justify-center gap-2 rounded-[12px] bg-[#4722B3] px-5 py-3 text-[12px] font-black uppercase tracking-wider text-white shadow-lg shadow-indigo-100 transition-all hover:bg-[#28239d]"
                         >
-                            Bantuan Langsung
+                            Bantuan Cepat
                             <ArrowRight className="h-4 w-4" />
                         </Link>
                     </div>
@@ -302,73 +264,19 @@ export default function Documentation() {
 
                 <section ref={flowSectionRef} id="alur-kerja" className="mb-8 rounded-[8px] border border-gray-100 bg-white p-6 shadow-sm">
                     <div className="flex items-start gap-4">
-                        <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-[8px] bg-indigo-50 text-[#28106F]">
+                        <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-[8px] bg-indigo-50 text-[#4722B3]">
                             <PackageCheck className="h-6 w-6" />
                         </div>
                         <div className="min-w-0 flex-1">
                             <h2 className="text-[18px] font-black text-gray-900">Alur Kerja Utama</h2>
                             <div className="mt-4 grid gap-3 md:grid-cols-5">
                                 {filteredFlowSteps.map((step, index) => (
-                                    <div key={step} className="rounded-[8px] border border-gray-100 bg-[#F8F7FF] p-4">
-                                        <div className="mb-3 flex h-8 w-8 items-center justify-center rounded-[8px] bg-white text-[12px] font-black text-[#28106F] shadow-sm">
+                                    <div key={step} className="rounded-[8px] border border-gray-100 bg-[#EFE9FF] p-4">
+                                        <div className="mb-3 flex h-8 w-8 items-center justify-center rounded-[8px] bg-white text-[12px] font-black text-[#4722B3] shadow-sm">
                                             {index + 1}
                                         </div>
                                         <p className="text-[12px] font-bold leading-6 text-gray-600">{step}</p>
                                     </div>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                <section className="mb-8 rounded-[8px] border border-gray-100 bg-white p-6 shadow-sm">
-                    <div className="flex items-start gap-4">
-                        <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-[8px] bg-emerald-50 text-emerald-700">
-                            <ClipboardCheck className="h-6 w-6" />
-                        </div>
-                        <div className="min-w-0 flex-1">
-                            <h2 className="text-[18px] font-black text-gray-900">SOP Ringkas UMKM / Toko</h2>
-                            <p className="mt-2 text-[13px] font-semibold leading-6 text-gray-500">
-                                Standar operasional sederhana untuk gudang kecil-menengah agar tim tidak bingung dan kerja lebih rapi.
-                            </p>
-                            <div className="mt-4 grid gap-4 md:grid-cols-3">
-                                {umkmSop.map((section) => (
-                                    <div key={section.title} className="rounded-[8px] border border-gray-100 bg-[#F8FAFC] p-4">
-                                        <h3 className="text-[13px] font-black text-gray-900">{section.title}</h3>
-                                        <div className="mt-3 space-y-2">
-                                            {section.items.map((line) => (
-                                                <div key={line} className="flex gap-2 text-[12px] font-bold leading-6 text-gray-600">
-                                                    <span className="mt-2 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-emerald-600" />
-                                                    <span>{line}</span>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                <section className="mb-8 rounded-[8px] border border-gray-100 bg-white p-6 shadow-sm">
-                    <div className="flex items-start gap-4">
-                        <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-[8px] bg-amber-50 text-amber-700">
-                            <ClipboardCheck className="h-6 w-6" />
-                        </div>
-                        <div className="min-w-0 flex-1">
-                            <h2 className="text-[18px] font-black text-gray-900">Checklist Harian Operasional</h2>
-                            <p className="mt-2 text-[13px] font-semibold leading-6 text-gray-500">
-                                Gunakan daftar ini setiap hari agar proses gudang dan toko berjalan rapi dan tidak ada langkah yang terlewat.
-                            </p>
-                            <div className="mt-4 grid gap-3 md:grid-cols-2">
-                                {dailyChecklist.map((item) => (
-                                    <label
-                                        key={item}
-                                        className="flex items-start gap-3 rounded-[8px] border border-gray-100 bg-[#FFFBEB] px-4 py-3"
-                                    >
-                                        <input type="checkbox" className="mt-1 h-4 w-4 rounded border-amber-300 text-amber-600 focus:ring-amber-500" />
-                                        <span className="text-[12px] font-bold leading-6 text-gray-700">{item}</span>
-                                    </label>
                                 ))}
                             </div>
                         </div>
@@ -382,7 +290,7 @@ export default function Documentation() {
                         return (
                             <article key={item.title} className="rounded-[8px] border border-gray-100 bg-white p-6 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md">
                                 <div className="mb-5 flex items-start justify-between gap-4">
-                                    <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-[8px] bg-[#f4f3ff] text-[#28106F]">
+                                    <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-[8px] bg-[#f4f3ff] text-[#4722B3]">
                                         <Icon className="h-6 w-6" />
                                     </div>
                                     <span className="rounded-full bg-gray-50 px-3 py-1.5 text-[10px] font-black uppercase tracking-wider text-gray-400">
@@ -392,14 +300,14 @@ export default function Documentation() {
                                 <h3 className="text-[17px] font-black text-gray-900">{item.title}</h3>
                                 <p className="mt-2 text-[13px] font-semibold leading-6 text-gray-500">{item.summary}</p>
                                 <div className="mt-5 space-y-2">
-                                    {item.steps.map((step) => (
+                                    {item.steps.slice(0, 2).map((step) => (
                                         <div key={step} className="flex gap-2 text-[12px] font-bold leading-6 text-gray-600">
-                                            <span className="mt-2 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-[#28106F]" />
+                                            <span className="mt-2 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-[#4722B3]" />
                                             <span>{step}</span>
                                         </div>
                                     ))}
                                 </div>
-                                <Link href={item.href} className="mt-5 inline-flex items-center gap-2 text-[12px] font-black uppercase tracking-wider text-[#28106F] hover:text-[#28239d]">
+                                <Link href={item.href} className="mt-5 inline-flex items-center gap-2 text-[12px] font-black uppercase tracking-wider text-[#4722B3] hover:text-[#28239d]">
                                     Buka Menu
                                     <ArrowRight className="h-4 w-4" />
                                 </Link>

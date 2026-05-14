@@ -13,6 +13,7 @@ use App\Models\Unit;
 use App\Models\User;
 use App\Models\Warehouse;
 use App\Models\WarehouseZone;
+use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
@@ -21,6 +22,8 @@ class InventoryFilterTest extends TestCase
 {
     use RefreshDatabase;
 
+    private ?Tenant $tenant = null;
+
     public function test_inventory_status_filters_apply_warehouse_stock_bindings(): void
     {
         $staff = $this->userWithRole('Staff');
@@ -28,6 +31,7 @@ class InventoryFilterTest extends TestCase
 
         $healthy = $this->createProduct($category, $unit, 'HEALTHY-001', 'Healthy Product', 10);
         ProductStock::create([
+            'tenant_id' => $this->tenant()?->id,
             'product_id' => $healthy->id,
             'warehouse_id' => $warehouse->id,
             'current_stock' => 12,
@@ -36,6 +40,7 @@ class InventoryFilterTest extends TestCase
 
         $lowStock = $this->createProduct($category, $unit, 'LOW-001', 'Low Product', 10);
         ProductStock::create([
+            'tenant_id' => $this->tenant()?->id,
             'product_id' => $lowStock->id,
             'warehouse_id' => $warehouse->id,
             'current_stock' => 4,
@@ -44,6 +49,7 @@ class InventoryFilterTest extends TestCase
 
         $outOfStock = $this->createProduct($category, $unit, 'OUT-001', 'Out Product', 10);
         ProductStock::create([
+            'tenant_id' => $this->tenant()?->id,
             'product_id' => $outOfStock->id,
             'warehouse_id' => $warehouse->id,
             'current_stock' => 0,
@@ -63,6 +69,7 @@ class InventoryFilterTest extends TestCase
 
         $product = $this->createProduct($category, $unit, 'AX900-001', 'AX900 Sensor Module', 10);
         ProductStock::create([
+            'tenant_id' => $this->tenant()?->id,
             'product_id' => $product->id,
             'warehouse_id' => $warehouse->id,
             'current_stock' => 45,
@@ -70,6 +77,7 @@ class InventoryFilterTest extends TestCase
         ]);
 
         RackStock::create([
+            'tenant_id' => $this->tenant()?->id,
             'rack_id' => $rack->id,
             'product_id' => $product->id,
             'quantity' => 45,
@@ -82,15 +90,18 @@ class InventoryFilterTest extends TestCase
         $response->assertOk()
             ->assertInertia(fn(Assert $page) => $page
                 ->component('Inventory')
-                ->where('products.data.0.current_stock', 45)
-                ->where('products.data.0.max_stock', 3800)
-                ->where('products.data.0.percentage', 1)
-                ->where('products.data.0.status', 'Stok Menipis')
                 ->where('stats.low_stock', 1)
                 ->where('stats.storage_efficiency', 1.2)
                 ->where('stats.occupied_storage', 45)
                 ->where('stats.total_storage_capacity', 3800)
             );
+
+        $productData = collect($response->inertiaProps('products.data'))->firstWhere('id', $product->id);
+        $this->assertNotNull($productData);
+        $this->assertSame(45, $productData['current_stock']);
+        $this->assertSame(3800, $productData['max_stock']);
+        $this->assertSame(1, $productData['percentage']);
+        $this->assertSame('Stok Menipis', $productData['status']);
 
         $this->actingAs($staff)->get(route('inventory', ['status' => 'LowStock']))
             ->assertOk()
@@ -127,12 +138,14 @@ class InventoryFilterTest extends TestCase
         $matchingRack = $this->createRack($warehouse, 100, 'MATCH');
         $matchingProduct = $this->createProduct($category, $unit, 'MATCH-001', 'Matching Product', 5, $supplier);
         ProductStock::create([
+            'tenant_id' => $this->tenant()?->id,
             'product_id' => $matchingProduct->id,
             'warehouse_id' => $warehouse->id,
             'current_stock' => 50,
             'reserved_stock' => 0,
         ]);
         RackStock::create([
+            'tenant_id' => $this->tenant()?->id,
             'rack_id' => $matchingRack->id,
             'product_id' => $matchingProduct->id,
             'quantity' => 50,
@@ -143,12 +156,14 @@ class InventoryFilterTest extends TestCase
         $otherRack = $this->createRack($warehouse, 100, 'OTHER');
         $otherProduct = $this->createProduct($category, $otherUnit, 'OTHER-001', 'Other Product', 5, $otherSupplier);
         ProductStock::create([
+            'tenant_id' => $this->tenant()?->id,
             'product_id' => $otherProduct->id,
             'warehouse_id' => $warehouse->id,
             'current_stock' => 80,
             'reserved_stock' => 0,
         ]);
         RackStock::create([
+            'tenant_id' => $this->tenant()?->id,
             'rack_id' => $otherRack->id,
             'product_id' => $otherProduct->id,
             'quantity' => 80,
@@ -156,18 +171,20 @@ class InventoryFilterTest extends TestCase
             'last_updated_at' => now(),
         ]);
 
-        $this->actingAs($staff)->get(route('inventory', [
+        $filteredResponse = $this->actingAs($staff)->get(route('inventory', [
             'unit_id' => $unit->id,
             'default_supplier_id' => $supplier->id,
             'min_percentage' => 40,
             'max_percentage' => 60,
-        ]))
+        ]));
+
+        $filteredResponse
             ->assertOk()
-            ->assertInertia(fn(Assert $page) => $page
-                ->where('products.data.0.id', $matchingProduct->id)
-                ->where('products.data.0.percentage', 50)
-                ->where('products.total', 1)
-            );
+            ->assertInertia(fn(Assert $page) => $page->where('products.total', 1));
+
+        $filteredRow = collect($filteredResponse->inertiaProps('products.data'))->firstWhere('id', $matchingProduct->id);
+        $this->assertNotNull($filteredRow);
+        $this->assertSame(50, $filteredRow['percentage']);
     }
 
     public function test_manager_can_update_inventory_product_from_spoofed_form_post(): void
@@ -202,7 +219,7 @@ class InventoryFilterTest extends TestCase
                 'minimum_stock' => 12,
                 'description' => 'Updated product description',
             ])
-            ->assertRedirect(route('inventory.show', $product, absolute: false));
+            ->assertRedirect(route('inventory.show', ['product' => $product->id], absolute: false));
 
         $this->assertDatabaseHas('products', [
             'id' => $product->id,
@@ -227,8 +244,10 @@ class InventoryFilterTest extends TestCase
         );
 
         return User::factory()->create([
+            'tenant_id' => $this->tenant()?->id,
             'role_id' => $role->id,
             'status' => 'active',
+            'email_verified_at' => now(),
         ]);
     }
 
@@ -238,6 +257,7 @@ class InventoryFilterTest extends TestCase
     private function inventoryFixture(): array
     {
         $warehouse = Warehouse::create([
+            'tenant_id' => $this->tenant()?->id,
             'code' => 'WH-FILTER',
             'name' => 'Filter Warehouse',
             'location' => 'Filter Location',
@@ -259,6 +279,7 @@ class InventoryFilterTest extends TestCase
     private function createProduct(Category $category, Unit $unit, string $sku, string $name, int $minimumStock, ?Supplier $supplier = null): Product
     {
         return Product::create([
+            'tenant_id' => $this->tenant()?->id,
             'sku' => $sku,
             'name' => $name,
             'category_id' => $category->id,
@@ -281,10 +302,29 @@ class InventoryFilterTest extends TestCase
         ]);
 
         return Rack::create([
+            'tenant_id' => $this->tenant()?->id,
             'warehouse_zone_id' => $zone->id,
             'code' => "R-{$code}",
             'name' => "{$code} Rack",
             'capacity' => $capacity,
         ]);
+    }
+
+    private function tenant(): Tenant
+    {
+        if ($this->tenant) {
+            return $this->tenant;
+        }
+
+        $this->tenant = Tenant::query()->create([
+            'code' => 'TEN-INV-TEST',
+            'name' => 'Tenant Inventory Test',
+            'slug' => 'tenant-inventory-test',
+            'status' => 'active',
+            'timezone' => 'Asia/Makassar',
+            'locale' => 'id',
+        ]);
+
+        return $this->tenant;
     }
 }

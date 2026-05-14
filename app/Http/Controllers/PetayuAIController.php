@@ -7,6 +7,7 @@ use App\Models\PetayuMessage;
 use App\Models\Product;
 use App\Models\Rack;
 use App\Models\RackStock;
+use App\Models\Shipment;
 use App\Models\StockMovement;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -40,11 +41,14 @@ class PetayuAIController extends Controller
             return response()->json(['text' => 'Kunci API Groq belum dikonfigurasi.']);
         }
 
+        $tenantId = (int) ($request->user()?->tenant_id ?? 0);
+        $cacheKey = 'petayu_dashboard_insight:tenant:' . $tenantId;
+
         if ($request->boolean('refresh')) {
-            Cache::forget('petayu_dashboard_insight');
+            Cache::forget($cacheKey);
         }
 
-        $insight = Cache::remember('petayu_dashboard_insight', 1800, function () use ($groqKey) {
+        $insight = Cache::remember($cacheKey, 1800, function () use ($groqKey) {
             $totalProducts = Product::where('is_active', true)->count();
             $totalStock = RackStock::sum('quantity');
             $alerts = Rack::whereHas('rackStocks')->withSum('rackStocks as total_qty', 'quantity')->get()->filter(function ($r) {
@@ -721,10 +725,12 @@ class PetayuAIController extends Controller
 
     private function inventorySummaryReply(): array
     {
+        $tenantId = (int) (Auth::user()?->tenant_id ?? 0);
         $totalStock = RackStock::sum('quantity');
         $totalProducts = Product::where('is_active', true)->count();
         $totalValue = (float) DB::table('rack_stocks')
             ->join('products', 'rack_stocks.product_id', '=', 'products.id')
+            ->where('products.tenant_id', $tenantId)
             ->where('products.is_active', true)
             ->sum(DB::raw('rack_stocks.quantity * products.purchase_price'));
         $totalCapacity = Rack::sum('capacity');
@@ -1373,12 +1379,12 @@ class PetayuAIController extends Controller
         $normalized = mb_strtolower(trim($message));
 
         $guides = [
-            'po' => "📋 **Pesanan Pembelian (PO):**\n- Manager & Supervisor bisa buat PO di menu Pesanan Pembelian → Buat PO\n- Isi supplier, produk, jumlah, harga, batch, dan tanggal kedaluwarsa\n- PO butuh persetujuan Manager sebelum bisa diterima\n- Supervisor/Manager bisa konfirmasi penerimaan setelah PO disetujui\n- Dokumen Barang Masuk otomatis dibuat saat penerimaan",
-            'receive' => "📦 **Penerimaan PO:**\n- Pastikan PO sudah disetujui Manager\n- Buka detail PO → klik 'Konfirmasi Diterima'\n- Stok otomatis masuk ke gudang dan dokumen Barang Masuk dibuat\n- Batch & tanggal kedaluwarsa dari item PO akan diteruskan",
-            'opname' => "📝 **Cek Stok Fisik:**\n- Supervisor/Staff bisa buat dokumen di menu Cek Stok Fisik\n- Catat stok fisik vs stok sistem per produk\n- Manager auto-approve saat buat, Staff butuh persetujuan Manager\n- Selisih otomatis dikoreksi setelah disetujui",
-            'transfer' => "🔄 **Transfer Rak:**\n- Supervisor/Staff bisa buat transfer di menu Rack Allocation\n- Pilih rak asal, rak tujuan, produk, dan jumlah\n- Manager auto-approve, lainnya butuh approval\n- Stok otomatis berpindah setelah approval",
+            'po' => "📋 **Pesanan Pembelian (PO):**\n- Staff, Supervisor, dan Manager bisa buat PO di menu Pesanan Pembelian → Buat PO\n- Isi supplier, produk, jumlah, harga, batch, dan tanggal kedaluwarsa\n- PO butuh persetujuan Supervisor/Manager sebelum bisa diterima\n- Staff/Supervisor/Manager bisa konfirmasi penerimaan setelah PO disetujui\n- Dokumen Barang Masuk otomatis dibuat saat penerimaan",
+            'receive' => "📦 **Penerimaan PO:**\n- Pastikan PO sudah disetujui Supervisor/Manager\n- Buka detail PO → klik 'Konfirmasi Diterima'\n- Stok otomatis masuk ke gudang dan dokumen Barang Masuk dibuat\n- Batch & tanggal kedaluwarsa dari item PO akan diteruskan",
+            'opname' => "📝 **Cek Stok Fisik:**\n- Staff/Supervisor/Manager bisa buat dokumen di menu Cek Stok Fisik\n- Catat stok fisik vs stok sistem per produk\n- Dokumen dari Staff butuh persetujuan Supervisor/Manager\n- Selisih otomatis dikoreksi setelah disetujui",
+            'transfer' => "🔄 **Transfer Rak:**\n- Staff/Supervisor/Manager bisa buat transfer di menu Rack Allocation\n- Pilih rak asal, rak tujuan, produk, dan jumlah\n- Dokumen dari Staff butuh approval Supervisor/Manager\n- Stok otomatis berpindah setelah approval",
             'outbound' => "📤 **Barang Keluar:**\n- Bisa dibuat di menu Barang Keluar\n- Pilih produk, jumlah, tujuan/customer, dan tujuan pengeluaran\n- Sistem otomatis mengambil stok berdasarkan FEFO (First Expired First Out)\n- Stok berkurang otomatis setelah dibuat",
-            'approve' => "✅ **Persetujuan Dokumen:**\n- Hanya Manager yang bisa setujui/tolak PO, Cek Stok Fisik, dan Pindah Rak\n- Tombol Setujui/Tolak muncul di halaman detail dokumen\n- Manager tidak bisa menyetujui dokumen yang dibuat sendiri (anti self-approval)",
+            'approve' => "✅ **Persetujuan Dokumen:**\n- Supervisor dan Manager bisa setujui/tolak PO, Cek Stok Fisik, dan Pindah Rak\n- Tombol Setujui/Tolak muncul di halaman detail dokumen\n- Pembuat dokumen tidak bisa menyetujui dokumen sendiri (anti self-approval)",
             'default' => "🆘 **Pusat Bantuan PETAYU:**\n\nSaya bisa membantu dengan:\n- **Ringkasan stok** — ketik `ringkasan stok`\n- **Produk rendah stok** — ketik `stok menipis`\n- **Cari produk** — ketik nama/SKU produk\n- **Prediksi stok** — ketik `prediksi stok [nama] 7 hari`\n- **Stok kadaluarsa** — ketik `stok kadaluarsa`\n- **Produk keluar terbanyak** — ketik `produk keluar terbanyak`\n- **Cara pakai fitur** — ketik `cara [fitur]` (contoh: `cara receive PO`)\n- **Hak akses role** — ketik `hak akses` atau `role`\n\nAtau eskalasi ke atasan sesuai alur:\n- Staff → Supervisor → Manager",
         ];
 
@@ -1421,8 +1427,8 @@ class PetayuAIController extends Controller
 
         $text = "🔐 **Hak Akses Role di PETAYU:**\n\n"
             . "- **Manager Gudang**: Akses penuh — master data, pengaturan, driver, persetujuan PO/Cek Stok Fisik/Pindah Rak, laporan, koreksi stok final, semua fitur dashboard & analitik.\n"
-            . "- **Supervisor Gudang**: Validasi transaksi, laporan, Dokumen WMS, pengiriman, penerimaan PO (setelah disetujui Manager), Pindah Rak, Cek Stok Fisik.\n"
-            . "- **Staff Operasional**: Dashboard, inventory view, outbound, transaksi harian, supplier/PO view, shipment view, input operasional (tanpa approval).\n"
+            . "- **Supervisor Gudang**: Validasi transaksi, persetujuan dokumen operasional, laporan, Dokumen WMS, pengiriman, penerimaan PO, Pindah Rak, Cek Stok Fisik.\n"
+            . "- **Staff Operasional**: Dashboard, inventory view, outbound, transaksi harian, supplier/PO view, shipment view, input operasional (PO/transfer/opname) tanpa hak approval.\n"
             . "- **Driver**: Mobile/API — shipment assigned, claim, update status, POD, lokasi, history.\n\n"
             . "Role Anda saat ini: **{$role}**";
 
@@ -1433,11 +1439,13 @@ class PetayuAIController extends Controller
 
     private function buildSystemPrompt($user): string
     {
+        $tenantId = (int) ($user->tenant_id ?? 0);
         // ── Inventory snapshot ──────────────────────────────────────────────────
         $totalStock    = RackStock::sum('quantity');
         $totalProducts = Product::count();
         $totalValue    = (float) DB::table('rack_stocks')
             ->join('products', 'rack_stocks.product_id', '=', 'products.id')
+            ->where('products.tenant_id', $tenantId)
             ->sum(DB::raw('rack_stocks.quantity * products.purchase_price'));
 
         $totalCapacity = Rack::sum('capacity');
@@ -1476,15 +1484,13 @@ class PetayuAIController extends Controller
             ->implode("\n");
 
         // ── Shipments ────────────────────────────────────────────────────────────
-        $shipStats = DB::table('shipments')
-            ->selectRaw("
-                COUNT(*) as total,
-                SUM(CASE WHEN status = 'in-transit' THEN 1 ELSE 0 END) as transit,
-                SUM(CASE WHEN status = 'delivered' THEN 1 ELSE 0 END) as delivered,
-                SUM(CASE WHEN status = 'delayed' THEN 1 ELSE 0 END) as delayed_count,
-                SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as pending
-            ")
-            ->first();
+        $shipStats = (object) [
+            'total' => Shipment::query()->count(),
+            'transit' => Shipment::query()->where('status', 'in-transit')->count(),
+            'delivered' => Shipment::query()->where('status', 'delivered')->count(),
+            'delayed_count' => Shipment::query()->where('status', 'delayed')->count(),
+            'pending' => Shipment::query()->where('status', 'pending')->count(),
+        ];
 
         // ── Recent movements ─────────────────────────────────────────────────────
         $recentMoves = StockMovement::with('product')
@@ -1503,6 +1509,7 @@ class PetayuAIController extends Controller
         // ── Drivers ─────────────────────────────────────────────────────────────
         $drivers = DB::table('users')
             ->join('roles', 'users.role_id', '=', 'roles.id')
+            ->where('users.tenant_id', $tenantId)
             ->where('roles.name', 'driver')
             ->selectRaw("COUNT(*) as total, SUM(CASE WHEN users.status = 'available' THEN 1 ELSE 0 END) as available, SUM(CASE WHEN users.status = 'busy' THEN 1 ELSE 0 END) as busy")
             ->first();
@@ -1511,14 +1518,15 @@ class PetayuAIController extends Controller
         $role  = ucfirst($user->role ?? 'staff');
 
         return <<<PROMPT
- Kamu adalah **PETAYU AI**, asisten AI cerdas milik sistem manajemen gudang **PETAYU**.
+ Kamu adalah **PETAYU AI**, asisten AI cerdas dan andal milik sistem manajemen gudang **PETAYU** — Smart Storage, Smooth Flow.
  Kamu menggunakan Groq AI dan memiliki akses real-time ke seluruh data operasional gudang.
  
  ## Identitas & Kepribadian
  - Nama: **PETAYU AI**
- - Gaya Bicara: **Hangat, ramah, dan sangat percakapan (seperti asisten manusia yang lincah)**. Hindari gaya bicara robotik atau kaku.
- - Nada: Energetik, membantu, dan bersahabat. Gunakan kalimat pembuka dan penutup yang alami.
- - Kemampuan: Menganalisis data gudang, memberikan rekomendasi, menjawab pertanyaan operasional dengan cerdas.
+ - Gaya Bicara: **Hangat, cerdas, dan sangat percakapan**. Seperti rekan kerja yang pintar dan selalu siap bantu.
+ - Nada: Energetik, proaktif, dan bersahabat. Gunakan bahasa Indonesia yang natural dan mudah dipahami.
+ - Kemampuan: Menganalisis data gudang secara mendalam, memberikan rekomendasi actionable, prediksi stok, optimasi operasional, dan menjawab pertanyaan dengan konteks data real-time.
+ - Keunggulan: Kamu bisa menghitung, membandingkan, dan memberikan insight yang tidak terlihat dari data mentah.
  
  ## Pengguna Saat Ini
  - Nama: {$user->name}
@@ -1555,12 +1563,14 @@ class PetayuAIController extends Controller
  {$recentMoves}
  
  ## Instruksi Khusus (PENTING)
- 1. Jawab sesuai konteks pertanyaan terakhir. Jika pengguna hanya menyapa atau basa-basi, jawab singkat dan natural; jangan langsung mengulang ringkasan gudang.
- 2. Jangan membuka setiap balasan dengan sapaan yang sama. Hindari mengulang kalimat, data, atau rekomendasi yang baru saja kamu sampaikan di percakapan ini.
- 3. Jika pengguna meminta data operasional, gunakan data aktual di atas dan berikan angka yang relevan.
- 4. Jika ada data yang mengkhawatirkan (stok rendah atau rak penuh), sebutkan hanya ketika relevan dengan pertanyaan.
- 5. Ringkas, percakapan, dan dinamis. Format markdown boleh dipakai untuk daftar/data, tapi jangan berlebihan.
- 6. BATASAN KONTEKS (SANGAT PENTING — WAJIB DIPATUHI TANPA PENGEUALIAN):
+ 1. **Analisis Proaktif**: Jika pengguna bertanya tentang data, jangan hanya menyebutkan angka — berikan ANALISIS dan REKOMENDASI. Contoh: "Stok produk X tinggal 50 unit, dengan rata-rata keluar 20/hari, estimasi habis dalam 2.5 hari. Saya sarankan segera buat PO."
+ 2. **Konteks Percakapan**: Jawab sesuai konteks. Jika menyapa, jawab singkat natural. Jika tanya data, berikan insight mendalam.
+ 3. **Variasi Respons**: Jangan mengulang kalimat/data yang baru disampaikan. Setiap respons harus fresh dan relevan.
+ 4. **Perhitungan Cerdas**: Kamu BISA dan HARUS menghitung: rata-rata pergerakan, estimasi habis stok, persentase utilisasi, tren naik/turun, dan perbandingan antar produk/rak.
+ 5. **Peringatan Otomatis**: Jika ada data mengkhawatirkan (stok < 20% minimum, rak > 90% penuh, pengiriman delayed), sebutkan sebagai peringatan HANYA jika relevan.
+ 6. **Format Cerdas**: Gunakan markdown untuk data/daftar, tapi tetap conversational. Untuk jawaban singkat, cukup teks biasa.
+ 7. **Prediksi**: Berdasarkan data pergerakan, kamu bisa memprediksi kapan stok habis, kapan rak penuh, dan produk mana yang perlu restock.
+ 8. BATASAN KONTEKS (SANGAT PENTING — WAJIB DIPATUHI TANPA PENGECUALIAN):
     Kamu HANYA boleh menjawab pertanyaan yang berkaitan dengan:
     - Operasional gudang, inventaris, logistik, stok, driver, pengiriman
     - Manajemen WMS (Warehouse Management System) PETAYU
@@ -1569,25 +1579,12 @@ class PetayuAIController extends Controller
     - Dashboard, laporan, analisis, prediksi stok
     - Hak akses role, alur kerja, dan cara pakai fitur sistem PETAYU
 
-    Jika pertanyaan BUKAN tentang hal-hal di atas, kamu WAJIB menolak dengan sopan. Contoh penolakan:
-    "Maaf, saya adalah PETAYU AI yang khusus membantu operasional gudang. Saya tidak bisa menjawab pertanyaan di luar itu. Coba tanyakan tentang stok, produk, atau pengiriman ya!"
-
-    JANGAN PERNAH mencoba menjawab pertanyaan tentang: coding/program, resep masak, cuaca, film/musik, matematika/sains, kesehatan, politik, crypto/saham, traveling, atau topik umum lainnya.
- 7. Kamu BOLEH menjawab pertanyaan tentang Pusat Bantuan, Bantuan Langsung, Dokumentasi Sistem, hak akses role, dan alur eskalasi kendala sistem karena itu bagian dari operasional WMS.
- 8. Aturan Bantuan Langsung:
-    - Staff Operasional melapor dulu ke Supervisor Gudang untuk kendala input, transaksi harian, stock opname, pengiriman, atau data operasional.
-    - Supervisor Gudang eskalasi ke Manager Gudang untuk approval, data master, koreksi stok final, PO, dan keputusan lintas shift.
-    - Manager Gudang memakai PETAYU AI dan Dokumentasi Sistem untuk analisis awal, validasi alur, dan keputusan operasional.
-    - Driver melapor ke Supervisor Gudang untuk kendala shipment, status pengiriman, proof of delivery, atau lokasi.
-    - Format laporan kendala yang baik: menu terkait, nomor dokumen, nama produk/rack/supplier/driver/shipment, deskripsi masalah, screenshot, waktu kejadian, dan akun pengguna.
- 9. Hak akses standar:
-    - Manager Gudang: akses penuh, master data, pengaturan, driver, approval PO, laporan, dan koreksi final.
-    - Supervisor Gudang: validasi transaksi, laporan, Dokumen WMS, pengiriman, penerimaan PO setelah disetujui Manager, Pindah Rak, dan Cek Stok Fisik.
-    - Staff Operasional: dashboard, inventory view, outbound, transaksi, supplier/PO view, shipment view, dan input operasional non-approval.
-    - Driver: mobile/API untuk shipment assigned/claim/status/POD/location/history.
- 10. Jika pengguna menanyakan hal di luar urusan gudang (seperti membuat kode program, pertanyaan umum, matematika murni, sains, atau tips gaya hidup yang tidak relevan dengan gudang), kamu WAJIB menjawab bahwa kamu tidak bisa menjawab pertanyaan tersebut karena fokus utama kamu hanya pada manajemen sistem gudang PETAYU. 
+    Jika pertanyaan BUKAN tentang hal-hal di atas, tolak dengan sopan:
+    "Maaf, saya PETAYU AI yang fokus membantu operasional gudang. Untuk pertanyaan itu, saya tidak bisa membantu. Tapi kalau soal stok, produk, atau pengiriman — tanya aja!"
+ 9. Kamu BOLEH menjawab tentang Pusat Bantuan, Dokumentasi Sistem, hak akses role, dan alur eskalasi.
+ 10. **Gaya Bahasa**: Gunakan bahasa yang energetik dan helpful. Contoh: "Oke, saya cek datanya..." atau "Nah, ini menarik..." atau "Berdasarkan data real-time..."
  
- Ingat, kamu adalah asisten spesialis gudang yang handal bagi {$user->name}, bukan asisten umum!
+ Ingat: Kamu adalah partner operasional cerdas bagi {$user->name}, bukan chatbot biasa!
 PROMPT;
     }
 

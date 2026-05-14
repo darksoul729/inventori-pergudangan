@@ -16,6 +16,7 @@ use App\Models\Unit;
 use App\Models\User;
 use App\Models\Warehouse;
 use App\Models\WarehouseZone;
+use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -24,6 +25,8 @@ use Tests\TestCase;
 class RoleAccessTest extends TestCase
 {
     use RefreshDatabase;
+
+    private ?Tenant $tenant = null;
 
     public function test_manager_can_create_staff_account(): void
     {
@@ -104,10 +107,12 @@ class RoleAccessTest extends TestCase
         $manager = $this->userWithRole('Manager');
         $driverRole = Role::firstOrCreate(['name' => 'Driver'], ['description' => 'Driver role']);
         $driverUser = User::factory()->create([
+            'tenant_id' => $this->tenant()?->id,
             'role_id' => $driverRole->id,
             'name' => 'Test Driver',
             'email' => 'test-driver@example.com',
             'status' => 'active',
+            'email_verified_at' => now(),
         ]);
         $driver = Driver::create([
             'user_id' => $driverUser->id,
@@ -130,26 +135,27 @@ class RoleAccessTest extends TestCase
             );
     }
 
-    public function test_staff_cannot_access_manager_only_routes(): void
+    public function test_staff_has_operational_access_but_cannot_access_admin_routes(): void
     {
         $staff = $this->userWithRole('Staff');
 
         $this->actingAs($staff)->get(route('settings'))->assertForbidden();
         $this->actingAs($staff)->get(route('drivers.index'))->assertForbidden();
-        $this->actingAs($staff)->get(route('rack.allocation'))->assertForbidden();
-        $this->actingAs($staff)->get(route('stock-opname.index'))->assertForbidden();
+        $this->actingAs($staff)->get(route('rack.allocation'))->assertOk();
+        $this->actingAs($staff)->get(route('stock-opname.index'))->assertOk();
+        $this->actingAs($staff)->get(route('stock-opname.create'))->assertOk();
         $this->actingAs($staff)->get(route('inventory.create'))->assertForbidden();
-        $this->actingAs($staff)->get(route('purchase-orders.create'))->assertForbidden();
+        $this->actingAs($staff)->get(route('purchase-orders.create'))->assertOk();
         $this->actingAs($staff)->get(route('shipments.create'))->assertForbidden();
         $this->actingAs($staff)->get(route('reports'))->assertForbidden();
         $this->actingAs($staff)->get(route('transaction.export'))->assertForbidden();
 
         $this->actingAs($staff)->post(route('warehouse.zones.store'), [])->assertForbidden();
         $this->actingAs($staff)->post(route('supplier.store'), [])->assertForbidden();
-        $this->actingAs($staff)->post(route('purchase-orders.store'), [])->assertForbidden();
+        $this->actingAs($staff)->post(route('purchase-orders.store'), [])->assertStatus(302);
         $this->actingAs($staff)->post(route('shipments.store'), [])->assertForbidden();
-        $this->actingAs($staff)->post(route('rack.allocation.transfers.store'), [])->assertForbidden();
-        $this->actingAs($staff)->post(route('stock-opname.store'), [])->assertForbidden();
+        $this->actingAs($staff)->post(route('rack.allocation.transfers.store'), [])->assertStatus(302);
+        $this->actingAs($staff)->post(route('stock-opname.store'), [])->assertStatus(302);
     }
 
     public function test_supervisor_has_operational_approval_access_but_not_admin_access(): void
@@ -169,6 +175,7 @@ class RoleAccessTest extends TestCase
         $this->actingAs($supervisor)->get(route('reports'))->assertOk();
         $this->actingAs($supervisor)->get(route('rack.allocation'))->assertOk();
         $this->actingAs($supervisor)->get(route('stock-opname.index'))->assertOk();
+        $this->actingAs($supervisor)->get(route('stock-opname.create'))->assertOk();
 
         $this->actingAs($supervisor)->get(route('settings'))->assertForbidden();
         $this->actingAs($supervisor)->get(route('drivers.index'))->assertForbidden();
@@ -178,7 +185,7 @@ class RoleAccessTest extends TestCase
         $this->actingAs($supervisor)->post(route('supplier.store'), [])->assertForbidden();
     }
 
-    public function test_supervisor_cannot_approve_purchase_order_but_manager_can(): void
+    public function test_supervisor_and_manager_can_approve_purchase_order(): void
     {
         $manager = $this->userWithRole('Manager');
         $supervisor = $this->userWithRole('Supervisor');
@@ -187,10 +194,15 @@ class RoleAccessTest extends TestCase
         $this
             ->actingAs($supervisor)
             ->put(route('purchase-orders.update-status', $purchaseOrder), ['status' => 'approved'])
-            ->assertForbidden();
+            ->assertRedirect();
 
         $this->assertDatabaseHas('purchase_orders', [
             'id' => $purchaseOrder->id,
+            'status' => 'approved',
+            'approved_by' => $supervisor->id,
+        ]);
+
+        $purchaseOrder->update([
             'status' => 'pending',
             'approved_by' => null,
         ]);
@@ -211,6 +223,7 @@ class RoleAccessTest extends TestCase
     {
         $supervisor = $this->userWithRole('Supervisor');
         $shipment = Shipment::create([
+            'tenant_id' => $this->tenant()?->id,
             'shipment_id' => 'TRK-WEB-DELIVERED',
             'origin' => 'MKS',
             'origin_name' => 'Makassar',
@@ -269,7 +282,7 @@ class RoleAccessTest extends TestCase
                 'destination' => 'Audit outbound',
                 'notes' => 'Staff outbound permission check',
             ])
-            ->assertRedirect(route('inventory', absolute: false));
+            ->assertRedirect(route('inventory'));
 
         $this->assertDatabaseHas('stock_movements', [
             'product_id' => $product->id,
@@ -293,8 +306,10 @@ class RoleAccessTest extends TestCase
         );
 
         return User::factory()->create([
+            'tenant_id' => $this->tenant()?->id,
             'role_id' => $role->id,
             'status' => 'active',
+            'email_verified_at' => now(),
         ]);
     }
 
@@ -314,6 +329,7 @@ class RoleAccessTest extends TestCase
         ]);
 
         $warehouse = Warehouse::create([
+            'tenant_id' => $this->tenant()?->id,
             'code' => 'WH-AUDIT',
             'name' => 'Audit Warehouse',
             'location' => 'Audit Location',
@@ -327,6 +343,7 @@ class RoleAccessTest extends TestCase
         ]);
 
         $rack = Rack::create([
+            'tenant_id' => $this->tenant()?->id,
             'warehouse_zone_id' => $zone->id,
             'code' => 'R-AUDIT',
             'name' => 'Audit Rack',
@@ -334,6 +351,7 @@ class RoleAccessTest extends TestCase
         ]);
 
         $product = Product::create([
+            'tenant_id' => $this->tenant()?->id,
             'sku' => 'SKU-AUDIT',
             'name' => 'Audit Product',
             'category_id' => $category->id,
@@ -345,6 +363,7 @@ class RoleAccessTest extends TestCase
         ]);
 
         ProductStock::create([
+            'tenant_id' => $this->tenant()?->id,
             'product_id' => $product->id,
             'warehouse_id' => $warehouse->id,
             'current_stock' => 10,
@@ -353,6 +372,7 @@ class RoleAccessTest extends TestCase
         ]);
 
         RackStock::create([
+            'tenant_id' => $this->tenant()?->id,
             'rack_id' => $rack->id,
             'product_id' => $product->id,
             'quantity' => 10,
@@ -366,6 +386,7 @@ class RoleAccessTest extends TestCase
     private function createPurchaseOrderFixture(User $creator): PurchaseOrder
     {
         $warehouse = Warehouse::create([
+            'tenant_id' => $creator->tenant_id,
             'code' => 'WH-PO',
             'name' => 'Purchase Warehouse',
             'location' => 'Purchase Location',
@@ -381,6 +402,7 @@ class RoleAccessTest extends TestCase
         ]);
 
         return PurchaseOrder::create([
+            'tenant_id' => $creator->tenant_id,
             'po_number' => 'PO-ROLE-001',
             'supplier_id' => $supplier->id,
             'warehouse_id' => $warehouse->id,
@@ -394,6 +416,7 @@ class RoleAccessTest extends TestCase
     private function createShipmentFixture(string $shipmentId): Shipment
     {
         return Shipment::create([
+            'tenant_id' => $this->tenant()?->id,
             'shipment_id' => $shipmentId,
             'origin' => 'MKS',
             'origin_name' => 'Makassar',
@@ -404,5 +427,23 @@ class RoleAccessTest extends TestCase
             'load_type' => 'ground',
             'tracking_stage' => 'in_transit',
         ]);
+    }
+
+    private function tenant(): Tenant
+    {
+        if ($this->tenant) {
+            return $this->tenant;
+        }
+
+        $this->tenant = Tenant::query()->create([
+            'code' => 'TEN-ROLE-TEST',
+            'name' => 'Tenant Role Test',
+            'slug' => 'tenant-role-test',
+            'status' => 'active',
+            'timezone' => 'Asia/Makassar',
+            'locale' => 'id',
+        ]);
+
+        return $this->tenant;
     }
 }

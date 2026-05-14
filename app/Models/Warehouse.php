@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToTenant;
 use Illuminate\Database\Eloquent\Model;
 
 class Warehouse extends Model
 {
-    protected $fillable = ['code', 'name', 'location', 'description'];
+    use BelongsToTenant;
+
+    protected $fillable = ['tenant_id', 'code', 'name', 'location', 'description'];
 
     public function zones()
     {

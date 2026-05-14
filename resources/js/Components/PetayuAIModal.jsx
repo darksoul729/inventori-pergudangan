@@ -10,12 +10,7 @@ import {
 
 // ─── AI SVG Icon ─────────────────────────────────────────────────────────────
 const PetayuIcon = ({ className = 'w-6 h-6', style }) => (
-    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={className} style={style}>
-        <path d="M12 2L14.85 9.15L22 12L14.85 14.85L12 22L9.15 14.85L2 12L9.15 9.15L12 2Z" fill="white" fillOpacity="0.9" />
-        <circle cx="12" cy="12" r="3" fill="white" />
-        <path d="M12 5V7M12 17V19M5 12H7M17 12H19M7.05 7.05L8.46 8.46M15.54 15.54L16.95 16.95M7.05 16.95L8.46 15.54M15.54 8.46L16.95 7.05"
-            stroke="white" strokeWidth="1.5" strokeLinecap="round" />
-    </svg>
+    <img src="/images/logo 1.png" alt="Petayu AI" className={className} style={style} />
 );
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -995,7 +990,7 @@ export default function PetayuAIModal({ isOpen, onClose, startInCall = false }) 
                                     disabled={!inputText.trim() || isLoading}
                                     className="absolute right-2.5 bottom-2.5 w-9 h-9 rounded-2xl flex items-center justify-center transition-all disabled:opacity-40"
                                     style={{
-                                        background: inputText.trim() && !isLoading ? '#5932C9' : '#cbd5e1',
+                                        background: inputText.trim() && !isLoading ? '#5B33CC' : '#cbd5e1',
                                         boxShadow: inputText.trim() && !isLoading ? '0 8px 20px rgba(89,50,201,0.3)' : 'none',
                                     }}
                                 >

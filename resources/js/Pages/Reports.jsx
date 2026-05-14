@@ -443,12 +443,12 @@ export default function Reports({ data, reports, filters }) {
             const ctx = canvas.getContext('2d');
             if (!ctx) throw new Error('Canvas tidak tersedia.');
 
-            ctx.fillStyle = '#F8F7FF';
+            ctx.fillStyle = '#EFE9FF';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             ctx.fillStyle = '#ffffff';
             ctx.fillRect(40, 40, 1320, 820);
 
-            ctx.fillStyle = '#28106F';
+            ctx.fillStyle = '#4722B3';
             ctx.font = '700 42px Arial';
             ctx.fillText('Laporan Analisis Gudang', 90, 120);
 
@@ -472,11 +472,11 @@ export default function Reports({ data, reports, filters }) {
                 ctx.fillStyle = '#72CBEA';
                 ctx.fillRect(90, y, width, 30);
 
-                ctx.fillStyle = '#28106F';
+                ctx.fillStyle = '#4722B3';
                 ctx.font = '600 20px Arial';
                 ctx.fillText(item.label, 90, y - 10);
 
-                ctx.fillStyle = '#28106F';
+                ctx.fillStyle = '#4722B3';
                 ctx.font = '700 18px Arial';
                 ctx.fillText(item.value.toLocaleString('id-ID'), 870, y + 22);
             });
@@ -590,8 +590,25 @@ export default function Reports({ data, reports, filters }) {
                                 })}
                             </div>
                         ) : (
-                            <div className="rounded-xl border border-dashed border-slate-300 p-10 text-center text-sm text-slate-500">
-                                Belum ada data pergerakan barang.
+                            <div className="rounded-xl border border-dashed border-indigo-200 bg-indigo-50/40 p-10 text-center">
+                                <p className="text-sm font-bold text-slate-700">Belum ada data pergerakan barang.</p>
+                                <p className="mt-1 text-sm text-slate-500">Catat barang masuk atau barang keluar dulu agar grafik tren terisi otomatis.</p>
+                                <div className="mt-4 flex flex-wrap justify-center gap-2">
+                                    <button
+                                        type="button"
+                                        onClick={() => { window.location.href = '/inventory?mode=inbound'; }}
+                                        className="rounded-lg bg-indigo-600 px-3 py-2 text-xs font-bold text-white hover:bg-indigo-700"
+                                    >
+                                        Catat Barang Masuk
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => { window.location.href = '/inventory?mode=outbound'; }}
+                                        className="rounded-lg border border-indigo-200 bg-white px-3 py-2 text-xs font-bold text-indigo-700 hover:bg-indigo-50"
+                                    >
+                                        Catat Barang Keluar
+                                    </button>
+                                </div>
                             </div>
                         )}
                     </article>
@@ -849,7 +866,17 @@ export default function Reports({ data, reports, filters }) {
                                 }) : (
                                     <tr>
                                         <td colSpan={5} className="py-10 text-center text-sm text-slate-500">
-                                            Tidak ada laporan untuk filter ini.
+                                            <div className="mx-auto max-w-md rounded-xl border border-dashed border-indigo-200 bg-indigo-50/40 p-6">
+                                                <p className="font-semibold text-slate-700">Belum ada laporan pada filter ini.</p>
+                                                <p className="mt-1 text-sm text-slate-500">Buat laporan baru dari data operasional yang sudah tercatat.</p>
+                                                <button
+                                                    type="button"
+                                                    onClick={handleGenerate}
+                                                    className="mt-3 rounded-lg bg-indigo-600 px-3 py-2 text-xs font-bold text-white hover:bg-indigo-700"
+                                                >
+                                                    Buat Laporan
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 )}

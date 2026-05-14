@@ -10,6 +10,7 @@ use App\Models\RackStock;
 use App\Models\ProductStock;
 use App\Models\Warehouse;
 use App\Models\Driver;
+use App\Models\Shipment;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\DB;
@@ -29,7 +30,11 @@ class ReportController extends Controller
 
         $now = Carbon::now();
         $startDate = $now->copy()->startOfDay()->subDays(29);
-        $operationalWarehouse = Warehouse::orderBy('id')->firstOrFail();
+        $tenantId = (int) ($request->user()?->tenant_id ?? 0);
+        $operationalWarehouse = Warehouse::query()
+            ->when($tenantId > 0, fn ($q) => $q->where('tenant_id', $tenantId))
+            ->orderBy('id')
+            ->firstOrFail();
 
         // 1. Throughput Trend (Last 30 Days)
         $movementTrendRows = StockMovement::select(
@@ -99,6 +104,7 @@ class ReportController extends Controller
             ->leftJoin('rack_stocks', 'products.id', '=', 'rack_stocks.product_id')
             ->leftJoin('racks', 'rack_stocks.rack_id', '=', 'racks.id')
             ->leftJoin('warehouse_zones', 'racks.warehouse_zone_id', '=', 'warehouse_zones.id')
+            ->where('products.tenant_id', $tenantId)
             ->where(function ($q) use ($operationalWarehouse) {
                 $q->where('warehouse_zones.warehouse_id', $operationalWarehouse->id)
                   ->orWhereNull('rack_stocks.id');
@@ -107,14 +113,14 @@ class ReportController extends Controller
                 'categories.name',
                 DB::raw('SUM(COALESCE(rack_stocks.quantity, 0)) as total_qty'),
                 DB::raw('SUM(COALESCE(rack_stocks.quantity, 0) * COALESCE(products.purchase_price, 0)) as total_value'),
-                DB::raw('SUM(CASE WHEN EXISTS (SELECT 1 FROM stock_movements WHERE stock_movements.product_id = products.id AND movement_type = "in") THEN 1 ELSE 0 END) as inbound_count'),
-                DB::raw('SUM(CASE WHEN EXISTS (SELECT 1 FROM stock_movements WHERE stock_movements.product_id = products.id AND movement_type = "out") THEN 1 ELSE 0 END) as outbound_count')
+                DB::raw('SUM(CASE WHEN EXISTS (SELECT 1 FROM stock_movements WHERE stock_movements.product_id = products.id AND stock_movements.tenant_id = products.tenant_id AND movement_type = "in") THEN 1 ELSE 0 END) as inbound_count'),
+                DB::raw('SUM(CASE WHEN EXISTS (SELECT 1 FROM stock_movements WHERE stock_movements.product_id = products.id AND stock_movements.tenant_id = products.tenant_id AND movement_type = "out") THEN 1 ELSE 0 END) as outbound_count')
             )
             ->groupBy('categories.id', 'categories.name')
             ->get();
 
         // 6. Shipment Stats & Trends (for Vehicle Fleet)
-        $shipmentTrendRows = DB::table('shipments')
+        $shipmentTrendRows = Shipment::query()
             ->select(DB::raw('DATE(created_at) as date'), DB::raw('count(*) as count'))
             ->where('created_at', '>=', $startDate->toDateString())
             ->groupBy('date')
@@ -132,14 +138,15 @@ class ReportController extends Controller
             ->values();
 
         $shipmentStats = [
-            'total' => DB::table('shipments')->count(),
-            'transit' => DB::table('shipments')->where('status', 'in-transit')->count(),
-            'delivered' => DB::table('shipments')->where('status', 'delivered')->count(),
+            'total' => Shipment::query()->count(),
+            'transit' => Shipment::query()->where('status', 'in-transit')->count(),
+            'delivered' => Shipment::query()->where('status', 'delivered')->count(),
             'trend' => $fleetTrend
         ];
 
         // 7. Reports (server-side pagination + filter)
         $reportsQuery = Report::with('user')
+            ->whereHas('user', fn ($q) => $q->where('tenant_id', $tenantId))
             ->orderByDesc('created_at');
 
         if ($statusFilter === 'completed') {
@@ -183,7 +190,11 @@ class ReportController extends Controller
     {
         $now = Carbon::now();
         $startDate = $now->copy()->subDays(29);
-        $operationalWarehouse = Warehouse::orderBy('id')->firstOrFail();
+        $tenantId = (int) ($request->user()?->tenant_id ?? 0);
+        $operationalWarehouse = Warehouse::query()
+            ->when($tenantId > 0, fn ($q) => $q->where('tenant_id', $tenantId))
+            ->orderBy('id')
+            ->firstOrFail();
 
         // Data for PDF
         $products = Product::with('category', 'unit')
@@ -199,6 +210,7 @@ class ReportController extends Controller
         $categories = DB::table('categories')
             ->leftJoin('products', 'categories.id', '=', 'products.category_id')
             ->leftJoin('rack_stocks', 'products.id', '=', 'rack_stocks.product_id')
+            ->where('products.tenant_id', $tenantId)
             ->select(
                 'categories.name',
                 DB::raw('COUNT(DISTINCT products.id) as product_count'),
@@ -211,13 +223,16 @@ class ReportController extends Controller
 
         // Shipment statistics
         $shipments = [
-            'total'     => DB::table('shipments')->count(),
-            'transit'   => DB::table('shipments')->where('status', 'in-transit')->count(),
-            'delivered' => DB::table('shipments')->where('status', 'delivered')->count(),
-            'delayed'   => DB::table('shipments')->where('status', 'delayed')->count(),
+            'total'     => Shipment::query()->count(),
+            'transit'   => Shipment::query()->where('status', 'in-transit')->count(),
+            'delivered' => Shipment::query()->where('status', 'delivered')->count(),
+            'delayed'   => Shipment::query()->where('status', 'delayed')->count(),
         ];
 
-        $totalDrivers = Driver::where('status', 'approved')->count();
+        $totalDrivers = Driver::query()
+            ->where('status', 'approved')
+            ->whereHas('user', fn ($q) => $q->where('tenant_id', $tenantId))
+            ->count();
 
         // Movement summary last 30 days
         $movementSummary = [
@@ -239,6 +254,7 @@ class ReportController extends Controller
                 ->join('products', 'rack_stocks.product_id', '=', 'products.id')
                 ->join('racks', 'rack_stocks.rack_id', '=', 'racks.id')
                 ->join('warehouse_zones', 'racks.warehouse_zone_id', '=', 'warehouse_zones.id')
+                ->where('products.tenant_id', $tenantId)
                 ->where('warehouse_zones.warehouse_id', $operationalWarehouse->id)
                 ->sum(DB::raw('rack_stocks.quantity * products.purchase_price')),
             'total_capacity'   => $totalCapacity,
@@ -273,6 +289,10 @@ class ReportController extends Controller
 
     public function download(Report $report)
     {
+        if ((int) ($report->user?->tenant_id ?? 0) !== (int) (auth()->user()?->tenant_id ?? 0)) {
+            abort(403, 'Anda tidak memiliki akses ke laporan ini.');
+        }
+
         if (!Storage::disk('public')->exists($report->file_path)) {
             return redirect()->back()->with('error', 'Berkas tidak ditemukan.');
         }

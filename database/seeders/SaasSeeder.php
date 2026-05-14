@@ -52,6 +52,13 @@ class SaasSeeder extends Seeder
                     ['is_enabled' => true]
                 );
             }
+
+            // Hapus PlanModule yang sudah tidak ada di config plan ini
+            $enabledModuleIds = Module::query()->whereIn('code', $enabledCodes)->pluck('id');
+            PlanModule::query()
+                ->where('plan_id', $plan->id)
+                ->whereNotIn('module_id', $enabledModuleIds)
+                ->delete();
         }
 
         $defaultTenant = Tenant::query()->first();
@@ -59,7 +66,10 @@ class SaasSeeder extends Seeder
             return;
         }
 
-        User::query()->whereNull('tenant_id')->update(['tenant_id' => $defaultTenant->id]);
+        User::query()
+            ->whereNull('tenant_id')
+            ->whereHas('role', fn ($query) => $query->where('name', '!=', 'Admin Sistem'))
+            ->update(['tenant_id' => $defaultTenant->id]);
 
         $defaultPlan = Plan::query()->where('code', 'pro')->first()
             ?? Plan::query()->where('code', 'trial_3d')->first();

@@ -33,7 +33,43 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->intended(route('dashboard', absolute: false));
+        $roleName = strtolower((string) ($request->user()?->role?->name ?? ''));
+        if (
+            str_contains($roleName, 'admin sistem')
+            || str_contains($roleName, 'admin system')
+            || str_contains($roleName, 'super admin')
+        ) {
+            return redirect()->intended(route('settings.saas', absolute: false));
+        }
+
+        // Skip panduan-setup if all setup steps are already completed
+        $user = $request->user();
+        $tenantId = (int) ($user->tenant_id ?? 0);
+        if ($tenantId <= 0) {
+            return redirect()
+                ->intended(route('dashboard', absolute: false))
+                ->with('auth_onboarding', true);
+        }
+
+        $warehouse = \App\Models\Warehouse::query()
+            ->when($tenantId > 0, fn ($q) => $q->where('tenant_id', $tenantId))
+            ->orderBy('id')->first();
+
+        $allDone = \App\Models\Category::when($tenantId > 0, fn ($q) => $q->where('tenant_id', $tenantId))->exists()
+            && \App\Models\Unit::when($tenantId > 0, fn ($q) => $q->where('tenant_id', $tenantId))->exists()
+            && $warehouse && \App\Models\WarehouseZone::where('warehouse_id', $warehouse->id)->exists()
+            && $warehouse && \App\Models\Rack::whereHas('zone', fn ($q) => $q->where('warehouse_id', $warehouse->id))->exists()
+            && \App\Models\Product::when($tenantId > 0, fn ($q) => $q->where('tenant_id', $tenantId))->exists();
+
+        if ($allDone) {
+            return redirect()
+                ->intended(route('dashboard', absolute: false))
+                ->with('auth_onboarding', true);
+        }
+
+        return redirect()
+            ->intended(route('panduan-setup', absolute: false))
+            ->with('auth_onboarding', true);
     }
 
     /**

@@ -96,6 +96,10 @@ trait HandlesStockSync
         int $stockAfter,
         ?string $notes = null
     ): void {
+        $roleName = strtolower((string) ($request->user()?->role?->name ?? ''));
+        $isManager = str_contains($roleName, 'manager') || str_contains($roleName, 'manajer') || str_contains($roleName, 'admin gudang');
+        $autoVerify = $isManager || !in_array($type, ['adjustment', 'opname'], true);
+
         StockMovement::create([
             'product_id' => $productId,
             'warehouse_id' => $warehouseId,
@@ -108,6 +112,9 @@ trait HandlesStockSync
             'movement_date' => now(),
             'notes' => $notes,
             'created_by' => $request->user()?->id,
+            'verification_status' => $autoVerify ? 'verified' : 'pending',
+            'verified_at' => $autoVerify ? now() : null,
+            'verified_by' => $autoVerify ? $request->user()?->id : null,
         ]);
     }
 }
