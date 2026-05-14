@@ -1,32 +1,12 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import DashboardLayout from '@/Layouts/DashboardLayout';
-import { Head, useForm, router, usePage } from '@inertiajs/react';
+import CustomDropdown from '@/Components/CustomDropdown';
+import { Head, Link, useForm, router, usePage } from '@inertiajs/react';
 import Modal from '@/Components/Modal';
-
-// Icons
-const BuildingIcon = ({ className }) => (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-    </svg>
-);
-
-const TagIcon = ({ className }) => (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
-    </svg>
-);
-
-const ScaleIcon = ({ className }) => (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />
-    </svg>
-);
-
-const UsersIcon = ({ className }) => (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a4 4 0 00-4-4h-1M9 20H4v-2a4 4 0 014-4h1m0-4a4 4 0 100-8 4 4 0 000 8zm8 0a4 4 0 100-8 4 4 0 000 8z" />
-    </svg>
-);
+import BackToPanduan from '@/Components/BackToPanduan';
+import { BuildingIcon, TagIcon, ScaleIcon, UsersIcon } from '@/Components/SettingsSidebar';
+import FloatingNotice from '@/Components/FloatingNotice';
+import { CreditCard, ShieldCheck, Warehouse, MapPin, FileText, BellRing, MailCheck, CircleDollarSign, Tag, Ruler, Hash, User, Mail, Phone, KeyRound } from 'lucide-react';
 
 const PlusIcon = ({ className }) => (
     <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -58,8 +38,13 @@ const formatOperationalRole = (role) => {
     return role || 'Staff Operasional';
 };
 
-export default function Settings({ auth, categories, units, warehouse, staffUsers = [] }) {
+const topMenuBase = 'group flex items-center gap-2.5 rounded-xl border px-3.5 py-2.5 text-left text-[12px] font-bold transition whitespace-nowrap';
+const topMenuIdle = 'border-slate-200/70 bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900';
+const topMenuActive = 'border-violet-200 bg-gradient-to-r from-violet-50 to-indigo-50 text-[#4B2BB7] shadow-[0_8px_20px_rgba(91,51,204,0.12)]';
+
+export default function Settings({ auth, categories, units, warehouse, staffUsers = [], invoiceNotificationSettings = {} }) {
     const { flash = {} } = usePage().props;
+    const [floatingNotices, setFloatingNotices] = useState([]);
     const queryParams = new URLSearchParams(window.location.search);
     const [activeTab, setActiveTab] = useState(queryParams.get('active') || 'warehouse');
     const [showCategoryModal, setShowCategoryModal] = useState(false);
@@ -67,7 +52,11 @@ export default function Settings({ auth, categories, units, warehouse, staffUser
     const [showUnitModal, setShowUnitModal] = useState(false);
     const [editingUnit, setEditingUnit] = useState(null);
     const [showStaffModal, setShowStaffModal] = useState(false);
+    const [editingStaff, setEditingStaff] = useState(null);
+    const [confirmDelete, setConfirmDelete] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
+    const roleName = (auth?.user?.role_name || auth?.user?.role || '').toString().toLowerCase();
+    const isSystemAdmin = roleName.includes('admin sistem') || roleName.includes('admin system') || roleName.includes('super admin') || roleName.includes('system_admin');
     const normalizedQuery = searchTerm.trim().toLowerCase();
     const warehouseSectionRef = React.useRef(null);
     const categoriesSectionRef = React.useRef(null);
@@ -80,6 +69,10 @@ export default function Settings({ auth, categories, units, warehouse, staffUser
         location: warehouse?.location || '',
         description: warehouse?.description || '',
     });
+    const invoiceNotifyForm = useForm({
+        notify_partial: Boolean(invoiceNotificationSettings.notify_partial ?? true),
+        notify_paid: Boolean(invoiceNotificationSettings.notify_paid ?? true),
+    });
 
     const submitWarehouse = (e) => {
         e.preventDefault();
@@ -87,6 +80,11 @@ export default function Settings({ auth, categories, units, warehouse, staffUser
         // Assuming warehouse ID 1 is the default if not set.
         const id = warehouse?.id || 1;
         warehouseForm.put(route('settings.warehouse.update', id));
+    };
+
+    const submitInvoiceNotifySettings = (e) => {
+        e.preventDefault();
+        invoiceNotifyForm.put(route('settings.invoice-notifications.update'));
     };
 
     // Category Form
@@ -125,9 +123,7 @@ export default function Settings({ auth, categories, units, warehouse, staffUser
     };
 
     const deleteCategory = (id) => {
-        if(confirm('Apakah Anda yakin ingin menghapus kategori ini?')) {
-            router.delete(route('settings.categories.destroy', id));
-        }
+        setConfirmDelete({ type: 'category', id, message: 'Apakah Anda yakin ingin menghapus kategori ini?' });
     };
 
     const closeCategoryModal = () => {
@@ -172,9 +168,7 @@ export default function Settings({ auth, categories, units, warehouse, staffUser
     };
 
     const deleteUnit = (id) => {
-        if(confirm('Apakah Anda yakin ingin menghapus satuan ini?')) {
-            router.delete(route('settings.units.destroy', id));
-        }
+        setConfirmDelete({ type: 'unit', id, message: 'Apakah Anda yakin ingin menghapus satuan ini?' });
     };
 
     const closeUnitModal = () => {
@@ -194,18 +188,56 @@ export default function Settings({ auth, categories, units, warehouse, staffUser
 
     const submitStaff = (e) => {
         e.preventDefault();
-        staffForm.post(route('settings.staff.store'), {
-            onSuccess: () => {
-                staffForm.reset();
-                setShowStaffModal(false);
-                setActiveTab('staff');
-            },
-        });
+        if (editingStaff) {
+            staffForm.put(route('settings.staff.update', editingStaff.id), {
+                onSuccess: () => {
+                    staffForm.reset();
+                    setShowStaffModal(false);
+                    setEditingStaff(null);
+                    setActiveTab('staff');
+                },
+            });
+        } else {
+            staffForm.post(route('settings.staff.store'), {
+                onSuccess: () => {
+                    staffForm.reset();
+                    setShowStaffModal(false);
+                    setActiveTab('staff');
+                },
+            });
+        }
     };
 
     const closeStaffModal = () => {
         setShowStaffModal(false);
+        setEditingStaff(null);
         staffForm.reset();
+    };
+
+    const openEditStaff = (user) => {
+        setEditingStaff(user);
+        staffForm.setData({
+            name: user.name,
+            email: user.email,
+            phone: user.phone || '',
+            role: user.role || 'Staff',
+            password: '',
+            password_confirmation: '',
+        });
+        setShowStaffModal(true);
+    };
+
+    const deleteStaff = (id) => {
+        setConfirmDelete({ type: 'staff', id, message: 'Apakah Anda yakin ingin menghapus akun ini?' });
+    };
+
+    const executeDelete = () => {
+        if (!confirmDelete) return;
+        const { type, id } = confirmDelete;
+        if (type === 'category') router.delete(route('settings.categories.destroy', id));
+        else if (type === 'unit') router.delete(route('settings.units.destroy', id));
+        else if (type === 'staff') router.delete(route('settings.staff.destroy', id));
+        setConfirmDelete(null);
     };
 
     const updateStaffStatus = (user, status) => {
@@ -268,168 +300,150 @@ export default function Settings({ auth, categories, units, warehouse, staffUser
         }
     }, [activeTab, normalizedQuery]);
 
+    useEffect(() => {
+        const notices = [];
+        if (flash?.success) notices.push({ key: `ok-${Date.now()}`, type: 'success', text: flash.success });
+        if (flash?.error) notices.push({ key: `err-${Date.now()}`, type: 'error', text: flash.error });
+        if (!notices.length) return;
+        setFloatingNotices((prev) => [...notices, ...prev].slice(0, 3));
+    }, [flash?.success, flash?.error]);
+
     return (
         <DashboardLayout
-            headerTitle="Pengaturan Sistem"
+            headerTitle="Pengaturan"
             hideMainScrollbar
             searchValue={searchTerm}
             onSearch={setSearchTerm}
         >
             <Head title="Pengaturan" />
 
-            <div className="w-full pt-3 pb-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                
-                {/* Sidebar Navigation for Settings */}
-                <div className="grid grid-cols-1 gap-6 xl:grid-cols-[248px_minmax(0,1fr)]">
-                    <div className="xl:sticky xl:top-4 h-fit rounded-2xl border border-[#EDE8FC] bg-white p-4 shadow-[0_2px_16px_rgba(0,0,0,0.02)]">
-                        <h3 className="text-[11px] font-extrabold text-gray-400 tracking-widest uppercase mb-4 px-2">Menu Konfigurasi</h3>
-                        <div className="flex flex-col space-y-2">
-                            <button 
-                                onClick={() => setActiveTab('warehouse')}
-                                className={`w-full flex items-center space-x-3 px-5 py-4 rounded-2xl font-bold text-[14px] transition-all text-left ${activeTab === 'warehouse' ? 'bg-white text-[#5932C9] shadow-[0_4px_15px_rgba(0,0,0,0.03)] border border-gray-100' : 'text-gray-500 hover:bg-[#F8F7FF] hover:text-gray-900 border border-transparent'}`}
-                            >
-                                <div className={`p-2 rounded-xl flex-shrink-0 ${activeTab === 'warehouse' ? 'bg-indigo-50 text-indigo-500' : 'bg-gray-100 text-gray-400'}`}>
-                                    <BuildingIcon className="w-5 h-5" />
-                                </div>
-                                <div>
-                                    <div className="mb-0.5">Gudang Utama</div>
-                                    <div className={`text-[11px] font-semibold ${activeTab === 'warehouse' ? 'text-indigo-400' : 'text-gray-400'}`}>Profil & Lokasi Samarinda</div>
-                                </div>
-                            </button>
+            <div className="w-full pt-3 pb-10">
+                <FloatingNotice notices={floatingNotices} onClose={(key) => setFloatingNotices((prev) => prev.filter((n) => n.key !== key))} />
 
-                            <button 
-                                onClick={() => setActiveTab('categories')}
-                                className={`w-full flex items-center space-x-3 px-5 py-4 rounded-2xl font-bold text-[14px] transition-all text-left ${activeTab === 'categories' ? 'bg-white text-[#5932C9] shadow-[0_4px_15px_rgba(0,0,0,0.03)] border border-gray-100' : 'text-gray-500 hover:bg-[#F8F7FF] hover:text-gray-900 border border-transparent'}`}
-                            >
-                                <div className={`p-2 rounded-xl flex-shrink-0 ${activeTab === 'categories' ? 'bg-indigo-50 text-indigo-500' : 'bg-gray-100 text-gray-400'}`}>
-                                    <TagIcon className="w-5 h-5" />
-                                </div>
-                                <div>
-                                    <div className="mb-0.5">Daftar Kategori</div>
-                                    <div className={`text-[11px] font-semibold ${activeTab === 'categories' ? 'text-indigo-400' : 'text-gray-400'}`}>Klasifikasi Inventaris</div>
-                                </div>
-                            </button>
+                {/* Page Header */}
+                <div className="mb-5 rounded-2xl border border-violet-100 bg-gradient-to-r from-white via-violet-50/60 to-indigo-50/70 px-5 py-4">
+                    <h1 className="text-[24px] font-black text-[#4722B3]">Pengaturan</h1>
+                    <p className="text-[13px] font-semibold text-slate-500 mt-1">Kelola data master gudang, kategori, satuan, dan akun tim.</p>
+                </div>
 
-                            <button 
-                                onClick={() => setActiveTab('units')}
-                                className={`w-full flex items-center space-x-3 px-5 py-4 rounded-2xl font-bold text-[14px] transition-all text-left ${activeTab === 'units' ? 'bg-white text-[#5932C9] shadow-[0_4px_15px_rgba(0,0,0,0.03)] border border-gray-100' : 'text-gray-500 hover:bg-[#F8F7FF] hover:text-gray-900 border border-transparent'}`}
-                            >
-                                <div className={`p-2 rounded-xl flex-shrink-0 ${activeTab === 'units' ? 'bg-indigo-50 text-indigo-500' : 'bg-gray-100 text-gray-400'}`}>
-                                    <ScaleIcon className="w-5 h-5" />
-                                </div>
-                                <div>
-                                    <div className="mb-0.5">Satuan Metrik</div>
-                                    <div className={`text-[11px] font-semibold ${activeTab === 'units' ? 'text-indigo-400' : 'text-gray-400'}`}>Unit Perhitungan Barcode</div>
-                                </div>
-                            </button>
-
-                            <button 
-                                onClick={() => setActiveTab('staff')}
-                                className={`w-full flex items-center space-x-3 px-5 py-4 rounded-2xl font-bold text-[14px] transition-all text-left ${activeTab === 'staff' ? 'bg-white text-[#5932C9] shadow-[0_4px_15px_rgba(0,0,0,0.03)] border border-gray-100' : 'text-gray-500 hover:bg-[#F8F7FF] hover:text-gray-900 border border-transparent'}`}
-                            >
-                                <div className={`p-2 rounded-xl flex-shrink-0 ${activeTab === 'staff' ? 'bg-indigo-50 text-indigo-500' : 'bg-gray-100 text-gray-400'}`}>
-                                    <UsersIcon className="w-5 h-5" />
-                                </div>
-                                <div>
-                                    <div className="mb-0.5">Akun Operasional</div>
-                                    <div className={`text-[11px] font-semibold ${activeTab === 'staff' ? 'text-indigo-400' : 'text-gray-400'}`}>Login Operasional Terbatas</div>
-                                </div>
-                            </button>
-                        </div>
-                    </div>
-
-                    {/* Main Content Area */}
-                    <div className="min-w-0 min-h-[calc(100vh-220px)] [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-                    {/* Flash Messages */}
-                    {flash.success && (
-                        <div className="mb-6 p-4 bg-emerald-50 border border-emerald-100 text-emerald-600 rounded-xl font-bold flex items-center space-x-2 animate-in fade-in slide-in-from-top-2">
-                            <span>{flash.success}</span>
-                        </div>
+                {/* Tabs */}
+                <div className="mb-6 rounded-2xl border border-[#E5EAF3] bg-white p-2 shadow-[0_8px_22px_rgba(15,23,42,0.04)]">
+                <div className="flex items-center gap-2 overflow-x-auto">
+                    <button onClick={() => setActiveTab('warehouse')} className={`${topMenuBase} ${activeTab === 'warehouse' ? topMenuActive : topMenuIdle}`}>
+                        <BuildingIcon className="h-4 w-4" />Gudang
+                    </button>
+                    <button onClick={() => setActiveTab('categories')} className={`${topMenuBase} ${activeTab === 'categories' ? topMenuActive : topMenuIdle}`}>
+                        <TagIcon className="h-4 w-4" />Kategori
+                    </button>
+                    <button onClick={() => setActiveTab('units')} className={`${topMenuBase} ${activeTab === 'units' ? topMenuActive : topMenuIdle}`}>
+                        <ScaleIcon className="h-4 w-4" />Satuan
+                    </button>
+                    <button onClick={() => setActiveTab('staff')} className={`${topMenuBase} ${activeTab === 'staff' ? topMenuActive : topMenuIdle}`}>
+                        <UsersIcon className="h-4 w-4" />Akun Tim
+                    </button>
+                    <Link href={route('settings.billing')} className={`${topMenuBase} ${topMenuIdle}`}>
+                        <CreditCard className="h-4 w-4" />Billing
+                    </Link>
+                    {isSystemAdmin && (
+                        <Link href={route('settings.saas')} className={`${topMenuBase} ${topMenuIdle}`}>
+                            <ShieldCheck className="h-4 w-4" />Admin SaaS
+                        </Link>
                     )}
-                    {flash.error && (
-                        <div className="mb-6 p-4 bg-red-50 border border-red-100 text-red-600 rounded-xl font-bold flex items-center space-x-2 animate-in fade-in slide-in-from-top-2">
-                            <span>{flash.error}</span>
-                        </div>
-                    )}
+                </div>
+                </div>
+
+                <BackToPanduan />
 
                     {/* WAREHOUSE TAB */}
                     {activeTab === 'warehouse' && (
-                        <div ref={warehouseSectionRef} className="bg-white rounded-[24px] p-8 shadow-[0_2px_16px_rgba(0,0,0,0.02)] border border-[#EDE8FC] min-h-[calc(100vh-240px)]">
-                            <div className="flex items-center justify-between mb-2">
-                                <h2 className="text-[20px] font-black text-[#28106F]">Gudang Utama</h2>
-                                <span className="rounded-full bg-emerald-50 border border-emerald-200 px-3 py-1 text-[10px] font-black text-emerald-700 uppercase tracking-wider">Gudang Tunggal</span>
+                        <div ref={warehouseSectionRef} className="space-y-5">
+                            <div className="overflow-hidden rounded-2xl border border-[#E5EAF3] bg-white shadow-[0_10px_26px_rgba(15,23,42,0.05)]">
+                                <div className="border-b border-[#EEF2F8] bg-gradient-to-r from-violet-50/80 via-indigo-50/40 to-white px-6 py-5">
+                                <div className="flex items-center justify-between mb-5">
+                                    <div>
+                                        <h2 className="text-[18px] font-black text-[#4722B3]">Informasi Gudang</h2>
+                                        <p className="text-[12px] font-semibold text-gray-400 mt-0.5">Data gudang utama operasional.</p>
+                                    </div>
+                                    <span className="rounded-full bg-emerald-50 border border-emerald-200 px-3 py-1 text-[10px] font-black text-emerald-700 uppercase">Aktif</span>
+                                </div>
+                                </div>
+                                <div className="p-6">
+                                <form onSubmit={submitWarehouse} className="space-y-4">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="flex items-center gap-1.5 text-[10px] font-bold text-gray-400 uppercase mb-1.5">
+                                                <Warehouse className="h-3.5 w-3.5" /> Nama Gudang
+                                            </label>
+                                            <input type="text" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-[13px] font-bold text-gray-800 focus:border-[#5B33CC] focus:ring-1 focus:ring-[#5B33CC]" value={warehouseForm.data.name} onChange={e => warehouseForm.setData('name', e.target.value)} required />
+                                            {warehouseForm.errors.name && <div className="text-red-500 text-[11px] mt-1 font-bold">{warehouseForm.errors.name}</div>}
+                                        </div>
+                                        <div>
+                                            <label className="flex items-center gap-1.5 text-[10px] font-bold text-gray-400 uppercase mb-1.5">
+                                                <MapPin className="h-3.5 w-3.5" /> Lokasi / Alamat
+                                            </label>
+                                            <input type="text" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-[13px] font-bold text-gray-800 focus:border-[#5B33CC] focus:ring-1 focus:ring-[#5B33CC]" value={warehouseForm.data.location} onChange={e => warehouseForm.setData('location', e.target.value)} required />
+                                            {warehouseForm.errors.location && <div className="text-red-500 text-[11px] mt-1 font-bold">{warehouseForm.errors.location}</div>}
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label className="flex items-center gap-1.5 text-[10px] font-bold text-gray-400 uppercase mb-1.5">
+                                            <FileText className="h-3.5 w-3.5" /> Deskripsi
+                                        </label>
+                                        <textarea rows="2" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-[13px] font-medium text-gray-600 focus:border-[#5B33CC] focus:ring-1 focus:ring-[#5B33CC] resize-none" value={warehouseForm.data.description} onChange={e => warehouseForm.setData('description', e.target.value)} placeholder="Opsional"></textarea>
+                                    </div>
+                                    <div className="flex justify-end pt-2">
+                                        <button type="submit" disabled={warehouseForm.processing} className="px-5 py-2.5 bg-[#5B33CC] hover:bg-indigo-700 text-white font-bold rounded-xl text-[13px] shadow-[0_8px_18px_rgba(91,51,204,0.28)]">{warehouseForm.processing ? 'Menyimpan...' : 'Simpan'}</button>
+                                    </div>
+                                </form>
+                                </div>
                             </div>
-                            <p className="text-[13px] font-semibold text-gray-400 mb-8">Sistem ini beroperasi dengan 1 gudang utama di Samarinda, Kalimantan Timur. Semua pengiriman berasal dari gudang ini.</p>
 
-                            <form onSubmit={submitWarehouse} className="space-y-6 max-w-2xl">
-                                <div>
-                                    <label className="block text-[10px] font-extrabold text-gray-500 tracking-wider uppercase mb-2">NAMA GUDANG</label>
-                                    <input 
-                                        type="text" 
-                                        className="bg-[#f8f9fb] border border-transparent focus:border-[#5932C9] focus:ring-1 focus:ring-[#5932C9] block w-full px-4 py-3 sm:text-[14px] rounded-xl font-bold text-gray-800 shadow-[inset_0_2px_4px_rgba(0,0,0,0.01)]" 
-                                        value={warehouseForm.data.name}
-                                        onChange={e => warehouseForm.setData('name', e.target.value)}
-                                        required
-                                    />
-                                    {warehouseForm.errors.name && <div className="text-red-500 text-xs mt-1 font-bold">{warehouseForm.errors.name}</div>}
+                            <div className="overflow-hidden rounded-2xl border border-[#E5EAF3] bg-white shadow-[0_10px_26px_rgba(15,23,42,0.05)]">
+                                <div className="border-b border-[#EEF2F8] bg-gradient-to-r from-white to-emerald-50/60 px-6 py-5">
+                                <h2 className="flex items-center gap-2 text-[16px] font-black text-slate-800 mb-1">
+                                    <BellRing className="h-4 w-4 text-emerald-600" /> Notifikasi Email Invoice
+                                </h2>
+                                <p className="text-[12px] font-semibold text-gray-500">Atur pengiriman email otomatis saat status invoice berubah.</p>
                                 </div>
-                                
-                                <div>
-                                    <label className="block text-[10px] font-extrabold text-gray-500 tracking-wider uppercase mb-2">LOKASI / ALAMAT</label>
-                                    <input 
-                                        type="text" 
-                                        className="bg-[#f8f9fb] border border-transparent focus:border-[#5932C9] focus:ring-1 focus:ring-[#5932C9] block w-full px-4 py-3 sm:text-[14px] rounded-xl font-bold text-gray-800 shadow-[inset_0_2px_4px_rgba(0,0,0,0.01)]" 
-                                        value={warehouseForm.data.location}
-                                        onChange={e => warehouseForm.setData('location', e.target.value)}
-                                        required
-                                    />
-                                    {warehouseForm.errors.location && <div className="text-red-500 text-xs mt-1 font-bold">{warehouseForm.errors.location}</div>}
+                                <div className="p-6">
+                                <form onSubmit={submitInvoiceNotifySettings} className="space-y-3">
+                                    <label className="flex items-center gap-2.5 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-[13px] font-semibold text-slate-700 cursor-pointer">
+                                        <input type="checkbox" checked={invoiceNotifyForm.data.notify_partial} onChange={(e) => invoiceNotifyForm.setData('notify_partial', e.target.checked)} className="rounded border-gray-300 text-[#5B33CC] focus:ring-[#5B33CC]" />
+                                        <CircleDollarSign className="h-4 w-4 text-amber-600" /> Kirim email saat status Dibayar Sebagian
+                                    </label>
+                                    <label className="flex items-center gap-2.5 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-[13px] font-semibold text-slate-700 cursor-pointer">
+                                        <input type="checkbox" checked={invoiceNotifyForm.data.notify_paid} onChange={(e) => invoiceNotifyForm.setData('notify_paid', e.target.checked)} className="rounded border-gray-300 text-[#5B33CC] focus:ring-[#5B33CC]" />
+                                        <MailCheck className="h-4 w-4 text-emerald-600" /> Kirim email saat status Lunas
+                                    </label>
+                                    <div className="flex justify-end pt-2">
+                                        <button type="submit" disabled={invoiceNotifyForm.processing} className="px-5 py-2.5 bg-[#5B33CC] hover:bg-indigo-700 text-white font-bold rounded-xl text-[13px] shadow-[0_8px_18px_rgba(91,51,204,0.28)]">{invoiceNotifyForm.processing ? 'Menyimpan...' : 'Simpan'}</button>
+                                    </div>
+                                </form>
                                 </div>
-
-                                <div>
-                                    <label className="block text-[10px] font-extrabold text-gray-500 tracking-wider uppercase mb-2">DESKRIPSI (ОPSIONAL)</label>
-                                    <textarea 
-                                        rows="3"
-                                        className="bg-[#f8f9fb] border border-transparent focus:border-[#5932C9] focus:ring-1 focus:ring-[#5932C9] block w-full px-4 py-3 sm:text-[14px] rounded-xl font-medium text-gray-600 shadow-[inset_0_2px_4px_rgba(0,0,0,0.01)] resize-none" 
-                                        value={warehouseForm.data.description}
-                                        onChange={e => warehouseForm.setData('description', e.target.value)}
-                                    ></textarea>
-                                </div>
-
-                                <div className="pt-4 border-t border-gray-100 flex justify-end">
-                                    <button 
-                                        type="submit" 
-                                        disabled={warehouseForm.processing}
-                                        className="px-6 py-3 bg-[#5932C9] hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg shadow-indigo-200 transition-all"
-                                    >
-                                        Simpan Perubahan
-                                    </button>
-                                </div>
-                            </form>
+                            </div>
                         </div>
                     )}
 
                     {/* CATEGORIES TAB */}
                     {activeTab === 'categories' && (
-                        <div ref={categoriesSectionRef} className="bg-white rounded-[24px] p-8 shadow-[0_2px_16px_rgba(0,0,0,0.02)] border border-[#EDE8FC] min-h-[calc(100vh-240px)]">
-                            <div className="flex justify-between items-center mb-8">
+                        <div ref={categoriesSectionRef} className="bg-white rounded-xl p-6 border border-[#E5EAF3]">
+                            <div className="flex justify-between items-center mb-5">
                                 <div>
-                                    <h2 className="text-[20px] font-black text-[#28106F] mb-1">Manajemen Kategori Barang</h2>
-                                    <p className="text-[13px] font-semibold text-gray-400">Klasifikasi produk mempermudah perhitungan dan reporting.</p>
+                                    <h2 className="text-[18px] font-black text-[#4722B3]">Kategori Barang</h2>
+                                    <p className="text-[12px] font-semibold text-gray-400 mt-0.5">Klasifikasi produk untuk reporting dan organisasi.</p>
                                 </div>
                                 <button 
                                     onClick={() => setShowCategoryModal(true)}
-                                    className="px-5 py-2.5 bg-[#28106F] hover:bg-[#2d3748] text-white font-bold rounded-xl transition-colors flex items-center space-x-2 text-[13px]"
+                                    className="px-4 py-2 bg-[#5B33CC] hover:bg-indigo-700 text-white font-bold rounded-lg text-[12px] flex items-center gap-1.5"
                                 >
-                                    <PlusIcon className="w-4 h-4" />
-                                    <span>Tambah Kategori</span>
+                                    <PlusIcon className="w-3.5 h-3.5" />Tambah
                                 </button>
                             </div>
 
-                            <div className="overflow-hidden border border-[#EDE8FC] rounded-2xl relative bg-[#f8f9fb]">
+                            <div className="overflow-hidden border border-[#E5EAF3] rounded-2xl relative bg-[#f8f9fb]">
                                 <table className="w-full text-left border-collapse">
                                     <thead>
-                                        <tr className="bg-[#f8f9fb] border-b border-[#EDE8FC]">
+                                        <tr className="bg-[#f8f9fb] border-b border-[#E5EAF3]">
                                             <th className="px-6 py-4 text-[10px] font-extrabold text-gray-400 uppercase tracking-widest w-16 text-center">ID</th>
                                             <th className="px-6 py-4 text-[10px] font-extrabold text-gray-400 uppercase tracking-widest">Nama Kategori</th>
                                             <th className="px-6 py-4 text-[10px] font-extrabold text-gray-400 uppercase tracking-widest">Deskripsi</th>
@@ -444,7 +458,7 @@ export default function Settings({ auth, categories, units, warehouse, staffUser
                                                     <span className="text-[11px] font-bold text-gray-400">#{cat.id}</span>
                                                 </td>
                                                 <td className="px-6 py-4">
-                                                    <span className="text-[14px] font-bold text-[#28106F]">{cat.name}</span>
+                                                    <span className="text-[14px] font-bold text-[#4722B3]">{cat.name}</span>
                                                 </td>
                                                 <td className="px-6 py-4">
                                                     <span className="text-[13px] font-medium text-gray-500 line-clamp-1">{cat.description || '-'}</span>
@@ -491,25 +505,24 @@ export default function Settings({ auth, categories, units, warehouse, staffUser
 
                     {/* UNITS TAB */}
                     {activeTab === 'units' && (
-                        <div ref={unitsSectionRef} className="bg-white rounded-[24px] p-8 shadow-[0_2px_16px_rgba(0,0,0,0.02)] border border-[#EDE8FC] min-h-[calc(100vh-240px)]">
-                            <div className="flex justify-between items-center mb-8">
+                        <div ref={unitsSectionRef} className="bg-white rounded-xl p-6 border border-[#E5EAF3]">
+                            <div className="flex justify-between items-center mb-5">
                                 <div>
-                                    <h2 className="text-[20px] font-black text-[#28106F] mb-1">Satuan Metrik (Units)</h2>
-                                    <p className="text-[13px] font-semibold text-gray-400">Kelola master data satuan pengukuran inventaris fisik.</p>
+                                    <h2 className="text-[18px] font-black text-[#4722B3]">Satuan Barang</h2>
+                                    <p className="text-[12px] font-semibold text-gray-400 mt-0.5">Daftar satuan untuk konsistensi input produk.</p>
                                 </div>
                                 <button 
                                     onClick={() => setShowUnitModal(true)}
-                                    className="px-5 py-2.5 bg-[#28106F] hover:bg-[#2d3748] text-white font-bold rounded-xl transition-colors flex items-center space-x-2 text-[13px]"
+                                    className="px-4 py-2 bg-[#5B33CC] hover:bg-indigo-700 text-white font-bold rounded-lg text-[12px] flex items-center gap-1.5"
                                 >
-                                    <PlusIcon className="w-4 h-4" />
-                                    <span>Tambah Satuan</span>
+                                    <PlusIcon className="w-3.5 h-3.5" />Tambah
                                 </button>
                             </div>
 
-                            <div className="overflow-hidden border border-[#EDE8FC] rounded-2xl relative bg-[#f8f9fb]">
+                            <div className="overflow-hidden border border-[#E5EAF3] rounded-2xl relative bg-[#f8f9fb]">
                                 <table className="w-full text-left border-collapse">
                                     <thead>
-                                        <tr className="bg-[#f8f9fb] border-b border-[#EDE8FC]">
+                                        <tr className="bg-[#f8f9fb] border-b border-[#E5EAF3]">
                                             <th className="px-6 py-4 text-[10px] font-extrabold text-gray-400 uppercase tracking-widest w-16 text-center">ID</th>
                                             <th className="px-6 py-4 text-[10px] font-extrabold text-gray-400 uppercase tracking-widest">Nama Lengkap</th>
                                             <th className="px-6 py-4 text-[10px] font-extrabold text-gray-400 uppercase tracking-widest text-center">Simbol</th>
@@ -524,10 +537,10 @@ export default function Settings({ auth, categories, units, warehouse, staffUser
                                                     <span className="text-[11px] font-bold text-gray-400">#{u.id}</span>
                                                 </td>
                                                 <td className="px-6 py-4">
-                                                    <span className="text-[14px] font-bold text-[#28106F]">{u.name}</span>
+                                                    <span className="text-[14px] font-bold text-[#4722B3]">{u.name}</span>
                                                 </td>
                                                 <td className="px-6 py-4 text-center">
-                                                    <span className="inline-flex items-center justify-center px-3 py-1 bg-gray-100 text-[#28106F] rounded-md text-[13px] font-black border border-gray-200">
+                                                    <span className="inline-flex items-center justify-center px-3 py-1 bg-gray-100 text-[#4722B3] rounded-md text-[13px] font-black border border-gray-200">
                                                         {u.symbol}
                                                     </span>
                                                 </td>
@@ -572,35 +585,36 @@ export default function Settings({ auth, categories, units, warehouse, staffUser
                     )}
 
                     {activeTab === 'staff' && (
-                        <div ref={staffSectionRef} className="bg-white rounded-[24px] p-8 shadow-[0_2px_16px_rgba(0,0,0,0.02)] border border-[#EDE8FC] min-h-[calc(100vh-240px)]">
-                            <div className="flex flex-wrap justify-between items-start gap-4 mb-6">
+                        <div ref={staffSectionRef} className="bg-white rounded-xl p-6 border border-[#E5EAF3]">
+                            <div className="flex flex-wrap justify-between items-start gap-4 mb-5">
                                 <div>
-                                    <h2 className="text-[20px] font-black text-[#28106F] mb-1">Manajemen Akun Operasional</h2>
-                                    <p className="text-[13px] font-semibold text-gray-400">Manager Gudang dapat membuat akun Supervisor Gudang untuk approval harian dan Staff Operasional untuk input operasional.</p>
-                                    <div className="mt-3 flex items-center gap-2">
-                                        <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[11px] font-black text-emerald-700">
+                                    <h2 className="flex items-center gap-2 text-[18px] font-black text-[#4722B3]">
+                                        <User className="h-4 w-4 text-indigo-600" /> Akun Tim Operasional
+                                    </h2>
+                                    <p className="text-[12px] font-semibold text-gray-400 mt-0.5">Kelola akun Supervisor dan Staff gudang.</p>
+                                    <div className="mt-2 flex items-center gap-2">
+                                        <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-0.5 text-[10px] font-black text-emerald-700">
                                             {filteredStaffUsers.filter((u) => u.status === 'active').length} Aktif
                                         </span>
-                                        <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[11px] font-black text-slate-600">
-                                            {filteredStaffUsers.length} Total Akun
+                                        <span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-0.5 text-[10px] font-black text-slate-600">
+                                            {filteredStaffUsers.length} Total
                                         </span>
                                     </div>
                                 </div>
                                 <button 
                                     onClick={() => setShowStaffModal(true)}
-                                    className="px-5 py-2.5 bg-[#28106F] hover:bg-[#2d3748] text-white font-bold rounded-xl transition-colors flex items-center space-x-2 text-[13px]"
+                                    className="px-4 py-2 bg-[#5B33CC] hover:bg-indigo-700 text-white font-bold rounded-lg text-[12px] flex items-center gap-1.5"
                                 >
-                                    <PlusIcon className="w-4 h-4" />
-                                    <span>Buat Akun</span>
+                                    <PlusIcon className="w-3.5 h-3.5" />Buat Akun
                                 </button>
                             </div>
 
-                            <div className="overflow-hidden border border-[#EDE8FC] rounded-2xl relative bg-[#f8f9fb]">
+                            <div className="overflow-hidden border border-[#E5EAF3] rounded-2xl relative bg-[#f8f9fb]">
                                 <table className="w-full text-left border-collapse">
                                     <thead>
-                                        <tr className="bg-[#f8f9fb] border-b border-[#EDE8FC]">
+                                        <tr className="bg-[#f8f9fb] border-b border-[#E5EAF3]">
                                             <th className="px-6 py-4 text-[10px] font-extrabold text-gray-400 uppercase tracking-widest">Nama</th>
-                                            <th className="px-6 py-4 text-[10px] font-extrabold text-gray-400 uppercase tracking-widest">Role</th>
+                                            <th className="px-6 py-4 text-[10px] font-extrabold text-gray-400 uppercase tracking-widest">Peran</th>
                                             <th className="px-6 py-4 text-[10px] font-extrabold text-gray-400 uppercase tracking-widest">Email</th>
                                             <th className="px-6 py-4 text-[10px] font-extrabold text-gray-400 uppercase tracking-widest">Telepon</th>
                                             <th className="px-6 py-4 text-[10px] font-extrabold text-gray-400 uppercase tracking-widest text-center">Status</th>
@@ -611,7 +625,7 @@ export default function Settings({ auth, categories, units, warehouse, staffUser
                                         {filteredStaffUsers.length > 0 ? filteredStaffUsers.map((user) => (
                                             <tr key={user.id} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
                                                 <td className="px-6 py-4">
-                                                    <div className="text-[14px] font-bold text-[#28106F]">{user.name}</div>
+                                                    <div className="text-[14px] font-bold text-[#4722B3]">{user.name}</div>
                                                     <div className="text-[11px] font-bold text-gray-400">Dibuat {user.created_at || '-'}</div>
                                                 </td>
                                                 <td className="px-6 py-4">
@@ -627,21 +641,35 @@ export default function Settings({ auth, categories, units, warehouse, staffUser
                                                     </span>
                                                 </td>
                                                 <td className="px-6 py-4 text-right">
-                                                    {user.status === 'active' ? (
+                                                    <div className="flex items-center justify-end gap-2">
                                                         <button
-                                                            onClick={() => updateStaffStatus(user, 'inactive')}
-                                                            className="px-4 py-2 text-[12px] font-bold rounded-xl bg-red-50 text-red-600 hover:bg-red-100 transition-colors"
+                                                            onClick={() => openEditStaff(user)}
+                                                            className="px-3 py-2 text-[12px] font-bold rounded-xl bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition-colors"
                                                         >
-                                                            Nonaktifkan
+                                                            <EditIcon className="w-3.5 h-3.5" />
                                                         </button>
-                                                    ) : (
+                                                        {user.status === 'active' ? (
+                                                            <button
+                                                                onClick={() => updateStaffStatus(user, 'inactive')}
+                                                                className="px-3 py-2 text-[12px] font-bold rounded-xl bg-amber-50 text-amber-600 hover:bg-amber-100 transition-colors"
+                                                            >
+                                                                Nonaktifkan
+                                                            </button>
+                                                        ) : (
+                                                            <button
+                                                                onClick={() => updateStaffStatus(user, 'active')}
+                                                                className="px-3 py-2 text-[12px] font-bold rounded-xl bg-emerald-50 text-emerald-600 hover:bg-emerald-100 transition-colors"
+                                                            >
+                                                                Aktifkan
+                                                            </button>
+                                                        )}
                                                         <button
-                                                            onClick={() => updateStaffStatus(user, 'active')}
-                                                            className="px-4 py-2 text-[12px] font-bold rounded-xl bg-emerald-50 text-emerald-600 hover:bg-emerald-100 transition-colors"
+                                                            onClick={() => deleteStaff(user.id)}
+                                                            className="px-3 py-2 text-[12px] font-bold rounded-xl bg-red-50 text-red-600 hover:bg-red-100 transition-colors"
                                                         >
-                                                            Aktifkan
+                                                            <TrashIcon className="w-3.5 h-3.5" />
                                                         </button>
-                                                    )}
+                                                    </div>
                                                 </td>
                                             </tr>
                                         )) : (
@@ -659,8 +687,6 @@ export default function Settings({ auth, categories, units, warehouse, staffUser
                             </div>
                         </div>
                     )}
-                    </div>
-                </div>
             </div>
 
             {/* MODALS */}
@@ -671,7 +697,7 @@ export default function Settings({ auth, categories, units, warehouse, staffUser
                             <div className="rounded-xl bg-indigo-100 p-2">
                                 <TagIcon className="h-5 w-5 text-indigo-600" />
                             </div>
-                            <h3 className="text-[18px] font-black text-[#28106F]">
+                            <h3 className="text-[18px] font-black text-[#4722B3]">
                                 {editingCategory ? 'Edit Kategori' : 'Kategori Baru'}
                             </h3>
                         </div>
@@ -681,10 +707,12 @@ export default function Settings({ auth, categories, units, warehouse, staffUser
                     </div>
                     <form onSubmit={submitCategory} className="space-y-5 px-7 py-6">
                         <div>
-                            <label className="mb-2 block text-[10px] font-extrabold uppercase tracking-wider text-gray-500">NAMA KATEGORI</label>
+                            <label className="mb-2 flex items-center gap-1.5 text-[10px] font-extrabold uppercase tracking-wider text-gray-500">
+                                <Tag className="h-3.5 w-3.5" /> NAMA KATEGORI
+                            </label>
                             <input
                                 type="text"
-                                className="block w-full rounded-xl border border-gray-200 bg-slate-50 px-4 py-3 text-[14px] font-bold text-gray-800 focus:border-[#5932C9] focus:ring-1 focus:ring-[#5932C9]"
+                                className="block w-full rounded-xl border border-gray-200 bg-slate-50 px-4 py-3 text-[14px] font-bold text-gray-800 focus:border-[#5B33CC] focus:ring-1 focus:ring-[#5B33CC]"
                                 value={categoryForm.data.name}
                                 onChange={e => categoryForm.setData('name', e.target.value)}
                                 placeholder="misal: Komponen Elektronik"
@@ -694,10 +722,12 @@ export default function Settings({ auth, categories, units, warehouse, staffUser
                             {categoryForm.errors.name && <div className="mt-1 text-xs font-bold text-red-500">{categoryForm.errors.name}</div>}
                         </div>
                         <div>
-                            <label className="mb-2 block text-[10px] font-extrabold uppercase tracking-wider text-gray-500">DESKRIPSI (OPSIONAL)</label>
+                            <label className="mb-2 flex items-center gap-1.5 text-[10px] font-extrabold uppercase tracking-wider text-gray-500">
+                                <FileText className="h-3.5 w-3.5" /> DESKRIPSI (OPSIONAL)
+                            </label>
                             <input
                                 type="text"
-                                className="block w-full rounded-xl border border-gray-200 bg-slate-50 px-4 py-3 text-[14px] font-semibold text-gray-700 focus:border-[#5932C9] focus:ring-1 focus:ring-[#5932C9]"
+                                className="block w-full rounded-xl border border-gray-200 bg-slate-50 px-4 py-3 text-[14px] font-semibold text-gray-700 focus:border-[#5B33CC] focus:ring-1 focus:ring-[#5B33CC]"
                                 value={categoryForm.data.description}
                                 onChange={e => categoryForm.setData('description', e.target.value)}
                                 placeholder="Penjelasan ringkas kategori..."
@@ -705,7 +735,7 @@ export default function Settings({ auth, categories, units, warehouse, staffUser
                         </div>
                         <div className="flex justify-end gap-3 border-t border-gray-100 pt-5">
                             <button type="button" onClick={closeCategoryModal} className="rounded-xl border border-gray-200 px-5 py-3 font-bold text-gray-600 transition-colors hover:bg-gray-50">Batal</button>
-                            <button type="submit" disabled={categoryForm.processing} className="rounded-xl bg-[#5932C9] px-6 py-3 font-bold text-white transition-all hover:bg-indigo-700 disabled:opacity-50">
+                            <button type="submit" disabled={categoryForm.processing} className="rounded-xl bg-[#5B33CC] px-6 py-3 font-bold text-white transition-all hover:bg-indigo-700 disabled:opacity-50">
                                 {editingCategory ? 'Perbarui Kategori' : 'Simpan Klasifikasi'}
                             </button>
                         </div>
@@ -720,7 +750,7 @@ export default function Settings({ auth, categories, units, warehouse, staffUser
                             <div className="rounded-xl bg-indigo-100 p-2">
                                 <ScaleIcon className="h-5 w-5 text-indigo-600" />
                             </div>
-                            <h3 className="text-[18px] font-black text-[#28106F]">
+                            <h3 className="text-[18px] font-black text-[#4722B3]">
                                 {editingUnit ? 'Edit Satuan / Unit' : 'Satuan / Unit Baru'}
                             </h3>
                         </div>
@@ -730,10 +760,12 @@ export default function Settings({ auth, categories, units, warehouse, staffUser
                     </div>
                     <form onSubmit={submitUnit} className="space-y-5 px-7 py-6">
                         <div>
-                            <label className="mb-2 block text-[10px] font-extrabold uppercase tracking-wider text-gray-500">NAMA LENGKAP</label>
+                            <label className="mb-2 flex items-center gap-1.5 text-[10px] font-extrabold uppercase tracking-wider text-gray-500">
+                                <Ruler className="h-3.5 w-3.5" /> NAMA LENGKAP
+                            </label>
                             <input
                                 type="text"
-                                className="block w-full rounded-xl border border-gray-200 bg-slate-50 px-4 py-3 text-[14px] font-bold text-gray-800 focus:border-[#5932C9] focus:ring-1 focus:ring-[#5932C9]"
+                                className="block w-full rounded-xl border border-gray-200 bg-slate-50 px-4 py-3 text-[14px] font-bold text-gray-800 focus:border-[#5B33CC] focus:ring-1 focus:ring-[#5B33CC]"
                                 value={unitForm.data.name}
                                 onChange={e => unitForm.setData('name', e.target.value)}
                                 placeholder="misal: Milimeter, Kilogram, Kotak"
@@ -743,10 +775,12 @@ export default function Settings({ auth, categories, units, warehouse, staffUser
                             {unitForm.errors.name && <div className="mt-1 text-xs font-bold text-red-500">{unitForm.errors.name}</div>}
                         </div>
                         <div>
-                            <label className="mb-2 block text-[10px] font-extrabold uppercase tracking-wider text-gray-500">SIMBOL</label>
+                            <label className="mb-2 flex items-center gap-1.5 text-[10px] font-extrabold uppercase tracking-wider text-gray-500">
+                                <Hash className="h-3.5 w-3.5" /> SIMBOL
+                            </label>
                             <input
                                 type="text"
-                                className="block w-full rounded-xl border border-gray-200 bg-slate-50 px-4 py-3 text-[14px] font-black text-gray-800 focus:border-[#5932C9] focus:ring-1 focus:ring-[#5932C9]"
+                                className="block w-full rounded-xl border border-gray-200 bg-slate-50 px-4 py-3 text-[14px] font-black text-gray-800 focus:border-[#5B33CC] focus:ring-1 focus:ring-[#5B33CC]"
                                 value={unitForm.data.symbol}
                                 onChange={e => unitForm.setData('symbol', e.target.value)}
                                 placeholder="misal: mm, kg, box"
@@ -756,7 +790,7 @@ export default function Settings({ auth, categories, units, warehouse, staffUser
                         </div>
                         <div className="flex justify-end gap-3 border-t border-gray-100 pt-5">
                             <button type="button" onClick={closeUnitModal} className="rounded-xl border border-gray-200 px-5 py-3 font-bold text-gray-600 transition-colors hover:bg-gray-50">Batal</button>
-                            <button type="submit" disabled={unitForm.processing} className="rounded-xl bg-[#5932C9] px-6 py-3 font-bold text-white transition-all hover:bg-indigo-700 disabled:opacity-50">
+                            <button type="submit" disabled={unitForm.processing} className="rounded-xl bg-[#5B33CC] px-6 py-3 font-bold text-white transition-all hover:bg-indigo-700 disabled:opacity-50">
                                 {editingUnit ? 'Perbarui Satuan' : 'Simpan Satuan'}
                             </button>
                         </div>
@@ -771,7 +805,7 @@ export default function Settings({ auth, categories, units, warehouse, staffUser
                             <div className="rounded-xl bg-indigo-100 p-2">
                                 <UsersIcon className="h-5 w-5 text-indigo-600" />
                             </div>
-                            <h3 className="text-[18px] font-black text-[#28106F]">Akun Operasional Baru</h3>
+                            <h3 className="text-[18px] font-black text-[#4722B3]">{editingStaff ? 'Edit Akun Operasional' : 'Akun Operasional Baru'}</h3>
                         </div>
                         <button onClick={closeStaffModal} className="rounded-lg p-1 text-gray-400 transition hover:bg-white hover:text-gray-600">
                             <XIcon className="h-5 w-5" />
@@ -779,10 +813,12 @@ export default function Settings({ auth, categories, units, warehouse, staffUser
                     </div>
                     <form onSubmit={submitStaff} className="space-y-5 px-7 py-6">
                             <div>
-                                <label className="block text-[10px] font-extrabold text-gray-500 tracking-wider uppercase mb-2">NAMA PENGGUNA OPERASIONAL</label>
+                                <label className="flex items-center gap-1.5 text-[10px] font-extrabold text-gray-500 tracking-wider uppercase mb-2">
+                                    <User className="h-3.5 w-3.5" /> NAMA PENGGUNA OPERASIONAL
+                                </label>
                                 <input
                                     type="text"
-                                    className="bg-[#f8f9fb] border border-transparent focus:border-[#5932C9] focus:ring-1 focus:ring-[#5932C9] block w-full px-4 py-3 sm:text-[14px] rounded-xl font-bold text-gray-800"
+                                    className="bg-[#f8f9fb] border border-transparent focus:border-[#5B33CC] focus:ring-1 focus:ring-[#5B33CC] block w-full px-4 py-3 sm:text-[14px] rounded-xl font-bold text-gray-800"
                                     value={staffForm.data.name}
                                     onChange={e => staffForm.setData('name', e.target.value)}
                                     required
@@ -791,23 +827,26 @@ export default function Settings({ auth, categories, units, warehouse, staffUser
                                 {staffForm.errors.name && <div className="text-red-500 text-xs mt-1 font-bold">{staffForm.errors.name}</div>}
                             </div>
                             <div>
-                                <label className="block text-[10px] font-extrabold text-gray-500 tracking-wider uppercase mb-2">ROLE AKUN</label>
-                                <select
-                                    className="bg-[#f8f9fb] border border-transparent focus:border-[#5932C9] focus:ring-1 focus:ring-[#5932C9] block w-full px-4 py-3 sm:text-[14px] rounded-xl font-bold text-gray-800"
+                                <label className="flex items-center gap-1.5 text-[10px] font-extrabold text-gray-500 tracking-wider uppercase mb-2">
+                                    <ShieldCheck className="h-3.5 w-3.5" /> ROLE AKUN
+                                </label>
+                                <CustomDropdown
                                     value={staffForm.data.role}
-                                    onChange={e => staffForm.setData('role', e.target.value)}
-                                    required
-                                >
-                                    <option value="Staff">Staff Operasional - input outbound dan lihat data operasional</option>
-                                    <option value="Supervisor">Supervisor Gudang - approval harian, laporan, export, dan koordinasi shift</option>
-                                </select>
+                                    onChange={(value) => staffForm.setData('role', value)}
+                                    options={[
+                                        { value: 'Staff', label: 'Staff Operasional - input outbound dan lihat data operasional' },
+                                        { value: 'Supervisor', label: 'Supervisor Gudang - approval harian, laporan, export, dan koordinasi shift' },
+                                    ]}
+                                />
                                 {staffForm.errors.role && <div className="text-red-500 text-xs mt-1 font-bold">{staffForm.errors.role}</div>}
                             </div>
                             <div>
-                                <label className="block text-[10px] font-extrabold text-gray-500 tracking-wider uppercase mb-2">EMAIL LOGIN</label>
+                                <label className="flex items-center gap-1.5 text-[10px] font-extrabold text-gray-500 tracking-wider uppercase mb-2">
+                                    <Mail className="h-3.5 w-3.5" /> EMAIL LOGIN
+                                </label>
                                 <input
                                     type="email"
-                                    className="bg-[#f8f9fb] border border-transparent focus:border-[#5932C9] focus:ring-1 focus:ring-[#5932C9] block w-full px-4 py-3 sm:text-[14px] rounded-xl font-bold text-gray-800"
+                                    className="bg-[#f8f9fb] border border-transparent focus:border-[#5B33CC] focus:ring-1 focus:ring-[#5B33CC] block w-full px-4 py-3 sm:text-[14px] rounded-xl font-bold text-gray-800"
                                     value={staffForm.data.email}
                                     onChange={e => staffForm.setData('email', e.target.value)}
                                     required
@@ -815,21 +854,26 @@ export default function Settings({ auth, categories, units, warehouse, staffUser
                                 {staffForm.errors.email && <div className="text-red-500 text-xs mt-1 font-bold">{staffForm.errors.email}</div>}
                             </div>
                             <div>
-                                <label className="block text-[10px] font-extrabold text-gray-500 tracking-wider uppercase mb-2">TELEPON</label>
+                                <label className="flex items-center gap-1.5 text-[10px] font-extrabold text-gray-500 tracking-wider uppercase mb-2">
+                                    <Phone className="h-3.5 w-3.5" /> TELEPON
+                                </label>
                                 <input
                                     type="text"
-                                    className="bg-[#f8f9fb] border border-transparent focus:border-[#5932C9] focus:ring-1 focus:ring-[#5932C9] block w-full px-4 py-3 sm:text-[14px] rounded-xl font-semibold text-gray-600"
+                                    className="bg-[#f8f9fb] border border-transparent focus:border-[#5B33CC] focus:ring-1 focus:ring-[#5B33CC] block w-full px-4 py-3 sm:text-[14px] rounded-xl font-semibold text-gray-600"
                                     value={staffForm.data.phone}
                                     onChange={e => staffForm.setData('phone', e.target.value)}
                                 />
                                 {staffForm.errors.phone && <div className="text-red-500 text-xs mt-1 font-bold">{staffForm.errors.phone}</div>}
                             </div>
+                            {!editingStaff && (
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-[10px] font-extrabold text-gray-500 tracking-wider uppercase mb-2">PASSWORD</label>
+                                    <label className="flex items-center gap-1.5 text-[10px] font-extrabold text-gray-500 tracking-wider uppercase mb-2">
+                                        <KeyRound className="h-3.5 w-3.5" /> PASSWORD
+                                    </label>
                                     <input
                                         type="password"
-                                        className="bg-[#f8f9fb] border border-transparent focus:border-[#5932C9] focus:ring-1 focus:ring-[#5932C9] block w-full px-4 py-3 sm:text-[14px] rounded-xl font-bold text-gray-800"
+                                        className="bg-[#f8f9fb] border border-transparent focus:border-[#5B33CC] focus:ring-1 focus:ring-[#5B33CC] block w-full px-4 py-3 sm:text-[14px] rounded-xl font-bold text-gray-800"
                                         value={staffForm.data.password}
                                         onChange={e => staffForm.setData('password', e.target.value)}
                                         required
@@ -837,23 +881,37 @@ export default function Settings({ auth, categories, units, warehouse, staffUser
                                     {staffForm.errors.password && <div className="text-red-500 text-xs mt-1 font-bold">{staffForm.errors.password}</div>}
                                 </div>
                                 <div>
-                                    <label className="block text-[10px] font-extrabold text-gray-500 tracking-wider uppercase mb-2">KONFIRMASI</label>
+                                    <label className="flex items-center gap-1.5 text-[10px] font-extrabold text-gray-500 tracking-wider uppercase mb-2">
+                                        <KeyRound className="h-3.5 w-3.5" /> KONFIRMASI
+                                    </label>
                                     <input
                                         type="password"
-                                        className="bg-[#f8f9fb] border border-transparent focus:border-[#5932C9] focus:ring-1 focus:ring-[#5932C9] block w-full px-4 py-3 sm:text-[14px] rounded-xl font-bold text-gray-800"
+                                        className="bg-[#f8f9fb] border border-transparent focus:border-[#5B33CC] focus:ring-1 focus:ring-[#5B33CC] block w-full px-4 py-3 sm:text-[14px] rounded-xl font-bold text-gray-800"
                                         value={staffForm.data.password_confirmation}
                                         onChange={e => staffForm.setData('password_confirmation', e.target.value)}
                                         required
                                     />
                                 </div>
                             </div>
+                            )}
                             <div className="flex justify-end gap-3 border-t border-gray-100 pt-5">
                                 <button type="button" onClick={closeStaffModal} className="rounded-xl border border-gray-200 px-5 py-3 font-bold text-gray-600 transition-colors hover:bg-gray-50">Batal</button>
-                                <button type="submit" disabled={staffForm.processing} className="rounded-xl bg-[#5932C9] px-6 py-3 font-bold text-white transition-all hover:bg-indigo-700 disabled:opacity-50">
-                                    Buat Akun
+                                <button type="submit" disabled={staffForm.processing} className="rounded-xl bg-[#5B33CC] px-6 py-3 font-bold text-white transition-all hover:bg-indigo-700 disabled:opacity-50">
+                                    {editingStaff ? 'Perbarui Akun' : 'Buat Akun'}
                                 </button>
                             </div>
                         </form>
+                </div>
+            </Modal>
+
+            <Modal show={!!confirmDelete} onClose={() => setConfirmDelete(null)} maxWidth="md">
+                <div className="p-6">
+                    <h2 className="text-[16px] font-black text-gray-900">Konfirmasi Hapus</h2>
+                    <p className="mt-2 text-[13px] font-semibold text-gray-500">{confirmDelete?.message}</p>
+                    <div className="mt-6 flex justify-end gap-3">
+                        <button onClick={() => setConfirmDelete(null)} className="rounded-xl border border-gray-200 px-5 py-2.5 text-[13px] font-bold text-gray-600 hover:bg-gray-50">Batal</button>
+                        <button onClick={executeDelete} className="rounded-xl bg-red-600 px-5 py-2.5 text-[13px] font-bold text-white hover:bg-red-700">Hapus</button>
+                    </div>
                 </div>
             </Modal>
         </DashboardLayout>

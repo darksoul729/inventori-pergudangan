@@ -1,47 +1,23 @@
 import DashboardLayout from '@/Layouts/DashboardLayout';
 import { Head, Link } from '@inertiajs/react';
 import React, { useMemo, useState } from 'react';
-
-const SearchIcon = ({ className }) => (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
-    </svg>
-);
-
-const DocumentIcon = ({ className }) => (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.5L19 8.5V19a2 2 0 01-2 2z" />
-    </svg>
-);
-
-const ArrowIcon = ({ className }) => (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-    </svg>
-);
-
-const DownloadIcon = ({ className }) => (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2" />
-    </svg>
-);
+import { Search, FileText, ChevronRight, Download, Package, ArrowDownToLine, ArrowUpFromLine, ArrowRightLeft, ClipboardCheck, PenTool, Layers } from 'lucide-react';
 
 const typeStyles = {
-    goods_receipt: 'bg-emerald-50 text-emerald-700 border-emerald-100',
-    stock_out: 'bg-indigo-50 text-indigo-700 border-indigo-100',
-    stock_transfer: 'bg-blue-50 text-blue-700 border-blue-100',
-    stock_opname: 'bg-amber-50 text-amber-700 border-amber-100',
-    stock_adjustment: 'bg-rose-50 text-rose-700 border-rose-100',
+    goods_receipt: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+    stock_out: 'bg-indigo-50 text-indigo-700 border-indigo-200',
+    stock_transfer: 'bg-blue-50 text-blue-700 border-blue-200',
+    stock_opname: 'bg-amber-50 text-amber-700 border-amber-200',
+    stock_adjustment: 'bg-rose-50 text-rose-700 border-rose-200',
 };
 
 const filters = [
     { value: 'all', label: 'Semua' },
-    { value: 'goods_receipt', label: 'Penerimaan' },
-    { value: 'stock_out', label: 'Barang Keluar' },
-    { value: 'stock_transfer', label: 'Transfer Rak' },
-    { value: 'stock_opname', label: 'Stok Opname' },
-    { value: 'stock_adjustment', label: 'Koreksi Stok' },
-    { value: 'manual_rack_stock', label: 'Manual Rack Stock' },
+    { value: 'goods_receipt', label: 'Penerimaan', icon: ArrowDownToLine },
+    { value: 'stock_out', label: 'Keluar', icon: ArrowUpFromLine },
+    { value: 'stock_transfer', label: 'Transfer', icon: ArrowRightLeft },
+    { value: 'stock_opname', label: 'Opname', icon: ClipboardCheck },
+    { value: 'stock_adjustment', label: 'Koreksi', icon: PenTool },
 ];
 
 const formatNumber = (value) => Number(value || 0).toLocaleString('id-ID');
@@ -54,227 +30,157 @@ export default function WmsDocuments({ documents = [], stats = {} }) {
 
     const filteredDocuments = useMemo(() => {
         const needle = searchTerm.trim().toLowerCase();
-
-        return documents.filter((document) => {
-            const matchesType = activeType === 'all'
-                || document.type === activeType
-                || (activeType === 'manual_rack_stock'
-                    && document.type === 'stock_adjustment'
-                    && document.adjustment_mode === 'manual_rack_stock');
-            const matchesDateFrom = !dateFrom || document.date >= dateFrom;
-            const matchesDateTo = !dateTo || document.date <= dateTo;
-            const searchable = [
-                document.number,
-                document.type_label,
-                document.party,
-                document.warehouse,
-                document.operator,
-                document.summary,
-                document.status,
-            ].filter(Boolean).join(' ').toLowerCase();
-
+        return documents.filter((doc) => {
+            const matchesType = activeType === 'all' || doc.type === activeType || (activeType === 'manual_rack_stock' && doc.type === 'stock_adjustment' && doc.adjustment_mode === 'manual_rack_stock');
+            const matchesDateFrom = !dateFrom || doc.date >= dateFrom;
+            const matchesDateTo = !dateTo || doc.date <= dateTo;
+            const searchable = [doc.number, doc.type_label, doc.party, doc.warehouse, doc.operator, doc.summary, doc.status].filter(Boolean).join(' ').toLowerCase();
             return matchesType && matchesDateFrom && matchesDateTo && (!needle || searchable.includes(needle));
         });
     }, [activeType, dateFrom, dateTo, documents, searchTerm]);
 
     const statCards = [
-        { label: 'Total Dokumen', value: stats.total || documents.length, color: 'text-gray-900' },
-        { label: 'Penerimaan', value: stats.goods_receipt || 0, color: 'text-emerald-600' },
-        { label: 'Barang Keluar', value: stats.stock_out || 0, color: 'text-indigo-600' },
-        { label: 'Transfer Rak', value: stats.stock_transfer || 0, color: 'text-blue-600' },
-        { label: 'Stok Opname', value: stats.stock_opname || 0, color: 'text-amber-600' },
-        { label: 'Koreksi Stok', value: stats.stock_adjustment || 0, color: 'text-rose-600' },
+        { label: 'Total', value: stats.total || documents.length, color: 'text-[#4722B3]', icon: Layers },
+        { label: 'Penerimaan', value: stats.goods_receipt || 0, color: 'text-emerald-600', icon: ArrowDownToLine },
+        { label: 'Keluar', value: stats.stock_out || 0, color: 'text-indigo-600', icon: ArrowUpFromLine },
+        { label: 'Transfer', value: stats.stock_transfer || 0, color: 'text-blue-600', icon: ArrowRightLeft },
+        { label: 'Opname', value: stats.stock_opname || 0, color: 'text-amber-600', icon: ClipboardCheck },
+        { label: 'Koreksi', value: stats.stock_adjustment || 0, color: 'text-rose-600', icon: PenTool },
     ];
 
-    const exportParams = new URLSearchParams({
-        type: activeType,
-        search: searchTerm.trim(),
-        date_from: dateFrom,
-        date_to: dateTo,
-    }).toString();
-    const exportCsvUrl = `${route('wms-documents.export')}?${exportParams}`;
-    const exportPdfUrl = `${route('wms-documents.pdf')}?${exportParams}`;
+    const exportParams = new URLSearchParams({ type: activeType, search: searchTerm.trim(), date_from: dateFrom, date_to: dateTo }).toString();
 
     return (
-        <DashboardLayout
-            headerTitle="Dokumen WMS"
-            headerSearchPlaceholder="Cari nomor dokumen, pihak, atau jenis..."
-            searchValue={searchTerm}
-            onSearch={setSearchTerm}
-            contentClassName="w-full max-w-none"
-        >
-            <Head title="Dokumen WMS" />
+        <DashboardLayout headerTitle="Dokumen Gudang" headerSearchPlaceholder="Cari dokumen..." searchValue={searchTerm} onSearch={setSearchTerm} contentClassName="w-full max-w-none">
+            <Head title="Dokumen Gudang" />
 
-            <div className="space-y-5">
-                <section className="space-y-4">
-                    <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-                        <div>
-                            <p className="text-[11px] font-extrabold text-indigo-500 tracking-[0.18em] uppercase">Pusat Dokumen Gudang</p>
-                            <h2 className="mt-1 text-2xl font-black text-gray-900 tracking-tight">Daftar dokumen operasional</h2>
-                            <p className="mt-1 text-sm text-gray-500">Pantau dokumen penerimaan, barang keluar, transfer rak, stok opname, dan koreksi stok.</p>
+            {/* Header */}
+            <div className="mb-6">
+                <h1 className="text-[28px] font-black text-[#4722B3] tracking-tight">Dokumen Gudang</h1>
+                <p className="text-[13px] font-semibold text-gray-500 mt-1">Pantau semua dokumen operasional gudang di satu tempat.</p>
+            </div>
+
+            {/* Stats Cards */}
+            <div className="grid grid-cols-3 md:grid-cols-6 gap-4 mb-6">
+                {statCards.map((card) => {
+                    const Icon = card.icon;
+                    return (
+                    <div key={card.label} className="bg-white rounded-[20px] p-4 shadow-[0_2px_16px_rgba(0,0,0,0.02)] border border-[#E5EAF3]">
+                        <div className="flex items-start justify-between gap-2">
+                            <p className="text-[11px] font-extrabold text-gray-400 tracking-wide">{card.label}</p>
+                            <div className="w-7 h-7 rounded-lg bg-gray-50 border border-gray-100 flex items-center justify-center">
+                                <Icon className={`w-4 h-4 ${card.color}`} />
+                            </div>
                         </div>
-                        <div className="flex flex-col sm:flex-row gap-2 w-full lg:w-auto">
-                            <a
-                                href={exportCsvUrl}
-                                className="h-11 px-4 rounded-[8px] border border-gray-200 bg-white text-gray-700 text-xs font-black inline-flex items-center justify-center gap-2 hover:border-gray-300 transition-colors"
-                            >
-                                <DownloadIcon className="w-4 h-4" />
-                                Unduh CSV
-                            </a>
-                            <a
-                                href={exportPdfUrl}
-                                className="h-11 px-4 rounded-[8px] bg-indigo-600 text-white text-xs font-black inline-flex items-center justify-center gap-2 hover:bg-indigo-700 transition-colors"
-                            >
-                                <DownloadIcon className="w-4 h-4" />
-                                Unduh PDF
-                            </a>
-                        </div>
+                        <p className={`text-[24px] font-black ${card.color} mt-1`}>{formatNumber(card.value)}</p>
                     </div>
+                )})}
+            </div>
 
-                    <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
-                        {statCards.map((card) => (
-                            <div key={card.label} className="rounded-[8px] border border-gray-100 bg-white px-5 py-4 shadow-sm">
-                                <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">{card.label}</p>
-                                <p className={`mt-1 text-2xl font-black ${card.color}`}>{formatNumber(card.value)}</p>
+            {/* Filter Buttons */}
+            <div className="bg-white rounded-[20px] p-6 shadow-[0_2px_16px_rgba(0,0,0,0.02)] border border-[#E5EAF3] mb-6">
+                <div className="flex flex-wrap gap-2 mb-4">
+                    {filters.map((filter) => {
+                        const Icon = filter.icon || Package;
+                        return (
+                            <button key={filter.value} type="button" onClick={() => setActiveType(filter.value)}
+                                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[12px] font-bold border transition-all ${
+                                    activeType === filter.value ? 'bg-[#5B33CC] text-white border-[#5B33CC]' : 'bg-white text-gray-500 border-gray-200 hover:border-[#5B33CC]'
+                                }`}>
+                                {Icon && <Icon className="w-4 h-4" />}
+                                {filter.label}
+                            </button>
+                        );
+                    })}
+                </div>
+
+                {/* Date Filters */}
+                <div className="flex flex-wrap gap-4 items-end">
+                    <div>
+                        <label className="block text-[10px] font-black text-gray-400 uppercase mb-1">Dari</label>
+                        <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)}
+                            className="h-10 px-3 rounded-xl border border-gray-200 text-[13px] font-semibold text-gray-600" />
+                    </div>
+                    <div>
+                        <label className="block text-[10px] font-black text-gray-400 uppercase mb-1">Sampai</label>
+                        <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)}
+                            className="h-10 px-3 rounded-xl border border-gray-200 text-[13px] font-semibold text-gray-600" />
+                    </div>
+                    {(dateFrom || dateTo || searchTerm || activeType !== 'all') && (
+                        <button type="button" onClick={() => { setActiveType('all'); setSearchTerm(''); setDateFrom(''); setDateTo(''); }}
+                            className="h-10 px-4 rounded-xl border border-gray-200 bg-white text-[12px] font-bold text-gray-500 hover:border-gray-300">Reset</button>
+                    )}
+                    <div className="flex gap-2 ml-auto">
+                        <a href={`${route('wms-documents.export')}?${exportParams}`} className="flex items-center gap-2 h-10 px-4 rounded-xl border border-[#E5EAF3] bg-white text-[12px] font-bold text-gray-600 hover:bg-gray-50">
+                            <Download className="w-4 h-4" />CSV
+                        </a>
+                        <a href={`${route('wms-documents.pdf')}?${exportParams}`} className="flex items-center gap-2 h-10 px-4 rounded-xl bg-[#5B33CC] text-white text-[12px] font-bold hover:bg-indigo-700">
+                            <Download className="w-4 h-4" />PDF
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            {/* Document List */}
+            <div className="bg-white rounded-[20px] shadow-[0_2px_16px_rgba(0,0,0,0.02)] border border-[#E5EAF3] overflow-hidden">
+                {filteredDocuments.length > 0 ? (
+                    <div className="divide-y divide-gray-50">
+                        {filteredDocuments.map((doc) => (
+                            <div key={doc.id} className="flex items-center gap-4 p-4 hover:bg-gray-50 transition">
+                                <div className="w-12 h-12 rounded-xl bg-[#f8f9fb] flex items-center justify-center flex-shrink-0">
+                                    <FileText className="w-6 h-6 text-[#5B33CC]" />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <div className="flex items-center gap-2 flex-wrap">
+                                        <span className="text-[14px] font-black text-[#4722B3]">{doc.number}</span>
+                                        <span className={`px-2 py-0.5 rounded-full border text-[10px] font-bold ${typeStyles[doc.type] || 'bg-gray-50 text-gray-600'}`}>
+                                            {doc.type_label}
+                                        </span>
+                                    </div>
+                                    <div className="flex items-center gap-3 mt-1 text-[12px] font-semibold text-gray-500">
+                                        <span>{doc.date_label || doc.date}</span>
+                                        <span>·</span>
+                                        <span>{doc.party || '-'}</span>
+                                        <span>·</span>
+                                        <span>{doc.warehouse}</span>
+                                    </div>
+                                </div>
+                                <div className="text-right flex-shrink-0">
+                                    <div className="text-[14px] font-black text-gray-800">{formatNumber(doc.item_count)} item</div>
+                                    <div className="text-[12px] font-bold text-gray-400">{formatNumber(doc.total_quantity)} total</div>
+                                </div>
+                                <div className="flex gap-2 flex-shrink-0">
+                                    {doc.pdf_url && (
+                                        <a href={doc.pdf_url} className="w-9 h-9 rounded-lg border border-gray-200 bg-white flex items-center justify-center text-gray-500 hover:border-[#5B33CC]">
+                                            <Download className="w-4 h-4" />
+                                        </a>
+                                    )}
+                                    {doc.url ? (
+                                        <Link href={doc.url} className="flex items-center gap-1 h-9 px-4 rounded-lg bg-[#5B33CC] text-white text-[12px] font-bold hover:bg-indigo-700">
+                                            Buka <ChevronRight className="w-4 h-4" />
+                                        </Link>
+                                    ) : <span className="text-[11px] font-bold text-gray-400">-</span>}
+                                </div>
                             </div>
                         ))}
                     </div>
-
-                    <div className="rounded-[8px] border border-gray-100 bg-white p-4 shadow-sm">
-                        <div className="flex flex-wrap gap-2">
-                            {filters.map((filter) => (
-                                <button
-                                    key={filter.value}
-                                    type="button"
-                                    onClick={() => setActiveType(filter.value)}
-                                    className={`h-9 px-4 rounded-[8px] text-xs font-extrabold border transition-colors ${
-                                        activeType === filter.value
-                                            ? 'bg-indigo-600 text-white border-indigo-600'
-                                            : 'bg-white text-gray-500 border-gray-200 hover:border-gray-300 hover:text-gray-700'
-                                    }`}
-                                >
-                                    {filter.label}
-                                </button>
-                            ))}
+                ) : (
+                    <div className="p-12 text-center">
+                        <div className="w-16 h-16 rounded-2xl bg-[#f8f9fb] flex items-center justify-center mx-auto mb-4">
+                            <Layers className="w-8 h-8 text-gray-300" />
                         </div>
-
-                        <div className="mt-4 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-                            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                                <label className="block">
-                                    <span className="text-[11px] font-black uppercase tracking-wider text-gray-400">Dari Tanggal</span>
-                                    <input
-                                        type="date"
-                                        value={dateFrom}
-                                        onChange={(event) => setDateFrom(event.target.value)}
-                                        className="mt-1 h-10 w-full rounded-[8px] border border-gray-200 px-3 text-sm font-bold text-gray-700 focus:border-indigo-400 focus:ring-indigo-100"
-                                    />
-                                </label>
-                                <label className="block">
-                                    <span className="text-[11px] font-black uppercase tracking-wider text-gray-400">Sampai Tanggal</span>
-                                    <input
-                                        type="date"
-                                        value={dateTo}
-                                        onChange={(event) => setDateTo(event.target.value)}
-                                        className="mt-1 h-10 w-full rounded-[8px] border border-gray-200 px-3 text-sm font-bold text-gray-700 focus:border-indigo-400 focus:ring-indigo-100"
-                                    />
-                                </label>
-                            </div>
-                            {(dateFrom || dateTo || searchTerm || activeType !== 'all') && (
-                                <button
-                                    type="button"
-                                    onClick={() => {
-                                        setActiveType('all');
-                                        setSearchTerm('');
-                                        setDateFrom('');
-                                        setDateTo('');
-                                    }}
-                                    className="h-10 w-full rounded-[8px] border border-gray-200 bg-white px-4 text-xs font-black text-gray-500 transition-colors hover:border-gray-300 hover:text-gray-700 md:w-auto"
-                                >
-                                    Setel Ulang Filter
-                                </button>
-                            )}
+                        <p className="text-[16px] font-black text-[#4722B3]">Belum ada dokumen</p>
+                        <p className="text-[13px] font-semibold text-gray-500 mt-1">Mulai catat transaksi operasional agar dokumen otomatis muncul di sini.</p>
+                        <div className="mt-5 flex justify-center gap-3">
+                            <Link href={route('purchase-orders.create')} className="px-4 py-2 rounded-xl bg-[#5B33CC] text-white text-[12px] font-bold hover:bg-indigo-700">
+                                + Buat Pesanan Beli
+                            </Link>
+                            <Link href={route('inventory.outbound.view')} className="px-4 py-2 rounded-xl border border-[#E5EAF3] bg-white text-[#5B33CC] text-[12px] font-bold hover:bg-gray-50">
+                                + Catat Barang Keluar
+                            </Link>
                         </div>
                     </div>
-
-                    <div className="overflow-x-auto rounded-[8px] border border-gray-100 bg-white shadow-sm">
-                        <table className="w-full min-w-[1080px] text-left">
-                            <thead>
-                                <tr className="bg-gray-50/70 text-[11px] font-black text-gray-400 uppercase tracking-wider">
-                                    <th className="px-6 py-3">Dokumen</th>
-                                    <th className="px-4 py-3">Tanggal</th>
-                                    <th className="px-4 py-3">Asal / Tujuan</th>
-                                    <th className="px-4 py-3">Gudang</th>
-                                    <th className="px-4 py-3 text-right">Item</th>
-                                    <th className="px-4 py-3 text-right">Jumlah</th>
-                                    <th className="px-4 py-3">Operator</th>
-                                    <th className="px-6 py-3 text-right">Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-100">
-                                {filteredDocuments.map((document) => (
-                                    <tr key={document.id} className="hover:bg-gray-50/60 transition-colors">
-                                        <td className="px-6 py-4">
-                                            <div className="flex items-start gap-3">
-                                                <div className="w-10 h-10 rounded-[8px] bg-gray-100 flex items-center justify-center flex-shrink-0">
-                                                    <DocumentIcon className="w-5 h-5 text-gray-500" />
-                                                </div>
-                                                <div>
-                                                    <div className="flex flex-wrap items-center gap-2">
-                                                        <p className="font-black text-sm text-gray-900">{document.number}</p>
-                                                        <span className={`px-2 py-1 rounded-[6px] border text-[10px] font-black ${typeStyles[document.type] || 'bg-gray-50 text-gray-600 border-gray-100'}`}>
-                                                            {document.type_label}
-                                                        </span>
-                                                    </div>
-                                                    <p className="mt-1 text-xs font-semibold text-gray-500">{document.summary}</p>
-                                                    <p className="mt-1 text-[11px] font-bold text-gray-400">{document.status}</p>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td className="px-4 py-4 text-sm font-bold text-gray-600">{document.date_label || document.date}</td>
-                                        <td className="px-4 py-4 text-sm font-bold text-gray-700">{document.party}</td>
-                                        <td className="px-4 py-4 text-sm font-semibold text-gray-500">{document.warehouse}</td>
-                                        <td className="px-4 py-4 text-right text-sm font-black text-gray-800">{formatNumber(document.item_count)}</td>
-                                        <td className="px-4 py-4 text-right text-sm font-black text-gray-800">{formatNumber(document.total_quantity)}</td>
-                                        <td className="px-4 py-4 text-sm font-semibold text-gray-500">{document.operator}</td>
-                                        <td className="px-6 py-4 text-right">
-                                            <div className="flex justify-end gap-2">
-                                                {document.pdf_url && (
-                                                    <a
-                                                        href={document.pdf_url}
-                                                        className="inline-flex h-9 items-center justify-center gap-2 rounded-[8px] border border-gray-200 bg-white px-3 text-xs font-black text-gray-600 transition-colors hover:border-gray-300"
-                                                    >
-                                                        PDF
-                                                    </a>
-                                                )}
-                                                {document.url ? (
-                                                    <Link
-                                                        href={document.url}
-                                                        className="inline-flex items-center justify-center gap-2 h-9 px-3 rounded-[8px] bg-indigo-600 text-white text-xs font-black hover:bg-indigo-700 transition-colors"
-                                                    >
-                                                        Lihat
-                                                        <ArrowIcon className="w-3.5 h-3.5" />
-                                                    </Link>
-                                                ) : (
-                                                    <span className="text-xs font-bold text-gray-400">Tidak ada detail</span>
-                                                )}
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-
-                    {filteredDocuments.length === 0 && (
-                        <div className="rounded-[8px] border border-gray-100 bg-white px-6 py-16 text-center shadow-sm">
-                            <div className="mx-auto w-12 h-12 rounded-[8px] bg-gray-100 flex items-center justify-center">
-                                <DocumentIcon className="w-6 h-6 text-gray-400" />
-                            </div>
-                            <p className="mt-4 text-sm font-black text-gray-800">Dokumen tidak ditemukan</p>
-                            <p className="mt-1 text-sm text-gray-500">Coba ubah kata kunci pencarian, jenis dokumen, atau tanggal.</p>
-                        </div>
-                    )}
-                </section>
+                )}
             </div>
         </DashboardLayout>
     );

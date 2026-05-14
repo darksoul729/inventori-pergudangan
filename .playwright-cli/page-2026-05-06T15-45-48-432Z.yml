@@ -1,0 +1,180 @@
+- generic [ref=e467]:
+  - generic [ref=e468]:
+    - button [ref=e469] [cursor=pointer]:
+      - img [ref=e470]
+    - generic [ref=e472]:
+      - generic [ref=e473]:
+        - img "Logo PETAYU" [ref=e475]
+        - generic [ref=e476]:
+          - heading "PETAYU" [level=1] [ref=e477]
+          - paragraph [ref=e478]: SMART STORAGE, SMOOTH FLOW
+      - navigation [ref=e479]:
+        - link "Dasbor" [ref=e480] [cursor=pointer]:
+          - /url: /dashboard
+          - img [ref=e481]
+          - generic [ref=e486]: Dasbor
+        - link "Bantuan AI" [ref=e487] [cursor=pointer]:
+          - /url: /petayu-ai
+          - img [ref=e488]
+          - generic [ref=e491]: Bantuan AI
+        - generic [ref=e492]:
+          - button "Operasional Gudang" [ref=e493] [cursor=pointer]:
+            - generic [ref=e494]:
+              - img [ref=e495]
+              - generic [ref=e498]: Operasional Gudang
+            - img [ref=e500]
+          - generic [ref=e503]:
+            - link "Layout Gudang" [ref=e504] [cursor=pointer]:
+              - /url: /warehouse
+              - generic [ref=e505]: Layout Gudang
+            - link "Pindah Rak" [ref=e506] [cursor=pointer]:
+              - /url: /rack-allocation
+              - generic [ref=e507]: Pindah Rak
+            - link "Cek Stok" [ref=e508] [cursor=pointer]:
+              - /url: /stock-opname
+              - generic [ref=e509]: Cek Stok
+        - link "Stok Barang" [ref=e510] [cursor=pointer]:
+          - /url: /inventory
+          - img [ref=e511]
+          - generic [ref=e521]: Stok Barang
+        - generic [ref=e522]:
+          - button "Pembelian" [ref=e523] [cursor=pointer]:
+            - generic [ref=e524]:
+              - img [ref=e525]
+              - generic [ref=e529]: Pembelian
+            - img [ref=e531]
+          - generic [ref=e534]:
+            - link "Order Beli" [ref=e535] [cursor=pointer]:
+              - /url: /purchase-orders
+              - generic [ref=e536]: Order Beli
+            - link "Pemasok" [ref=e537] [cursor=pointer]:
+              - /url: /supplier
+              - generic [ref=e538]: Pemasok
+            - link "Tagihan" [ref=e539] [cursor=pointer]:
+              - /url: /tagihan
+              - generic [ref=e540]: Tagihan
+        - generic [ref=e541]:
+          - button "Riwayat" [ref=e542] [cursor=pointer]:
+            - generic [ref=e543]:
+              - img [ref=e544]
+              - generic [ref=e547]: Riwayat
+            - img [ref=e549]
+          - generic [ref=e552]:
+            - link "Riwayat Stok" [ref=e553] [cursor=pointer]:
+              - /url: /transaction
+              - generic [ref=e554]: Riwayat Stok
+            - link "Dokumen" [ref=e555] [cursor=pointer]:
+              - /url: /wms-documents
+              - generic [ref=e556]: Dokumen
+        - generic [ref=e557]:
+          - button "Pengiriman" [ref=e558] [cursor=pointer]:
+            - generic [ref=e559]:
+              - img [ref=e560]
+              - generic [ref=e565]: Pengiriman
+            - img [ref=e567]
+          - generic [ref=e570]:
+            - link "Pengiriman" [ref=e571] [cursor=pointer]:
+              - /url: /shipments
+              - generic [ref=e572]: Pengiriman
+            - link "Driver" [ref=e573] [cursor=pointer]:
+              - /url: /drivers
+              - generic [ref=e574]: Driver
+        - generic [ref=e575]:
+          - button "Sistem" [ref=e576] [cursor=pointer]:
+            - generic [ref=e577]:
+              - img [ref=e578]
+              - generic [ref=e581]: Sistem
+            - img [ref=e583]
+          - generic [ref=e586]:
+            - link "Laporan" [ref=e587] [cursor=pointer]:
+              - /url: /reports
+              - generic [ref=e588]: Laporan
+            - link "Pengaturan" [ref=e589] [cursor=pointer]:
+              - /url: /settings
+              - generic [ref=e590]: Pengaturan
+        - generic [ref=e591]:
+          - button "Bantuan" [ref=e592] [cursor=pointer]:
+            - generic [ref=e593]:
+              - img [ref=e594]
+              - generic [ref=e597]: Bantuan
+            - img [ref=e598]
+          - generic [ref=e600]:
+            - link "Tanya Tim" [ref=e601] [cursor=pointer]:
+              - /url: /help/live-support
+            - link "Cara Pakai" [ref=e602] [cursor=pointer]:
+              - /url: /help/documentation
+  - generic [ref=e603]:
+    - banner [ref=e604]:
+      - generic [ref=e605]:
+        - generic [ref=e606]:
+          - img [ref=e607]
+          - textbox "Cari..." [ref=e610]
+        - generic [ref=e615]: "Sistem Inti: Operasional"
+      - generic [ref=e616]:
+        - generic [ref=e617]:
+          - link "3" [ref=e618] [cursor=pointer]:
+            - /url: /notifications
+            - img [ref=e620]
+            - generic [ref=e625]: "3"
+          - link [ref=e626] [cursor=pointer]:
+            - /url: /help/live-support
+            - img [ref=e628]
+        - generic [ref=e634] [cursor=pointer]:
+          - generic [ref=e635]:
+            - generic [ref=e636]: Rizky Pratama
+            - generic [ref=e637]: Manager Gudang
+          - generic [ref=e638]: R
+    - navigation [ref=e639]:
+      - link "Beranda" [ref=e640] [cursor=pointer]:
+        - /url: /dashboard
+        - img [ref=e641]
+        - generic [ref=e646]: Beranda
+      - img [ref=e647]
+      - link "Tagihan" [ref=e649] [cursor=pointer]:
+        - /url: /invoices
+      - img [ref=e650]
+      - generic [ref=e652]: "Detail #1"
+    - main [ref=e653]:
+      - generic [ref=e655]:
+        - generic [ref=e656]:
+          - heading "Detail Tagihan" [level=1] [ref=e657]
+          - paragraph [ref=e658]: INV-20260506-FYET - PT Operasi Nusantara
+        - generic [ref=e659]:
+          - link "Unduh PDF" [ref=e660] [cursor=pointer]:
+            - /url: http://127.0.0.1:8000/invoices/1/pdf
+          - link "Kirim WhatsApp" [ref=e661] [cursor=pointer]:
+            - /url: https://wa.me/6283188880201?text=Halo%20PT%20Operasi%20Nusantara%2C%20berikut%20tagihan%20INV-20260506-FYET%20sebesar%20Rp%C2%A0300.000%2C00.%20Terima%20kasih.
+        - generic [ref=e662]:
+          - generic [ref=e663]: "Tanggal: 6/5/2026"
+          - generic [ref=e664]: "Jatuh tempo: -"
+          - generic [ref=e665]: "Total: Rp 300.000,00"
+          - generic [ref=e666]: "Catatan: -"
+        - generic [ref=e667]:
+          - heading "Item" [level=2] [ref=e668]
+          - table [ref=e669]:
+            - rowgroup [ref=e670]:
+              - row "Deskripsi Qty Harga Subtotal" [ref=e671]:
+                - columnheader "Deskripsi" [ref=e672]
+                - columnheader "Qty" [ref=e673]
+                - columnheader "Harga" [ref=e674]
+                - columnheader "Subtotal" [ref=e675]
+            - rowgroup [ref=e676]:
+              - row "Biaya Pengiriman Mei 2 Rp 150.000,00 Rp 300.000,00" [ref=e677]:
+                - cell "Biaya Pengiriman Mei" [ref=e678]
+                - cell "2" [ref=e679]
+                - cell "Rp 150.000,00" [ref=e680]
+                - cell "Rp 300.000,00" [ref=e681]
+        - generic [ref=e682]:
+          - generic [ref=e683]:
+            - text: Status Pembayaran
+            - combobox [ref=e684]:
+              - option "Belum Dibayar"
+              - option "Sebagian"
+              - option "Lunas" [selected]
+          - button "Simpan Status" [ref=e685] [cursor=pointer]
+  - button "Buka PETAYU AI" [ref=e686] [cursor=pointer]:
+    - generic [ref=e687]:
+      - generic [ref=e690]:
+        - img [ref=e692]
+        - img [ref=e698]
+      - generic: ✦ PETAYU AI

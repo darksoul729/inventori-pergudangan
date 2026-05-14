@@ -1,0 +1,291 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e3]:
+    - generic [ref=e4]:
+      - button [ref=e5] [cursor=pointer]:
+        - img [ref=e6]
+      - generic [ref=e8]:
+        - generic [ref=e9]:
+          - img "Logo PETAYU" [ref=e11]
+          - generic [ref=e12]:
+            - heading "PETAYU" [level=1] [ref=e13]
+            - paragraph [ref=e14]: SMART STORAGE, SMOOTH FLOW
+        - navigation [ref=e15]:
+          - link "Dasbor" [ref=e16] [cursor=pointer]:
+            - /url: /dashboard
+            - img [ref=e17]
+            - generic [ref=e22]: Dasbor
+          - link "Bantuan AI" [ref=e23] [cursor=pointer]:
+            - /url: /petayu-ai
+            - img [ref=e24]
+            - generic [ref=e27]: Bantuan AI
+          - generic [ref=e28]:
+            - button "Operasional Gudang" [ref=e29] [cursor=pointer]:
+              - generic [ref=e30]:
+                - img [ref=e31]
+                - generic [ref=e34]: Operasional Gudang
+              - img [ref=e36]
+            - generic [ref=e39]:
+              - link "Layout Gudang" [ref=e40] [cursor=pointer]:
+                - /url: /warehouse
+                - generic [ref=e41]: Layout Gudang
+              - link "Pindah Rak" [ref=e42] [cursor=pointer]:
+                - /url: /rack-allocation
+                - generic [ref=e43]: Pindah Rak
+              - link "Cek Stok" [ref=e44] [cursor=pointer]:
+                - /url: /stock-opname
+                - generic [ref=e45]: Cek Stok
+          - link "Stok Barang" [ref=e46] [cursor=pointer]:
+            - /url: /inventory
+            - img [ref=e47]
+            - generic [ref=e57]: Stok Barang
+          - generic [ref=e58]:
+            - button "Pembelian" [ref=e59] [cursor=pointer]:
+              - generic [ref=e60]:
+                - img [ref=e61]
+                - generic [ref=e65]: Pembelian
+              - img [ref=e67]
+            - generic [ref=e70]:
+              - link "Order Beli" [ref=e71] [cursor=pointer]:
+                - /url: /purchase-orders
+                - generic [ref=e72]: Order Beli
+              - link "Pemasok" [ref=e73] [cursor=pointer]:
+                - /url: /supplier
+                - generic [ref=e74]: Pemasok
+              - link "Tagihan" [ref=e75] [cursor=pointer]:
+                - /url: /tagihan
+                - generic [ref=e76]: Tagihan
+          - generic [ref=e77]:
+            - button "Riwayat" [ref=e78] [cursor=pointer]:
+              - generic [ref=e79]:
+                - img [ref=e80]
+                - generic [ref=e83]: Riwayat
+              - img [ref=e85]
+            - generic [ref=e88]:
+              - link "Riwayat Stok" [ref=e89] [cursor=pointer]:
+                - /url: /transaction
+                - generic [ref=e90]: Riwayat Stok
+              - link "Dokumen" [ref=e91] [cursor=pointer]:
+                - /url: /wms-documents
+                - generic [ref=e92]: Dokumen
+          - generic [ref=e93]:
+            - button "Pengiriman" [ref=e94] [cursor=pointer]:
+              - generic [ref=e95]:
+                - img [ref=e96]
+                - generic [ref=e101]: Pengiriman
+              - img [ref=e103]
+            - generic [ref=e106]:
+              - link "Pengiriman" [ref=e107] [cursor=pointer]:
+                - /url: /shipments
+                - generic [ref=e108]: Pengiriman
+              - link "Driver" [ref=e109] [cursor=pointer]:
+                - /url: /drivers
+                - generic [ref=e110]: Driver
+          - generic [ref=e111]:
+            - button "Sistem" [ref=e112] [cursor=pointer]:
+              - generic [ref=e113]:
+                - img [ref=e114]
+                - generic [ref=e117]: Sistem
+              - img [ref=e119]
+            - generic [ref=e122]:
+              - link "Laporan" [ref=e123] [cursor=pointer]:
+                - /url: /reports
+                - generic [ref=e124]: Laporan
+              - link "Pengaturan" [ref=e125] [cursor=pointer]:
+                - /url: /settings
+                - generic [ref=e126]: Pengaturan
+          - generic [ref=e127]:
+            - button "Bantuan" [ref=e128] [cursor=pointer]:
+              - generic [ref=e129]:
+                - img [ref=e130]
+                - generic [ref=e133]: Bantuan
+              - img [ref=e134]
+            - generic [ref=e136]:
+              - link "Tanya Tim" [ref=e137] [cursor=pointer]:
+                - /url: /help/live-support
+              - link "Cara Pakai" [ref=e138] [cursor=pointer]:
+                - /url: /help/documentation
+    - generic [ref=e139]:
+      - banner [ref=e140]:
+        - generic [ref=e141]:
+          - generic [ref=e142]:
+            - img [ref=e143]
+            - textbox "Cari pemasok (nama, kode, atau kontak)..." [ref=e146]
+          - generic [ref=e151]: "Sistem Inti: Operasional"
+        - generic [ref=e152]:
+          - generic [ref=e153]:
+            - link "3" [ref=e154] [cursor=pointer]:
+              - /url: /notifications
+              - img [ref=e156]
+              - generic [ref=e161]: "3"
+            - link [ref=e162] [cursor=pointer]:
+              - /url: /help/live-support
+              - img [ref=e164]
+          - generic [ref=e170] [cursor=pointer]:
+            - generic [ref=e171]:
+              - generic [ref=e172]: Rizky Pratama
+              - generic [ref=e173]: Manager Gudang
+            - generic [ref=e174]: R
+      - navigation [ref=e175]:
+        - link "Beranda" [ref=e176] [cursor=pointer]:
+          - /url: /dashboard
+          - img [ref=e177]
+          - generic [ref=e182]: Beranda
+        - img [ref=e183]
+        - link "Dasbor" [ref=e185] [cursor=pointer]:
+          - /url: /dashboard
+        - img [ref=e186]
+        - link "Order Beli" [ref=e188] [cursor=pointer]:
+          - /url: /purchase-orders
+        - img [ref=e189]
+        - generic [ref=e191]: Pemasok
+      - main [ref=e192]:
+        - generic [ref=e195]:
+          - generic [ref=e196]:
+            - generic [ref=e197]:
+              - heading "Performa Pemasok" [level=1] [ref=e198]
+              - paragraph [ref=e199]: Pantau ketepatan pengiriman, lead time, dan kualitas pemasok untuk gudang operasional.
+            - generic [ref=e200]:
+              - button "+ Tambah Pemasok" [ref=e201] [cursor=pointer]:
+                - generic [ref=e202]: + Tambah Pemasok
+              - button "Ekspor Audit" [ref=e203] [cursor=pointer]:
+                - img [ref=e204]
+                - generic [ref=e206]: Ekspor Audit
+          - generic [ref=e207]:
+            - generic [ref=e208]:
+              - img [ref=e210]
+              - generic [ref=e212]:
+                - heading "Rata-rata Lead Time" [level=3] [ref=e213]
+                - generic [ref=e214]: 0.0 Hari
+                - generic [ref=e215]:
+                  - img [ref=e216]
+                  - generic [ref=e218]: 2.8d vs last month
+            - generic [ref=e219]:
+              - img [ref=e221]
+              - generic [ref=e223]:
+                - heading "Pengiriman Tepat Waktu" [level=3] [ref=e224]
+                - generic [ref=e225]: 0.0%
+                - generic [ref=e226]:
+                  - img [ref=e227]
+                  - generic [ref=e229]: 92.8% decrease
+            - generic [ref=e230]:
+              - img [ref=e232]
+              - generic [ref=e234]:
+                - heading "Pengiriman Terlambat" [level=3] [ref=e235]
+                - generic [ref=e236]: 0 Unit
+                - generic [ref=e237]:
+                  - img [ref=e238]
+                  - generic [ref=e240]: 22 units below last month
+          - generic [ref=e241]:
+            - generic [ref=e242]:
+              - heading "Korelasi Performa" [level=2] [ref=e243]
+              - generic [ref=e245]:
+                - combobox [ref=e246] [cursor=pointer]:
+                  - option "2026" [selected]
+                  - option "2025"
+                - img
+            - generic [ref=e249]:
+              - list [ref=e251]:
+                - listitem [ref=e252]:
+                  - img "PT Kayu Lestari Timur (SUP-KAYU) legend icon" [ref=e253]
+                  - text: PT Kayu Lestari Timur (SUP-KAYU)
+                - listitem [ref=e255]:
+                  - img "PT Komponen Axis Nusantara (SUP-AXIS) legend icon" [ref=e256]
+                  - text: PT Komponen Axis Nusantara (SUP-AXIS)
+                - listitem [ref=e258]:
+                  - img "PT Manufaktur Bulkchain (SUP-BULK) legend icon" [ref=e259]
+                  - text: PT Manufaktur Bulkchain (SUP-BULK)
+              - application [ref=e261]:
+                - generic [ref=e291]:
+                  - generic [ref=e292]:
+                    - generic [ref=e294]: Jan
+                    - generic [ref=e296]: Feb
+                    - generic [ref=e298]: Mar
+                    - generic [ref=e300]: Apr
+                    - generic [ref=e302]: May
+                    - generic [ref=e304]: Jun
+                    - generic [ref=e306]: Jul
+                    - generic [ref=e308]: Aug
+                    - generic [ref=e310]: Sep
+                    - generic [ref=e312]: Oct
+                    - generic [ref=e314]: Nov
+                    - generic [ref=e316]: Dec
+                  - generic [ref=e317]:
+                    - generic [ref=e319]: "1.6"
+                    - generic [ref=e321]: "2.45"
+                    - generic [ref=e323]: "3.3"
+                    - generic [ref=e325]: "4.15"
+                    - generic [ref=e327]: "5"
+          - generic [ref=e328]:
+            - generic [ref=e329]:
+              - heading "Direktori Mitra" [level=2] [ref=e330]
+              - generic [ref=e331]:
+                - generic [ref=e332]:
+                  - combobox [ref=e333] [cursor=pointer]:
+                    - option "Semua Tingkatan" [selected]
+                    - option "Hanya Aktif"
+                    - option "Tidak Aktif"
+                  - img
+                - generic [ref=e334]:
+                  - combobox [ref=e335] [cursor=pointer]:
+                    - option "Semua Kategori" [selected]
+                    - option "Elektronik"
+                    - option "Industri"
+                    - option "Kayu"
+                  - img
+            - generic [ref=e336]:
+              - generic [ref=e337]:
+                - generic [ref=e338]: Pemasok
+                - generic [ref=e339]: Skor
+                - generic [ref=e340]: Waktu Tunggu
+                - generic [ref=e341]: Tren
+                - generic [ref=e342]: Aksi
+              - generic [ref=e343]:
+                - generic [ref=e344]:
+                  - generic [ref=e345]:
+                    - generic [ref=e346]: SUP-AXIS
+                    - generic [ref=e347]:
+                      - generic [ref=e348]: PT Komponen Axis Nusantara
+                      - generic [ref=e349]: Elektronik
+                  - generic [ref=e353]: "96.00"
+                  - generic [ref=e354]:
+                    - generic [ref=e355]: "2.10"
+                    - generic [ref=e356]: Days
+                  - img [ref=e358]
+                  - link [ref=e361] [cursor=pointer]:
+                    - /url: http://127.0.0.1:8000/supplier/1
+                    - img [ref=e362]
+                - generic [ref=e364]:
+                  - generic [ref=e365]:
+                    - generic [ref=e366]: SUP-BULK
+                    - generic [ref=e367]:
+                      - generic [ref=e368]: PT Manufaktur Bulkchain
+                      - generic [ref=e369]: Industri
+                  - generic [ref=e373]: "78.00"
+                  - generic [ref=e374]:
+                    - generic [ref=e375]: "3.40"
+                    - generic [ref=e376]: Days
+                  - img [ref=e378]
+                  - link [ref=e381] [cursor=pointer]:
+                    - /url: http://127.0.0.1:8000/supplier/2
+                    - img [ref=e382]
+                - generic [ref=e384]:
+                  - generic [ref=e385]:
+                    - generic [ref=e386]: SUP-KAYU
+                    - generic [ref=e387]:
+                      - generic [ref=e388]: PT Kayu Lestari Timur
+                      - generic [ref=e389]: Kayu
+                  - generic [ref=e393]: "91.00"
+                  - generic [ref=e394]:
+                    - generic [ref=e395]: "3.00"
+                    - generic [ref=e396]: Days
+                  - img [ref=e398]
+                  - link [ref=e401] [cursor=pointer]:
+                    - /url: http://127.0.0.1:8000/supplier/3
+                    - img [ref=e402]
+    - button "Buka PETAYU AI" [ref=e404] [cursor=pointer]:
+      - generic [ref=e405]:
+        - generic [ref=e408]:
+          - img [ref=e410]
+          - img [ref=e416]
+        - generic: ✦ PETAYU AI
+  - generic [ref=e419]: "1.6"

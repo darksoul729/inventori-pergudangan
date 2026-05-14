@@ -28,7 +28,12 @@ class WarehouseController extends Controller
 
     public function index(Request $request): Response
     {
-        $warehouse = Warehouse::orderBy('id')->first() ?? Warehouse::query()->create([
+        $tenantId = (int) ($request->user()?->tenant_id ?? 0);
+        $warehouse = Warehouse::query()
+            ->when($tenantId > 0, fn ($q) => $q->where('tenant_id', $tenantId))
+            ->orderBy('id')
+            ->first() ?? Warehouse::query()->create([
+                'tenant_id' => $tenantId ?: null,
                 'code' => 'MAIN',
                 'name' => 'Gudang Utama',
                 'location' => 'Main Warehouse',

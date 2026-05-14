@@ -27,9 +27,20 @@ class StockOpnameController extends Controller
 {
     use HandlesStockSync;
 
+    private function resolveOperationalWarehouse(Request $request): Warehouse
+    {
+        $tenantId = (int) ($request->user()?->tenant_id ?? 0);
+        abort_unless($tenantId > 0, 403, 'Akun belum terhubung ke tenant.');
+
+        return Warehouse::with('zones.racks.rackStocks')
+            ->where('tenant_id', $tenantId)
+            ->orderBy('id')
+            ->firstOrFail();
+    }
+
     public function index(): Response
     {
-        $warehouse = Warehouse::with('zones.racks.rackStocks')->orderBy('id')->firstOrFail();
+        $warehouse = $this->resolveOperationalWarehouse(request());
 
         $products = Product::query()
             ->with([
@@ -47,6 +58,7 @@ class StockOpnameController extends Controller
                     'id' => $product->id,
                     'sku' => $product->sku,
                     'name' => $product->name,
+                    'image' => $product->image,
                     'category' => $product->category?->name ?? 'Uncategorized',
                     'unit' => $product->unit?->name ?? 'unit',
                     'system_stock' => $systemStock,
@@ -56,12 +68,17 @@ class StockOpnameController extends Controller
                 ];
             });
 
-        $recentOpnames = StockOpname::query()
+        $opnameQuery = StockOpname::query()
             ->with(['items.product:id,sku,name', 'creator:id,name'])
-            ->latest()
-            ->limit(8)
-            ->get()
-            ->map(fn (StockOpname $opname) => [
+            ->latest();
+
+        if ($opnameStatus = request()->query('opname_status')) {
+            $opnameQuery->where('status', $opnameStatus);
+        }
+
+        $recentOpnames = $opnameQuery->paginate(8, ['*'], 'opname_page')
+            ->withQueryString()
+            ->through(fn (StockOpname $opname) => [
                 'id' => $opname->id,
                 'number' => $opname->opname_number,
                 'date' => $opname->opname_date?->format('d M Y'),
@@ -74,6 +91,9 @@ class StockOpnameController extends Controller
                 'total_variance' => $opname->items->sum(fn ($item) => abs((int) $item->difference)),
             ]);
 
+        $hasProducts = $products->isNotEmpty();
+        $hasRacks = $warehouse->zones->flatMap(fn ($z) => $z->racks)->isNotEmpty();
+
         return Inertia::render('StockOpname', [
             'warehouse' => [
                 'id' => $warehouse->id,
@@ -85,13 +105,16 @@ class StockOpnameController extends Controller
             'can_create' => Gate::check('create-stockOpname'),
             'can_approve' => Gate::check('approve-stockOpname'),
             'status' => session('status'),
+            'filters' => ['opname_status' => request()->query('opname_status', '')],
+            'has_products' => $hasProducts,
+            'has_racks' => $hasRacks,
         ]);
     }
 
     public function store(Request $request): RedirectResponse
     {
         Gate::authorize('create-stockOpname');
-        $warehouse = Warehouse::orderBy('id')->firstOrFail();
+        $warehouse = $this->resolveOperationalWarehouse($request);
 
         $data = $request->validate([
             'notes' => ['nullable', 'string'],
@@ -100,6 +123,14 @@ class StockOpnameController extends Controller
             'items.*.physical_stock' => ['required', 'integer', 'min:0'],
             'items.*.note' => ['nullable', 'string', 'max:255'],
         ]);
+
+        $productIds = collect($data['items'])->pluck('product_id')->map(fn ($id) => (int) $id)->unique()->values();
+        $validProductCount = Product::query()->whereIn('id', $productIds)->count();
+        if ($validProductCount !== $productIds->count()) {
+            throw ValidationException::withMessages([
+                'items' => 'Ada produk yang tidak valid untuk tenant Anda.',
+            ]);
+        }
 
         $isManager = in_array(true, [
             str_contains(strtolower($request->user()?->role?->name ?? ''), 'manager'),
@@ -165,7 +196,8 @@ class StockOpnameController extends Controller
             ]);
         }
 
-        $warehouse = Warehouse::findOrFail($stockOpname->warehouse_id);
+        $warehouse = $stockOpname->warehouse;
+        abort_unless($warehouse !== null, 404);
 
         DB::transaction(function () use ($request, $stockOpname, $warehouse) {
             $stockOpname->update([
@@ -272,7 +304,7 @@ class StockOpnameController extends Controller
             'generatedAt' => now(),
         ])->setPaper('a4', 'portrait');
 
-        return $pdf->download('Stock_Opname_'.$stockOpname->opname_number.'.pdf');
+        return $pdf->download('Cek_Stok_Fisik_'.$stockOpname->opname_number.'.pdf');
     }
 
     private function documentPayload(StockOpname $stockOpname): array
@@ -285,7 +317,7 @@ class StockOpnameController extends Controller
         ]);
 
         return [
-            'title' => 'Stock Opname',
+            'title' => 'Cek Stok Fisik',
             'subtitle' => 'Dokumen hasil hitung fisik stok gudang',
             'number' => $stockOpname->opname_number,
             'status' => $stockOpname->items->sum('difference') == 0 ? 'Balanced' : 'Variance',
@@ -296,7 +328,7 @@ class StockOpnameController extends Controller
                 ['label' => 'Operator', 'value' => $stockOpname->creator?->name ?? 'Sistem'],
             ],
             'details' => [
-                ['label' => 'Warehouse', 'value' => $stockOpname->warehouse?->name],
+                ['label' => 'Gudang', 'value' => $stockOpname->warehouse?->name],
                 ['label' => 'Lokasi', 'value' => $stockOpname->warehouse?->location],
                 ['label' => 'Dibuat Oleh', 'value' => $stockOpname->creator?->name],
                 ['label' => 'Disetujui Oleh', 'value' => $stockOpname->approver?->name],

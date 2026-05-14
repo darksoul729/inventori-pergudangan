@@ -45,6 +45,12 @@
         .muted {
             color: #6b7280;
         }
+        .issuer {
+            margin-top: 6px;
+            font-size: 10px;
+            color: #334155;
+            font-weight: 600;
+        }
 
         .grid {
             width: 100%;
@@ -109,9 +115,12 @@
     <div class="header">
         <img src="{{ public_path('images/logo 1.png') }}" class="header-logo" alt="Logo">
         <div class="header-content">
-            <div class="eyebrow">PT. PETAYU INVENTORI PERGUDANGAN</div>
+            <div class="eyebrow">DOKUMEN RESMI GUDANG</div>
             <h1>{{ $document['title'] }}</h1>
             <div class="muted">{{ $document['subtitle'] ?? 'Dokumen operasional gudang' }}</div>
+            <div class="issuer">
+                {{ $document['issuer']['name'] ?? 'Gudang Operasional' }} — {{ $document['issuer']['location'] ?? 'Belum diatur' }}
+            </div>
             <div style="margin-top: 8px;">
                 <strong>No. Dokumen:</strong> {{ $document['number'] }} |
                 <strong>Status:</strong> {{ $document['status'] ?? '-' }} |

@@ -1,0 +1,364 @@
+- generic [ref=e61]:
+  - generic [ref=e62]:
+    - button [ref=e63] [cursor=pointer]:
+      - img [ref=e64]
+    - generic [ref=e66]:
+      - generic [ref=e67]:
+        - img "Logo PETAYU" [ref=e69]
+        - generic [ref=e70]:
+          - heading "PETAYU" [level=1] [ref=e71]
+          - paragraph [ref=e72]: SMART STORAGE, SMOOTH FLOW
+      - navigation [ref=e73]:
+        - link "Dasbor" [ref=e74] [cursor=pointer]:
+          - /url: /dashboard
+          - img [ref=e75]
+          - generic [ref=e80]: Dasbor
+        - link "Bantuan AI" [ref=e81] [cursor=pointer]:
+          - /url: /petayu-ai
+          - img [ref=e82]
+          - generic [ref=e85]: Bantuan AI
+        - generic [ref=e86]:
+          - button "Operasional Gudang" [ref=e87] [cursor=pointer]:
+            - generic [ref=e88]:
+              - img [ref=e89]
+              - generic [ref=e92]: Operasional Gudang
+            - img [ref=e94]
+          - generic [ref=e96]:
+            - link "Layout Gudang" [ref=e97] [cursor=pointer]:
+              - /url: /warehouse
+              - generic [ref=e98]: Layout Gudang
+            - link "Pindah Rak" [ref=e99] [cursor=pointer]:
+              - /url: /rack-allocation
+              - generic [ref=e100]: Pindah Rak
+            - link "Cek Stok" [ref=e101] [cursor=pointer]:
+              - /url: /stock-opname
+              - generic [ref=e102]: Cek Stok
+        - link "Stok Barang" [ref=e103] [cursor=pointer]:
+          - /url: /inventory
+          - img [ref=e104]
+          - generic [ref=e114]: Stok Barang
+        - generic [ref=e115]:
+          - button "Pembelian" [ref=e116] [cursor=pointer]:
+            - generic [ref=e117]:
+              - img [ref=e118]
+              - generic [ref=e122]: Pembelian
+            - img [ref=e124]
+          - generic [ref=e126]:
+            - link "Order Beli" [ref=e127] [cursor=pointer]:
+              - /url: /purchase-orders
+              - generic [ref=e128]: Order Beli
+            - link "Pemasok" [ref=e129] [cursor=pointer]:
+              - /url: /supplier
+              - generic [ref=e130]: Pemasok
+            - link "Tagihan" [ref=e131] [cursor=pointer]:
+              - /url: /tagihan
+              - generic [ref=e132]: Tagihan
+        - generic [ref=e133]:
+          - button "Riwayat" [ref=e134] [cursor=pointer]:
+            - generic [ref=e135]:
+              - img [ref=e136]
+              - generic [ref=e139]: Riwayat
+            - img [ref=e141]
+          - generic [ref=e143]:
+            - link "Riwayat Stok" [ref=e144] [cursor=pointer]:
+              - /url: /transaction
+              - generic [ref=e145]: Riwayat Stok
+            - link "Dokumen" [ref=e146] [cursor=pointer]:
+              - /url: /wms-documents
+              - generic [ref=e147]: Dokumen
+        - generic [ref=e148]:
+          - button "Pengiriman" [ref=e149] [cursor=pointer]:
+            - generic [ref=e150]:
+              - img [ref=e151]
+              - generic [ref=e156]: Pengiriman
+            - img [ref=e158]
+          - generic [ref=e160]:
+            - link "Pengiriman" [ref=e161] [cursor=pointer]:
+              - /url: /shipments
+              - generic [ref=e162]: Pengiriman
+            - link "Driver" [ref=e163] [cursor=pointer]:
+              - /url: /drivers
+              - generic [ref=e164]: Driver
+        - generic [ref=e165]:
+          - button "Sistem" [ref=e166] [cursor=pointer]:
+            - generic [ref=e167]:
+              - img [ref=e168]
+              - generic [ref=e171]: Sistem
+            - img [ref=e173]
+          - generic [ref=e175]:
+            - link "Laporan" [ref=e176] [cursor=pointer]:
+              - /url: /reports
+              - generic [ref=e177]: Laporan
+            - link "Pengaturan" [ref=e178] [cursor=pointer]:
+              - /url: /settings
+              - generic [ref=e179]: Pengaturan
+        - generic [ref=e180]:
+          - button "Bantuan" [ref=e181] [cursor=pointer]:
+            - generic [ref=e182]:
+              - img [ref=e183]
+              - generic [ref=e186]: Bantuan
+            - img [ref=e187]
+          - generic [ref=e189]:
+            - link "Tanya Tim" [ref=e190] [cursor=pointer]:
+              - /url: /help/live-support
+            - link "Cara Pakai" [ref=e191] [cursor=pointer]:
+              - /url: /help/documentation
+  - generic [ref=e192]:
+    - generic:
+      - generic [ref=e194]:
+        - generic [ref=e196]:
+          - generic [ref=e197]: Realtime Alert
+          - generic [ref=e198]: Stok Menipis
+          - generic [ref=e199]: Ada 2 produk di bawah batas minimum.
+        - button [ref=e200] [cursor=pointer]:
+          - img [ref=e201]
+      - generic [ref=e204]:
+        - generic [ref=e206]:
+          - generic [ref=e207]: Realtime Alert
+          - generic [ref=e208]: Pengiriman Terlambat
+          - generic [ref=e209]: Ada 2 pengiriman yang melewati estimasi waktu.
+        - button [ref=e210] [cursor=pointer]:
+          - img [ref=e211]
+      - generic [ref=e214]:
+        - generic [ref=e216]:
+          - generic [ref=e217]: Realtime Alert
+          - generic [ref=e218]: Sistem Sehat
+          - generic [ref=e219]: Seluruh sinkronisasi barcode dan data transaksi berjalan normal.
+        - button [ref=e220] [cursor=pointer]:
+          - img [ref=e221]
+    - banner [ref=e223]:
+      - generic [ref=e224]:
+        - generic [ref=e225]:
+          - img [ref=e226]
+          - textbox "Cari dokumen aktivitas..." [ref=e229]
+        - generic [ref=e234]: "Sistem Inti: Operasional"
+      - generic [ref=e235]:
+        - generic [ref=e236]:
+          - link "3" [ref=e237] [cursor=pointer]:
+            - /url: /notifications
+            - img [ref=e239]
+            - generic [ref=e244]: "3"
+          - link [ref=e245] [cursor=pointer]:
+            - /url: /help/live-support
+            - img [ref=e247]
+        - generic [ref=e253] [cursor=pointer]:
+          - generic [ref=e254]:
+            - generic [ref=e255]: Rizky Pratama
+            - generic [ref=e256]: Manager Gudang
+          - generic [ref=e257]: R
+    - generic [ref=e259]:
+      - generic [ref=e260]: "Aksi Cepat:"
+      - link "Barang Masuk" [ref=e261] [cursor=pointer]:
+        - /url: /inventory?mode=inbound
+        - img [ref=e262]
+        - generic [ref=e266]: Barang Masuk
+      - link "Pengiriman" [ref=e267] [cursor=pointer]:
+        - /url: /shipments/create
+        - img [ref=e268]
+        - generic [ref=e273]: Pengiriman
+      - link "Cek Stok" [ref=e274] [cursor=pointer]:
+        - /url: /stock-opname
+        - img [ref=e275]
+        - generic [ref=e279]: Cek Stok
+      - link "Laporan Stok" [ref=e280] [cursor=pointer]:
+        - /url: /reports?type=inventory
+        - img [ref=e281]
+        - generic [ref=e283]: Laporan Stok
+      - link "Stok Menipis" [ref=e284] [cursor=pointer]:
+        - /url: /inventory?filter=low
+        - img [ref=e285]
+        - generic [ref=e288]: Stok Menipis
+    - main [ref=e289]:
+      - generic [ref=e291]:
+        - generic [ref=e293]:
+          - generic [ref=e295]:
+            - heading "Dasbor Operasional" [level=1] [ref=e296]
+            - paragraph [ref=e297]: "Lihat kondisi gudang hari ini: barang masuk, barang keluar, dan stok yang perlu perhatian."
+          - generic [ref=e298]:
+            - generic [ref=e299]:
+              - button "Refresh" [ref=e300] [cursor=pointer]:
+                - img [ref=e301]
+              - button "Print" [ref=e306] [cursor=pointer]:
+                - img [ref=e307]
+                - generic [ref=e310]: Print
+            - link "Input Barang Masuk" [ref=e312] [cursor=pointer]:
+              - /url: /inventory
+              - img [ref=e313]
+              - generic [ref=e314]: Input Barang Masuk
+        - generic [ref=e320]: 6 Node Aktif
+        - generic [ref=e321]:
+          - generic [ref=e322]:
+            - img [ref=e324]
+            - generic [ref=e326]:
+              - paragraph [ref=e327]: Inbound Hari Ini
+              - heading "0" [level=3] [ref=e328]
+          - generic [ref=e329]:
+            - generic [ref=e330]:
+              - img [ref=e332]
+              - generic "Tingkat Keluar per Jam" [ref=e334]: 0/JAM
+            - generic [ref=e335]:
+              - paragraph [ref=e336]: Outbound Hari Ini
+              - heading "0" [level=3] [ref=e337]
+          - generic [ref=e338]:
+            - img [ref=e341]
+            - generic [ref=e344]:
+              - paragraph [ref=e345]: Utilisasi Rack
+              - heading "62.9%" [level=3] [ref=e346]
+          - generic [ref=e347]:
+            - img [ref=e349]
+            - generic [ref=e351]:
+              - paragraph [ref=e352]: Total Inventaris
+              - heading "6.1K" [level=3] [ref=e353]
+          - generic [ref=e354]:
+            - img [ref=e357]
+            - generic [ref=e359]:
+              - paragraph [ref=e360]: Peringatan Sistem
+              - heading "2" [level=3] [ref=e361]
+        - generic [ref=e362]:
+          - heading "Ringkasan Rack Gudang" [level=2] [ref=e364]
+          - generic [ref=e365]:
+            - generic [ref=e366]:
+              - generic [ref=e367]: Total Rack
+              - generic [ref=e368]: "6"
+            - generic [ref=e369]:
+              - generic [ref=e370]: Terisi
+              - generic [ref=e371]: "6"
+            - generic [ref=e372]:
+              - generic [ref=e373]: Kosong
+              - generic [ref=e374]: "0"
+            - generic [ref=e375]:
+              - generic [ref=e376]: Belum Di-rack
+              - generic [ref=e377]: "0"
+            - generic [ref=e378]:
+              - generic [ref=e379]: Perlu Tinjau
+              - generic [ref=e381]: "2"
+        - generic [ref=e383]:
+          - generic [ref=e384]:
+            - generic [ref=e385]:
+              - generic [ref=e386]:
+                - heading "Visualisasi Lantai Gudang" [level=2] [ref=e387]
+                - paragraph [ref=e388]: "Tampilan: Zona"
+              - generic [ref=e390]:
+                - button "ZONA" [ref=e391] [cursor=pointer]
+                - button "PENUH" [ref=e392] [cursor=pointer]
+                - button "BARU" [ref=e393] [cursor=pointer]
+            - generic [ref=e395]:
+              - generic [ref=e396]:
+                - generic [ref=e399]: Zona A
+                - generic [ref=e401]:
+                  - generic [ref=e402] [cursor=pointer]:
+                    - generic:
+                      - generic:
+                        - generic: Info Rak
+                      - generic: Rak A1-A12
+                      - generic:
+                        - generic:
+                          - generic: Kapasitas
+                          - generic: 95.4%
+                        - generic: 1.240 / 1.300 unit
+                  - generic [ref=e403] [cursor=pointer]:
+                    - generic:
+                      - generic:
+                        - generic: Info Rak
+                      - generic: Rak A13-A24
+                      - generic:
+                        - generic:
+                          - generic: Kapasitas
+                          - generic: 95%
+                        - generic: 1.330 / 1.400 unit
+              - generic [ref=e404]:
+                - generic [ref=e407]: Zona B
+                - generic [ref=e410] [cursor=pointer]:
+                  - generic:
+                    - generic:
+                      - generic: Info Rak
+                    - generic: Rak Curah Zona B
+                    - generic:
+                      - generic:
+                        - generic: Kapasitas
+                        - generic: 45%
+                      - generic: 1.125 / 2.500 unit
+              - generic [ref=e411]:
+                - generic [ref=e414]: Zona C
+                - generic [ref=e417] [cursor=pointer]:
+                  - generic:
+                    - generic:
+                      - generic: Info Rak
+                    - generic: Rak Shelving Zona C
+                    - generic:
+                      - generic:
+                        - generic: Kapasitas
+                        - generic: 68%
+                      - generic: 1.360 / 2.000 unit
+              - generic [ref=e418]:
+                - generic [ref=e421]: Zona D
+                - generic [ref=e424] [cursor=pointer]:
+                  - generic:
+                    - generic:
+                      - generic: Info Rak
+                    - generic: Lajur Dock Zona D
+                    - generic:
+                      - generic:
+                        - generic: Kapasitas
+                        - generic: 15%
+                      - generic: 225 / 1.500 unit
+              - generic [ref=e425]:
+                - generic [ref=e428]: Zona E
+                - generic [ref=e431] [cursor=pointer]:
+                  - generic:
+                    - generic:
+                      - generic: Info Rak
+                    - generic: Rak Hazmat Zona E
+                    - generic:
+                      - generic:
+                        - generic: Kapasitas
+                        - generic: 82%
+                      - generic: 820 / 1.000 unit
+            - generic:
+              - generic:
+                - generic: Terisi
+              - generic:
+                - generic: Kosong
+          - generic [ref=e432]:
+            - generic [ref=e433]:
+              - generic [ref=e434]:
+                - generic [ref=e437]: Pusat Intelejen
+                - generic [ref=e438]: Prediksi AI Aktif
+              - generic [ref=e439]: Alert 2
+            - paragraph [ref=e441]: Kami mendeteksi peningkatan stok dengan cepat, dengan kenaikan 6100 produk dalam total 8 item, perlu dilakukan pengaturan lebih lanjut untuk menghindari keterlambatan pengiriman. Peringatan rak hampir penuh seharusnya diperhatikan untuk memastikan efisiensi ruang gudang.
+            - button "GENERATE ULANG AI" [ref=e443] [cursor=pointer]:
+              - generic [ref=e444]: GENERATE ULANG AI
+              - img [ref=e445]
+            - generic [ref=e449]:
+              - generic [ref=e450]: Skor Efisiensi
+              - generic [ref=e451]: 100%
+        - generic [ref=e461]:
+          - generic [ref=e462]:
+            - generic [ref=e463]:
+              - generic [ref=e464]:
+                - heading "Tren Pergerakan Stok" [level=2] [ref=e465]
+                - paragraph [ref=e466]: Perbandingan barang masuk dan keluar historikal.
+              - generic [ref=e467]:
+                - generic [ref=e470]: Masuk
+                - generic [ref=e473]: Keluar
+            - generic [ref=e474]:
+              - img [ref=e476]
+              - generic [ref=e485]:
+                - generic [ref=e486]: Thu
+                - generic [ref=e487]: Fri
+                - generic [ref=e488]: Sat
+                - generic [ref=e489]: Sun
+                - generic [ref=e490]: Mon
+                - generic [ref=e491]: Tue
+                - generic [ref=e492]: Wed
+          - generic [ref=e493]:
+            - heading "Dokumen Terbaru" [level=2] [ref=e495]
+            - generic [ref=e496]:
+              - img [ref=e498]
+              - paragraph [ref=e500]: Tidak ada kelompok dokumen baru.
+  - button "Buka PETAYU AI" [ref=e501] [cursor=pointer]:
+    - generic [ref=e502]:
+      - generic [ref=e505]:
+        - img [ref=e507]
+        - img [ref=e513]
+      - generic: ✦ PETAYU AI

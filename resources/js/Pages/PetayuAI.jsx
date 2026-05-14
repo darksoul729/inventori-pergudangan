@@ -12,11 +12,7 @@ import {
 
 // ─── Custom External-styled AI SVG Icon ─────────────────────────────────────
 const PetayuIcon = ({ className = "w-6 h-6" }) => (
-    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
-        <path d="M12 2L14.85 9.15L22 12L14.85 14.85L12 22L9.15 14.85L2 12L9.15 9.15L12 2Z" fill="currentColor" />
-        <circle cx="12" cy="12" r="3" fill="white" />
-        <path d="M12 5V7M12 17V19M5 12H7M17 12H19M7.05 7.05L8.46 8.46M15.54 15.54L16.95 16.95M7.05 16.95L8.46 15.54M15.54 8.46L16.95 7.05" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
-    </svg>
+    <img src="/images/logo 1.png" alt="Petayu AI" className={className} />
 );
 
 // ─── Markdown renderer (Optimized for Full Page) ──────────────────────────
@@ -340,143 +336,141 @@ export default function PetayuAI() {
         >
             <Head title="PETAYU AI Assistant" />
 
-            <div className="flex h-full min-h-0 w-full box-border bg-white overflow-hidden relative pt-24">
+            <div className="flex h-full min-h-0 w-full box-border bg-[#f8f9fb] overflow-hidden">
                 
                 {/* Conversation History Sidebar */}
-                <div className={`${isSidebarCollapsed ? 'w-20' : 'w-80'} min-h-0 border-r border-slate-50 bg-[#fcfdfe] transition-all duration-500 ease-in-out flex flex-col`}>
-                    <div className="p-6 pb-2">
+                <div className={`${isSidebarCollapsed ? 'w-20' : 'w-72'} min-h-0 border-r border-[#E5EAF3] bg-white transition-all duration-300 ease-in-out flex flex-col shadow-[2px_0_12px_rgba(0,0,0,0.03)]`}>
+                    <div className="p-4 pb-3">
+                        <div className="flex items-center gap-3 px-2 py-3 mb-3">
+                            <div className="w-8 h-8 rounded-xl bg-[#5B33CC]/10 flex items-center justify-center">
+                                <Sparkles className="w-4 h-4 text-[#5B33CC]" />
+                            </div>
+                            {!isSidebarCollapsed && <span className="text-[13px] font-black text-[#4722B3] tracking-tight">PETAYU AI</span>}
+                        </div>
                         <button 
                             onClick={startNewChat}
-                            className={`w-full flex items-center justify-center gap-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-[20px] py-4 shadow-xl shadow-indigo-100 transition-all font-black uppercase tracking-widest text-[11px] ${isSidebarCollapsed ? 'px-0' : 'px-4'}`}
+                            className={`w-full flex items-center justify-center gap-2 bg-[#5B33CC] hover:bg-[#4722B3] text-white rounded-xl py-3 transition-all font-bold text-[12px] shadow-[0_4px_14px_rgba(89,50,201,0.25)] ${isSidebarCollapsed ? 'px-0' : 'px-4'}`}
                         >
-                            <Plus className="w-5 h-5" />
+                            <Plus className="w-4 h-4" />
                             {!isSidebarCollapsed && "Percakapan Baru"}
                         </button>
                     </div>
 
                     {!isSidebarCollapsed && (
-                        <div className="px-6 pb-4">
+                        <div className="px-4 pb-3">
                             <div className="relative">
-                                <Search className="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+                                <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                                 <input
                                     type="text"
-                                    placeholder="Cari riwayat obrolan..."
+                                    placeholder="Cari riwayat..."
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="w-full bg-white border border-slate-200 rounded-xl py-3 pl-10 pr-4 text-[12px] font-bold text-slate-700 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 transition-all placeholder-slate-400 shadow-sm"
+                                    className="w-full bg-[#f8f9fb] border border-[#E5EAF3] rounded-xl py-2.5 pl-9 pr-4 text-[12px] font-semibold text-gray-600 focus:border-[#5B33CC] focus:ring-1 focus:ring-[#5B33CC]/20 transition-all placeholder-gray-400"
                                 />
                             </div>
                         </div>
                     )}
 
-                    <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar px-4 space-y-2">
+                    <div className="flex-1 min-h-0 overflow-y-auto px-3 space-y-1">
                         {!isSidebarCollapsed && (
-                            <div className="px-4 py-3 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2 flex items-center gap-2">
-                                <History className="w-4 h-4" /> Riwayat Baru
+                            <div className="px-2 py-2 text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
+                                <History className="w-3.5 h-3.5" /> Riwayat
                             </div>
                         )}
                         {conversations.filter(c => (c.title || '').toLowerCase().includes(searchQuery.toLowerCase())).map(conv => (
                             <div 
                                 key={conv.id}
                                 onClick={() => loadMessages(conv.id)}
-                                className={`group flex items-center gap-4 px-5 py-4 rounded-[22px] cursor-pointer transition-all duration-300 ${activeId === conv.id ? 'bg-white shadow-[0_8px_30px_rgba(89,50,201,0.08)] border border-indigo-50 border-1 scale-[1.02]' : 'hover:bg-white/60 hover:shadow-sm'}`}
+                                className={`group flex items-center gap-3 px-3 py-3 rounded-xl cursor-pointer transition-all ${activeId === conv.id ? 'bg-[#5B33CC]/8 border border-[#5B33CC]/20' : 'hover:bg-[#f8f9fb] border border-transparent'}`}
                             >
-                                <div className={`shrink-0 w-10 h-10 rounded-2xl flex items-center justify-center transition-colors ${activeId === conv.id ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-400 group-hover:bg-indigo-50 group-hover:text-indigo-400'}`}>
-                                    <MessageSquare className="w-5 h-5" />
+                                <div className={`shrink-0 w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${activeId === conv.id ? 'bg-[#5B33CC] text-white' : 'bg-[#f8f9fb] text-gray-400 group-hover:bg-[#5B33CC]/10 group-hover:text-[#5B33CC]'}`}>
+                                    <MessageSquare className="w-4 h-4" />
                                 </div>
                                 {!isSidebarCollapsed && (
                                     <div className="flex-1 min-w-0">
-                                        <div className={`text-sm font-black truncate leading-tight ${activeId === conv.id ? 'text-slate-900' : 'text-slate-500'}`}>{conv.title}</div>
-                                        <div className="text-[10px] font-bold text-slate-300 mt-1 uppercase tracking-wide">
-                                            {conv.updated_at ? new Date(conv.updated_at).toLocaleDateString() : 'N/A'}
+                                        <div className={`text-[12px] font-bold truncate ${activeId === conv.id ? 'text-[#4722B3]' : 'text-gray-600'}`}>{conv.title}</div>
+                                        <div className="text-[10px] font-semibold text-gray-400 mt-0.5">
+                                            {conv.updated_at ? new Date(conv.updated_at).toLocaleDateString('id-ID') : '-'}
                                         </div>
                                     </div>
                                 )}
                                 {!isSidebarCollapsed && (
                                     <button 
                                         onClick={(e) => { e.stopPropagation(); deleteChat(conv.id); }}
-                                        className="opacity-0 group-hover:opacity-100 p-2 text-slate-300 hover:text-rose-500 transition-all bg-white rounded-xl shadow-sm border border-slate-100 scale-90"
+                                        className="opacity-0 group-hover:opacity-100 p-1.5 text-gray-300 hover:text-rose-500 transition-all rounded-lg hover:bg-rose-50"
                                     >
-                                        <Trash2 className="w-4 h-4" />
+                                        <Trash2 className="w-3.5 h-3.5" />
                                     </button>
                                 )}
                             </div>
                         ))}
                     </div>
 
-                    <div className="p-6 border-t border-slate-50">
+                    <div className="p-4 border-t border-[#E5EAF3]">
                         <button 
                             onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-                            className="w-full flex items-center justify-center gap-3 text-slate-300 hover:text-indigo-600 transition-colors py-2"
+                            className="w-full flex items-center justify-center gap-2 text-gray-400 hover:text-[#5B33CC] transition-colors py-2 rounded-xl hover:bg-[#f8f9fb]"
                         >
-                            {isSidebarCollapsed ? <ChevronRight /> : <ChevronRight className="rotate-180" />}
+                            {isSidebarCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronRight className="w-4 h-4 rotate-180" />}
+                            {!isSidebarCollapsed && <span className="text-[11px] font-bold">Tutup</span>}
                         </button>
                     </div>
                 </div>
 
                 {/* Main Chat Area */}
                 <div className="flex-1 min-h-0 min-w-0 flex flex-col bg-white relative">
-                    
-                    {/* Floating Glow Orbs */}
-                    <div className="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] bg-indigo-50/30 blur-[120px] rounded-full pointer-events-none" />
-                    <div className="absolute bottom-[-5%] left-[-5%] w-[30%] h-[30%] bg-blue-50/20 blur-[100px] rounded-full pointer-events-none" />
 
                     {/* Chat Header */}
-                    <div className="h-[72px] border-b border-slate-50 flex items-center justify-between px-8 shrink-0 bg-white/80 backdrop-blur-md z-10">
-                        <div className="flex items-center gap-5">
-                            <div className="w-12 h-12 rounded-[20px] bg-gradient-to-br from-indigo-600 to-blue-700 flex items-center justify-center shadow-lg shadow-indigo-100">
-                                <PetayuIcon className="text-white w-7 h-7" />
+                    <div className="h-[64px] border-b border-[#E5EAF3] flex items-center justify-between px-6 shrink-0 bg-white z-10">
+                        <div className="flex items-center gap-4">
+                            <div className="w-10 h-10 rounded-[16px] bg-[#5B33CC]/10 flex items-center justify-center">
+                                <PetayuIcon className="w-6 h-6" />
                             </div>
                             <div>
-                                <h3 className="text-lg font-black text-slate-900 tracking-tight">PETAYU AI Interface</h3>
+                                <h3 className="text-[15px] font-black text-[#4722B3] tracking-tight">PETAYU AI</h3>
                                 <div className="flex items-center gap-2 mt-0.5">
-                                    <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                                    <span className="text-[11px] font-black uppercase tracking-[0.2em] text-emerald-600">Model: Kinetic V1.0-IND-GROQ</span>
+                                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                                    <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Kinetic V1.0 · Aktif</span>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="flex items-center gap-4">
-                            <div className="hidden lg:flex items-center gap-3 px-5 py-2.5 bg-slate-50 border border-slate-100 rounded-[18px]">
-                                <Cpu className="w-4 h-4 text-slate-400" />
-                                <span className="text-xs font-black text-slate-400 uppercase tracking-widest">Latensi: </span>
-                                <span className="text-xs font-black text-indigo-600 tabular-nums">
+                        <div className="flex items-center gap-3">
+                            <div className="hidden lg:flex items-center gap-2 px-4 py-2 bg-[#f8f9fb] border border-[#E5EAF3] rounded-xl">
+                                <Cpu className="w-3.5 h-3.5 text-gray-400" />
+                                <span className="text-[11px] font-bold text-gray-400">Latensi: </span>
+                                <span className="text-[11px] font-black text-[#5B33CC] tabular-nums">
                                     {lastLatencyMs !== null ? `${(lastLatencyMs / 1000).toFixed(2)}s` : '-'}
                                 </span>
-                                {lastProviderLatencyMs !== null && (
-                                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-300">
-                                        Groq {(lastProviderLatencyMs / 1000).toFixed(2)}s
-                                    </span>
-                                )}
                             </div>
                             <button
                                 type="button"
                                 onClick={() => setIsCallModalOpen(true)}
-                                className="flex h-11 items-center gap-2 rounded-[18px] bg-indigo-600 px-5 text-xs font-black uppercase tracking-widest text-white shadow-lg shadow-indigo-100 transition-all hover:bg-indigo-700"
+                                className="flex h-9 items-center gap-2 rounded-xl bg-[#5B33CC] px-4 text-[12px] font-bold text-white shadow-[0_4px_12px_rgba(89,50,201,0.25)] transition-all hover:bg-[#4722B3]"
                                 title="Mulai panggilan suara PETAYU AI"
                             >
-                                <Phone className="h-4 w-4" />
-                                Call
+                                <Phone className="h-3.5 w-3.5" />
+                                Panggil AI
                             </button>
                         </div>
                     </div>
 
                     {/* Messages Container */}
-                    <div className="flex-1 min-h-0 overflow-y-auto px-8 py-8 space-y-8 custom-scrollbar z-0 relative">
+                    <div className="flex-1 min-h-0 overflow-y-auto px-6 py-6 space-y-6 z-0 relative">
                         {messages.length === 0 && !isHistoryLoading && (
-                            <div className="h-full flex flex-col items-center justify-center text-center max-w-2xl mx-auto">
-                                <div className="w-24 h-24 rounded-[32px] bg-indigo-50 flex items-center justify-center mb-8 rotate-12">
-                                    <Sparkles className="w-12 h-12 text-indigo-600" />
+                            <div className="h-full flex flex-col items-center justify-center text-center max-w-xl mx-auto">
+                                <div className="w-16 h-16 rounded-2xl bg-[#5B33CC]/10 flex items-center justify-center mb-6">
+                                    <Sparkles className="w-8 h-8 text-[#5B33CC]" />
                                 </div>
-                                <h1 className="text-3xl font-black text-slate-900 mb-4 uppercase tracking-tighter">Halo, Saya PETAYU AI.</h1>
-                                <p className="text-slate-400 font-semibold leading-relaxed text-lg">Asisten pintar yang siap membantu pengelolaan gudang secara real-time. Tanyakan apa saja tentang stok, mutasi, atau efisiensi gudang hari ini.</p>
+                                <h1 className="text-2xl font-black text-[#4722B3] mb-3 tracking-tight">Halo, Saya PETAYU AI.</h1>
+                                <p className="text-gray-500 font-semibold leading-relaxed">Asisten pintar pengelolaan gudang secara real-time. Tanyakan apa saja tentang stok, mutasi, atau efisiensi gudang.</p>
                                 
-                                <div className="grid grid-cols-2 gap-4 mt-12 w-full">
+                                <div className="grid grid-cols-2 gap-3 mt-8 w-full">
                                     {["Status stok hari ini", "Produk paling laku", "Prediksi stok 7 hari", "Analisis driver sibuk"].map(suggestion => (
                                         <button 
                                             key={suggestion}
                                             onClick={() => setInputText(suggestion)}
-                                            className="px-6 py-4 rounded-[24px] bg-white border border-slate-100 text-sm font-black text-slate-600 hover:border-indigo-400 hover:text-indigo-600 hover:shadow-xl hover:shadow-indigo-50 transition-all duration-300 transform hover:-translate-y-1"
+                                            className="px-5 py-3.5 rounded-xl bg-white border border-[#E5EAF3] text-[13px] font-bold text-gray-600 hover:border-[#5B33CC] hover:text-[#5B33CC] hover:shadow-md transition-all duration-200"
                                         >
                                             {suggestion}
                                         </button>
@@ -492,18 +486,18 @@ export default function PetayuAI() {
                         )}
 
                         {messages.map((m, i) => (
-                            <div key={m.id || i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'} animate-in fade-in slide-in-from-bottom-4 duration-500`}>
-                                <div className={`flex items-start gap-5 max-w-[85%] ${m.role === 'user' ? 'flex-row-reverse' : ''}`}>
-                                    <div className={`shrink-0 w-11 h-11 rounded-[18px] flex items-center justify-center shadow-md ${m.role === 'user' ? 'bg-indigo-50 text-indigo-600' : 'bg-gradient-to-br from-indigo-600 to-blue-700 text-white'}`}>
-                                        {m.role === 'user' ? <User className="w-6 h-6" /> : <Bot className="w-6 h-6" />}
+                            <div key={m.id || i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                                <div className={`flex items-start gap-3 max-w-[82%] ${m.role === 'user' ? 'flex-row-reverse' : ''}`}>
+                                    <div className={`shrink-0 w-9 h-9 rounded-[14px] flex items-center justify-center ${m.role === 'user' ? 'bg-[#5B33CC]/10 text-[#5B33CC]' : 'bg-[#5B33CC] text-white'}`}>
+                                        {m.role === 'user' ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
                                     </div>
-                                    <div className={`p-8 rounded-[32px] ${m.role === 'user' ? 'bg-[#f4f7ff] text-slate-800 border border-indigo-100/50 rounded-tr-none' : 'bg-white border border-slate-100 shadow-sm rounded-tl-none'}`}>
-                                        <div className="mb-2 flex items-center gap-3">
-                                            <span className={`text-[10px] font-black uppercase tracking-[0.2em] ${m.role === 'user' ? 'text-slate-400' : 'text-indigo-500'}`}>
-                                                {m.role === 'user' ? 'Pengguna Operasional' : 'PETAYU AI'}
+                                    <div className={`px-5 py-4 rounded-2xl ${m.role === 'user' ? 'bg-[#5B33CC]/8 border border-[#5B33CC]/15 rounded-tr-md text-[#4722B3]' : 'bg-white border border-[#E5EAF3] rounded-tl-md shadow-sm'}`}>
+                                        <div className="mb-1.5 flex items-center gap-2">
+                                            <span className={`text-[10px] font-black uppercase tracking-widest ${m.role === 'user' ? 'text-[#5B33CC]/60' : 'text-[#5B33CC]'}`}>
+                                                {m.role === 'user' ? 'Anda' : 'PETAYU AI'}
                                             </span>
                                             {m.role !== 'user' && (
-                                                <div className="px-2 py-0.5 rounded-lg bg-indigo-50 text-[9px] font-black text-indigo-600 uppercase tracking-widest border border-indigo-100">Certified</div>
+                                                <div className="px-1.5 py-0.5 rounded bg-emerald-50 text-[9px] font-black text-emerald-600 border border-emerald-100">AI</div>
                                             )}
                                         </div>
                                         
@@ -519,16 +513,16 @@ export default function PetayuAI() {
                         ))}
                         
                         {isLoading && (
-                            <div className="flex justify-start animate-pulse">
-                                <div className="flex items-start gap-5">
-                                    <div className="shrink-0 w-11 h-11 rounded-[18px] bg-indigo-100 flex items-center justify-center text-indigo-300">
-                                        <Bot className="w-6 h-6" />
+                            <div className="flex justify-start">
+                                <div className="flex items-start gap-3">
+                                    <div className="shrink-0 w-9 h-9 rounded-[14px] bg-[#5B33CC] flex items-center justify-center text-white">
+                                        <Bot className="w-4 h-4" />
                                     </div>
-                                    <div className="p-6 rounded-[32px] rounded-tl-none bg-indigo-50 border border-indigo-100">
-                                        <div className="flex gap-2">
-                                            <div className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce" />
-                                            <div className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce delay-75" />
-                                            <div className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce delay-150" />
+                                    <div className="px-5 py-4 rounded-2xl rounded-tl-md bg-white border border-[#E5EAF3] shadow-sm">
+                                        <div className="flex gap-1.5 items-center h-5">
+                                            <div className="w-2 h-2 bg-[#5B33CC]/40 rounded-full animate-bounce" />
+                                            <div className="w-2 h-2 bg-[#5B33CC]/40 rounded-full animate-bounce delay-75" />
+                                            <div className="w-2 h-2 bg-[#5B33CC]/40 rounded-full animate-bounce delay-150" />
                                         </div>
                                     </div>
                                 </div>
@@ -538,16 +532,15 @@ export default function PetayuAI() {
                     </div>
 
                     {/* Chat Input Area */}
-                    <div className="p-6 bg-white/80 backdrop-blur-sm z-10 shrink-0 border-t border-slate-50">
+                    <div className="p-4 bg-white z-10 shrink-0 border-t border-[#E5EAF3]">
                         {error && (
-                            <div className="mb-4 p-4 rounded-2xl bg-rose-50 border border-rose-100 text-rose-600 text-sm font-bold flex items-center gap-3 animate-in shake duration-500">
-                                <AlertCircle className="w-5 h-5 shrink-0" />
+                            <div className="mb-3 px-4 py-3 rounded-xl bg-rose-50 border border-rose-100 text-rose-600 text-[12px] font-bold flex items-center gap-2">
+                                <AlertCircle className="w-4 h-4 shrink-0" />
                                 {error}
                             </div>
                         )}
-                        <div className="relative group max-w-6xl mx-auto">
-                            <div className="absolute -inset-1 rounded-[32px] bg-gradient-to-r from-indigo-500 to-blue-500 opacity-0 group-focus-within:opacity-20 blur-xl transition-all duration-500" />
-                            <div className="relative flex items-center gap-4 bg-white border border-slate-200 group-focus-within:border-indigo-500 group-focus-within:shadow-2xl group-focus-within:shadow-indigo-100 rounded-[30px] p-2 pl-8 transition-all duration-300 shadow-sm">
+                        <div className="relative max-w-4xl mx-auto">
+                            <div className="flex items-center gap-3 bg-[#f8f9fb] border border-[#E5EAF3] focus-within:border-[#5B33CC] focus-within:bg-white focus-within:shadow-[0_0_0_3px_rgba(89,50,201,0.08)] rounded-2xl px-5 py-2 transition-all duration-200">
                                 <input 
                                     ref={textareaRef}
                                     type="text"
@@ -555,22 +548,22 @@ export default function PetayuAI() {
                                     onChange={(e) => setInputText(e.target.value)}
                                     onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
                                     placeholder="Tanyakan analisis gudang ke PETAYU AI..."
-                                    className="flex-1 bg-transparent border-none focus:ring-0 text-slate-900 placeholder-slate-300 font-bold py-4 text-base"
+                                    className="flex-1 bg-transparent border-none focus:ring-0 text-gray-800 placeholder-gray-400 font-semibold py-3 text-[14px]"
                                 />
                                 
-                                <div className="flex items-center gap-2 pr-2">
+                                <div className="flex items-center gap-2">
                                     <button 
                                         onClick={toggleListening}
-                                        className={`p-3 rounded-full transition-all ${recognitionRef.current ? 'text-rose-600 bg-rose-50 animate-pulse' : 'text-slate-300 hover:text-indigo-600 hover:bg-indigo-50'}`}
+                                        className={`p-2 rounded-xl transition-all ${recognitionRef.current ? 'text-rose-600 bg-rose-50' : 'text-gray-400 hover:text-[#5B33CC] hover:bg-[#5B33CC]/10'}`}
                                     >
-                                        <Mic className="w-6 h-6" />
+                                        <Mic className="w-5 h-5" />
                                     </button>
                                     <button 
                                         onClick={() => handleSendMessage()}
                                         disabled={isLoading || !inputText.trim()}
-                                        className={`w-14 h-14 rounded-full flex items-center justify-center transition-all duration-300 ${inputText.trim() ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-200 rotate-0 scale-100' : 'bg-slate-100 text-slate-300 rotate-[-45deg] scale-90'}`}
+                                        className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-200 ${inputText.trim() ? 'bg-[#5B33CC] text-white shadow-[0_4px_12px_rgba(89,50,201,0.3)]' : 'bg-gray-100 text-gray-300'}`}
                                     >
-                                        {isLoading ? <Loader2 className="w-6 h-6 animate-spin" /> : <Send className="w-6 h-6" />}
+                                        {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
                                     </button>
                                 </div>
                             </div>

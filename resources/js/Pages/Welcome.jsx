@@ -1,588 +1,616 @@
+import { useEffect, useRef, useState } from 'react';
 import { Head, Link } from '@inertiajs/react';
-import { 
-    Phone, Mail, MapPin, Clock, ArrowRight,
-    Package, Boxes, BarChart3, ShieldCheck,
-    Truck, Zap, Database, Smartphone, Users,
-    CheckCircle2
-} from 'lucide-react';
-import { useState, useEffect, useRef } from 'react';
-import { motion, useInView, animate } from 'framer-motion';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
-import 'leaflet/dist/leaflet.css';
-import L from 'leaflet';
+import { ArrowRight, Boxes, CheckCircle2, FileText, HelpCircle, ShieldCheck, Truck, Users2, Cpu, Smartphone, Cloud, Zap, Menu, X } from 'lucide-react';
 
-// Fix leaflet default marker icons in React
-import icon from 'leaflet/dist/images/marker-icon.png';
-import iconShadow from 'leaflet/dist/images/marker-shadow.png';
-let DefaultIcon = L.icon({
-    iconUrl: icon,
-    shadowUrl: iconShadow,
-    iconAnchor: [12, 41]
-});
-L.Marker.prototype.options.icon = DefaultIcon;
+const coreValues = [
+    { icon: Cloud, label: 'Infrastruktur', value: 'Cloud SaaS' },
+    { icon: Zap, label: 'Sinkronisasi', value: 'Data Real-time' },
+    { icon: Cpu, label: 'Asisten AI', value: 'Kontekstual' },
+    { icon: Smartphone, label: 'Aplikasi Driver', value: 'Siap Pakai' },
+];
 
-// --- Social Icons ---
-const Facebook = ({ size = 24, className }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>;
-const Twitter = ({ size = 24, className }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"/></svg>;
-const Linkedin = ({ size = 24, className }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>;
-const Instagram = ({ size = 24, className }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>;
+const modules = [
+    {
+        icon: Boxes,
+        title: 'Manajemen Inventori & Rak',
+        desc: 'Atur layout gudang, alokasi rak, stok masuk-keluar, dan stok fisik harian dalam alur yang mudah dipahami tim.',
+    },
+    {
+        icon: Truck,
+        title: 'Armada & Pengiriman',
+        desc: 'Pantau status pengiriman, keterlambatan, dan tindak lanjut dari satu dashboard operasional.',
+    },
+    {
+        icon: FileText,
+        title: 'Pembelian & Pemasok',
+        desc: 'Kelola pesanan beli, pemasok, penerimaan barang, dan dokumen pendukung agar proses pembelian lebih tertib.',
+    },
+    {
+        icon: Cpu,
+        title: 'Asisten AI Operasional',
+        desc: 'AI bantu merangkum kondisi gudang, memberi konteks cepat, dan membantu tim ambil keputusan harian.',
+    },
+];
 
-// --- Animated Counter ---
-function AnimatedCounter({ from = 0, to, duration = 2, suffix = "" }) {
-    const nodeRef = useRef();
-    const inView = useInView(nodeRef, { once: true, margin: "-100px 0px" });
+const plans = [
+    { 
+        name: 'Starter', 
+        desc: 'Ideal untuk gudang berskala kecil.',
+        price: 'Rp1.490.000', 
+        period: '/tahun', 
+        points: ['Manajemen Stok Dasar', 'Pencatatan Barang Masuk & Keluar', 'Laporan Operasional Standar', 'Maksimal 2 Pengguna'] 
+    },
+    { 
+        name: 'Professional', 
+        desc: 'Untuk operasional gudang terstruktur.',
+        price: 'Rp7.990.000', 
+        period: '/tahun', 
+        points: ['Pemetaan Layout Rak Visual', 'Akses Penuh Petayu Driver App', 'Aether AI Assistant (Dasar)', 'Sistem Role (Manager, Staff, Supir)'] 
+    },
+    { 
+        name: 'Enterprise', 
+        desc: 'Kustomisasi untuk skala korporat.',
+        price: 'Rp24.990.000', 
+        period: '/tahun', 
+        points: ['Semua Fitur Professional', 'Aether AI Analytics Lanjutan', 'Integrasi API Kustom (ERP)', 'Prioritas Dukungan Teknis 24/7'] 
+    },
+];
 
+const onboardingSteps = [
+    {
+        step: '01',
+        title: 'Daftar Akun Perusahaan',
+        desc: 'Isi data PIC dan gudang utama untuk membuat workspace tenant yang terpisah.',
+    },
+    {
+        step: '02',
+        title: 'Pilih Modul Operasional',
+        desc: 'Tentukan modul yang dipakai saat onboarding supaya alur sesuai kebutuhan gudang Anda.',
+    },
+    {
+        step: '03',
+        title: 'Trial atau Bayar Langsung',
+        desc: 'Pilih Trial 3 hari dulu atau langsung aktifkan Paket Berbayar sesuai kebutuhan operasional.',
+    },
+];
+
+const faqs = [
+    {
+        q: 'Apakah saya harus Trial dulu?',
+        a: 'Tidak wajib. Saat daftar, Anda bisa pilih Trial 3 hari atau langsung Paket Berbayar.',
+    },
+    {
+        q: 'Kapan pilih modul operasional?',
+        a: 'Modul dipilih saat onboarding agar dashboard langsung sesuai alur gudang Anda.',
+    },
+    {
+        q: 'Data tiap perusahaan tercampur atau terpisah?',
+        a: 'Tiap akun perusahaan memakai tenant terpisah, jadi data operasional tidak tercampur.',
+    },
+    {
+        q: 'Jika Trial habis, apakah bisa upgrade tanpa reset data?',
+        a: 'Bisa. Anda cukup lanjut pembayaran paket, data dan histori tetap tersimpan.',
+    },
+];
+
+const trustBadges = [
+    'Invoice & riwayat pembayaran rapi',
+    'Akses user berbasis role',
+    'Data tenant antar perusahaan terpisah',
+];
+
+// CSS-based reveal hook using Intersection Observer
+function useReveal() {
+    const ref = useRef(null);
     useEffect(() => {
-        if (!inView) return;
-        const node = nodeRef.current;
-        const controls = animate(from, to, {
-            duration: duration,
-            ease: "easeOut",
-            onUpdate(value) {
-                if (node) node.textContent = Math.round(value) + suffix;
-            },
-        });
-        return () => controls.stop();
-    }, [from, to, inView, duration, suffix]);
-
-    return <span ref={nodeRef}>{from}{suffix}</span>;
+        const el = ref.current;
+        if (!el) return;
+        const observer = new IntersectionObserver(
+            ([entry]) => { if (entry.isIntersecting) { el.classList.add('revealed'); observer.unobserve(el); } },
+            { threshold: 0.1, rootMargin: '-50px' }
+        );
+        observer.observe(el);
+        return () => observer.disconnect();
+    }, []);
+    return ref;
 }
 
-// --- Smooth Reveal Components ---
-const FadeIn = ({ children, delay = 0, className = "" }) => (
-    <motion.div
-        initial={{ opacity: 0, y: 30 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: "-100px" }}
-        transition={{ duration: 0.7, delay, ease: [0.21, 0.47, 0.32, 0.98] }}
-        className={className}
-    >
-        {children}
-    </motion.div>
-);
-
-const StaggerContainer = ({ children, className = "" }) => (
-    <motion.div
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, margin: "-100px" }}
-        variants={{
-            visible: { transition: { staggerChildren: 0.15 } },
-            hidden: {}
-        }}
-        className={className}
-    >
-        {children}
-    </motion.div>
-);
-
-const StaggerItem = ({ children, className = "" }) => (
-    <motion.div
-        variants={{
-            hidden: { opacity: 0, y: 30 },
-            visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.21, 0.47, 0.32, 0.98] } }
-        }}
-        className={className}
-    >
-        {children}
-    </motion.div>
-);
-
-function CleanHeroIllustration() {
+function Reveal({ children, className = '', delay = 0 }) {
+    const ref = useReveal();
     return (
-        <motion.div 
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
-            className="relative w-full h-[350px] lg:h-[450px] flex items-center justify-center bg-white rounded-3xl shadow-xl border border-slate-100 overflow-hidden"
-        >
-            <div className="absolute top-0 right-0 w-32 h-32 bg-slate-50 rounded-bl-full" />
-            <div className="absolute bottom-0 left-0 w-48 h-48 bg-slate-50 rounded-tr-full" />
-            
-            <motion.img 
-                animate={{ y: [-15, 15, -15] }}
-                transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-                src="/images/logo_petayu.png" 
-                alt="Petayu Hero" 
-                className="w-1/2 md:w-3/4 max-w-[300px] h-auto object-contain relative z-10" 
-            />
-            
-            <motion.div 
-                animate={{ y: [15, -15, 15] }}
-                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                className="absolute top-8 left-8 p-3 bg-white rounded-2xl shadow-lg border border-slate-100"
-            >
-                <CheckCircle2 className="text-violet-600" size={24} />
-            </motion.div>
-            
-            <motion.div 
-                animate={{ y: [-10, 10, -10] }}
-                transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-                className="absolute bottom-12 right-12 p-3 bg-white rounded-2xl shadow-lg border border-slate-100"
-            >
-                <Database className="text-cyan-500" size={28} />
-            </motion.div>
-        </motion.div>
+        <div ref={ref} className={`reveal-fade-up ${className}`} style={delay ? { transitionDelay: `${delay}ms` } : undefined}>
+            {children}
+        </div>
     );
 }
 
-export default function Welcome({ auth, stats }) {
-    const [isMenuOpen, setIsMenuOpen] = useState(false);
-    const [scrolled, setScrolled] = useState(false);
-    const [activeSection, setActiveSection] = useState('home');
+export default function Welcome({ auth }) {
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const [showStickyCta, setShowStickyCta] = useState(false);
 
     useEffect(() => {
-        const handleScroll = () => {
-            setScrolled(window.scrollY > 20);
-            const sections = ['home', 'features', 'stats', 'solutions', 'contact'];
-            const scrollPos = window.scrollY + 100;
-            
-            for (const section of sections) {
-                const element = document.getElementById(section);
-                if (element && scrollPos >= element.offsetTop && scrollPos < element.offsetTop + element.offsetHeight) {
-                    setActiveSection(section);
-                }
-            }
+        const onScroll = () => {
+            setShowStickyCta(window.scrollY > 520);
         };
-        window.addEventListener('scroll', handleScroll);
-        return () => window.removeEventListener('scroll', handleScroll);
+        onScroll();
+        window.addEventListener('scroll', onScroll, { passive: true });
+        return () => window.removeEventListener('scroll', onScroll);
     }, []);
 
-    const navLinks = [
-        { id: 'home', label: 'Beranda' },
-        { id: 'features', label: 'Fitur' },
-        { id: 'stats', label: 'Statistik' },
-        { id: 'solutions', label: 'Solusi AI' },
-        { id: 'contact', label: 'Kontak & Peta' },
-    ];
-
-    const MAP_CENTER = [-6.2088, 106.8456]; // Jakarta coordinates
-
     return (
-        <div className="min-h-screen bg-slate-50 font-sans text-slate-800 selection:bg-violet-600 selection:text-white">
-            <Head title="Petayu - Platform Gudang" />
+        <div className="min-h-screen bg-slate-50 text-slate-800 font-sans selection:bg-violet-200 selection:text-violet-900">
+            <Head title="WMS untuk UMKM - Petayu">
+                    <meta name="description" content="Petayu adalah Warehouse Management System (WMS) SaaS Indonesia untuk UMKM dan gudang menengah. Kelola stok, pengiriman, dan billing dalam satu platform." />
+                    <link rel="canonical" href={window.location.origin} />
+                    <meta property="og:title" content="Petayu - WMS SaaS Indonesia" />
+                    <meta property="og:description" content="Satu sistem untuk stok, pengiriman, dan billing gudang Anda. Dibuat untuk UMKM sampai gudang menengah." />
+                    <meta property="og:type" content="website" />
+                    <meta property="og:image" content="/images/wms_3d_violet_transparent.png" />
+                    <script type="application/ld+json">{JSON.stringify({
+                        "@context": "https://schema.org",
+                        "@type": "SoftwareApplication",
+                        "name": "Petayu WMS",
+                        "applicationCategory": "BusinessApplication",
+                        "operatingSystem": "Web",
+                        "description": "Sistem Manajemen Pergudangan (WMS) berbasis Cloud dengan AI untuk UMKM Indonesia.",
+                        "offers": { "@type": "Offer", "price": "1490000", "priceCurrency": "IDR" }
+                    })}</script>
+                </Head>
 
-            {/* --- TOP INFO BAR (Light Solid Mode) --- */}
-            <div className="hidden bg-slate-100 border-b border-slate-200 py-2 text-xs text-slate-500 lg:block">
-                <div className="mx-auto flex max-w-7xl items-center justify-between px-6">
-                    <div className="flex gap-6">
-                        <span className="flex items-center gap-2 hover:text-violet-600 font-medium transition-colors"><Phone size={14} /> +62 21 5555 0120</span>
-                        <span className="flex items-center gap-2 hover:text-violet-600 font-medium transition-colors"><Mail size={14} /> info@petayu.id</span>
+            {/* Fixed Header */}
+            <header className="fixed top-0 inset-x-0 z-50 bg-white/90 backdrop-blur-md border-b border-slate-200/60 shadow-sm">
+                <div className="mx-auto flex h-20 w-full max-w-7xl items-center justify-between px-6 lg:px-8">
+                    {/* Logo */}
+                    <div className="flex items-center gap-12">
+                        <Link href="/" className="flex items-center gap-3 group">
+                            <img src="/images/logo_petayu.png" className="h-8 w-8 object-contain transition-transform group-hover:scale-105" alt="Petayu Logo" />
+                            <span className="text-xl font-extrabold tracking-tight text-slate-900">Petayu</span>
+                        </Link>
+
+                        {/* Desktop Navigation */}
+                        <nav className="hidden items-center gap-8 lg:flex">
+                            <a href="#keunggulan" className="text-sm font-semibold text-slate-600 hover:text-violet-700 transition-colors">Keunggulan</a>
+                            <a href="#fitur" className="text-sm font-semibold text-slate-600 hover:text-violet-700 transition-colors">Modul Sistem</a>
+                            <a href="#paket" className="text-sm font-semibold text-slate-600 hover:text-violet-700 transition-colors">Paket & Harga</a>
+                        </nav>
                     </div>
-                    <div className="flex items-center gap-4 font-medium">
-                        <a href="#contact" className="hover:text-violet-600 transition-colors">Pusat Bantuan</a>
-                        <a href="#contact" className="hover:text-violet-600 transition-colors">Dokumentasi API</a>
-                    </div>
-                </div>
-            </div>
 
-            {/* --- NAVBAR --- */}
-            <header 
-                className={`sticky top-0 z-50 transition-all duration-300 ${
-                    scrolled ? 'bg-white/95 backdrop-blur-md border-b border-slate-200 py-4 shadow-sm' : 'bg-slate-50 border-transparent py-6'
-                }`}
-            >
-                <div className="mx-auto flex max-w-7xl items-center justify-between px-6">
-                    <a href="#home" className="flex items-center gap-3">
-                        <motion.img 
-                            whileHover={{ scale: 1.05 }}
-                            src="/images/logo_petayu.png" 
-                            alt="Petayu Logo" 
-                            className="h-10 w-auto" 
-                        />
-                        <span className="text-2xl font-black text-slate-900">
-                            Petayu<span className="text-violet-600">.</span>
-                        </span>
-                    </a>
-
-                    <nav className="hidden items-center gap-8 font-bold text-sm lg:flex text-slate-600">
-                        {navLinks.map((link) => (
-                            <a 
-                                key={link.id}
-                                href={`#${link.id}`} 
-                                className={`relative py-2 transition-colors ${activeSection === link.id ? 'text-violet-600' : 'hover:text-violet-600'}`}
+                    {/* Auth Area (Desktop) */}
+                    <div className="hidden items-center gap-6 lg:flex">
+                        {auth?.user ? (
+                            <Link 
+                                href={route('dashboard')} 
+                                className="rounded-full bg-violet-700 px-6 py-2.5 text-sm font-semibold text-white transition-all hover:bg-violet-800 hover:shadow-md"
                             >
-                                {link.label}
-                                {activeSection === link.id && (
-                                    <motion.div 
-                                        layoutId="activeNav" 
-                                        className="absolute bottom-0 left-0 right-0 h-0.5 bg-violet-600 rounded-full" 
-                                    />
-                                )}
-                            </a>
-                        ))}
-                    </nav>
-
-                    <div className="hidden lg:flex items-center gap-3 text-sm">
-                        {auth.user ? (
-                            <Link href={route('dashboard')}>
-                                <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="rounded-xl border-2 border-violet-600 bg-violet-600 px-6 py-2.5 font-bold text-white transition-all shadow-sm">
-                                    Dashboard
-                                </motion.button>
+                                Menuju Dashboard
                             </Link>
                         ) : (
                             <>
-                                <Link href={route('login')} className="font-bold text-slate-600 py-2.5 px-4 rounded-xl border-2 border-transparent hover:text-violet-600 transition-colors">
-                                    Log In
+                                <Link 
+                                    href={route('login')} 
+                                    className="text-sm font-semibold text-slate-700 hover:text-violet-700 transition-colors"
+                                >
+                                    Masuk Ke Sistem
                                 </Link>
-                                <Link href={route('login')}>
-                                    <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="rounded-xl border-2 border-violet-600 bg-violet-600 px-6 py-2.5 font-bold text-white transition-all shadow-sm">
-                                        Minta Demo
-                                    </motion.button>
+                                <Link 
+                                    href={route('register')} 
+                                    className="rounded-full bg-violet-700 px-6 py-2.5 text-sm font-semibold text-white transition-all hover:bg-violet-800 hover:shadow-md"
+                                >
+                                    Daftar & Pilih Paket
                                 </Link>
                             </>
                         )}
                     </div>
 
-                    <button className="lg:hidden p-2 text-slate-600" onClick={() => setIsMenuOpen(!isMenuOpen)}>
-                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            {isMenuOpen ? <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /> : <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />}
-                        </svg>
-                    </button>
+                    {/* Mobile Menu Toggle */}
+                    <div className="flex lg:hidden">
+                        <button
+                            type="button"
+                            className="-m-2.5 inline-flex items-center justify-center rounded-md p-2.5 text-slate-700"
+                            onClick={() => setMobileMenuOpen(true)}
+                        >
+                            <span className="sr-only">Open main menu</span>
+                            <Menu className="h-6 w-6" aria-hidden="true" />
+                        </button>
+                    </div>
                 </div>
-
-                {isMenuOpen && (
-                    <motion.div 
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: 'auto' }}
-                        className="lg:hidden bg-white border-t border-slate-200 px-6 py-4 absolute w-full rounded-b-xl shadow-lg"
-                    >
-                        <nav className="flex flex-col gap-4 font-bold text-slate-600 text-sm">
-                            {navLinks.map((link) => (
-                                <a 
-                                    key={link.id} 
-                                    href={`#${link.id}`} 
-                                    onClick={() => setIsMenuOpen(false)}
-                                    className={`${activeSection === link.id ? 'text-violet-600' : ''}`}
-                                >
-                                    {link.label}
-                                </a>
-                            ))}
-                            <div className="pt-4 mt-2 border-t border-slate-100 flex flex-col gap-3">
-                                {auth.user ? (
-                                    <Link href={route('dashboard')} className="rounded-xl bg-violet-600 border-2 border-violet-600 px-6 py-3 text-center text-white">Dashboard</Link>
-                                ) : (
-                                    <Link href={route('login')} className="rounded-xl bg-violet-600 border-2 border-violet-600 px-6 py-3 text-center text-white">Log In / Demo</Link>
-                                )}
-                            </div>
-                        </nav>
-                    </motion.div>
-                )}
             </header>
 
-            <main>
-                {/* --- MURNI LIGHT HERO SECTION --- */}
-                <section id="home" className="relative pt-16 pb-24 lg:pt-24 lg:pb-32 bg-slate-50 overflow-hidden text-center lg:text-left">
-                    <div className="mx-auto w-full max-w-7xl px-6 grid gap-12 lg:grid-cols-2 lg:gap-8 items-center relative z-10">
-                        <div className="max-w-2xl mx-auto lg:mx-0">
-                            <motion.div 
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.5 }}
-                                className="inline-flex items-center gap-2 rounded-full border-2 border-slate-200 bg-white px-4 py-1.5 text-sm font-bold text-slate-600 mb-8 mx-auto lg:mx-0"
+            {/* Mobile Menu */}
+            {mobileMenuOpen && (
+                <div className="fixed inset-0 z-[60] lg:hidden">
+                    <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm" onClick={() => setMobileMenuOpen(false)} />
+                    <div className="fixed inset-y-0 right-0 z-[60] w-full overflow-y-auto bg-white px-6 py-6 sm:max-w-sm shadow-2xl">
+                        <div className="flex items-center justify-between">
+                            <Link href="/" className="-m-1.5 p-1.5 flex items-center gap-3">
+                                <img src="/images/logo_petayu.png" className="h-8 w-8 object-contain" alt="Petayu Logo" />
+                                <span className="text-xl font-extrabold tracking-tight text-slate-900">Petayu</span>
+                            </Link>
+                            <button
+                                type="button"
+                                className="-m-2.5 rounded-md p-2.5 text-slate-700"
+                                onClick={() => setMobileMenuOpen(false)}
                             >
-                                <div className="w-2 h-2 rounded-full bg-violet-600"></div>
-                                Ekosistem Logistik Modern
-                            </motion.div>
-                            
-                            <motion.h1 
-                                initial={{ opacity: 0, y: 30 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.7, delay: 0.1 }}
-                                className="text-5xl lg:text-6xl xl:text-7xl font-black leading-tight tracking-tight text-slate-900 mb-6"
-                            >
-                                Kontrol <span className="text-violet-600">Inventori</span><br/> Tanpa Batas.
-                            </motion.h1>
-                            
-                            <motion.p 
-                                initial={{ opacity: 0, y: 30 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.7, delay: 0.2 }}
-                                className="text-lg text-slate-600 mb-10 leading-relaxed font-medium"
-                            >
-                                Petayu membangun pondasi yang kuat untuk distribusi barang. Alokasi rak otomatis, Proof of Delivery digital, hingga asisten AI pelaporan siap pakai.
-                            </motion.p>
-                            
-                            <motion.div 
-                                initial={{ opacity: 0, y: 30 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.7, delay: 0.3 }}
-                                className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start"
-                            >
-                                <motion.a 
-                                    whileHover={{ scale: 1.05 }}
-                                    whileTap={{ scale: 0.95 }}
-                                    href="#features" 
-                                    className="rounded-full bg-violet-600 px-8 py-4 font-bold text-white hover:bg-violet-700 border-2 border-violet-600 transition-colors flex items-center justify-center gap-2 shadow-lg shadow-violet-600/20"
-                                >
-                                    Eksplorasi Fitur
-                                    <ArrowRight size={18} />
-                                </motion.a>
-                                <motion.a 
-                                    whileHover={{ scale: 1.05 }}
-                                    whileTap={{ scale: 0.95 }}
-                                    href="#contact" 
-                                    className="rounded-full bg-white px-8 py-4 font-bold text-slate-700 hover:text-violet-600 hover:border-violet-300 border-2 border-slate-200 transition-colors flex items-center justify-center shadow-sm"
-                                >
-                                    Hubungi Kami
-                                </motion.a>
-                            </motion.div>
+                                <span className="sr-only">Close menu</span>
+                                <X className="h-6 w-6" aria-hidden="true" />
+                            </button>
                         </div>
-
-                        <div>
-                            <CleanHeroIllustration />
-                        </div>
-                    </div>
-                </section>
-
-                {/* --- FEATURES (Light Style Grid) --- */}
-                <section id="features" className="py-24 bg-white border-t border-slate-100">
-                    <div className="mx-auto max-w-7xl px-6">
-                        <FadeIn className="text-center max-w-3xl mx-auto mb-20">
-                            <h2 className="text-sm font-bold uppercase tracking-widest text-cyan-600 mb-3">Keunggulan Core</h2>
-                            <h3 className="text-4xl font-black text-slate-900 tracking-tight">Setiap Modul Didesain Untuk Efisiensi</h3>
-                        </FadeIn>
-
-                        <StaggerContainer className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {[
-                                { icon: <Boxes size={28}/>, title: "Alokasi Zona & Rak", desc: "Pemetaan hierarkis gudang, otomatisasi ruang kosong, dan limitasi stok secara sistematis." },
-                                { icon: <Zap size={28}/>, title: "Catatan Cepat (Real-time)", desc: "Setiap barang masuk dan keluar tercermin pada sistem dalam hitungan presisi mili detik." },
-                                { icon: <ShieldCheck size={28}/>, title: "Verifikasi Pengiriman", desc: "Bukti penerimaan digital aman yang dikirim seketika oleh Driver langsung dari lapangan." },
-                                { icon: <BarChart3 size={28}/>, title: "Pelaporan Holistik", desc: "Ekspor tabel PDF harian, bulanan dengan diagram metrik tanpa komputasi manual." },
-                                { icon: <Truck size={28}/>, title: "Pembelian & Suplai", desc: "Manajemen Purchase Order terintegrasi dengan daftar referensi supplier andal Anda." },
-                                { icon: <Smartphone size={28}/>, title: "AI Terintegrasi", desc: "Petayu menavigasi pertanyaan, mengukur tren, dan memberikan wawasan cerdas bagi Anda." },
-                            ].map((ft, i) => (
-                                <StaggerItem key={i}>
-                                    <div className="h-full p-8 rounded-3xl bg-slate-50 hover:bg-violet-50 hover:border-violet-200 border-2 border-transparent transition-colors group">
-                                        <div className="mb-6 w-14 h-14 rounded-2xl bg-white shadow-sm border border-slate-100 flex items-center justify-center text-slate-500 group-hover:text-violet-600 group-hover:border-violet-200 transition-colors">
-                                            {ft.icon}
+                        <div className="mt-8 flow-root">
+                            <div className="-my-6 divide-y divide-slate-100">
+                                <div className="space-y-2 py-6">
+                                    <a href="#keunggulan" onClick={() => setMobileMenuOpen(false)} className="-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-slate-900 hover:bg-slate-50">Keunggulan</a>
+                                    <a href="#fitur" onClick={() => setMobileMenuOpen(false)} className="-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-slate-900 hover:bg-slate-50">Modul Sistem</a>
+                                    <a href="#paket" onClick={() => setMobileMenuOpen(false)} className="-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-slate-900 hover:bg-slate-50">Paket & Harga</a>
+                                </div>
+                                <div className="py-6">
+                                    {auth?.user ? (
+                                        <Link 
+                                            href={route('dashboard')} 
+                                            className="-mx-3 block rounded-full px-3 py-3 text-base font-semibold leading-7 text-white bg-violet-700 text-center hover:bg-violet-800"
+                                        >
+                                            Menuju Dashboard
+                                        </Link>
+                                    ) : (
+                                        <div className="flex flex-col gap-3">
+                                            <Link 
+                                                href={route('login')} 
+                                                className="-mx-3 block rounded-lg px-3 py-2 text-center text-base font-semibold leading-7 text-slate-900 border border-slate-200 hover:bg-slate-50"
+                                            >
+                                                Masuk Ke Sistem
+                                            </Link>
+                                            <Link 
+                                                href={route('register')} 
+                                                className="-mx-3 block rounded-full px-3 py-3 text-base font-semibold leading-7 text-white bg-violet-700 text-center hover:bg-violet-800"
+                                            >
+                                                Daftar & Pilih Paket
+                                            </Link>
                                         </div>
-                                        <h4 className="text-xl font-bold text-slate-900 mb-3">{ft.title}</h4>
-                                        <p className="text-slate-600 text-sm leading-relaxed">{ft.desc}</p>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            <main className="flex-1">
+                {/* Hero Section with Elegant SVG Wave */}
+                <section className="relative overflow-hidden bg-white pt-32 lg:pt-40 pb-32 lg:pb-40">
+                    <div className="relative z-10 mx-auto max-w-7xl px-6 lg:px-8">
+                        <div className="grid grid-cols-1 gap-12 lg:grid-cols-2 lg:gap-8 items-center">
+                            <div className="max-w-2xl lg:max-w-xl text-center lg:text-left mx-auto lg:mx-0">
+                                <Reveal>
+                                    <div className="flex items-center justify-center lg:justify-start gap-2 mb-6">
+                                        <span className="inline-flex items-center rounded-full bg-violet-50 px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-violet-700 ring-1 ring-inset ring-violet-600/10">
+                                            WMS SaaS Indonesia
+                                        </span>
                                     </div>
-                                </StaggerItem>
-                            ))}
-                        </StaggerContainer>
+                                </Reveal>
+                                <Reveal delay={100}>
+                                    <h1 className="text-4xl font-extrabold tracking-tight text-slate-900 sm:text-5xl xl:text-6xl leading-[1.15]">
+                                        Satu sistem untuk stok, pengiriman, dan billing <span className="text-violet-700 block mt-2">gudang Anda.</span>
+                                    </h1>
+                                </Reveal>
+                                <Reveal delay={200}>
+                                    <p className="mt-6 text-lg leading-relaxed text-slate-600">
+                                        Dibuat untuk UMKM sampai gudang menengah: alur sederhana, modul jelas, dan siap dipakai tim operasional tanpa bikin bingung.
+                                    </p>
+                                </Reveal>
+                                <Reveal delay={300}>
+                                    <div className="mt-10 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
+                                        <Link 
+                                            href={route('register')} 
+                                            className="w-full sm:w-auto rounded-full bg-violet-700 px-8 py-4 text-base font-bold text-white shadow-lg shadow-violet-700/30 hover:bg-violet-800 hover:shadow-violet-800/40 transition-all text-center"
+                                        >
+                                            Daftar Trial 3 Hari
+                                        </Link>
+                                        <Link
+                                            href={route('login')}
+                                            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-8 py-4 text-base font-semibold text-slate-700 transition-colors hover:bg-slate-50 hover:border-slate-300 shadow-sm"
+                                        >
+                                            Masuk / Minta Demo <ArrowRight className="h-5 w-5" />
+                                        </Link>
+                                    </div>
+                                </Reveal>
+                                <Reveal delay={400}>
+                                    <div className="mt-8 flex flex-wrap justify-center lg:justify-start gap-5 text-sm font-medium text-slate-500">
+                                        <span className="flex items-center gap-2"><CheckCircle2 className="h-5 w-5 text-violet-600" /> Pilih modul saat onboarding</span>
+                                        <span className="flex items-center gap-2"><CheckCircle2 className="h-5 w-5 text-violet-600" /> Akun tenant terpisah per perusahaan</span>
+                                    </div>
+                                </Reveal>
+                                <Reveal delay={500}>
+                                    <div className="mt-6 flex flex-wrap justify-center lg:justify-start gap-2">
+                                        {trustBadges.map((item) => (
+                                            <span key={item} className="inline-flex items-center rounded-full border border-violet-100 bg-violet-50 px-3 py-1 text-xs font-semibold text-violet-700">
+                                                {item}
+                                            </span>
+                                        ))}
+                                    </div>
+                                </Reveal>
+                            </div>
+                            
+                            <Reveal delay={200} className="relative mx-auto w-full max-w-lg lg:max-w-none flex justify-center lg:justify-end mt-10 lg:mt-0">
+                                <img 
+                                    src="/images/wms_3d_violet_transparent.png" 
+                                    alt="Ilustrasi 3D sistem manajemen gudang Petayu" 
+                                    width={600}
+                                    height={600}
+                                    className="w-full object-contain max-w-[400px] sm:max-w-[500px] xl:max-w-[600px] drop-shadow-2xl animate-float relative z-10"
+                                    fetchpriority="high"
+                                />
+                            </Reveal>
+                        </div>
+                    </div>
+
+                    {/* Elegant Smooth Wave Transition to Keunggulan */}
+                    <div className="absolute bottom-0 inset-x-0 pointer-events-none translate-y-[1px]">
+                        <svg viewBox="0 0 1440 120" className="w-full h-[60px] md:h-[120px] fill-slate-50 block" preserveAspectRatio="none">
+                            <path d="M0,60 C320,120 420,0 740,60 C1060,120 1120,0 1440,60 L1440,120 L0,120 Z"></path>
+                        </svg>
                     </div>
                 </section>
 
-                {/* --- STATS SECTION (SOLID LIGHT / SLATE) --- */}
-                <section id="stats" className="py-24 bg-slate-100 border-y border-slate-200">
-                    <div className="mx-auto max-w-7xl px-6">
-                        <FadeIn className="text-center mb-16">
-                            <h2 className="text-3xl font-black text-slate-900">Performa Nyata Petayu</h2>
-                        </FadeIn>
-                        
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-                            {[
-                                { val: stats?.transactions || 0, label: "Total Transaksi Lintas Gudang" },
-                                { val: stats?.products || 0, label: "Produk Master Tersedia" },
-                                { val: stats?.accuracy || 99, label: "Akurasi Distribusi Server", suffix: "%" },
-                                { val: 24, label: "Aksesibilitas Uptime", suffix: "/7" },
-                            ].map((stat, i) => (
-                                <FadeIn key={i} delay={i * 0.1}>
-                                    <div className="flex flex-col items-center bg-white p-8 rounded-3xl border border-slate-200 shadow-sm">
-                                        <span className="text-5xl font-black text-cyan-600 mb-3">
-                                            <AnimatedCounter from={0} to={stat.val} suffix={stat.suffix} />
-                                        </span>
-                                        <span className="text-sm font-bold text-slate-500 text-center">{stat.label}</span>
+                <section className="py-14 bg-white border-t border-slate-100">
+                    <div className="mx-auto max-w-7xl px-6 lg:px-8">
+                        <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
+                            {onboardingSteps.map((item, idx) => (
+                                <Reveal key={item.step} delay={idx * 100}>
+                                    <div className="rounded-2xl border border-slate-200 bg-slate-50 p-6">
+                                        <p className="text-xs font-black tracking-[0.16em] text-violet-700">{item.step}</p>
+                                        <h3 className="mt-2 text-lg font-bold text-slate-900">{item.title}</h3>
+                                        <p className="mt-2 text-sm leading-relaxed text-slate-600">{item.desc}</p>
                                     </div>
-                                </FadeIn>
+                                </Reveal>
                             ))}
                         </div>
                     </div>
                 </section>
 
-                {/* --- AI SOLUTIONS (Clean Version) --- */}
-                <section id="solutions" className="py-24 bg-white">
-                    <div className="mx-auto max-w-7xl px-6">
-                        <div className="grid lg:grid-cols-2 gap-16 items-center">
-                            <FadeIn>
-                                <h2 className="text-sm font-bold uppercase tracking-widest text-violet-600 mb-3">Kecerdasan Buatan</h2>
-                                <h3 className="text-4xl font-black text-slate-900 mb-6 leading-tight">Berbincang dengan Gudang Anda.</h3>
-                                <p className="text-lg text-slate-600 mb-8 leading-relaxed">
-                                    Mengetahui posisi barang atau menganalisis tren distribusi kini semudah mengirim pesan teks. Sistem cerdas Petayu dirancang memproses pertanyaan logistik kompleks menjadi jawaban operasional instan.
-                                </p>
-                                
-                                <ul className="space-y-4 font-bold text-slate-700">
-                                    <li className="flex items-center gap-3">
-                                        <div className="w-5 h-5 rounded-full bg-cyan-100 flex items-center justify-center text-cyan-600"><CheckCircle2 size={12}/></div>
-                                        Rekomendasi Kapasitas Rak Otomatis
-                                    </li>
-                                    <li className="flex items-center gap-3">
-                                        <div className="w-5 h-5 rounded-full bg-cyan-100 flex items-center justify-center text-cyan-600"><CheckCircle2 size={12}/></div>
-                                        Analisa Anomali Pergerakan Barang
-                                    </li>
-                                    <li className="flex items-center gap-3">
-                                        <div className="w-5 h-5 rounded-full bg-cyan-100 flex items-center justify-center text-cyan-600"><CheckCircle2 size={12}/></div>
-                                        Visualisasi Data Intuitif
-                                    </li>
-                                </ul>
-                            </FadeIn>
-                            
-                            <FadeIn delay={0.2}>
-                                {/* Chat UI Mockup Bright */}
-                                <div className="bg-slate-50 border border-slate-200 rounded-3xl p-6 shadow-xl">
-                                    <div className="flex items-center gap-3 border-b border-slate-200 pb-4 mb-6">
-                                        <div className="w-10 h-10 rounded-full bg-violet-600 flex items-center justify-center">
-                                            <span className="text-white font-black text-xs">AI</span>
+                {/* Core Capabilities / Values */}
+                <section id="keunggulan" className="bg-slate-50 pb-16 lg:pb-24 relative z-20 pt-14 lg:pt-20">
+                    <div className="mx-auto max-w-7xl px-6 lg:px-8">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 lg:grid-cols-4">
+                            {coreValues.map((item, idx) => {
+                                const Icon = item.icon;
+                                return (
+                                    <Reveal key={item.label} delay={idx * 100}>
+                                        <div className="flex flex-col items-center justify-center bg-white p-8 text-center border border-slate-100 shadow-xl shadow-slate-200/40 rounded-[2rem] transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl">
+                                            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-violet-50 text-violet-700 mb-5 ring-1 ring-violet-100">
+                                                <Icon className="h-7 w-7" aria-hidden="true" />
+                                            </div>
+                                            <p className="text-xl font-bold text-slate-900">{item.value}</p>
+                                            <p className="mt-2 text-sm font-medium text-slate-500">{item.label}</p>
+                                        </div>
+                                    </Reveal>
+                                )
+                            })}
+                        </div>
+                    </div>
+                </section>
+
+                {/* Features Section */}
+                <section id="fitur" className="py-24 lg:py-32 bg-white border-t border-slate-100">
+                    <div className="mx-auto max-w-7xl px-6 lg:px-8">
+                        <Reveal className="mx-auto max-w-2xl text-center">
+                            <h2 className="text-sm font-bold uppercase tracking-widest text-violet-700">Infrastruktur Terpusat</h2>
+                            <p className="mt-2 text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">
+                                Alur Gudang yang Jelas, Bukan Ribet
+                            </p>
+                            <p className="mt-4 text-lg text-slate-600">
+                                Setiap modul dibuat agar tim awam tetap cepat paham: input, pantau, tindak lanjut, selesai.
+                            </p>
+                        </Reveal>
+                        <div className="mx-auto mt-16 max-w-2xl sm:mt-20 lg:mt-24 lg:max-w-none">
+                            <div className="grid max-w-xl grid-cols-1 gap-8 lg:max-w-none lg:grid-cols-2">
+                                {modules.map((item, idx) => {
+                                    const Icon = item.icon;
+                                    return (
+                                        <Reveal key={item.title} delay={idx * 100}>
+                                            <div className="relative flex flex-col gap-6 rounded-[2rem] bg-slate-50 p-8 sm:p-10 border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 hover:bg-white group">
+                                                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-600 to-violet-800 text-white shadow-md group-hover:scale-110 transition-transform duration-300">
+                                                    <Icon className="h-7 w-7" aria-hidden="true" />
+                                                </div>
+                                                <div>
+                                                    <h3 className="text-xl font-bold text-slate-900 group-hover:text-violet-700 transition-colors">
+                                                        {item.title}
+                                                    </h3>
+                                                    <p className="mt-3 text-base leading-relaxed text-slate-600">
+                                                        {item.desc}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </Reveal>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                {/* Pricing Section */}
+                <section id="paket" className="py-24 lg:py-32 bg-slate-50 border-t border-slate-200">
+                    <div className="mx-auto max-w-7xl px-6 lg:px-8">
+                        <Reveal className="mx-auto max-w-2xl text-center">
+                            <h2 className="text-sm font-bold uppercase tracking-widest text-violet-700">Harga Terbuka</h2>
+                            <p className="mt-2 text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">
+                                Paket Sesuai Skala Gudang
+                            </p>
+                            <p className="mt-4 text-lg text-slate-600">
+                                Mulai dari Trial 3 hari, lalu lanjutkan Paket Berbayar sesuai kebutuhan modul dan jumlah tim.
+                            </p>
+                        </Reveal>
+                        <div className="mx-auto mt-16 grid max-w-md grid-cols-1 gap-8 lg:max-w-5xl lg:grid-cols-3">
+                            {plans.map((plan, idx) => (
+                                <Reveal key={plan.name} delay={idx * 100}>
+                                    <div className={`relative flex flex-col rounded-[2.5rem] p-8 xl:p-10 transition-all duration-300 h-full ${idx === 1 ? 'bg-gradient-to-b from-violet-900 to-slate-900 text-white shadow-2xl shadow-violet-900/40 ring-1 ring-white/10 lg:scale-105 z-10' : 'bg-white shadow-xl shadow-slate-200/40 ring-1 ring-slate-200 hover:-translate-y-1'}`}>
+                                        {idx === 1 && (
+                                            <div className="absolute -top-5 inset-x-0 flex justify-center">
+                                                <span className="rounded-full bg-gradient-to-r from-violet-400 to-violet-600 px-5 py-1.5 text-xs font-black uppercase tracking-widest text-white shadow-lg shadow-violet-500/30 ring-1 ring-white/20">
+                                                    Paling Populer
+                                                </span>
+                                            </div>
+                                        )}
+                                        <div className="mb-6">
+                                            <h3 className={`text-2xl font-bold ${idx === 1 ? 'text-white' : 'text-slate-900'}`}>{plan.name}</h3>
+                                            <p className={`mt-2 text-sm leading-relaxed ${idx === 1 ? 'text-violet-200' : 'text-slate-500'}`}>{plan.desc}</p>
+                                        </div>
+                                        <div className="mb-8 flex items-baseline flex-wrap gap-x-1.5 gap-y-1">
+                                            <span className={`text-lg font-bold ${idx === 1 ? 'text-violet-300' : 'text-slate-400'}`}>Rp</span>
+                                            <span className={`text-3xl lg:text-4xl font-black tracking-tight ${idx === 1 ? 'text-white' : 'text-slate-900'}`}>{plan.price.replace('Rp', '')}</span>
+                                            <span className={`text-sm font-semibold whitespace-nowrap ${idx === 1 ? 'text-violet-300' : 'text-slate-400'}`}>{plan.period}</span>
+                                        </div>
+                                        <div className={`h-px w-full mb-8 ${idx === 1 ? 'bg-white/10' : 'bg-slate-100'}`}></div>
+                                        <ul role="list" className={`flex-1 space-y-5 text-sm leading-6 ${idx === 1 ? 'text-violet-100' : 'text-slate-600'}`}>
+                                            {plan.points.map((p) => (
+                                                <li key={p} className="flex gap-x-3 items-start">
+                                                    <CheckCircle2 className={`h-6 w-6 shrink-0 ${idx === 1 ? 'text-violet-400' : 'text-violet-600'}`} aria-hidden="true" />
+                                                    <span className="pt-0.5">{p}</span>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                        <Link 
+                                            href={route('register')} 
+                                            className={`mt-10 block rounded-full px-4 py-4 text-center text-sm font-bold transition-all duration-300 ${idx === 1 ? 'bg-white text-violet-900 hover:bg-slate-50 shadow-xl shadow-white/10 hover:scale-[1.02]' : 'bg-violet-50 text-violet-700 hover:bg-violet-100 ring-1 ring-inset ring-violet-200/50'}`}
+                                        >
+                                            Pilih Paket {plan.name}
+                                        </Link>
+                                    </div>
+                                </Reveal>
+                            ))}
+                        </div>
+                    </div>
+                </section>
+
+                <section className="py-24 lg:py-32 bg-white border-t border-slate-100">
+                    <div className="mx-auto max-w-7xl px-6 lg:px-8">
+                        <Reveal className="mx-auto max-w-2xl text-center">
+                            <h2 className="text-sm font-bold uppercase tracking-widest text-violet-700">FAQ</h2>
+                            <p className="mt-3 text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">
+                                Pertanyaan yang Sering Diajukan
+                            </p>
+                            <p className="mt-4 text-lg text-slate-600">
+                                Hal-hal yang sering ditanyakan seputar pendaftaran dan alur kerja Petayu.
+                            </p>
+                        </Reveal>
+                        <div className="mx-auto mt-16 grid max-w-xl grid-cols-1 gap-6 lg:max-w-none lg:grid-cols-2">
+                            {faqs.map((item, idx) => (
+                                <Reveal key={item.q} delay={idx * 100}>
+                                    <div className="relative flex gap-5 rounded-[2rem] bg-slate-50 p-8 border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 hover:bg-white group">
+                                        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-600 to-violet-800 text-white shadow-md group-hover:scale-110 transition-transform duration-300">
+                                            <HelpCircle className="h-6 w-6" aria-hidden="true" />
                                         </div>
                                         <div>
-                                            <p className="font-bold text-slate-900 leading-none mb-1">Petayu Assistant</p>
-                                            <p className="text-xs text-emerald-500 font-bold">Online</p>
+                                            <h3 className="text-base font-bold text-slate-900 group-hover:text-violet-700 transition-colors">{item.q}</h3>
+                                            <p className="mt-2 text-sm leading-relaxed text-slate-600">{item.a}</p>
                                         </div>
                                     </div>
-                                    
-                                    <div className="space-y-6">
-                                        <div className="flex gap-4 items-start">
-                                            <div className="w-8 h-8 rounded-full bg-slate-200 shrink-0 border border-slate-300" />
-                                            <div className="bg-white border border-slate-200 rounded-2xl rounded-tl-none p-4 text-sm text-slate-700 shadow-sm leading-relaxed">
-                                                Tolong periksa tren status pergerakan produk Kategori A minggu ini.
-                                            </div>
-                                        </div>
-                                        
-                                        <div className="flex gap-4 items-start flex-row-reverse">
-                                            <div className="w-8 h-8 rounded-full bg-violet-600 shrink-0 shadow-sm flex items-center justify-center text-white font-black text-[10px]">AI</div>
-                                            <div className="bg-violet-600 text-white rounded-2xl rounded-tr-none p-4 text-sm shadow-md leading-relaxed">
-                                                Terdeteksi lonjakan aktivitas logistik <span className="font-black text-cyan-300">40%</span>. Saya menyarankan restock segera atau relokasi inventori dari Gudang Utara untuk mencegah terjadinya <span className="font-bold underline">stockout</span> besok lusa.
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </FadeIn>
+                                </Reveal>
+                            ))}
                         </div>
                     </div>
                 </section>
 
-                {/* --- CONTACT & MAP SECTIONS (Left Form, Right Map) --- */}
-                <section id="contact" className="py-24 bg-slate-50 border-t border-slate-200">
-                    <div className="mx-auto max-w-7xl px-6">
-                        <div className="mb-12">
-                            <h2 className="text-center text-4xl font-black text-slate-900 mb-4">Hubungi Ekspor Logistik</h2>
-                            <p className="text-center text-slate-600 font-medium max-w-2xl mx-auto">Kami siap diundang berdiskusi atau melakukan demonstrasi teknis untuk menjawab tantangan tata kelola pergudangan perusahaan Anda.</p>
-                        </div>
-                        
-                        <div className="grid lg:grid-cols-2 bg-white rounded-[40px] shadow-sm border border-slate-200 overflow-hidden">
-                            {/* Form Box */}
-                            <div className="p-8 md:p-12">
-                                <h3 className="text-2xl font-black text-slate-900 mb-6">Kirim Pesan</h3>
-                                <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
-                                    <div className="grid grid-cols-2 gap-6">
-                                        <div className="space-y-2">
-                                            <label className="text-sm font-bold text-slate-700">Nama Lengkap</label>
-                                            <input type="text" className="w-full bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-3 text-sm focus:border-violet-600 outline-none transition-colors" placeholder="Fulan Pulan" />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <label className="text-sm font-bold text-slate-700">Perusahaan</label>
-                                            <input type="text" className="w-full bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-3 text-sm focus:border-violet-600 outline-none transition-colors" placeholder="PT Laju Maju" />
-                                        </div>
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-bold text-slate-700">Email Utama</label>
-                                        <input type="email" className="w-full bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-3 text-sm focus:border-violet-600 outline-none transition-colors" placeholder="email@perusahaan.com" />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-bold text-slate-700">Persoalan / Kebutuhan Demo</label>
-                                        <textarea rows="4" className="w-full bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-3 text-sm focus:border-violet-600 outline-none transition-colors" placeholder="Bisa detailkan apa kesulitan sistem Gudang Anda saat ini..."></textarea>
-                                    </div>
-                                    <button className="w-full bg-violet-600 hover:bg-violet-700 border-2 border-violet-600 text-white font-bold py-4 rounded-xl shadow-md transition-colors">
-                                        Kirim Segera
-                                    </button>
-                                </form>
-                            </div>
-                            
-                            {/* Maps Box */}
-                            <div className="bg-slate-200 relative min-h-[400px]">
-                                <MapContainer center={MAP_CENTER} zoom={13} scrollWheelZoom={false} className="w-full h-full absolute inset-0 z-10">
-                                    <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution='&copy; OpenStreetMap' />
-                                    <Marker position={MAP_CENTER}>
-                                        <Popup className="font-bold">
-                                            Kantor Pusat Petayu <br/> Jakarta, Indonesia.
-                                        </Popup>
-                                    </Marker>
-                                </MapContainer>
-                                
-                                {/* Info Box Over Map */}
-                                <div className="absolute top-6 right-6 z-[1000] bg-white/95 backdrop-blur-md p-6 rounded-2xl shadow-xl w-64 border border-slate-100">
-                                    <div className="mb-4">
-                                        <h4 className="font-black text-slate-900 mb-1">Jakarta Office</h4>
-                                        <p className="text-xs text-slate-500 font-medium">Jl. Jenderal Sudirman No.Kav 10-11, Jakarta Pusat, 10220</p>
-                                    </div>
-                                    <div className="space-y-3">
-                                        <div className="flex items-center gap-3 text-sm font-bold text-violet-600">
-                                            <div className="bg-violet-50 p-2 rounded-lg">
-                                                <Phone size={14}/>
-                                            </div>
-                                            +62 21 5555 0120
-                                        </div>
-                                        <div className="flex items-center gap-3 text-sm font-bold text-violet-600">
-                                            <div className="bg-violet-50 p-2 rounded-lg">
-                                                <Mail size={14}/>
-                                            </div>
-                                            info@petayu.id
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                {/* Solid CTA Section */}
+                <section className="relative bg-violet-900 pb-20 pt-10 lg:pb-28">
+                    {/* Smooth transition wave attached perfectly to the CTA */}
+                    <div className="absolute bottom-full inset-x-0 w-full overflow-hidden leading-none mb-[-1px]">
+                        <svg viewBox="0 0 1440 120" className="w-full h-[60px] md:h-[120px] fill-violet-900 block" preserveAspectRatio="none">
+                            <path d="M0,60 C320,120 420,0 740,60 C1060,120 1120,0 1440,60 L1440,120 L0,120 Z"></path>
+                        </svg>
                     </div>
+                    <Reveal className="mx-auto max-w-7xl px-6 lg:px-8 text-center">
+                        <h2 className="mx-auto max-w-2xl text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
+                            Siap mulai dengan alur yang lebih rapi?
+                        </h2>
+                        <p className="mx-auto mt-6 max-w-xl text-lg leading-8 text-violet-200">
+                            Daftar akun, pilih modul operasional, lalu tentukan Trial atau Paket Berbayar sesuai kebutuhan.
+                        </p>
+                        <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
+                            <Link href={route('register')} className="w-full sm:w-auto rounded-full bg-white px-8 py-4 text-base font-bold text-violet-900 shadow-lg hover:bg-slate-50 transition-colors">
+                                Buat Akun Operasional
+                            </Link>
+                            <Link href={route('login')} className="w-full sm:w-auto text-base font-semibold leading-6 text-white hover:text-violet-200 transition-colors py-4">
+                                Masuk ke Portal <span aria-hidden="true">→</span>
+                            </Link>
+                        </div>
+                    </Reveal>
                 </section>
             </main>
 
-            {/* --- LIGHT FOOTER --- */}
-            <footer className="bg-white pt-20 pb-10 text-slate-600">
-                <div className="mx-auto max-w-7xl px-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
-                        <div className="lg:col-span-1">
-                            <div className="flex items-center gap-2 mb-6">
-                                <img src="/images/logo_petayu.png" alt="Logo" className="h-8 w-auto" />
-                                <span className="text-2xl font-black text-slate-900">Petayu<span className="text-violet-600">.</span></span>
+            {!auth?.user && showStickyCta && (
+                <div className="fixed inset-x-0 bottom-4 z-[70] px-4">
+                    <div className="mx-auto flex w-full max-w-xl items-center gap-2 rounded-2xl border border-violet-200 bg-white/95 p-2 shadow-2xl backdrop-blur">
+                        <Link
+                            href={route('register')}
+                            className="inline-flex flex-1 items-center justify-center rounded-xl bg-violet-700 px-4 py-3 text-xs font-black uppercase tracking-wider text-white hover:bg-violet-800"
+                        >
+                            Daftar Trial 3 Hari
+                        </Link>
+                        <a
+                            href="#paket"
+                            className="inline-flex items-center justify-center rounded-xl border border-slate-200 px-4 py-3 text-xs font-black uppercase tracking-wider text-slate-700 hover:bg-slate-50"
+                        >
+                            Lihat Paket
+                        </a>
+                    </div>
+                </div>
+            )}
+
+            {/* Professional Footer */}
+            <footer className="relative bg-slate-950 pt-16 pb-8">
+                {/* Smooth wave connecting CTA to Footer */}
+                <div className="absolute bottom-full inset-x-0 w-full overflow-hidden leading-none mb-[-1px]">
+                    <svg viewBox="0 0 1440 120" className="w-full h-[40px] md:h-[80px] fill-slate-950 block" preserveAspectRatio="none">
+                        <path d="M0,60 C320,120 420,0 740,60 C1060,120 1120,0 1440,60 L1440,120 L0,120 Z"></path>
+                    </svg>
+                </div>
+
+                <div className="mx-auto max-w-7xl px-6 lg:px-8">
+                    <div className="xl:grid xl:grid-cols-3 xl:gap-8">
+                        <div className="space-y-6">
+                            <Link href="/" className="flex items-center gap-3">
+                                <img src="/images/logo_petayu.png" className="h-8 w-8 object-contain" alt="Petayu Logo" />
+                                <span className="text-xl font-extrabold tracking-tight text-white">Petayu WMS</span>
+                            </Link>
+                            <p className="text-sm leading-6 text-slate-400 max-w-xs">
+                                Sistem Peta Gudang berbasis Cloud dengan dukungan Kecerdasan Buatan (AI) terintegrasi untuk bisnis modern.
+                            </p>
+                        </div>
+                        <div className="mt-16 grid grid-cols-2 gap-8 xl:col-span-2 xl:mt-0">
+                            <div className="md:grid md:grid-cols-2 md:gap-8">
+                                <div>
+                                    <h3 className="text-sm font-bold text-white">Produk</h3>
+                                    <ul role="list" className="mt-6 space-y-4 text-sm text-slate-400">
+                                        <li><a href="#fitur" className="hover:text-white transition-colors">Manajemen Inventori</a></li>
+                                        <li><a href="#fitur" className="hover:text-white transition-colors">Petayu Driver App</a></li>
+                                        <li><a href="#fitur" className="hover:text-white transition-colors">Aether AI</a></li>
+                                    </ul>
+                                </div>
+                                <div className="mt-10 md:mt-0">
+                                    <h3 className="text-sm font-bold text-white">Sistem</h3>
+                                    <ul role="list" className="mt-6 space-y-4 text-sm text-slate-400">
+                                        <li><Link href={route('login')} className="hover:text-white transition-colors">Portal Login</Link></li>
+                                        <li><Link href={route('register')} className="hover:text-white transition-colors">Daftar Akun Baru</Link></li>
+                                        <li><a href="#paket" className="hover:text-white transition-colors">Paket & Harga</a></li>
+                                    </ul>
+                                </div>
                             </div>
-                            <p className="mb-6 text-sm leading-relaxed font-medium">Sistem manajemen pergudangan era baru. Mengkombinasikan fungsionalitas dan pelaporan WMS konvensional dengan kelincahan presisi digital masa kini.</p>
-                            <div className="flex gap-3">
-                                <a href="https://facebook.com" target="_blank" rel="noreferrer" className="w-10 h-10 rounded-full border-2 border-slate-100 flex items-center justify-center hover:border-violet-600 hover:text-violet-600 transition-colors"><Facebook size={18}/></a>
-                                <a href="https://twitter.com" target="_blank" rel="noreferrer" className="w-10 h-10 rounded-full border-2 border-slate-100 flex items-center justify-center hover:border-violet-600 hover:text-violet-600 transition-colors"><Twitter size={18}/></a>
-                                <a href="https://linkedin.com" target="_blank" rel="noreferrer" className="w-10 h-10 rounded-full border-2 border-slate-100 flex items-center justify-center hover:border-violet-600 hover:text-violet-600 transition-colors"><Linkedin size={18}/></a>
-                                <a href="https://instagram.com" target="_blank" rel="noreferrer" className="w-10 h-10 rounded-full border-2 border-slate-100 flex items-center justify-center hover:border-violet-600 hover:text-violet-600 transition-colors"><Instagram size={18}/></a>
+                            <div className="md:grid md:grid-cols-2 md:gap-8">
+                                <div>
+                                    <h3 className="text-sm font-bold text-white">Keamanan</h3>
+                                    <ul role="list" className="mt-6 space-y-4 text-sm text-slate-400">
+                                        <li className="flex items-center gap-2"><ShieldCheck className="h-4 w-4 text-violet-500" /> Role-Based Access</li>
+                                        <li className="flex items-center gap-2"><Users2 className="h-4 w-4 text-violet-500" /> Log Aktivitas</li>
+                                        <li className="flex items-center gap-2"><Cloud className="h-4 w-4 text-violet-500" /> Cloud Backups</li>
+                                    </ul>
+                                </div>
                             </div>
-                        </div>
-                        
-                        <div>
-                            <h4 className="text-slate-900 font-bold mb-6">Sistem Kami</h4>
-                            <ul className="space-y-3 text-sm font-semibold text-slate-500">
-                                <li><a href="#features" className="hover:text-violet-600 transition-colors">Core Inventory</a></li>
-                                <li><a href="#solutions" className="hover:text-violet-600 transition-colors">Petayu Analytics</a></li>
-                                <li><a href="#features" className="hover:text-violet-600 transition-colors">App Driver & Kurir</a></li>
-                                <li><a href="#stats" className="hover:text-violet-600 transition-colors">Laporan Otomatis</a></li>
-                            </ul>
-                        </div>
-                        
-                        <div>
-                            <h4 className="text-slate-900 font-bold mb-6">Korporat</h4>
-                            <ul className="space-y-3 text-sm font-semibold text-slate-500">
-                                <li><a href="#home" className="hover:text-violet-600 transition-colors">Tentang Tim</a></li>
-                                <li><a href="#contact" className="hover:text-violet-600 transition-colors">Harga & Layanan</a></li>
-                                <li><a href="#contact" className="hover:text-violet-600 transition-colors">Pusat Karir</a></li>
-                                <li><a href="#contact" className="hover:text-violet-600 transition-colors">Kontak Langsung</a></li>
-                            </ul>
-                        </div>
-                        
-                        <div>
-                            <h4 className="text-slate-900 font-bold mb-6">Dapatkan Akses Rilis Baru</h4>
-                            <p className="text-sm mb-4 font-semibold text-slate-500">Jangan lewatkan informasi seputar pembaruan API mingguan kami.</p>
-                            <form className="flex" onSubmit={e => e.preventDefault()}>
-                                <input type="email" placeholder="Email.." className="w-full bg-slate-50 border-2 border-slate-200 border-r-0 rounded-l-xl px-4 py-3 text-sm focus:border-violet-600 outline-none transition-colors" />
-                                <button className="bg-violet-600 text-white px-5 py-3 font-bold rounded-r-xl border-2 border-violet-600 hover:bg-violet-700 transition-colors">Daftar</button>
-                            </form>
                         </div>
                     </div>
-                    
-                    <div className="pt-8 border-t border-slate-200 flex flex-col md:flex-row justify-between items-center text-sm font-bold text-slate-400">
-                        <p>© 2026 Hak Cipta Dilindungi Petayu Indonesia.</p>
-                        <div className="flex gap-6 mt-4 md:mt-0">
-                            <a href="#contact" className="hover:text-violet-600 transition-colors">Kebijakan Privasi</a>
-                            <a href="#contact" className="hover:text-violet-600 transition-colors">Syarat Penggunaan</a>
-                        </div>
+                    <div className="mt-16 border-t border-slate-800 pt-8 sm:mt-20 lg:mt-24 text-center sm:text-left">
+                        <p className="text-xs leading-5 text-slate-500">
+                            &copy; {new Date().getFullYear()} Petayu, Inc. Hak Cipta Dilindungi Undang-Undang.
+                        </p>
                     </div>
                 </div>
             </footer>

@@ -24,11 +24,20 @@ class StockTransferController extends Controller
 {
     use HandlesStockSync;
 
+    private function resolveOperationalWarehouse(Request $request): Warehouse
+    {
+        $tenantId = (int) ($request->user()?->tenant_id ?? 0);
+        abort_unless($tenantId > 0, 403, 'Akun belum terhubung ke tenant.');
+
+        return Warehouse::with(['zones.racks.rackStocks.product:id,sku,name'])
+            ->where('tenant_id', $tenantId)
+            ->orderBy('id')
+            ->firstOrFail();
+    }
+
     public function index(): Response
     {
-        $warehouse = Warehouse::with([
-            'zones.racks.rackStocks.product:id,sku,name',
-        ])->orderBy('id')->firstOrFail();
+        $warehouse = $this->resolveOperationalWarehouse(request());
 
         $racks = $warehouse->zones
             ->flatMap(fn ($zone) => $zone->racks->map(function (Rack $rack) use ($zone) {
@@ -100,6 +109,9 @@ class StockTransferController extends Controller
                 ]),
             ]);
 
+        $hasRacks = $racks->isNotEmpty();
+        $hasProducts = Product::exists();
+
         return Inertia::render('RackAllocation', [
             'warehouse' => [
                 'id' => $warehouse->id,
@@ -112,13 +124,15 @@ class StockTransferController extends Controller
             'can_create' => Gate::check('create-stockTransfer'),
             'can_approve' => Gate::check('approve-stockTransfer'),
             'status' => session('status'),
+            'has_racks' => $hasRacks,
+            'has_products' => $hasProducts,
         ]);
     }
 
     public function store(Request $request): RedirectResponse
     {
         Gate::authorize('create-stockTransfer');
-        $warehouse = Warehouse::orderBy('id')->firstOrFail();
+        $warehouse = $this->resolveOperationalWarehouse($request);
 
         $data = $request->validate([
             'from_rack_id' => ['nullable', 'exists:racks,id'],
@@ -128,6 +142,13 @@ class StockTransferController extends Controller
             'notes' => ['nullable', 'string'],
             'type' => ['nullable', 'in:transfer,putaway'],
         ]);
+
+        $productExists = Product::query()->where('id', (int) $data['product_id'])->exists();
+        if (!$productExists) {
+            throw ValidationException::withMessages([
+                'product_id' => 'Produk tidak valid untuk tenant Anda.',
+            ]);
+        }
 
         $isPutaway = ($data['type'] ?? '') === 'putaway' || empty($data['from_rack_id']);
 
@@ -234,7 +255,9 @@ class StockTransferController extends Controller
             }
         });
 
-        $statusMsg = ($isPutaway || ($isManager ?? false)) ? 'Transfer selesai. Stok sudah dipindahkan.' : 'Transfer dibuat. Menunggu persetujuan supervisor/manager.';
+        $currentRole = strtolower((string) ($request->user()?->role?->name ?? ''));
+        $isManager = str_contains($currentRole, 'manager') || str_contains($currentRole, 'admin gudang') || str_contains($currentRole, 'manajer');
+        $statusMsg = ($isPutaway || $isManager) ? 'Transfer selesai. Stok sudah dipindahkan.' : 'Transfer dibuat. Menunggu persetujuan supervisor/manager.';
         return redirect()->route('rack.allocation')->with('status', $statusMsg);
     }
 
@@ -285,7 +308,7 @@ class StockTransferController extends Controller
             'generatedAt' => now(),
         ])->setPaper('a4', 'portrait');
 
-        return $pdf->download('Stock_Transfer_'.$stockTransfer->transfer_number.'.pdf');
+        return $pdf->download('Pindah_Rak_'.$stockTransfer->transfer_number.'.pdf');
     }
 
     private function documentPayload(StockTransfer $stockTransfer): array
@@ -300,7 +323,7 @@ class StockTransferController extends Controller
         ]);
 
         return [
-            'title' => 'Transfer Rack',
+            'title' => 'Pindah Rak',
             'subtitle' => 'Dokumen perpindahan stok internal dalam satu warehouse',
             'number' => $stockTransfer->transfer_number,
             'status' => ucfirst($stockTransfer->status ?? 'completed'),
@@ -320,8 +343,8 @@ class StockTransferController extends Controller
             'columns' => [
                 ['key' => 'product', 'label' => 'Produk'],
                 ['key' => 'sku', 'label' => 'SKU'],
-                ['key' => 'from_rack', 'label' => 'Rack Asal'],
-                ['key' => 'to_rack', 'label' => 'Rack Tujuan'],
+                ['key' => 'from_rack', 'label' => 'Rak Asal'],
+                ['key' => 'to_rack', 'label' => 'Rak Tujuan'],
                 ['key' => 'quantity', 'label' => 'Qty', 'align' => 'right'],
             ],
             'rows' => $stockTransfer->items->map(fn (StockTransferItem $item) => [

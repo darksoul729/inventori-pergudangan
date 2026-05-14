@@ -2,10 +2,13 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToTenant;
 use Illuminate\Database\Eloquent\Model;
 
 class Shipment extends Model
 {
+    use BelongsToTenant;
+
     public const TRACKING_STAGES = [
         'ready_for_pickup',
         'picked_up',
@@ -15,6 +18,7 @@ class Shipment extends Model
     ];
 
     protected $fillable = [
+        'tenant_id',
         'shipment_id',
         'origin',
         'origin_name',

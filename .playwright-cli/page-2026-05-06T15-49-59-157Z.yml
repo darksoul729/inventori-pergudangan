@@ -1,0 +1,354 @@
+- generic [ref=e3]:
+  - generic [ref=e4]:
+    - button [ref=e5] [cursor=pointer]:
+      - img [ref=e6]
+    - generic [ref=e8]:
+      - generic [ref=e9]:
+        - img "Logo PETAYU" [ref=e11]
+        - generic [ref=e12]:
+          - heading "PETAYU" [level=1] [ref=e13]
+          - paragraph [ref=e14]: SMART STORAGE, SMOOTH FLOW
+      - navigation [ref=e15]:
+        - link "Dasbor" [ref=e16] [cursor=pointer]:
+          - /url: /dashboard
+          - img [ref=e17]
+          - generic [ref=e22]: Dasbor
+        - link "Bantuan AI" [ref=e23] [cursor=pointer]:
+          - /url: /petayu-ai
+          - img [ref=e24]
+          - generic [ref=e27]: Bantuan AI
+        - generic [ref=e28]:
+          - button "Operasional Gudang" [ref=e29] [cursor=pointer]:
+            - generic [ref=e30]:
+              - img [ref=e31]
+              - generic [ref=e34]: Operasional Gudang
+            - img [ref=e36]
+          - generic [ref=e39]:
+            - link "Layout Gudang" [ref=e40] [cursor=pointer]:
+              - /url: /warehouse
+              - generic [ref=e41]: Layout Gudang
+            - link "Pindah Rak" [ref=e42] [cursor=pointer]:
+              - /url: /rack-allocation
+              - generic [ref=e43]: Pindah Rak
+            - link "Cek Stok" [ref=e44] [cursor=pointer]:
+              - /url: /stock-opname
+              - generic [ref=e45]: Cek Stok
+        - link "Stok Barang" [ref=e46] [cursor=pointer]:
+          - /url: /inventory
+          - img [ref=e47]
+          - generic [ref=e57]: Stok Barang
+        - generic [ref=e58]:
+          - button "Pembelian" [ref=e59] [cursor=pointer]:
+            - generic [ref=e60]:
+              - img [ref=e61]
+              - generic [ref=e65]: Pembelian
+            - img [ref=e67]
+          - generic [ref=e70]:
+            - link "Order Beli" [ref=e71] [cursor=pointer]:
+              - /url: /purchase-orders
+              - generic [ref=e72]: Order Beli
+            - link "Pemasok" [ref=e73] [cursor=pointer]:
+              - /url: /supplier
+              - generic [ref=e74]: Pemasok
+            - link "Tagihan" [ref=e75] [cursor=pointer]:
+              - /url: /tagihan
+              - generic [ref=e76]: Tagihan
+        - generic [ref=e77]:
+          - button "Riwayat" [ref=e78] [cursor=pointer]:
+            - generic [ref=e79]:
+              - img [ref=e80]
+              - generic [ref=e83]: Riwayat
+            - img [ref=e85]
+          - generic [ref=e88]:
+            - link "Riwayat Stok" [ref=e89] [cursor=pointer]:
+              - /url: /transaction
+              - generic [ref=e90]: Riwayat Stok
+            - link "Dokumen" [ref=e91] [cursor=pointer]:
+              - /url: /wms-documents
+              - generic [ref=e92]: Dokumen
+        - generic [ref=e93]:
+          - button "Pengiriman" [ref=e94] [cursor=pointer]:
+            - generic [ref=e95]:
+              - img [ref=e96]
+              - generic [ref=e101]: Pengiriman
+            - img [ref=e103]
+          - generic [ref=e106]:
+            - link "Pengiriman" [ref=e107] [cursor=pointer]:
+              - /url: /shipments
+              - generic [ref=e108]: Pengiriman
+            - link "Driver" [ref=e109] [cursor=pointer]:
+              - /url: /drivers
+              - generic [ref=e110]: Driver
+        - generic [ref=e111]:
+          - button "Sistem" [ref=e112] [cursor=pointer]:
+            - generic [ref=e113]:
+              - img [ref=e114]
+              - generic [ref=e117]: Sistem
+            - img [ref=e119]
+          - generic [ref=e122]:
+            - link "Laporan" [ref=e123] [cursor=pointer]:
+              - /url: /reports
+              - generic [ref=e124]: Laporan
+            - link "Pengaturan" [ref=e125] [cursor=pointer]:
+              - /url: /settings
+              - generic [ref=e126]: Pengaturan
+        - generic [ref=e127]:
+          - button "Bantuan" [ref=e128] [cursor=pointer]:
+            - generic [ref=e129]:
+              - img [ref=e130]
+              - generic [ref=e133]: Bantuan
+            - img [ref=e134]
+          - generic [ref=e136]:
+            - link "Tanya Tim" [ref=e137] [cursor=pointer]:
+              - /url: /help/live-support
+            - link "Cara Pakai" [ref=e138] [cursor=pointer]:
+              - /url: /help/documentation
+  - generic [ref=e139]:
+    - banner [ref=e140]:
+      - generic [ref=e141]:
+        - generic [ref=e142]:
+          - img [ref=e143]
+          - textbox "Cari..." [ref=e146]
+        - generic [ref=e151]: "Sistem Inti: Operasional"
+      - generic [ref=e152]:
+        - generic [ref=e153]:
+          - link "4" [ref=e154] [cursor=pointer]:
+            - /url: /notifications
+            - img [ref=e156]
+            - generic [ref=e161]: "4"
+          - link [ref=e162] [cursor=pointer]:
+            - /url: /help/live-support
+            - img [ref=e164]
+        - generic [ref=e170] [cursor=pointer]:
+          - generic [ref=e171]:
+            - generic [ref=e172]: Rizky Pratama
+            - generic [ref=e173]: Manager Gudang
+          - generic [ref=e174]: R
+    - navigation [ref=e175]:
+      - link "Beranda" [ref=e176] [cursor=pointer]:
+        - /url: /dashboard
+        - img [ref=e177]
+        - generic [ref=e182]: Beranda
+      - img [ref=e183]
+      - link "Pengiriman" [ref=e185] [cursor=pointer]:
+        - /url: /shipments
+      - img [ref=e186]
+      - generic [ref=e188]: Create
+    - generic [ref=e190]:
+      - generic [ref=e191]: "Aksi Cepat:"
+      - link "Pengiriman" [ref=e192] [cursor=pointer]:
+        - /url: /shipments/create
+        - img [ref=e193]
+        - generic [ref=e198]: Pengiriman
+    - main [ref=e199]:
+      - generic [ref=e201]:
+        - generic [ref=e202]:
+          - generic [ref=e203]:
+            - link [ref=e204] [cursor=pointer]:
+              - /url: http://127.0.0.1:8000/shipments
+              - img [ref=e205]
+            - generic [ref=e207]:
+              - heading "Tambah Pengiriman Baru" [level=1] [ref=e208]
+              - paragraph [ref=e209]: Isi asal, tujuan, dan koordinat dengan cara yang paling nyaman.
+          - generic [ref=e210]: Form ini sengaja dipisah ke halaman khusus supaya tidak kepanjangan di modal.
+        - generic [ref=e211]:
+          - generic [ref=e212]:
+            - generic [ref=e213]:
+              - generic [ref=e214]: ID Pengiriman
+              - textbox "Akan dibuat otomatis saat disimpan" [disabled] [ref=e215]
+              - paragraph [ref=e216]: Nomor pengiriman di-generate sistem setelah Anda klik simpan.
+            - generic [ref=e217]:
+              - generic [ref=e218]:
+                - generic [ref=e219]:
+                  - generic [ref=e220]: Asal (Origin) — Gudang Utama
+                  - paragraph [ref=e221]: Pengiriman selalu berasal dari gudang utama Samarinda.
+                - generic [ref=e222]: Fixed
+              - generic [ref=e223]:
+                - generic [ref=e224]:
+                  - generic [ref=e225]: Kode
+                  - generic [ref=e226]: SMD
+                - generic [ref=e227]:
+                  - generic [ref=e228]: Nama Gudang
+                  - generic [ref=e229]: Gudang Samarinda, Kaltim
+                - generic [ref=e230]:
+                  - generic [ref=e231]: Koordinat
+                  - generic [ref=e232]: "-0.4948, 117.1436"
+            - generic [ref=e233]:
+              - generic [ref=e234]:
+                - generic [ref=e235]:
+                  - generic [ref=e236]: Data Tujuan (Destination)
+                  - paragraph [ref=e237]: Cari kota cepat, klik peta, atau isi koordinat manual.
+                - generic [ref=e238]: Koordinat siap
+              - generic [ref=e239]:
+                - button "Cari Kota" [ref=e240] [cursor=pointer]:
+                  - img [ref=e241]
+                  - generic [ref=e244]: Cari Kota
+                - button "Pin Map" [ref=e245] [cursor=pointer]:
+                  - img [ref=e246]
+                  - generic [ref=e250]: Pin Map
+                - button "Manual" [ref=e251] [cursor=pointer]:
+                  - img [ref=e252]
+                  - generic [ref=e254]: Manual
+              - generic [ref=e255]:
+                - textbox "Kode lokasi" [ref=e256]: BPN
+                - textbox "Nama kota / gudang / alamat" [ref=e257]: Balikpapan, Kaltim
+              - generic [ref=e258]:
+                - generic [ref=e259]:
+                  - img [ref=e260]
+                  - textbox "Cari kota, kode bandara, atau hub" [ref=e263]
+                - generic [ref=e264]:
+                  - button "Samarinda, Kaltim SMD Lat -0.4948 Lng 117.1436" [ref=e265] [cursor=pointer]:
+                    - generic [ref=e266]:
+                      - generic [ref=e267]:
+                        - generic [ref=e268]: Samarinda, Kaltim
+                        - generic [ref=e269]: SMD
+                      - generic [ref=e270]:
+                        - generic [ref=e271]: Lat -0.4948
+                        - generic [ref=e272]: Lng 117.1436
+                  - button "Balikpapan, Kaltim BPN Lat -1.2654 Lng 116.8312" [ref=e273] [cursor=pointer]:
+                    - generic [ref=e274]:
+                      - generic [ref=e275]:
+                        - generic [ref=e276]: Balikpapan, Kaltim
+                        - generic [ref=e277]: BPN
+                      - generic [ref=e278]:
+                        - generic [ref=e279]: Lat -1.2654
+                        - generic [ref=e280]: Lng 116.8312
+                  - button "Bontang, Kaltim BXT Lat 0.1333 Lng 117.4833" [ref=e281] [cursor=pointer]:
+                    - generic [ref=e282]:
+                      - generic [ref=e283]:
+                        - generic [ref=e284]: Bontang, Kaltim
+                        - generic [ref=e285]: BXT
+                      - generic [ref=e286]:
+                        - generic [ref=e287]: Lat 0.1333
+                        - generic [ref=e288]: Lng 117.4833
+                  - button "Tenggarong, Kaltim TGR Lat -0.4167 Lng 116.9833" [ref=e289] [cursor=pointer]:
+                    - generic [ref=e290]:
+                      - generic [ref=e291]:
+                        - generic [ref=e292]: Tenggarong, Kaltim
+                        - generic [ref=e293]: TGR
+                      - generic [ref=e294]:
+                        - generic [ref=e295]: Lat -0.4167
+                        - generic [ref=e296]: Lng 116.9833
+                  - button "Sangatta, Kaltim SGQ Lat 0.5167 Lng 117.55" [ref=e297] [cursor=pointer]:
+                    - generic [ref=e298]:
+                      - generic [ref=e299]:
+                        - generic [ref=e300]: Sangatta, Kaltim
+                        - generic [ref=e301]: SGQ
+                      - generic [ref=e302]:
+                        - generic [ref=e303]: Lat 0.5167
+                        - generic [ref=e304]: Lng 117.55
+                  - button "Tarakan, Kaltara TRK Lat 3.3 Lng 117.5833" [ref=e305] [cursor=pointer]:
+                    - generic [ref=e306]:
+                      - generic [ref=e307]:
+                        - generic [ref=e308]: Tarakan, Kaltara
+                        - generic [ref=e309]: TRK
+                      - generic [ref=e310]:
+                        - generic [ref=e311]: Lat 3.3
+                        - generic [ref=e312]: Lng 117.5833
+                  - button "Banjarmasin, Kalsel BJM Lat -3.4434 Lng 114.8361" [ref=e313] [cursor=pointer]:
+                    - generic [ref=e314]:
+                      - generic [ref=e315]:
+                        - generic [ref=e316]: Banjarmasin, Kalsel
+                        - generic [ref=e317]: BJM
+                      - generic [ref=e318]:
+                        - generic [ref=e319]: Lat -3.4434
+                        - generic [ref=e320]: Lng 114.8361
+                  - button "Palangkaraya, Kalteng PKY Lat -2.2083 Lng 113.9167" [ref=e321] [cursor=pointer]:
+                    - generic [ref=e322]:
+                      - generic [ref=e323]:
+                        - generic [ref=e324]: Palangkaraya, Kalteng
+                        - generic [ref=e325]: PKY
+                      - generic [ref=e326]:
+                        - generic [ref=e327]: Lat -2.2083
+                        - generic [ref=e328]: Lng 113.9167
+              - generic [ref=e329]: "Lat menunjukkan posisi utara atau selatan.Lng menunjukkan posisi timur atau barat. Contoh Samarinda: Lat -0.4948,Lng 117.1436."
+          - generic [ref=e330]:
+            - generic [ref=e331]:
+              - generic [ref=e332]: Detail Pengiriman
+              - generic [ref=e333]:
+                - generic [ref=e334]:
+                  - generic [ref=e335]: Estimasi Tiba
+                  - textbox [ref=e336]
+                - generic [ref=e337]:
+                  - generic [ref=e338]: Tahap Tracking
+                  - combobox [ref=e339]:
+                    - option "Siap Diambil" [selected]
+                    - option "Sudah Diambil"
+                    - option "Dalam Perjalanan"
+                    - option "Sampai Gudang Tujuan"
+                - generic [ref=e340]:
+                  - generic [ref=e341]: Jenis Kargo
+                  - combobox [ref=e342]:
+                    - option "Darat" [selected]
+                    - option "Laut"
+                    - option "Udara"
+                - generic [ref=e343]:
+                  - generic [ref=e344]: Tugaskan Driver
+                  - combobox [ref=e345]:
+                    - option "Pilih Driver (Opsional)" [selected]
+                    - option "Ahmad Nurdin (SIBUK)" [disabled]
+                    - option "Budi Santoso (SIBUK)" [disabled]
+                    - option "Andi Prakoso"
+                    - option "Citra Lestari"
+                    - option "Eko Wibowo"
+            - generic [ref=e346]:
+              - generic [ref=e347]:
+                - generic [ref=e348]: Barang Dikirim
+                - button "+ Tambah Item" [active] [ref=e349] [cursor=pointer]
+              - generic [ref=e389]:
+                - generic [ref=e390]:
+                  - generic [ref=e391]: "Item #1"
+                  - button "Hapus" [ref=e392] [cursor=pointer]
+                - generic [ref=e393]:
+                  - generic [ref=e394]:
+                    - generic [ref=e395]: Produk dari Katalog
+                    - combobox [ref=e396]:
+                      - option "Pilih produk atau isi manual"
+                      - 'option "HZ-SOL88 — Drum Kimia Solvent (stok gudang: 760 | stok rack: 760)"'
+                      - 'option "HP-CBL24 — Kabel Industri 24m (stok gudang: 1062 | stok rack: 1062)"'
+                      - 'option "MERANTI-M02-MANUAL — KAYU MERANTI 4M (INPUT MANUAL) (stok gudang: 0 | stok rack: 0)"'
+                      - 'option "ULIN-E46-4000x50x25 — KAYU ULIN 4M x 5CM x 2.5CM (stok gudang: 0 | stok rack: 0)"'
+                      - 'option "HP-AX900 — Modul Sensor AX900 (stok gudang: 1350 | stok rack: 1350)" [selected]'
+                      - 'option "CD-DOCK1 — Paket Cross Dock (stok gudang: 210 | stok rack: 210)"'
+                      - 'option "EL-PCB77 — Papan Kontrol PCB (stok gudang: 990 | stok rack: 990)"'
+                      - 'option "BK-PLT55 — Resin Curah Pallet (stok gudang: 1005 | stok rack: 1005)"'
+                    - generic [ref=e412]: "Sumber rack/zone: ZONE A-A1-A12 (585), ZONE A-A13-A24 (440), ZONE C-C-SHELF (325)"
+                  - generic [ref=e397]:
+                    - generic [ref=e398]: Nama Produk *
+                    - textbox [ref=e399]: Modul Sensor AX900
+                  - generic [ref=e400]:
+                    - generic [ref=e401]: SKU
+                    - textbox [ref=e402]: HP-AX900
+                  - generic [ref=e403]:
+                    - generic [ref=e404]: Jumlah *
+                    - spinbutton [ref=e405]: "1"
+                  - generic [ref=e406]:
+                    - generic [ref=e407]: Satuan
+                    - textbox [ref=e408]: box
+                  - generic [ref=e409]:
+                    - generic [ref=e410]: Berat (kg)
+                    - spinbutton [ref=e411]
+            - generic [ref=e355]:
+              - generic [ref=e356]: Ringkasan Lokasi
+              - generic [ref=e357]:
+                - generic [ref=e358]:
+                  - generic [ref=e359]: Asal
+                  - generic [ref=e360]: Gudang Samarinda, Kaltim
+                  - generic [ref=e361]: "-0.4948, 117.1436"
+                - generic [ref=e362]:
+                  - generic [ref=e363]: Tujuan
+                  - generic [ref=e364]: Balikpapan, Kaltim
+                  - generic [ref=e365]: "-1.2654, 116.8312"
+            - generic [ref=e366]:
+              - link "Batal" [ref=e367] [cursor=pointer]:
+                - /url: http://127.0.0.1:8000/shipments
+              - button "Buat Pengiriman" [ref=e368] [cursor=pointer]:
+                - generic [ref=e369]:
+                  - img [ref=e370]
+                  - text: Buat Pengiriman
+  - button "Buka PETAYU AI" [ref=e374] [cursor=pointer]:
+    - generic [ref=e375]:
+      - generic [ref=e378]:
+        - img [ref=e380]
+        - img [ref=e386]
+      - generic: ✦ PETAYU AI

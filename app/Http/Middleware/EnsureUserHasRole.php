@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
+use App\Models\TenantSubscription;
 use Symfony\Component\HttpFoundation\Response;
 
 class EnsureUserHasRole
@@ -18,6 +19,20 @@ class EnsureUserHasRole
 
         if ($user->status !== 'active') {
             abort(403, 'Akun Anda tidak aktif.');
+        }
+
+        if ($user->tenant_id) {
+            $subscriptionStatus = TenantSubscription::query()
+                ->where('tenant_id', $user->tenant_id)
+                ->latest('id')
+                ->value('status');
+
+            if ($subscriptionStatus === 'canceled') {
+                $allowed = $request->is('settings', 'settings/*', 'profile', 'profile/*', 'logout');
+                if (!$allowed) {
+                    abort(403, 'Langganan tenant Anda tidak aktif. Silakan perpanjang paket di pengaturan.');
+                }
+            }
         }
 
         $currentRole = $this->normalizeRole($user->role?->name);
@@ -41,6 +56,15 @@ class EnsureUserHasRole
         }
 
         $value = strtolower($roleName);
+
+        if (
+            str_contains($value, 'admin sistem')
+            || str_contains($value, 'admin system')
+            || str_contains($value, 'super admin')
+            || str_contains($value, 'system_admin')
+        ) {
+            return 'system_admin';
+        }
 
         if (str_contains($value, 'admin gudang') || str_contains($value, 'manager') || str_contains($value, 'manajer')) {
             return 'manager';

@@ -1,4 +1,5 @@
 import DashboardLayout from '@/Layouts/DashboardLayout';
+import CustomDropdown from '@/Components/CustomDropdown';
 import { Head, Link, useForm } from '@inertiajs/react';
 import React, { useEffect, useState } from 'react';
 import { MapContainer, Marker, TileLayer, useMapEvents } from 'react-leaflet';
@@ -8,8 +9,8 @@ import { ChevronLeft, Crosshair, MapPinned, Save, Search } from 'lucide-react';
 
 const LOCATION_INPUT_MODES = [
     { id: 'city', label: 'Cari Kota', icon: Search },
-    { id: 'map', label: 'Pin Map', icon: MapPinned },
-    { id: 'manual', label: 'Manual', icon: Crosshair },
+    { id: 'map', label: 'Pilih di Peta', icon: MapPinned },
+    { id: 'manual', label: 'Isi Manual', icon: Crosshair },
 ];
 
 const TRACKING_STAGE_OPTIONS = [
@@ -22,7 +23,7 @@ const TRACKING_STAGE_OPTIONS = [
 const pickerIcon = new L.DivIcon({
     className: 'shipment-location-picker',
     html: `
-        <div style="width:18px;height:18px;border-radius:999px;background:#5932C9;border:3px solid #ffffff;box-shadow:0 6px 18px rgba(89,50,201,.35);"></div>
+        <div style="width:18px;height:18px;border-radius:999px;background:#5B33CC;border:3px solid #ffffff;box-shadow:0 6px 18px rgba(89,50,201,.35);"></div>
     `,
     iconSize: [18, 18],
     iconAnchor: [9, 9],
@@ -115,6 +116,8 @@ export default function CreateShipment({ drivers = [], products = [] }) {
     const [destinationMode, setDestinationMode] = useState('city');
     const [originSearch, setOriginSearch] = useState('');
     const [destinationSearch, setDestinationSearch] = useState('');
+    const [step, setStep] = useState(1);
+    const [stepError, setStepError] = useState('');
 
     const { data, setData, post, processing, errors } = useForm({
         origin: WAREHOUSE_ORIGIN.code,
@@ -218,7 +221,7 @@ export default function CreateShipment({ drivers = [], products = [] }) {
                 <div className="flex items-center justify-between gap-3">
                     <div>
                         <div className="text-[10px] font-black uppercase tracking-[0.24em] text-slate-500">{title}</div>
-                        <p className="mt-1 text-[13px] font-semibold text-slate-500">Cari kota cepat, klik peta, atau isi koordinat manual.</p>
+                        <p className="mt-1 text-[13px] font-semibold text-slate-500">Cari kota cepat, pilih titik di peta, atau isi koordinat manual.</p>
                     </div>
                     <span className="rounded-full bg-white px-3 py-1 text-[10px] font-black text-indigo-600 border border-indigo-100">
                         {latValue && lngValue ? 'Koordinat siap' : 'Belum dipilih'}
@@ -273,7 +276,7 @@ export default function CreateShipment({ drivers = [], products = [] }) {
                             <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" strokeWidth={2.1} />
                             <input
                                 type="text"
-                                placeholder="Cari kota, kode bandara, atau hub"
+                                placeholder="Cari kota atau kode lokasi"
                                 className="w-full rounded-2xl border border-gray-200 bg-white py-3 pl-11 pr-4 text-[13px] font-semibold text-slate-700"
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
@@ -312,7 +315,7 @@ export default function CreateShipment({ drivers = [], products = [] }) {
                         <input
                             type="number"
                             step="any"
-                            placeholder="Latitude / Lat"
+                            placeholder="Koordinat Utara/Selatan (Lat)"
                             className="px-4 py-3 border border-gray-200 rounded-2xl text-[12px] font-bold"
                             value={latValue}
                             onChange={(e) => setData(isOrigin ? 'origin_lat' : 'dest_lat', e.target.value)}
@@ -320,7 +323,7 @@ export default function CreateShipment({ drivers = [], products = [] }) {
                         <input
                             type="number"
                             step="any"
-                            placeholder="Longitude / Lng"
+                            placeholder="Koordinat Timur/Barat (Lng)"
                             className="px-4 py-3 border border-gray-200 rounded-2xl text-[12px] font-bold"
                             value={lngValue}
                             onChange={(e) => setData(isOrigin ? 'origin_lng' : 'dest_lng', e.target.value)}
@@ -343,9 +346,37 @@ export default function CreateShipment({ drivers = [], products = [] }) {
         post(route('shipments.store'));
     };
 
+    const goNextStep = () => {
+        if (step === 1) {
+            if (!data.destination || !data.destination_name || !data.dest_lat || !data.dest_lng) {
+                setStepError('Lengkapi tujuan pengiriman dan koordinat terlebih dahulu.');
+                return;
+            }
+        }
+
+        if (step === 2) {
+            if (!data.estimated_arrival) {
+                setStepError('Isi estimasi tiba terlebih dahulu.');
+                return;
+            }
+            if (!data.items.length) {
+                setStepError('Tambahkan minimal 1 item barang pengiriman.');
+                return;
+            }
+            const invalidItem = data.items.some((item) => !item.product_name || Number(item.quantity) <= 0);
+            if (invalidItem) {
+                setStepError('Lengkapi nama produk dan jumlah item dengan benar.');
+                return;
+            }
+        }
+
+        setStepError('');
+        setStep((prev) => Math.min(prev + 1, 3));
+    };
+
     return (
         <DashboardLayout contentClassName="w-full max-w-[1600px] mx-auto">
-            <Head title="Tambah Pengiriman" />
+            <Head title="Buat Pengiriman" />
 
             <div className="space-y-8 p-6 md:p-8">
                 <div className="flex flex-col gap-4 rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm md:flex-row md:items-center md:justify-between">
@@ -357,16 +388,28 @@ export default function CreateShipment({ drivers = [], products = [] }) {
                             <ChevronLeft className="h-5 w-5" strokeWidth={2.2} />
                         </Link>
                         <div>
-                            <h1 className="text-[28px] font-black tracking-tight text-slate-900">Tambah Pengiriman Baru</h1>
+                            <h1 className="text-[28px] font-black tracking-tight text-slate-900">Buat Pengiriman Baru</h1>
                             <p className="mt-1 text-[14px] font-semibold text-slate-500">
                                 Isi asal, tujuan, dan koordinat dengan cara yang paling nyaman.
                             </p>
                         </div>
                     </div>
                     <div className="rounded-2xl border border-indigo-100 bg-indigo-50 px-4 py-3 text-[12px] font-semibold text-indigo-700">
-                        Form ini sengaja dipisah ke halaman khusus supaya tidak kepanjangan di modal.
+                        Langkah {step} dari 3
                     </div>
                 </div>
+
+                <div className="grid grid-cols-3 gap-2">
+                    <div className={`rounded-lg border px-3 py-2 text-center text-xs font-bold ${step >= 1 ? 'border-violet-500 text-violet-700 bg-violet-50' : 'border-slate-200 text-slate-500'}`}>1. Tujuan</div>
+                    <div className={`rounded-lg border px-3 py-2 text-center text-xs font-bold ${step >= 2 ? 'border-violet-500 text-violet-700 bg-violet-50' : 'border-slate-200 text-slate-500'}`}>2. Detail & Item</div>
+                    <div className={`rounded-lg border px-3 py-2 text-center text-xs font-bold ${step >= 3 ? 'border-violet-500 text-violet-700 bg-violet-50' : 'border-slate-200 text-slate-500'}`}>3. Review</div>
+                </div>
+
+                {stepError && (
+                    <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-700">
+                        {stepError}
+                    </div>
+                )}
 
                 <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-8 xl:grid-cols-[1.15fr_0.85fr]">
                     <div className="space-y-6">
@@ -382,6 +425,8 @@ export default function CreateShipment({ drivers = [], products = [] }) {
                             <p className="mt-2 text-[11px] font-semibold text-slate-500">Nomor pengiriman di-generate sistem setelah Anda klik simpan.</p>
                         </div>
 
+                        {step === 1 && (
+                        <>
                         {/* Origin locked to warehouse */}
                         <div className="rounded-[28px] border bg-indigo-50/40 border-indigo-100/70 p-6 space-y-4">
                             <div className="flex items-center justify-between gap-3">
@@ -420,9 +465,13 @@ export default function CreateShipment({ drivers = [], products = [] }) {
                             latValue: data.dest_lat,
                             lngValue: data.dest_lng,
                         })}
+                        </>
+                        )}
                     </div>
 
                     <div className="space-y-6">
+                        {step === 2 && (
+                        <>
                         <div className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
                             <div className="mb-5 text-[10px] font-black uppercase tracking-[0.24em] text-slate-500">Detail Pengiriman</div>
                             <div className="grid grid-cols-1 gap-4">
@@ -432,34 +481,34 @@ export default function CreateShipment({ drivers = [], products = [] }) {
                                 </div>
                                 <div>
                                     <label className="mb-2 block text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Tahap Tracking</label>
-                                    <select className="w-full rounded-2xl border border-gray-200 bg-slate-50 px-4 py-3 text-[13px] font-bold" value={data.tracking_stage} onChange={(e) => setData('tracking_stage', e.target.value)}>
-                                        {TRACKING_STAGE_OPTIONS.map((option) => (
-                                            <option key={option.value} value={option.value}>{option.label}</option>
-                                        ))}
-                                    </select>
+                                    <CustomDropdown
+                                        value={data.tracking_stage}
+                                        onChange={(value) => setData('tracking_stage', value)}
+                                        options={TRACKING_STAGE_OPTIONS.map((option) => ({ value: option.value, label: option.label }))}
+                                    />
                                 </div>
                                 <div>
                                     <label className="mb-2 block text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Jenis Kargo</label>
-                                    <select className="w-full rounded-2xl border border-gray-200 bg-slate-50 px-4 py-3 text-[13px] font-bold" value={data.load_type} onChange={(e) => setData('load_type', e.target.value)}>
-                                        <option value="ground">Darat</option>
-                                        <option value="sea">Laut</option>
-                                        <option value="air">Udara</option>
-                                    </select>
+                                    <CustomDropdown
+                                        value={data.load_type}
+                                        onChange={(value) => setData('load_type', value)}
+                                        options={[
+                                            { value: 'ground', label: 'Darat' },
+                                            { value: 'sea', label: 'Laut' },
+                                            { value: 'air', label: 'Udara' },
+                                        ]}
+                                    />
                                 </div>
                                 <div>
                                     <label className="mb-2 block text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Tugaskan Driver</label>
-                                    <select className="w-full rounded-2xl border border-gray-200 bg-slate-50 px-4 py-3 text-[13px] font-bold" value={data.driver_id} onChange={(e) => setData('driver_id', e.target.value)}>
-                                        <option value="">Pilih Driver (Opsional)</option>
-                                        {drivers.map((driver) => (
-                                            <option
-                                                key={driver.id}
-                                                value={driver.id}
-                                                disabled={driver.is_busy}
-                                            >
-                                                {driver.name} {driver.is_busy ? '(SIBUK)' : ''}
-                                            </option>
-                                        ))}
-                                    </select>
+                                    <CustomDropdown
+                                        value={data.driver_id}
+                                        onChange={(value) => setData('driver_id', value)}
+                                        options={[
+                                            { value: '', label: 'Pilih Driver (Opsional)' },
+                                            ...drivers.filter((driver) => !driver.is_busy).map((driver) => ({ value: driver.id, label: driver.name })),
+                                        ]}
+                                    />
                                     {errors.driver_id && <div className="mt-2 text-[11px] font-bold text-red-500">{errors.driver_id}</div>}
                                 </div>
                             </div>
@@ -492,10 +541,18 @@ export default function CreateShipment({ drivers = [], products = [] }) {
                                             <div className="grid grid-cols-2 gap-3">
                                                 <div className="col-span-2">
                                                     <label className="mb-1 block text-[9px] font-black uppercase tracking-wider text-gray-400">Produk dari Katalog</label>
-                                                    <select className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-[12px] font-bold" value={item.product_id} onChange={(e) => updateItem(index, 'product_id', e.target.value)}>
-                                                        <option value="">Pilih produk atau isi manual</option>
-                                                        {products.map(p => <option key={p.id} value={p.id}>{p.sku} — {p.name} (stok gudang: {p.available_stock} | stok rack: {p.rack_available_stock ?? 0})</option>)}
-                                                    </select>
+                                                    <CustomDropdown
+                                                        value={item.product_id}
+                                                        onChange={(value) => updateItem(index, 'product_id', value)}
+                                                        options={[
+                                                            { value: '', label: 'Pilih produk atau isi manual' },
+                                                            ...products.map((p) => ({
+                                                                value: p.id,
+                                                                label: `${p.sku} — ${p.name} (stok gudang: ${p.available_stock} | stok rack: ${p.rack_available_stock ?? 0})`,
+                                                                image: p.image_url || (p.image ? `/storage/${p.image}` : null),
+                                                            })),
+                                                        ]}
+                                                    />
                                                     {selectedProduct?.rack_sources?.length > 0 && (
                                                         <div className="mt-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-[11px] font-semibold text-slate-600">
                                                             Sumber rack/zone: {selectedProduct.rack_sources.slice(0, 3).map((src) => `${src.zone_code ?? '-'}-${src.rack_code ?? '-'} (${src.available})`).join(', ')}
@@ -546,17 +603,46 @@ export default function CreateShipment({ drivers = [], products = [] }) {
                                 </div>
                             </div>
                         </div>
+                        </>
+                        )}
+
+                        {step === 3 && (
+                            <div className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm space-y-4">
+                                <div className="text-[16px] font-black text-slate-900">Review Pengiriman</div>
+                                <div className="text-[13px] font-semibold text-slate-600">Asal: <span className="font-black text-slate-900">{data.origin_name || '-'}</span></div>
+                                <div className="text-[13px] font-semibold text-slate-600">Tujuan: <span className="font-black text-slate-900">{data.destination_name || '-'}</span></div>
+                                <div className="text-[13px] font-semibold text-slate-600">Koordinat tujuan: <span className="font-black text-slate-900">{data.dest_lat && data.dest_lng ? `${data.dest_lat}, ${data.dest_lng}` : '-'}</span></div>
+                                <div className="text-[13px] font-semibold text-slate-600">Estimasi tiba: <span className="font-black text-slate-900">{data.estimated_arrival || '-'}</span></div>
+                                <div className="text-[13px] font-semibold text-slate-600">Jumlah item: <span className="font-black text-slate-900">{data.items.length}</span></div>
+                            </div>
+                        )}
 
                         <div className="flex gap-4">
                             <Link href={route('shipments.index')} className="flex-1 rounded-2xl border border-slate-200 px-6 py-4 text-center text-[14px] font-black text-slate-500 transition hover:bg-white">
                                 Batal
                             </Link>
-                            <button type="submit" disabled={processing} className="flex-[1.4] rounded-2xl bg-indigo-600 px-6 py-4 text-[14px] font-black uppercase text-white shadow-lg shadow-indigo-200 transition hover:bg-indigo-700 disabled:opacity-50">
-                                <span className="inline-flex items-center gap-2">
-                                    <Save className="h-4 w-4" strokeWidth={2.2} />
-                                    Buat Pengiriman
-                                </span>
-                            </button>
+                            {step > 1 && step < 3 && (
+                                <button type="button" onClick={() => setStep((prev) => Math.max(prev - 1, 1))} className="rounded-2xl border border-slate-200 px-5 py-4 text-[13px] font-black text-slate-600 hover:bg-slate-50">
+                                    Kembali
+                                </button>
+                            )}
+                            {step < 3 ? (
+                                <button type="button" onClick={goNextStep} className="flex-[1.4] rounded-2xl bg-indigo-600 px-6 py-4 text-[14px] font-black uppercase text-white shadow-lg shadow-indigo-200 transition hover:bg-indigo-700">
+                                    Lanjut
+                                </button>
+                            ) : (
+                                <>
+                                    <button type="button" onClick={() => setStep(2)} className="rounded-2xl border border-slate-200 px-5 py-4 text-[13px] font-black text-slate-600 hover:bg-slate-50">
+                                        Kembali
+                                    </button>
+                                    <button type="submit" disabled={processing} className="flex-[1.4] rounded-2xl bg-indigo-600 px-6 py-4 text-[14px] font-black uppercase text-white shadow-lg shadow-indigo-200 transition hover:bg-indigo-700 disabled:opacity-50">
+                                        <span className="inline-flex items-center gap-2">
+                                            <Save className="h-4 w-4" strokeWidth={2.2} />
+                                            Buat Pengiriman
+                                        </span>
+                                    </button>
+                                </>
+                            )}
                         </div>
                     </div>
                 </form>

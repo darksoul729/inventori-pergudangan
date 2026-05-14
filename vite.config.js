@@ -31,6 +31,10 @@ export default defineConfig({
                     if (id.includes('/@headlessui/react/')) {
                         return 'vendor-ui';
                     }
+
+                    if (id.includes('/framer-motion/')) {
+                        return 'vendor-motion';
+                    }
                 },
             },
         },

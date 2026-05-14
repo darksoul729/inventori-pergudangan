@@ -1,6 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
 import DashboardLayout from '@/Layouts/DashboardLayout';
+import BackToPanduan from '@/Components/BackToPanduan';
+import CustomDropdown from '@/Components/CustomDropdown';
 import InputError from '@/Components/InputError';
 import { ToastStack, useToastStack } from '@/Components/ToastStack';
 import { CanvasErrorBoundary } from '@/Components/ErrorBoundary';
@@ -14,43 +16,43 @@ const MIN_SCALE = 0.6;
 const MAX_SCALE = 1.75;
 
 const TYPE_STYLES = {
-    storage: { label: 'Storage', bg: '#f8dcdc', border: '#f1b9b8', badge: '#fff1f2', text: '#9f1239', chip: '#fbe7e7' },
-    high_pick: { label: 'High Pick', bg: '#ffe8c8', border: '#f6c98f', badge: '#fff7ed', text: '#9a3412', chip: '#ffedd5' },
-    bulk_storage: { label: 'Bulk Storage', bg: '#dce9fb', border: '#abc9f4', badge: '#eff6ff', text: '#1d4ed8', chip: '#dbeafe' },
-    electronics: { label: 'Electronics', bg: '#e5dcff', border: '#c9b8ff', badge: '#f5f3ff', text: '#6d28d9', chip: '#ede9fe' },
-    cross_dock: { label: 'Cross Dock', bg: '#d8f1ea', border: '#9fddca', badge: '#ecfdf5', text: '#0f766e', chip: '#d1fae5' },
-    hazmat: { label: 'Hazmat', bg: '#ffd9da', border: '#ffaaaa', badge: '#fff1f2', text: '#dc2626', chip: '#ffe4e6' },
-    inbound: { label: 'Inbound', bg: '#d8f0ff', border: '#8dd0ff', badge: '#eff6ff', text: '#0369a1', chip: '#e0f2fe' },
-    outbound: { label: 'Outbound', bg: '#ede9fe', border: '#c4b5fd', badge: '#f5f3ff', text: '#6d28d9', chip: '#ede9fe' },
-    rack: { label: 'Rack', bg: '#F8F7FF', border: '#cbd5e1', badge: '#F8F7FF', text: '#334155', chip: '#f1f5f9' },
-    wall: { label: 'Wall', bg: '#334155', border: '#0f172a', badge: '#e2e8f0', text: '#0f172a', chip: '#cbd5e1' },
+    storage: { label: 'Penyimpanan', bg: '#f8dcdc', border: '#f1b9b8', badge: '#fff1f2', text: '#9f1239', chip: '#fbe7e7' },
+    high_pick: { label: 'Ambil Cepat', bg: '#ffe8c8', border: '#f6c98f', badge: '#fff7ed', text: '#9a3412', chip: '#ffedd5' },
+    bulk_storage: { label: 'Simpan Massal', bg: '#dce9fb', border: '#abc9f4', badge: '#eff6ff', text: '#1d4ed8', chip: '#dbeafe' },
+    electronics: { label: 'Elektronik', bg: '#e5dcff', border: '#c9b8ff', badge: '#f5f3ff', text: '#6d28d9', chip: '#ede9fe' },
+    cross_dock: { label: 'Lintas Muat', bg: '#d8f1ea', border: '#9fddca', badge: '#ecfdf5', text: '#0f766e', chip: '#d1fae5' },
+    hazmat: { label: 'Bahan Berbahaya', bg: '#ffd9da', border: '#ffaaaa', badge: '#fff1f2', text: '#dc2626', chip: '#ffe4e6' },
+    inbound: { label: 'Area Masuk', bg: '#d8f0ff', border: '#8dd0ff', badge: '#eff6ff', text: '#0369a1', chip: '#e0f2fe' },
+    outbound: { label: 'Area Keluar', bg: '#ede9fe', border: '#c4b5fd', badge: '#f5f3ff', text: '#6d28d9', chip: '#ede9fe' },
+    rack: { label: 'Rak', bg: '#EFE9FF', border: '#cbd5e1', badge: '#EFE9FF', text: '#334155', chip: '#f1f5f9' },
+    wall: { label: 'Dinding', bg: '#334155', border: '#0f172a', badge: '#e2e8f0', text: '#0f172a', chip: '#cbd5e1' },
 };
 
 const TYPE_OPTIONS = [
-    { value: 'storage', label: 'Storage' },
-    { value: 'high_pick', label: 'High Pick' },
-    { value: 'bulk_storage', label: 'Bulk Storage' },
-    { value: 'electronics', label: 'Electronics' },
-    { value: 'cross_dock', label: 'Cross Dock' },
-    { value: 'hazmat', label: 'Hazmat' },
-    { value: 'wall', label: 'Wall' },
+    { value: 'storage', label: 'Penyimpanan' },
+    { value: 'high_pick', label: 'Ambil Cepat' },
+    { value: 'bulk_storage', label: 'Simpan Massal' },
+    { value: 'electronics', label: 'Elektronik' },
+    { value: 'cross_dock', label: 'Lintas Muat' },
+    { value: 'hazmat', label: 'Bahan Berbahaya' },
+    { value: 'wall', label: 'Dinding' },
 ];
 
 const ADD_ACTIONS = [
-    { id: 'zone', label: 'Add Zone', type: 'storage', kind: 'zone' },
-    { id: 'rack', label: 'Add Rack', type: 'rack', kind: 'rack' },
-    { id: 'wall', label: 'Add Wall', type: 'wall', kind: 'structure' },
-    { id: 'inbound', label: 'Add Area Inbound', type: 'inbound', kind: 'area' },
-    { id: 'outbound', label: 'Add Area Outbound', type: 'outbound', kind: 'area' },
-    { id: 'cross_dock', label: 'Add Cross Dock', type: 'cross_dock', kind: 'zone' },
-    { id: 'hazmat', label: 'Add Hazmat Area', type: 'hazmat', kind: 'zone' },
+    { id: 'zone', label: 'Tambah Zona', type: 'storage', kind: 'zone' },
+    { id: 'rack', label: 'Tambah Rak', type: 'rack', kind: 'rack' },
+    { id: 'wall', label: 'Tambah Dinding', type: 'wall', kind: 'structure' },
+    { id: 'inbound', label: 'Tambah Area Masuk', type: 'inbound', kind: 'area' },
+    { id: 'outbound', label: 'Tambah Area Keluar', type: 'outbound', kind: 'area' },
+    { id: 'cross_dock', label: 'Tambah Lintas Muat', type: 'cross_dock', kind: 'zone' },
+    { id: 'hazmat', label: 'Tambah Area Bahan Berbahaya', type: 'hazmat', kind: 'zone' },
 ];
 
 const STATUS_OPTIONS = [
     { value: 'active', label: 'Aktif' },
-    { value: 'planned', label: 'Planned' },
-    { value: 'maintenance', label: 'Maintenance' },
-    { value: 'inactive', label: 'Inactive' },
+    { value: 'planned', label: 'Rencana' },
+    { value: 'maintenance', label: 'Perawatan' },
+    { value: 'inactive', label: 'Nonaktif' },
 ];
 
 const RESIZE_DIRECTIONS = ['nw', 'n', 'ne', 'e', 'se', 's', 'sw', 'w'];
@@ -355,6 +357,23 @@ function LayersIcon({ className = 'h-4 w-4' }) {
     );
 }
 
+function ZapIcon({ className = 'h-4 w-4' }) {
+    return (
+        <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+        </svg>
+    );
+}
+
+function LockIcon({ className = 'h-4 w-4' }) {
+    return (
+        <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2" strokeWidth={2} />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 11V7a5 5 0 0110 0v4" />
+        </svg>
+    );
+}
+
 function ActivityIcon({ className = 'h-4 w-4' }) {
     return (
         <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -371,23 +390,65 @@ function PanelIcon({ className = 'h-4 w-4' }) {
     );
 }
 
+function CloseIcon({ className = 'h-4 w-4' }) {
+    return (
+        <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 6l12 12M18 6L6 18" />
+        </svg>
+    );
+}
+
+function TextFieldIcon({ className = 'h-4 w-4' }) {
+    return (
+        <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7h16M4 12h10M4 17h16" />
+        </svg>
+    );
+}
+
+function NumberFieldIcon({ className = 'h-4 w-4' }) {
+    return (
+        <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 4L6 20M18 4l-2 16M4 9h17M3 15h17" />
+        </svg>
+    );
+}
+
+function BoxFieldIcon({ className = 'h-4 w-4' }) {
+    return (
+        <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10" />
+        </svg>
+    );
+}
+
+function CalendarFieldIcon({ className = 'h-4 w-4' }) {
+    return (
+        <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <rect x="3" y="5" width="18" height="16" rx="2" strokeWidth={2} />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 3v4M16 3v4M3 10h18" />
+        </svg>
+    );
+}
+
 function Modal({ open, title, subtitle, onClose, children }) {
     if (!open) return null;
 
     return (
-        <div className="fixed inset-0 z-[12000] flex items-center justify-center bg-slate-950/60 backdrop-blur-sm px-4 py-8">
-            <div className="max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-[28px] bg-white p-7 shadow-[0_30px_80px_rgba(15,23,42,0.28)]">
+        <div className="fixed inset-0 z-[12000] flex items-center justify-center bg-black/70 px-4 py-8">
+            <div className="max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-2xl border border-[#e8eaf2] bg-white p-6 shadow-[0_28px_70px_rgba(15,23,42,0.22)] md:p-7">
                 <div className="mb-6 flex items-start justify-between gap-4">
                     <div>
-                        <h3 className="text-[22px] font-black tracking-tight text-[#28106F]">{title}</h3>
-                        {subtitle ? <p className="mt-1 text-[13px] font-semibold text-slate-500">{subtitle}</p> : null}
+                        <h3 className="text-[24px] font-black tracking-tight text-[#4722B3]">{title}</h3>
+                        {subtitle ? <p className="mt-1 text-[13px] font-medium text-slate-500">{subtitle}</p> : null}
                     </div>
                     <button
                         type="button"
                         onClick={onClose}
-                        className="rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-[11px] font-black uppercase tracking-[0.16em] text-slate-500"
+                        className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#dbe4f0] bg-white text-slate-500 transition hover:bg-slate-50"
+                        aria-label="Tutup modal"
                     >
-                        Tutup
+                        <CloseIcon />
                     </button>
                 </div>
                 {children}
@@ -406,36 +467,63 @@ function Field({ label, children, hint }) {
     );
 }
 
-function BaseInput(props) {
+function ModalActions({ onCancel, cancelLabel = 'Batal', submitLabel = 'Simpan', submitDisabled = false }) {
     return (
-        <input
-            {...props}
-            className={`w-full rounded-[14px] border border-[#dbe4f0] bg-white px-4 py-3 text-[13px] font-semibold text-[#28106F] shadow-sm outline-none transition focus:border-[#28106F] focus:ring-2 focus:ring-[#c7d2fe] ${props.className || ''}`}
-        />
+        <div className="grid gap-3 pt-2 md:grid-cols-2">
+            <button
+                type="button"
+                onClick={onCancel}
+                className="w-full rounded-[12px] border border-[#dbe4f0] bg-white px-4 py-3 text-[16px] font-bold text-slate-600 transition hover:bg-slate-50"
+            >
+                {cancelLabel}
+            </button>
+            <button
+                type="submit"
+                disabled={submitDisabled}
+                className="w-full rounded-[12px] bg-[#5a35d2] px-4 py-3 text-[16px] font-bold text-white shadow-[0_10px_22px_rgba(90,53,210,0.22)] transition hover:bg-[#4c2ac0] disabled:cursor-not-allowed disabled:opacity-60"
+            >
+                {submitLabel}
+            </button>
+        </div>
     );
 }
 
-function BaseTextArea(props) {
+function BaseInput({ icon = null, className = '', ...props }) {
     return (
-        <textarea
-            {...props}
-            className={`w-full rounded-[14px] border border-[#dbe4f0] bg-white px-4 py-3 text-[13px] font-semibold text-[#28106F] shadow-sm outline-none transition focus:border-[#28106F] focus:ring-2 focus:ring-[#c7d2fe] ${props.className || ''}`}
-        />
+        <div className="relative">
+            {icon ? <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">{icon}</span> : null}
+            <input
+                {...props}
+                className={`w-full rounded-[14px] border border-[#dbe4f0] bg-white px-4 py-3 text-[13px] font-semibold text-[#4722B3] shadow-sm outline-none transition focus:border-[#4722B3] focus:ring-2 focus:ring-[#c7d2fe] ${icon ? 'pl-10' : ''} ${className}`}
+            />
+        </div>
     );
 }
 
-function BaseSelect({ options, className = '', ...props }) {
+function BaseTextArea({ icon = null, className = '', ...props }) {
     return (
-        <select
-            {...props}
-            className={`w-full rounded-[14px] border border-[#dbe4f0] bg-white px-4 py-3 text-[13px] font-semibold text-[#28106F] shadow-sm outline-none transition focus:border-[#28106F] focus:ring-2 focus:ring-[#c7d2fe] ${className}`}
-        >
-            {options.map((option) => (
-                <option key={option.value} value={option.value}>
-                    {option.label}
-                </option>
-            ))}
-        </select>
+        <div className="relative">
+            {icon ? <span className="pointer-events-none absolute left-3 top-3 text-slate-400">{icon}</span> : null}
+            <textarea
+                {...props}
+                className={`w-full rounded-[14px] border border-[#dbe4f0] bg-white px-4 py-3 text-[13px] font-semibold text-[#4722B3] shadow-sm outline-none transition focus:border-[#4722B3] focus:ring-2 focus:ring-[#c7d2fe] ${icon ? 'pl-10' : ''} ${className}`}
+            />
+        </div>
+    );
+}
+
+function BaseSelect({ options, icon = null, className = '', ...props }) {
+    return (
+        <div className="relative">
+            {icon ? <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">{icon}</span> : null}
+            <CustomDropdown
+                value={props.value}
+                onChange={(value) => props.onChange?.({ target: { value } })}
+                options={options}
+                disabled={props.disabled}
+                className={`${icon ? 'pl-6' : ''} ${className}`}
+            />
+        </div>
     );
 }
 
@@ -443,11 +531,11 @@ function ToolbarButton({ active = false, tone = 'default', disabled = false, ico
     const toneClass = disabled
         ? 'border-[#e2e8f0] bg-[#f1f5f9] text-slate-400 cursor-not-allowed'
         : tone === 'primary'
-            ? 'border-[#28106F] bg-[#28106F] text-white shadow-[0_10px_20px_rgba(89,50,201,0.18)]'
+            ? 'border-[#4722B3] bg-[#4722B3] text-white shadow-[0_10px_20px_rgba(89,50,201,0.18)]'
             : tone === 'subtle'
-                ? 'border-[#dbe4f0] bg-[#F8F7FF] text-slate-700 hover:bg-slate-100'
+                ? 'border-[#dbe4f0] bg-[#EFE9FF] text-slate-700 hover:bg-slate-100'
                 : active
-                    ? 'border-[#28106F] bg-[#eef2ff] text-[#28106F]'
+                    ? 'border-[#4722B3] bg-[#eef2ff] text-[#4722B3]'
                     : 'border-[#dbe4f0] bg-white text-slate-600 hover:bg-slate-50';
 
     return (
@@ -470,11 +558,11 @@ function ToolRailButton({ active = false, icon, label, caption, ...props }) {
             {...props}
             title={label}
             className={`group flex w-full flex-col items-center gap-1 rounded-[16px] border px-1 py-2.5 text-center transition ${active
-                ? 'border-[#28106F] bg-[#eef2ff] text-[#28106F] shadow-[0_12px_24px_rgba(89,50,201,0.12)]'
-                : 'border-[#e2e8f0] bg-white/92 text-slate-500 hover:border-[#c7d2fe] hover:text-[#28106F] hover:shadow-[0_8px_18px_rgba(148,163,184,0.12)]'
+                ? 'border-[#4722B3] bg-[#eef2ff] text-[#4722B3] shadow-[0_12px_24px_rgba(89,50,201,0.12)]'
+                : 'border-[#e2e8f0] bg-white/92 text-slate-500 hover:border-[#c7d2fe] hover:text-[#4722B3] hover:shadow-[0_8px_18px_rgba(148,163,184,0.12)]'
                 } ${props.className || ''}`}
         >
-            <span className="flex h-9 w-9 items-center justify-center rounded-[12px] bg-[#F8F7FF] transition group-hover:bg-[#eef2ff]">
+            <span className="flex h-9 w-9 items-center justify-center rounded-[12px] bg-[#EFE9FF] transition group-hover:bg-[#eef2ff]">
                 {icon}
             </span>
             <span className="text-[8px] font-black uppercase tracking-[0.18em]">{label}</span>
@@ -483,7 +571,7 @@ function ToolRailButton({ active = false, icon, label, caption, ...props }) {
     );
 }
 
-function SummaryChip({ label, value, accent = 'text-[#28106F]' }) {
+function SummaryChip({ label, value, accent = 'text-[#4722B3]' }) {
     return (
         <div className="rounded-[14px] border border-[#e6ebf5] bg-white px-3 py-2.5 shadow-[0_8px_18px_rgba(148,163,184,0.06)]">
             <div className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">{label}</div>
@@ -852,13 +940,22 @@ export default function Warehouse({
     savedLayout,
 }) {
     const { props } = usePage();
+    const moduleFlags = props.saas?.modules || {};
+    const hasModule = (code) => moduleFlags[code] !== false;
     const roleName = String(props.auth?.user?.role_name || props.auth?.user?.role || '').toLowerCase();
     const isManager = roleName.includes('manager') || roleName.includes('manajer') || roleName.includes('admin gudang');
     const isSupervisor = roleName.includes('supervisor') || roleName.includes('spv');
+    const canUseLayoutEditorModule = hasModule('warehouse_layout_editor');
     const canManageRackStock = isManager || isSupervisor;
     const canApproveAdjustments = isManager || isSupervisor;
 
     const [searchTerm, setSearchTerm] = useState('');
+    const [isAdvancedWarehouseMode, setIsAdvancedWarehouseMode] = useState(() => {
+        if (typeof window !== 'undefined') {
+            return localStorage.getItem('warehouse_advanced_mode') === '1';
+        }
+        return false;
+    });
     const [viewMode, setViewMode] = useState(() => {
         if (typeof window !== 'undefined') {
             return localStorage.getItem('warehouse-view-mode') || 'dashboard';
@@ -1061,6 +1158,18 @@ export default function Warehouse({
             localStorage.setItem('warehouse-view-mode', viewMode);
         }
     }, [viewMode]);
+
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            localStorage.setItem('warehouse_advanced_mode', isAdvancedWarehouseMode ? '1' : '0');
+        }
+    }, [isAdvancedWarehouseMode]);
+
+    useEffect(() => {
+        if ((!isAdvancedWarehouseMode || !canUseLayoutEditorModule) && viewMode === 'editor') {
+            setViewMode('dashboard');
+        }
+    }, [isAdvancedWarehouseMode, canUseLayoutEditorModule, viewMode]);
 
     useEffect(() => {
         if (!didLoadDraftRef.current) return;
@@ -2528,7 +2637,8 @@ export default function Warehouse({
             contentClassName="w-full max-w-none"
             fullPage={viewMode === 'editor'}
         >
-            <Head title="Manajemen Gudang" />
+            <Head title="Peta Gudang" />
+            <BackToPanduan />
 
             {viewMode === 'dashboard' ? (
                 <div className="min-h-screen bg-slate-50">
@@ -2543,9 +2653,31 @@ export default function Warehouse({
                                         <h1 className="text-3xl font-black tracking-tight text-slate-900">{warehouse?.name || 'Gudang'}</h1>
                                         <span className="rounded-full border border-indigo-100 bg-indigo-50 px-3 py-1 text-xs font-bold text-indigo-700">{warehouse?.location}</span>
                                     </div>
-                                    <p className="mt-2 text-sm font-semibold text-slate-500">Overview zona, rak, dan stok gudang secara real-time</p>
+                                    <p className="mt-2 text-sm font-semibold text-slate-500">Atur zona dan rak gudang dengan alur sederhana untuk operasional harian.</p>
                                 </div>
-                                <div className="flex items-center gap-2">
+                                <div className="flex flex-wrap items-center gap-2">
+                                    {/* Mode Lanjutan Button */}
+                                    {props.saas?.plan === 'enterprise' ? (
+                                        <Link
+                                            href={route('warehouse.advanced')}
+                                            className="inline-flex items-center gap-2 rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-2.5 text-sm font-semibold text-indigo-700 transition hover:bg-indigo-100"
+                                        >
+                                            <ZapIcon className="h-4 w-4 text-indigo-600" />
+                                            Mode Lanjutan
+                                        </Link>
+                                    ) : (
+                                        <Link
+                                            href={route('settings.billing')}
+                                            className="group relative inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-2.5 text-sm font-semibold text-slate-400 transition hover:bg-slate-100"
+                                        >
+                                            <LockIcon className="h-4 w-4 text-slate-400 transition-colors group-hover:text-amber-500" />
+                                            <span className="flex items-center gap-1.5">
+                                                Mode Lanjutan
+                                                <span className="rounded-md bg-slate-200 px-1 py-0.5 text-[9px] font-black tracking-tighter text-slate-500 group-hover:bg-amber-100 group-hover:text-amber-700 uppercase">ENTERPRISE</span>
+                                            </span>
+                                        </Link>
+                                    )}
+
                                     {isManager ? (
                                         <button type="button" onClick={() => setShowZoneModal(true)} className="inline-flex items-center gap-2 rounded-xl bg-[#3f4fda] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#3443c4]">
                                             <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
@@ -2554,12 +2686,8 @@ export default function Warehouse({
                                     ) : null}
                                     <Link href={route('rack.allocation')} className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50">
                                         <TransferIcon className="h-4 w-4" />
-                                        Transfer Rack
+                                        Atur Rak
                                     </Link>
-                                    <button type="button" onClick={() => setViewMode('editor')} className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50">
-                                        <LayersIcon className="h-4 w-4" />
-                                        Layout Editor
-                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -2611,22 +2739,6 @@ export default function Warehouse({
 
                     {/* Main Content */}
                     <div className="w-full px-4 py-6 sm:px-6">
-                        <div className="mb-6 grid gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm md:grid-cols-3">
-                            <div>
-                                <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">Zona Aktif</p>
-                                <p className="mt-1 text-[18px] font-black tracking-tight text-slate-900">{dashSelectedZone?.name || '-'}</p>
-                            </div>
-                            <div>
-                                <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">Rack Di Zona</p>
-                                <p className="mt-1 text-[18px] font-black tracking-tight text-slate-900">{dashZoneRacks.length}</p>
-                            </div>
-                            <div>
-                                <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">Occupancy Zona</p>
-                                <p className={`mt-1 text-[18px] font-black tracking-tight ${occupancyTone(dashSelectedZone?.occupancy ?? 0)}`}>
-                                    {dashSelectedZone ? formatPercent(dashSelectedZone.occupancy) : '-'}
-                                </p>
-                            </div>
-                        </div>
 
                         <div className="grid gap-6 lg:grid-cols-12">
                             {/* Zone Sidebar */}
@@ -2641,7 +2753,7 @@ export default function Warehouse({
                                     <div className="space-y-2">
                                         {zoneSummaries.map((zone) => {
                                             const isSelected = dashSelectedZoneId === zone.id;
-                                            const accent = zone.accent || { bar: '#28106F' };
+                                            const accent = zone.accent || { bar: '#4722B3' };
                                             return (
                                                 <button
                                                     key={zone.id}
@@ -2661,7 +2773,7 @@ export default function Warehouse({
                                                     </div>
                                                     <div className="mt-3">
                                                         <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
-                                                            <div className="h-full rounded-full transition-all" style={{ width: `${Math.min(zone.occupancy, 100)}%`, backgroundColor: accent.bar || '#28106F' }} />
+                                                            <div className="h-full rounded-full transition-all" style={{ width: `${Math.min(zone.occupancy, 100)}%`, backgroundColor: accent.bar || '#4722B3' }} />
                                                         </div>
                                                         <div className="mt-1.5 flex items-center justify-between text-[11px] text-slate-500">
                                                             <span>{formatNumber(zone.used)} / {formatNumber(zone.capacity)} unit</span>
@@ -2702,18 +2814,14 @@ export default function Warehouse({
                                                             onClick={() => openZoneEditModal(dashSelectedZone)}
                                                             className="inline-flex items-center gap-1.5 rounded-xl border border-slate-300 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
                                                         >
-                                                            Edit Zona
+                                                            Ubah Zona
                                                         </button>
                                                     ) : null}
                                                 </div>
                                             </div>
                                             <div className="mt-4">
                                                 <div className="h-3 w-full overflow-hidden rounded-full bg-slate-100/90">
-                                                    <div className="h-full rounded-full transition-all" style={{ width: `${Math.min(dashSelectedZone.occupancy, 100)}%`, backgroundColor: dashSelectedZone.accent?.bar || '#28106F' }} />
-                                                </div>
-                                                <div className="mt-1 flex items-center justify-between text-xs text-slate-500">
-                                                    <span>Keterisian: {formatPercent(dashSelectedZone.occupancy)}</span>
-                                                    <span>{dashSelectedZone.rack_count} rak terdaftar</span>
+                                                    <div className="h-full rounded-full transition-all" style={{ width: `${Math.min(dashSelectedZone.occupancy, 100)}%`, backgroundColor: dashSelectedZone.accent?.bar || '#4722B3' }} />
                                                 </div>
                                             </div>
                                         </div>
@@ -2725,11 +2833,17 @@ export default function Warehouse({
                                                 <div className="rounded-2xl border-2 border-dashed border-slate-200 bg-white p-8 text-center">
                                                     <svg className="mx-auto h-12 w-12 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>
                                                     <p className="mt-3 text-sm font-medium text-slate-500">Belum ada rak di zona ini</p>
-                                                    {isManager ? (
-                                                        <button type="button" onClick={() => openRackCreateModal(dashSelectedZone.id)} className="mt-3 inline-flex items-center gap-1.5 rounded-xl bg-[#3f4fda] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#3443c4]">
-                                                            Tambah Rak Pertama
-                                                        </button>
-                                                    ) : null}
+                                                    <p className="mt-1 text-xs font-semibold text-slate-400">Tambahkan rak agar barang bisa ditempatkan per zona.</p>
+                                                    <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
+                                                        {isManager ? (
+                                                            <button type="button" onClick={() => openRackCreateModal(dashSelectedZone.id)} className="inline-flex items-center gap-1.5 rounded-xl bg-[#3f4fda] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#3443c4]">
+                                                                Tambah Rak Pertama
+                                                            </button>
+                                                        ) : null}
+                                                        <Link href="/rack-allocation" className="inline-flex items-center gap-1.5 rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">
+                                                            Atur Rak
+                                                        </Link>
+                                                    </div>
                                                 </div>
                                             ) : (
                                                 <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
@@ -2798,7 +2912,7 @@ export default function Warehouse({
                                                                                 onClick={() => openRackEditModal(rack)}
                                                                                 className="inline-flex items-center gap-1 rounded-md border border-slate-200 bg-white px-2.5 py-1.5 text-[11px] font-semibold text-slate-700 hover:bg-slate-50"
                                                                             >
-                                                                                Edit
+                                                                                Ubah
                                                                             </button>
                                                                         ) : null}
                                                                         {canManageRackStock ? (
@@ -2868,7 +2982,7 @@ export default function Warehouse({
                                                                         {canManageRackStock ? (
                                                                             <td className="whitespace-nowrap px-4 py-3 text-right">
                                                                                 <div className="flex items-center justify-end gap-2">
-                                                                                    <button type="button" onClick={() => openRackStockEditModal(stock)} className="text-xs font-semibold text-indigo-600 hover:text-indigo-500">Edit</button>
+                                                                                    <button type="button" onClick={() => openRackStockEditModal(stock)} className="text-xs font-semibold text-indigo-600 hover:text-indigo-500">Ubah</button>
                                                                                     <button type="button" onClick={() => deleteRackStock(stock)} className="text-xs font-semibold text-red-600 hover:text-red-500">Hapus</button>
                                                                                 </div>
                                                                             </td>
@@ -2988,8 +3102,8 @@ export default function Warehouse({
                                         <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0h4" /></svg>
                                         Dashboard
                                     </button>
-                                    <span className="truncate text-[14px] font-black tracking-tight text-[#28106F]">{warehouse?.name || 'Manajemen Gudang'}</span>
-                                    <span className="shrink-0 rounded-full bg-[#eef2ff] px-2 py-0.5 text-[9px] font-black uppercase tracking-[0.14em] text-[#28106F]">{formatNumber(zones.length)} Zona</span>
+                                    <span className="truncate text-[14px] font-black tracking-tight text-[#4722B3]">{warehouse?.name || 'Peta Gudang'}</span>
+                                    <span className="shrink-0 rounded-full bg-[#eef2ff] px-2 py-0.5 text-[9px] font-black uppercase tracking-[0.14em] text-[#4722B3]">{formatNumber(zones.length)} Zona</span>
                                     <span className="shrink-0 rounded-full bg-emerald-50 px-2 py-0.5 text-[9px] font-black uppercase tracking-[0.14em] text-emerald-700">{formatNumber(racks.length)} Rak</span>
                                     <span className={`shrink-0 rounded-full px-2 py-0.5 text-[9px] font-black uppercase tracking-[0.14em] ${occupancyTone(totalOccupancy)} bg-slate-50`}>{formatPercent(totalOccupancy)} Terisi</span>
                                 </div>
@@ -3008,10 +3122,10 @@ export default function Warehouse({
                                     </ToolbarButton>
                                     <Link
                                         href={route('rack.allocation')}
-                                        className="inline-flex shrink-0 items-center gap-1.5 rounded-[14px] border border-[#dbe4f0] bg-white px-3 text-[11px] font-black uppercase tracking-[0.15em] text-[#28106F] transition hover:bg-indigo-50"
+                                        className="inline-flex shrink-0 items-center gap-1.5 rounded-[14px] border border-[#dbe4f0] bg-white px-3 text-[11px] font-black uppercase tracking-[0.15em] text-[#4722B3] transition hover:bg-indigo-50"
                                     >
                                         <TransferIcon />
-                                        Transfer Rack
+                                        Atur Rak
                                     </Link>
                                     <span className="h-5 w-px shrink-0 bg-[#e2e8f0]" />
                                     <ToolbarButton tone="primary" onClick={handleSaveLayout} icon={<SaveIcon />}>
@@ -3042,13 +3156,13 @@ export default function Warehouse({
                                     <span className="h-5 w-px shrink-0 bg-[#e2e8f0]" />
                                     <div className="inline-flex shrink-0 items-center gap-1.5 rounded-[14px] border border-[#dbe4f0] bg-white px-2" style={{ minHeight: 40 }}>
                                         <span className="whitespace-nowrap text-[9px] font-black uppercase tracking-[0.12em] text-slate-400">Preset</span>
-                                        <div className="relative h-8 min-w-[220px] rounded-[12px] border border-[#D4C8F5] bg-[#F8F7FF] hover:border-[#28106F]">
+                                        <div className="relative h-8 min-w-[220px] rounded-[12px] border border-[#D4C8F5] bg-[#EFE9FF] hover:border-[#4722B3]">
                                             <BaseSelect
                                                 aria-label="Preset layout"
                                                 value={selectedTemplate}
                                                 onChange={(event) => setSelectedTemplate(event.target.value)}
                                                 options={TEMPLATE_OPTIONS}
-                                                className="h-full min-w-full cursor-pointer appearance-none rounded-[12px] border-none bg-transparent !py-0 px-3 pr-8 text-[11px] leading-8 font-black text-[#28106F] shadow-none outline-none focus:ring-2 focus:ring-[#c7d2fe]"
+                                                className="h-full min-w-full cursor-pointer appearance-none rounded-[12px] border-none bg-transparent !py-0 px-3 pr-8 text-[11px] leading-8 font-black text-[#4722B3] shadow-none outline-none focus:ring-2 focus:ring-[#c7d2fe]"
                                             />
                                             <svg className="pointer-events-none absolute right-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
@@ -3057,7 +3171,7 @@ export default function Warehouse({
                                         <button
                                             type="button"
                                             onClick={() => applyLayoutTemplate(selectedTemplate)}
-                                            className="rounded-lg border border-[#dbe4f0] bg-[#F8F7FF] px-2 py-1 text-[9px] font-black uppercase tracking-[0.12em] text-slate-600 transition hover:bg-slate-100"
+                                            className="rounded-lg border border-[#dbe4f0] bg-[#EFE9FF] px-2 py-1 text-[9px] font-black uppercase tracking-[0.12em] text-slate-600 transition hover:bg-slate-100"
                                         >
                                             Pakai
                                         </button>
@@ -3076,7 +3190,7 @@ export default function Warehouse({
                                         onChange={loadLayoutFromFile}
                                     />
                                     <span className="h-5 w-px shrink-0 bg-[#e2e8f0]" />
-                                    <div className="flex shrink-0 items-center gap-1 rounded-[14px] border border-[#dbe4f0] bg-[#F8F7FF] px-1.5" style={{ minHeight: 40 }}>
+                                    <div className="flex shrink-0 items-center gap-1 rounded-[14px] border border-[#dbe4f0] bg-[#EFE9FF] px-1.5" style={{ minHeight: 40 }}>
                                         <button type="button" onClick={zoomOut} className="rounded-lg p-1.5 text-slate-500 transition hover:bg-white hover:shadow-sm">
                                             <ZoomOutIcon />
                                         </button>
@@ -3088,7 +3202,7 @@ export default function Warehouse({
                                     <div className="inline-flex shrink-0 items-center rounded-[14px] border border-[#dbe4f0] bg-white px-2.5 text-[10px] font-black uppercase tracking-[0.12em] text-slate-500" style={{ minHeight: 40 }}>
                                         {formatNumber(racks.length)} rak
                                     </div>
-                                    <div className="inline-flex shrink-0 items-center rounded-[14px] bg-[#28106F] px-2.5 text-[10px] font-black uppercase tracking-[0.12em] text-white" style={{ minHeight: 40 }}>
+                                    <div className="inline-flex shrink-0 items-center rounded-[14px] bg-[#4722B3] px-2.5 text-[10px] font-black uppercase tracking-[0.12em] text-white" style={{ minHeight: 40 }}>
                                         {formatPercent(totalOccupancy)} isi
                                     </div>
                                     </div>
@@ -3159,7 +3273,7 @@ export default function Warehouse({
                                         <div className="flex items-center justify-between gap-4">
                                             <div className="min-w-0">
                                                 <div className="flex flex-wrap items-center gap-3">
-                                                    <span className="rounded-full bg-[#eef2ff] px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-[#28106F]">
+                                                    <span className="rounded-full bg-[#eef2ff] px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-[#4722B3]">
                                                         Snap to Grid
                                                     </span>
                                                     <span className="text-[11px] font-semibold text-slate-500">
@@ -3229,11 +3343,11 @@ export default function Warehouse({
                                                         className="absolute left-5 top-5 z-20 inline-flex h-9 w-9 items-center justify-center rounded-full border border-[#dbe4f0] bg-white/92 text-slate-500 shadow-[0_8px_18px_rgba(148,163,184,0.14)] cursor-move"
                                                         title="Move canvas"
                                                     >
-                                                        <span className="h-2 w-2 rounded-full bg-[#28106F]" />
+                                                        <span className="h-2 w-2 rounded-full bg-[#4722B3]" />
                                                     </button>
                                                     <div className="pointer-events-none absolute inset-[18px] rounded-[22px] border border-[#eef2f7]" />
-                                                    <div className="pointer-events-none absolute left-[30px] right-[30px] top-[30px] h-9 rounded-[14px] border border-dashed border-[#EDE8FC] bg-[#fbfcff]" />
-                                                    <div className="pointer-events-none absolute bottom-[26px] left-[48px] right-[48px] h-px border-t border-dashed border-[#EDE8FC]" />
+                                                    <div className="pointer-events-none absolute left-[30px] right-[30px] top-[30px] h-9 rounded-[14px] border border-dashed border-[#E5EAF3] bg-[#fbfcff]" />
+                                                    <div className="pointer-events-none absolute bottom-[26px] left-[48px] right-[48px] h-px border-t border-dashed border-[#E5EAF3]" />
                                                     <div className="pointer-events-none absolute left-[150px] right-[150px] top-[116px] h-px border-t border-dashed border-[#d7e0ef]" />
                                                     <div className="pointer-events-none absolute left-[150px] right-[150px] top-[430px] h-px border-t border-dashed border-[#d7e0ef]" />
                                                     <div className="pointer-events-none absolute left-[530px] top-[150px] bottom-[150px] w-px border-l border-dashed border-[#e2e8f0]" />
@@ -3244,7 +3358,7 @@ export default function Warehouse({
                                                             event.stopPropagation();
                                                             beginCanvasResize(event);
                                                         }}
-                                                        className="absolute -bottom-3 -right-3 z-20 flex h-7 w-7 items-center justify-center rounded-full border-[3px] border-white bg-[#28106F] text-white shadow-[0_10px_24px_rgba(89,50,201,0.24)] cursor-nwse-resize"
+                                                        className="absolute -bottom-3 -right-3 z-20 flex h-7 w-7 items-center justify-center rounded-full border-[3px] border-white bg-[#4722B3] text-white shadow-[0_10px_24px_rgba(89,50,201,0.24)] cursor-nwse-resize"
                                                         title="Resize canvas"
                                                     >
                                                         <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -3274,7 +3388,7 @@ export default function Warehouse({
                                                                     : item.kind === 'rack'
                                                                         ? 'linear-gradient(180deg, #ffffff, #f1f5f9)'
                                                                         : `linear-gradient(180deg, ${typeStyle.bg}, ${item.color || typeStyle.bg})`,
-                                                                borderColor: isSelected ? '#5932C9' : typeStyle.border,
+                                                                borderColor: isSelected ? '#5B33CC' : typeStyle.border,
                                                                 boxShadow: showHeatmap && item.occupancy > 50
                                                                     ? `inset 0 0 ${Math.min(item.w, item.h) * 0.4}px rgba(239, 68, 68, ${Math.min(item.occupancy / 100, 0.4)})`
                                                                     : item.kind === 'rack' && item.occupancy > 90
@@ -3316,7 +3430,7 @@ export default function Warehouse({
                                                                 {item.kind === 'rack' ? (
                                                                     <div className="mt-1 flex flex-1 items-center gap-1 opacity-80">
                                                                         {Array.from({ length: Math.max(4, Math.min(10, Math.floor(item.w / 20))) }).map((_, shelfIndex) => (
-                                                                            <div key={shelfIndex} className="h-full min-h-[4px] flex-1 rounded-[1px] border border-slate-300/60 bg-[linear-gradient(180deg,#ffffff,#F8F7FF)]" />
+                                                                            <div key={shelfIndex} className="h-full min-h-[4px] flex-1 rounded-[1px] border border-slate-300/60 bg-[linear-gradient(180deg,#ffffff,#EFE9FF)]" />
                                                                         ))}
                                                                     </div>
                                                                 ) : null}
@@ -3361,7 +3475,7 @@ export default function Warehouse({
                                                                             event.stopPropagation();
                                                                             beginResize(event, item, direction);
                                                                         }}
-                                                                        className={`absolute ${positionMap[direction]} z-20 h-3.5 w-3.5 rounded-full border-2 border-white bg-[#28106F] shadow-[0_4px_10px_rgba(89,50,201,0.22)] ${cursorMap[direction]}`}
+                                                                        className={`absolute ${positionMap[direction]} z-20 h-3.5 w-3.5 rounded-full border-2 border-white bg-[#4722B3] shadow-[0_4px_10px_rgba(89,50,201,0.22)] ${cursorMap[direction]}`}
                                                                     />
                                                                 );
                                                             }) : null}
@@ -3394,7 +3508,7 @@ export default function Warehouse({
                                         {selectedItem ? (
                                             <div className="mt-2 flex items-center gap-2">
                                                 <div className={`h-3 w-3 shrink-0 rounded-full ${getTypeStyle(selectedItem.type, selectedItem.kind === 'rack' ? 'rack' : isStructuralType(selectedItem.type) ? 'wall' : 'storage').badge}`} style={{ backgroundColor: getTypeStyle(selectedItem.type, selectedItem.kind === 'rack' ? 'rack' : isStructuralType(selectedItem.type) ? 'wall' : 'storage').bg }} />
-                                                <span className="truncate text-[14px] font-black text-[#28106F]">{selectedItem.name}</span>
+                                                <span className="truncate text-[14px] font-black text-[#4722B3]">{selectedItem.name}</span>
                                                 <span className="shrink-0 rounded-full bg-slate-100 px-2 py-0.5 text-[9px] font-black uppercase tracking-[0.14em] text-slate-500">{selectedItem.code}</span>
                                             </div>
                                         ) : (
@@ -3419,7 +3533,7 @@ export default function Warehouse({
                                                 <div className="grid grid-cols-3 gap-1.5">
                                                     <div className="rounded-lg bg-white px-2.5 py-2 text-center shadow-sm">
                                                         <div className="text-[9px] font-black uppercase tracking-[0.16em] text-slate-400">Posisi</div>
-                                                        <div className="mt-0.5 text-[12px] font-black text-[#28106F]">{selectedItem.x},{selectedItem.y}</div>
+                                                        <div className="mt-0.5 text-[12px] font-black text-[#4722B3]">{selectedItem.x},{selectedItem.y}</div>
                                                     </div>
                                                     <div className="rounded-lg bg-white px-2.5 py-2 text-center shadow-sm">
                                                         <div className="text-[9px] font-black uppercase tracking-[0.16em] text-slate-400">Ukuran</div>
@@ -3540,7 +3654,7 @@ export default function Warehouse({
                                                         <button
                                                             type="button"
                                                             onClick={handleApplyDraft}
-                                                            className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#28106F] px-3 py-2.5 text-[11px] font-black uppercase tracking-[0.14em] text-white shadow-[0_8px_16px_rgba(89,50,201,0.18)] transition hover:bg-[#3730a3]"
+                                                            className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#4722B3] px-3 py-2.5 text-[11px] font-black uppercase tracking-[0.14em] text-white shadow-[0_8px_16px_rgba(89,50,201,0.18)] transition hover:bg-[#3730a3]"
                                                         >
                                                             <SaveIcon /> Simpan Perubahan
                                                         </button>
@@ -3548,7 +3662,7 @@ export default function Warehouse({
                                                             <button
                                                                 type="button"
                                                                 onClick={handleDuplicate}
-                                                                className="flex items-center justify-center gap-1.5 rounded-lg border border-[#dbe4f0] bg-[#F8F7FF] px-3 py-2 text-[10px] font-black uppercase tracking-[0.12em] text-slate-600 transition hover:bg-slate-100"
+                                                                className="flex items-center justify-center gap-1.5 rounded-lg border border-[#dbe4f0] bg-[#EFE9FF] px-3 py-2 text-[10px] font-black uppercase tracking-[0.12em] text-slate-600 transition hover:bg-slate-100"
                                                             >
                                                                 <DuplicateIcon /> Duplikat
                                                             </button>
@@ -3564,7 +3678,7 @@ export default function Warehouse({
                                                             <button
                                                                 type="button"
                                                                 onClick={toggleSelectedZoneLock}
-                                                                className={`flex w-full items-center justify-center gap-1.5 rounded-lg border px-3 py-2 text-[10px] font-black uppercase tracking-[0.12em] transition ${isSelectedZoneLocked ? 'border-amber-300 bg-amber-50 text-amber-700 hover:bg-amber-100' : 'border-[#dbe4f0] bg-[#F8F7FF] text-slate-600 hover:bg-slate-100'}`}
+                                                                className={`flex w-full items-center justify-center gap-1.5 rounded-lg border px-3 py-2 text-[10px] font-black uppercase tracking-[0.12em] transition ${isSelectedZoneLocked ? 'border-amber-300 bg-amber-50 text-amber-700 hover:bg-amber-100' : 'border-[#dbe4f0] bg-[#EFE9FF] text-slate-600 hover:bg-slate-100'}`}
                                                             >
                                                                 {isSelectedZoneLocked ? '🔓 Unlock Zone' : '🔒 Lock Zone'}
                                                             </button>
@@ -3573,7 +3687,7 @@ export default function Warehouse({
                                                             <button
                                                                 type="button"
                                                                 onClick={handleRotateSelected}
-                                                                className="flex w-full items-center justify-center gap-1.5 rounded-lg border border-[#dbe4f0] bg-[#F8F7FF] px-3 py-2 text-[10px] font-black uppercase tracking-[0.12em] text-slate-600 transition hover:bg-slate-100"
+                                                                className="flex w-full items-center justify-center gap-1.5 rounded-lg border border-[#dbe4f0] bg-[#EFE9FF] px-3 py-2 text-[10px] font-black uppercase tracking-[0.12em] text-slate-600 transition hover:bg-slate-100"
                                                             >
                                                                 <RotateIcon /> Putar {selectedItem.kind === 'rack' ? 'Rack' : 'Wall'}
                                                             </button>
@@ -3611,39 +3725,37 @@ export default function Warehouse({
                 >
                     <div className="grid gap-4 md:grid-cols-2">
                         <Field label="Kode">
-                            <BaseInput value={zoneCreateForm.data.code} onChange={(event) => zoneCreateForm.setData('code', event.target.value)} />
+                            <BaseInput icon={<NumberFieldIcon />} value={zoneCreateForm.data.code} onChange={(event) => zoneCreateForm.setData('code', event.target.value)} />
                             <InputError message={zoneCreateForm.errors.code} className="mt-2" />
                         </Field>
                         <Field label="Nama">
-                            <BaseInput value={zoneCreateForm.data.name} onChange={(event) => zoneCreateForm.setData('name', event.target.value)} />
+                            <BaseInput icon={<TextFieldIcon />} value={zoneCreateForm.data.name} onChange={(event) => zoneCreateForm.setData('name', event.target.value)} />
                             <InputError message={zoneCreateForm.errors.name} className="mt-2" />
                         </Field>
                     </div>
                     <div className="grid gap-4 md:grid-cols-2">
                         <Field label="Tipe">
-                            <BaseSelect value={zoneCreateForm.data.type} onChange={(event) => zoneCreateForm.setData('type', event.target.value)} options={TYPE_OPTIONS} />
+                            <BaseSelect icon={<BoxFieldIcon />} value={zoneCreateForm.data.type} onChange={(event) => zoneCreateForm.setData('type', event.target.value)} options={TYPE_OPTIONS} />
                         </Field>
                         <Field label="Kapasitas">
-                            <BaseInput type="number" min="1" value={zoneCreateForm.data.capacity} onChange={(event) => zoneCreateForm.setData('capacity', event.target.value)} />
+                            <BaseInput icon={<NumberFieldIcon />} type="number" min="1" value={zoneCreateForm.data.capacity} onChange={(event) => zoneCreateForm.setData('capacity', event.target.value)} />
                             <InputError message={zoneCreateForm.errors.capacity} className="mt-2" />
                         </Field>
                     </div>
                     <Field label="Deskripsi">
-                        <BaseTextArea rows={4} value={zoneCreateForm.data.description} onChange={(event) => zoneCreateForm.setData('description', event.target.value)} />
+                        <BaseTextArea icon={<TextFieldIcon />} rows={4} value={zoneCreateForm.data.description} onChange={(event) => zoneCreateForm.setData('description', event.target.value)} />
                     </Field>
-                    <button
-                        type="submit"
-                        disabled={zoneCreateForm.processing}
-                        className="rounded-[14px] bg-[#28106F] px-5 py-3 text-[12px] font-black uppercase tracking-[0.16em] text-white shadow-[0_10px_20px_rgba(89,50,201,0.18)] disabled:opacity-60"
-                    >
-                        Simpan Zona
-                    </button>
+                    <ModalActions
+                        onCancel={() => setShowZoneModal(false)}
+                        submitLabel="Simpan Zona"
+                        submitDisabled={zoneCreateForm.processing}
+                    />
                 </form>
             </Modal>
 
             <Modal
                 open={isManager && showZoneEditModal}
-                title="Edit Zona"
+                title="Ubah Zona"
                 subtitle="Perbarui data zona agar konsisten dengan layout operasional."
                 onClose={() => {
                     setShowZoneEditModal(false);
@@ -3666,33 +3778,34 @@ export default function Warehouse({
                 >
                     <div className="grid gap-4 md:grid-cols-2">
                         <Field label="Kode">
-                            <BaseInput value={zoneEditForm.data.code} onChange={(event) => zoneEditForm.setData('code', event.target.value)} />
+                            <BaseInput icon={<NumberFieldIcon />} value={zoneEditForm.data.code} onChange={(event) => zoneEditForm.setData('code', event.target.value)} />
                             <InputError message={zoneEditForm.errors.code} className="mt-2" />
                         </Field>
                         <Field label="Nama">
-                            <BaseInput value={zoneEditForm.data.name} onChange={(event) => zoneEditForm.setData('name', event.target.value)} />
+                            <BaseInput icon={<TextFieldIcon />} value={zoneEditForm.data.name} onChange={(event) => zoneEditForm.setData('name', event.target.value)} />
                             <InputError message={zoneEditForm.errors.name} className="mt-2" />
                         </Field>
                     </div>
                     <div className="grid gap-4 md:grid-cols-2">
                         <Field label="Tipe">
-                            <BaseSelect value={zoneEditForm.data.type} onChange={(event) => zoneEditForm.setData('type', event.target.value)} options={TYPE_OPTIONS} />
+                            <BaseSelect icon={<BoxFieldIcon />} value={zoneEditForm.data.type} onChange={(event) => zoneEditForm.setData('type', event.target.value)} options={TYPE_OPTIONS} />
                         </Field>
                         <Field label="Kapasitas">
-                            <BaseInput type="number" min="1" value={zoneEditForm.data.capacity} onChange={(event) => zoneEditForm.setData('capacity', event.target.value)} />
+                            <BaseInput icon={<NumberFieldIcon />} type="number" min="1" value={zoneEditForm.data.capacity} onChange={(event) => zoneEditForm.setData('capacity', event.target.value)} />
                             <InputError message={zoneEditForm.errors.capacity} className="mt-2" />
                         </Field>
                     </div>
                     <Field label="Deskripsi">
-                        <BaseTextArea rows={4} value={zoneEditForm.data.description} onChange={(event) => zoneEditForm.setData('description', event.target.value)} />
+                        <BaseTextArea icon={<TextFieldIcon />} rows={4} value={zoneEditForm.data.description} onChange={(event) => zoneEditForm.setData('description', event.target.value)} />
                     </Field>
-                    <button
-                        type="submit"
-                        disabled={zoneEditForm.processing || !editingZoneId}
-                        className="rounded-[14px] bg-[#28106F] px-5 py-3 text-[12px] font-black uppercase tracking-[0.16em] text-white shadow-[0_10px_20px_rgba(89,50,201,0.18)] disabled:opacity-60"
-                    >
-                        Simpan Perubahan Zona
-                    </button>
+                    <ModalActions
+                        onCancel={() => {
+                            setShowZoneEditModal(false);
+                            setEditingZoneId(null);
+                        }}
+                        submitLabel="Simpan Perubahan Zona"
+                        submitDisabled={zoneEditForm.processing || !editingZoneId}
+                    />
                 </form>
             </Modal>
 
@@ -3714,6 +3827,7 @@ export default function Warehouse({
                 >
                     <Field label="Zona">
                         <BaseSelect
+                            icon={<LayersIcon />}
                             value={rackCreateForm.data.warehouse_zone_id}
                             onChange={(event) => rackCreateForm.setData('warehouse_zone_id', event.target.value)}
                             options={zoneOptions.map((zone) => ({ value: zone.id, label: zone.label }))}
@@ -3721,36 +3835,34 @@ export default function Warehouse({
                     </Field>
                     <div className="grid gap-4 md:grid-cols-2">
                         <Field label="Kode">
-                            <BaseInput value={rackCreateForm.data.code} onChange={(event) => rackCreateForm.setData('code', event.target.value)} />
+                            <BaseInput icon={<NumberFieldIcon />} value={rackCreateForm.data.code} onChange={(event) => rackCreateForm.setData('code', event.target.value)} />
                         </Field>
                         <Field label="Nama">
-                            <BaseInput value={rackCreateForm.data.name} onChange={(event) => rackCreateForm.setData('name', event.target.value)} />
+                            <BaseInput icon={<TextFieldIcon />} value={rackCreateForm.data.name} onChange={(event) => rackCreateForm.setData('name', event.target.value)} />
                         </Field>
                     </div>
                     <div className="grid gap-4 md:grid-cols-2">
                         <Field label="Tipe Rack">
-                            <BaseInput value={rackCreateForm.data.rack_type} onChange={(event) => rackCreateForm.setData('rack_type', event.target.value)} />
+                            <BaseInput icon={<BoxFieldIcon />} value={rackCreateForm.data.rack_type} onChange={(event) => rackCreateForm.setData('rack_type', event.target.value)} />
                         </Field>
                         <Field label="Kapasitas">
-                            <BaseInput type="number" min="1" value={rackCreateForm.data.capacity} onChange={(event) => rackCreateForm.setData('capacity', event.target.value)} />
+                            <BaseInput icon={<NumberFieldIcon />} type="number" min="1" value={rackCreateForm.data.capacity} onChange={(event) => rackCreateForm.setData('capacity', event.target.value)} />
                         </Field>
                     </div>
                     <Field label="Catatan">
-                        <BaseTextArea rows={4} value={rackCreateForm.data.notes} onChange={(event) => rackCreateForm.setData('notes', event.target.value)} />
+                        <BaseTextArea icon={<TextFieldIcon />} rows={4} value={rackCreateForm.data.notes} onChange={(event) => rackCreateForm.setData('notes', event.target.value)} />
                     </Field>
-                    <button
-                        type="submit"
-                        disabled={rackCreateForm.processing}
-                        className="rounded-[14px] bg-[#28106F] px-5 py-3 text-[12px] font-black uppercase tracking-[0.16em] text-white shadow-[0_10px_20px_rgba(89,50,201,0.18)] disabled:opacity-60"
-                    >
-                        Simpan Rack
-                    </button>
+                    <ModalActions
+                        onCancel={() => setShowRackModal(false)}
+                        submitLabel="Simpan Rak"
+                        submitDisabled={rackCreateForm.processing}
+                    />
                 </form>
             </Modal>
 
             <Modal
                 open={isManager && showRackEditModal}
-                title="Edit Rak"
+                title="Ubah Rak"
                 subtitle="Perbarui detail rack agar sinkron dengan operasional gudang."
                 onClose={() => {
                     setShowRackEditModal(false);
@@ -3773,6 +3885,7 @@ export default function Warehouse({
                 >
                     <Field label="Zona">
                         <BaseSelect
+                            icon={<LayersIcon />}
                             value={rackEditForm.data.warehouse_zone_id}
                             onChange={(event) => rackEditForm.setData('warehouse_zone_id', event.target.value)}
                             options={zoneOptions.map((zone) => ({ value: zone.id, label: zone.label }))}
@@ -3780,24 +3893,25 @@ export default function Warehouse({
                     </Field>
                     <div className="grid gap-4 md:grid-cols-2">
                         <Field label="Kode">
-                            <BaseInput value={rackEditForm.data.code} onChange={(event) => rackEditForm.setData('code', event.target.value)} />
+                            <BaseInput icon={<NumberFieldIcon />} value={rackEditForm.data.code} onChange={(event) => rackEditForm.setData('code', event.target.value)} />
                             <InputError message={rackEditForm.errors.code} className="mt-2" />
                         </Field>
                         <Field label="Nama">
-                            <BaseInput value={rackEditForm.data.name} onChange={(event) => rackEditForm.setData('name', event.target.value)} />
+                            <BaseInput icon={<TextFieldIcon />} value={rackEditForm.data.name} onChange={(event) => rackEditForm.setData('name', event.target.value)} />
                             <InputError message={rackEditForm.errors.name} className="mt-2" />
                         </Field>
                     </div>
                     <div className="grid gap-4 md:grid-cols-2">
                         <Field label="Tipe Rack">
-                            <BaseInput value={rackEditForm.data.rack_type} onChange={(event) => rackEditForm.setData('rack_type', event.target.value)} />
+                            <BaseInput icon={<BoxFieldIcon />} value={rackEditForm.data.rack_type} onChange={(event) => rackEditForm.setData('rack_type', event.target.value)} />
                         </Field>
                         <Field label="Kapasitas">
-                            <BaseInput type="number" min="1" value={rackEditForm.data.capacity} onChange={(event) => rackEditForm.setData('capacity', event.target.value)} />
+                            <BaseInput icon={<NumberFieldIcon />} type="number" min="1" value={rackEditForm.data.capacity} onChange={(event) => rackEditForm.setData('capacity', event.target.value)} />
                         </Field>
                     </div>
                     <Field label="Status">
                         <BaseSelect
+                            icon={<ActivityIcon />}
                             value={rackEditForm.data.status}
                             onChange={(event) => rackEditForm.setData('status', event.target.value)}
                             options={[
@@ -3808,22 +3922,23 @@ export default function Warehouse({
                         />
                     </Field>
                     <Field label="Catatan">
-                        <BaseTextArea rows={4} value={rackEditForm.data.notes} onChange={(event) => rackEditForm.setData('notes', event.target.value)} />
+                        <BaseTextArea icon={<TextFieldIcon />} rows={4} value={rackEditForm.data.notes} onChange={(event) => rackEditForm.setData('notes', event.target.value)} />
                     </Field>
-                    <button
-                        type="submit"
-                        disabled={rackEditForm.processing || !editingRackId}
-                        className="rounded-[14px] bg-[#28106F] px-5 py-3 text-[12px] font-black uppercase tracking-[0.16em] text-white shadow-[0_10px_20px_rgba(89,50,201,0.18)] disabled:opacity-60"
-                    >
-                        Simpan Perubahan Rack
-                    </button>
+                    <ModalActions
+                        onCancel={() => {
+                            setShowRackEditModal(false);
+                            setEditingRackId(null);
+                        }}
+                        submitLabel="Simpan Perubahan Rak"
+                        submitDisabled={rackEditForm.processing || !editingRackId}
+                    />
                 </form>
             </Modal>
 
             <Modal
                 open={canManageRackStock && showRackStockModal}
-                title={editingRackStock ? 'Ubah Produk Rack' : 'Tambahkan Produk ke Rack'}
-                subtitle={editingRackStock ? 'Ubah detail stok produk pada rack aktif.' : 'Tambah stok produk langsung dari inspector rack.'}
+                title={editingRackStock ? 'Ubah Produk Rak' : 'Tambah Produk ke Rak'}
+                subtitle={editingRackStock ? 'Ubah detail stok produk pada rak aktif.' : 'Tambah stok produk langsung dari panel rak.'}
                 onClose={() => setShowRackStockModal(false)}
             >
                 <form
@@ -3846,6 +3961,7 @@ export default function Warehouse({
                 >
                     <Field label="Produk">
                         <BaseSelect
+                            icon={<BoxFieldIcon />}
                             value={rackStockCreateForm.data.product_id}
                             onChange={(event) => rackStockCreateForm.setData('product_id', event.target.value)}
                             options={productOptions.map((product) => ({ value: product.id, label: product.label }))}
@@ -3853,34 +3969,32 @@ export default function Warehouse({
                     </Field>
                     <div className="grid gap-4 md:grid-cols-2">
                         <Field label="Kuantitas">
-                            <BaseInput type="number" min="0" value={rackStockCreateForm.data.quantity} onChange={(event) => rackStockCreateForm.setData('quantity', event.target.value)} />
+                            <BaseInput icon={<NumberFieldIcon />} type="number" min="0" value={rackStockCreateForm.data.quantity} onChange={(event) => rackStockCreateForm.setData('quantity', event.target.value)} />
                         </Field>
                         <Field label="Reserved">
-                            <BaseInput type="number" min="0" value={rackStockCreateForm.data.reserved_quantity} onChange={(event) => rackStockCreateForm.setData('reserved_quantity', event.target.value)} />
+                            <BaseInput icon={<NumberFieldIcon />} type="number" min="0" value={rackStockCreateForm.data.reserved_quantity} onChange={(event) => rackStockCreateForm.setData('reserved_quantity', event.target.value)} />
                         </Field>
                     </div>
                     <div className="grid gap-4 md:grid-cols-2">
                         <Field label="Batch">
-                            <BaseInput value={rackStockCreateForm.data.batch_number} onChange={(event) => rackStockCreateForm.setData('batch_number', event.target.value)} />
+                            <BaseInput icon={<NumberFieldIcon />} value={rackStockCreateForm.data.batch_number} onChange={(event) => rackStockCreateForm.setData('batch_number', event.target.value)} />
                         </Field>
                         <Field label="Tanggal Kedaluwarsa">
-                            <BaseInput type="date" value={rackStockCreateForm.data.expired_date} onChange={(event) => rackStockCreateForm.setData('expired_date', event.target.value)} />
+                            <BaseInput icon={<CalendarFieldIcon />} type="date" value={rackStockCreateForm.data.expired_date} onChange={(event) => rackStockCreateForm.setData('expired_date', event.target.value)} />
                         </Field>
                     </div>
-                    <div className="rounded-[18px] border border-[#EDE8FC] bg-[#F8F7FF] px-4 py-4 text-[12px] font-semibold text-slate-500">
-                        Kuantitas tersedia: <span className="font-black text-[#28106F]">{formatNumber((Number(rackStockCreateForm.data.quantity) || 0) - (Number(rackStockCreateForm.data.reserved_quantity) || 0))}</span>
+                    <div className="rounded-[18px] border border-[#E5EAF3] bg-[#EFE9FF] px-4 py-4 text-[12px] font-semibold text-slate-500">
+                        Kuantitas tersedia: <span className="font-black text-[#4722B3]">{formatNumber((Number(rackStockCreateForm.data.quantity) || 0) - (Number(rackStockCreateForm.data.reserved_quantity) || 0))}</span>
                     </div>
-                    <div className="rounded-[18px] border border-[#EDE8FC] bg-[#F8F7FF] px-4 py-4 text-[12px] font-semibold text-slate-500">
-                        Sisa kapasitas rack sebelum produk ini: <span className="font-black text-[#28106F]">{formatNumber(rackCapacityRemaining)}</span>
+                    <div className="rounded-[18px] border border-[#E5EAF3] bg-[#EFE9FF] px-4 py-4 text-[12px] font-semibold text-slate-500">
+                        Sisa kapasitas rack sebelum produk ini: <span className="font-black text-[#4722B3]">{formatNumber(rackCapacityRemaining)}</span>
                     </div>
                     <InputError message={rackStockCreateForm.errors.quantity} className="mt-2" />
-                    <button
-                        type="submit"
-                        disabled={rackStockCreateForm.processing}
-                        className="rounded-[14px] bg-[#28106F] px-5 py-3 text-[12px] font-black uppercase tracking-[0.16em] text-white shadow-[0_10px_20px_rgba(89,50,201,0.18)] disabled:opacity-60"
-                    >
-                        {editingRackStock ? 'Perbarui Produk' : 'Tambahkan Produk'}
-                    </button>
+                    <ModalActions
+                        onCancel={() => setShowRackStockModal(false)}
+                        submitLabel={editingRackStock ? 'Simpan Perubahan' : 'Tambah Produk'}
+                        submitDisabled={rackStockCreateForm.processing}
+                    />
                 </form>
             </Modal>
         </DashboardLayout>

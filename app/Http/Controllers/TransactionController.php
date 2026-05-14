@@ -165,7 +165,7 @@ class TransactionController extends Controller
             $receipt = GoodsReceipt::find($transaction->reference_id);
 
             return $receipt ? [
-                'label' => 'Goods Receipt',
+                'label' => 'Barang Masuk',
                 'number' => $receipt->receipt_number,
                 'url' => route('goods-receipts.show', $receipt),
             ] : null;
@@ -175,7 +175,7 @@ class TransactionController extends Controller
             $stockOut = StockOut::find($transaction->reference_id);
 
             return $stockOut ? [
-                'label' => 'Stock Out',
+                'label' => 'Barang Keluar',
                 'number' => $stockOut->stock_out_number,
                 'url' => route('stock-outs.show', $stockOut),
             ] : null;
@@ -185,7 +185,7 @@ class TransactionController extends Controller
             $transfer = StockTransfer::find($transaction->reference_id);
 
             return $transfer ? [
-                'label' => 'Transfer Rack',
+                'label' => 'Pindah Rak',
                 'number' => $transfer->transfer_number,
                 'url' => route('rack.allocation.transfers.show', $transfer),
             ] : null;
@@ -195,7 +195,7 @@ class TransactionController extends Controller
             $adjustment = StockAdjustment::find($transaction->reference_id);
 
             return $adjustment ? [
-                'label' => 'Stock Adjustment',
+                'label' => 'Penyesuaian Stok',
                 'number' => $adjustment->adjustment_number,
                 'url' => route('stock-adjustments.show', $adjustment),
             ] : null;
@@ -220,7 +220,7 @@ class TransactionController extends Controller
             'out' => 'Barang Keluar',
             'transfer' => 'Transfer Stok',
             'adjustment' => 'Penyesuaian',
-            'opname' => 'Stock Opname',
+            'opname' => 'Cek Stok Fisik',
         ];
 
         $movementLabel = $movementLabels[$transaction->movement_type] ?? 'Selesai';

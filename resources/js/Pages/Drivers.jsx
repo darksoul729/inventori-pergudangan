@@ -121,29 +121,25 @@ export default function Drivers({ drivers = [] }) {
 
     return (
         <DashboardLayout
-            headerTitle="Manajemen Driver"
+            headerTitle="Driver Pengiriman"
             headerSearchPlaceholder="Cari driver, kontak, atau nomor SIM..."
             searchValue={searchTerm}
             onSearch={setSearchTerm}
             contentClassName="w-full max-w-none"
         >
-            <Head title="Manajemen Driver" />
-            {(errors.status || flash.error) && (
-                <div className="mb-4 rounded-[8px] border border-red-200 bg-red-50 px-4 py-3 text-[12px] font-bold text-red-700">
-                    {errors.status || flash.error}
-                </div>
-            )}
+            <Head title="Driver Pengiriman" />
+
 
             <div className="mb-6 flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
                 <div>
-                    <h1 className="text-[26px] font-black text-[#28106F] tracking-tight">Daftar Driver</h1>
+                    <h1 className="text-[26px] font-black text-[#4722B3] tracking-tight">Daftar Driver</h1>
                     <p className="text-[14px] font-semibold text-gray-500 mt-1">Kelola verifikasi dan status aktif driver di lapangan.</p>
                 </div>
                 <div className="flex flex-wrap items-center gap-3">
                     {activeTab === 'list' && (
                         <Link
                             href={route('drivers.create')}
-                            className="flex h-11 items-center space-x-2 rounded-[8px] bg-[#28106F] px-5 text-[12px] font-black text-white shadow-sm transition hover:bg-[#3730a3]"
+                            className="flex h-11 items-center space-x-2 rounded-[8px] bg-[#4722B3] px-5 text-[12px] font-black text-white shadow-sm transition hover:bg-[#3730a3]"
                         >
                             <PlusIcon className="h-4 w-4" />
                             <span>Buat Driver</span>
@@ -152,26 +148,26 @@ export default function Drivers({ drivers = [] }) {
                     <div className="flex rounded-[8px] border border-gray-200 bg-white p-1 shadow-sm">
                         <button
                             onClick={() => setActiveTab('list')}
-                            className={`h-9 px-5 rounded-[6px] text-[12px] font-black transition-all ${activeTab === 'list' ? 'bg-[#eef2ff] text-[#28106F]' : 'text-gray-400 hover:text-gray-600'}`}
+                            className={`h-9 px-5 rounded-[6px] text-[12px] font-black transition-all ${activeTab === 'list' ? 'bg-[#eef2ff] text-[#4722B3]' : 'text-gray-400 hover:text-gray-600'}`}
                         >
                             DAFTAR DRIVER
                         </button>
                         <button
                             onClick={() => setActiveTab('tracking')}
-                            className={`h-9 px-5 rounded-[6px] text-[12px] font-black transition-all ${activeTab === 'tracking' ? 'bg-[#eef2ff] text-[#28106F]' : 'text-gray-400 hover:text-gray-600'}`}
+                            className={`h-9 px-5 rounded-[6px] text-[12px] font-black transition-all ${activeTab === 'tracking' ? 'bg-[#eef2ff] text-[#4722B3]' : 'text-gray-400 hover:text-gray-600'}`}
                         >
                             PELACAKAN LANGSUNG
                         </button>
                     </div>
                     <div className="rounded-[8px] border border-gray-200 bg-white px-5 py-2 text-right shadow-sm">
                         <div className="text-[11px] font-black text-gray-400 uppercase tracking-wider">Total Pengemudi Aktif</div>
-                        <div className="text-[20px] font-black text-[#28106F]">{drivers.length}</div>
+                        <div className="text-[20px] font-black text-[#4722B3]">{drivers.length}</div>
                     </div>
                 </div>
             </div>
 
             {activeTab === 'list' ? (
-                <section className="overflow-hidden rounded-[8px] border border-[#EDE8FC] bg-white shadow-sm">
+                <section className="overflow-hidden rounded-[8px] border border-[#E5EAF3] bg-white shadow-sm">
                     <div className="overflow-x-auto">
                         <table className="w-full min-w-[980px]">
                             <thead>
@@ -188,11 +184,11 @@ export default function Drivers({ drivers = [] }) {
                                     <tr key={driver.id} className="hover:bg-gray-50/50 transition-colors">
                                         <td className="px-6 py-5">
                                             <div className="flex items-center space-x-3">
-                                                <div className="w-10 h-10 rounded-[12px] bg-[#28106F] flex items-center justify-center text-white font-black text-xs shadow-sm shadow-indigo-100">
+                                                <div className="w-10 h-10 rounded-[12px] bg-[#4722B3] flex items-center justify-center text-white font-black text-xs shadow-sm shadow-indigo-100">
                                                     {driver.user.name.charAt(0)}
                                                 </div>
                                                 <div>
-                                                    <div className="text-[14px] font-bold text-[#28106F]">{driver.user.name}</div>
+                                                    <div className="text-[14px] font-bold text-[#4722B3]">{driver.user.name}</div>
                                                     <div className="text-[12px] text-gray-400">{driver.user.email}</div>
                                                 </div>
                                             </div>
@@ -208,7 +204,7 @@ export default function Drivers({ drivers = [] }) {
                                             <div className="flex justify-end items-center gap-2">
                                                 <Link
                                                     href={route('drivers.show', driver.id)}
-                                                    className="inline-flex h-9 items-center gap-2 rounded-[8px] border border-indigo-100 bg-indigo-50 px-3 text-[11px] font-black text-[#28106F] transition-colors hover:bg-indigo-100"
+                                                    className="inline-flex h-9 items-center gap-2 rounded-[8px] border border-indigo-100 bg-indigo-50 px-3 text-[11px] font-black text-[#4722B3] transition-colors hover:bg-indigo-100"
                                                     title="Lihat Detail"
                                                 >
                                                     <EyeIcon className="w-4 h-4" />
@@ -246,15 +242,15 @@ export default function Drivers({ drivers = [] }) {
             ) : (
                 <div className="grid h-[calc(100vh-230px)] min-h-[620px] grid-cols-[360px_1fr] gap-5 animate-in fade-in slide-in-from-bottom-4 duration-500">
                     {/* Sidebar Driver Cards */}
-                    <div className="flex h-full flex-col overflow-hidden rounded-[8px] border border-[#EDE8FC] bg-white p-5 shadow-sm">
+                    <div className="flex h-full flex-col overflow-hidden rounded-[8px] border border-[#E5EAF3] bg-white p-5 shadow-sm">
                         <div className="mb-4 flex items-start justify-between gap-3">
                             <div>
-                                <h3 className="text-[16px] font-black text-[#28106F]">Daftar Driver Tracking</h3>
+                                <h3 className="text-[16px] font-black text-[#4722B3]">Daftar Driver Tracking</h3>
                                 <p className="text-[11px] font-bold text-gray-400">
                                     Online {trackingDrivers.filter((driver) => hasValidCoords(driver)).length} / Total {trackingDrivers.length}
                                 </p>
                             </div>
-                            <span className="rounded-[8px] bg-indigo-50 px-3 py-1 text-[11px] font-black text-[#28106F]">{trackingDrivers.length}</span>
+                            <span className="rounded-[8px] bg-indigo-50 px-3 py-1 text-[11px] font-black text-[#4722B3]">{trackingDrivers.length}</span>
                         </div>
 
                         <div className="flex-1 overflow-y-auto pr-2 space-y-3 custom-scrollbar">
@@ -273,13 +269,13 @@ export default function Drivers({ drivers = [] }) {
                                             }`}
                                     >
                                         <div className="flex items-start space-x-3 relative z-10">
-                                            <div className={`w-11 h-11 rounded-[12px] flex items-center justify-center font-black text-sm transition-all duration-300 ${focusedDriverId === driver.id ? 'bg-[#28106F] text-white' : 'bg-indigo-50 text-[#28106F]'
+                                            <div className={`w-11 h-11 rounded-[12px] flex items-center justify-center font-black text-sm transition-all duration-300 ${focusedDriverId === driver.id ? 'bg-[#4722B3] text-white' : 'bg-indigo-50 text-[#4722B3]'
                                                 }`}>
                                                 {(driver.user?.name || 'D').charAt(0)}
                                             </div>
                                             <div className="flex-1 min-w-0">
                                                 <div className="flex justify-between items-start">
-                                                    <div className="text-[14px] font-black text-[#28106F] truncate pr-2">{driver.user?.name || 'Driver tanpa nama'}</div>
+                                                    <div className="text-[14px] font-black text-[#4722B3] truncate pr-2">{driver.user?.name || 'Driver tanpa nama'}</div>
                                                     {driver.active_shipment_id && (
                                                         <div className="px-2 py-0.5 rounded-md bg-indigo-50 border border-indigo-100 text-[9px] font-black text-indigo-600 tracking-tighter">
                                                             {driver.active_shipment_id}
@@ -319,7 +315,7 @@ export default function Drivers({ drivers = [] }) {
                                                             <div className="ml-1 w-0.5 h-2 bg-gray-200"></div>
                                                             <div className="flex items-center space-x-2">
                                                                 <div className="w-2 h-2 rounded-full bg-indigo-500"></div>
-                                                                <div className="text-[10px] font-black text-[#28106F] truncate">{driver.active_shipment_destination || 'Tujuan'}</div>
+                                                                <div className="text-[10px] font-black text-[#4722B3] truncate">{driver.active_shipment_destination || 'Tujuan'}</div>
                                                             </div>
                                                         </div>
                                                         <div className="pt-2 border-t border-gray-200/50">

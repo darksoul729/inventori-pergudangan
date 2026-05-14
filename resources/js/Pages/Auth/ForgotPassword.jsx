@@ -1,77 +1,77 @@
-import InputError from '@/Components/InputError';
-import InputLabel from '@/Components/InputLabel';
-import TextInput from '@/Components/TextInput';
-import GuestLayout from '@/Layouts/GuestLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
 
-export default function ForgotPassword({ status }) {
+export default function ForgotPassword() {
     const { data, setData, post, processing, errors } = useForm({
         email: '',
     });
 
     const submit = (e) => {
         e.preventDefault();
-
         post(route('password.email'));
     };
 
     return (
-        <GuestLayout>
-            <Head title="Lupa Kata Sandi" />
+        <div className="min-h-screen petayu-bg-app flex font-sans">
+            <Head title="Lupa Password" />
 
-            <div className="mb-10 text-left animate-[fadeInUp_0.6s_ease-out]">
-                <h2 className="text-3xl font-bold text-slate-900">Lupa Kata Sandi</h2>
-                <p className="mt-2 text-sm text-slate-400">Masukkan email Anda untuk mendapatkan tautan reset</p>
+            <div className="hidden lg:flex w-[450px] xl:w-[500px] flex-col px-10 py-12 justify-between">
+                <div>
+                    <div className="flex items-center gap-2 mb-12">
+                        <img src="/images/logo_petayu.png" alt="Petayu Logo" className="h-10 w-auto object-contain" />
+                        <span className="text-xl font-bold text-slate-800 tracking-tight">Petayu<span className="text-violet-700">WMS</span></span>
+                    </div>
+
+                    <h1 className="text-[2rem] leading-tight font-bold text-slate-900 mb-4">
+                        Lupa password?
+                        <br />
+                        Kirim kode OTP dulu.
+                    </h1>
+                    <p className="text-slate-500 text-sm mb-10 leading-relaxed pr-4">
+                        Masukkan email login yang terdaftar. Kami akan kirim kode OTP untuk reset password Anda.
+                    </p>
+                </div>
+
+                <div className="text-xs text-slate-400">© 2026 Petayu. Semua hak dilindungi.</div>
             </div>
 
-            {status && (
-                <div className="mb-4 text-sm font-medium text-green-600 animate-[fadeInUp_0.4s_ease-out]">
-                    {status}
-                </div>
-            )}
+            <div className="flex-1 p-4 lg:p-6 flex flex-col h-screen">
+                <div className="bg-white w-full h-full rounded-[2rem] shadow-[0_8px_40px_rgb(0,0,0,0.04)] flex flex-col justify-center">
+                    <div className="w-full max-w-lg mx-auto px-8 lg:px-0">
+                        <h2 className="text-2xl font-bold text-slate-900 mb-1">Kirim Kode OTP</h2>
+                        <p className="text-sm text-slate-500 mb-8">Langkah 1 dari 2 untuk reset password.</p>
 
-            <form onSubmit={submit} className="space-y-8">
-                <div className="animate-[fadeInUp_0.6s_ease-out_0.1s_both]">
-                    <InputLabel htmlFor="email" value="EMAIL" className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1" />
-                    <TextInput
-                        id="email"
-                        type="email"
-                        name="email"
-                        value={data.email}
-                        className="block w-full border-0 border-b-2 border-slate-200 bg-transparent py-2 px-0 text-slate-900 placeholder:text-slate-300 focus:border-cyan-500 focus:ring-0 rounded-none transition-colors"
-                        placeholder="contoh@email.com"
-                        isFocused={true}
-                        onChange={(e) => setData('email', e.target.value)}
-                    />
-                    <InputError message={errors.email} className="mt-2" />
-                </div>
+                        <form onSubmit={submit} className="space-y-6">
+                            <div>
+                                <label className="block text-sm font-semibold text-slate-700 mb-2">Email Login</label>
+                                <input
+                                    type="email"
+                                    value={data.email}
+                                    onChange={(e) => setData('email', e.target.value)}
+                                    required
+                                    className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-violet-600/20 focus:border-violet-600 transition-colors"
+                                    placeholder="nama@perusahaan.com"
+                                />
+                                {errors.email && <p className="mt-1 text-xs text-red-500">{errors.email}</p>}
+                            </div>
 
-                <div className="flex items-center justify-between pt-2 animate-[fadeInUp_0.6s_ease-out_0.2s_both]">
-                    <Link
-                        href={route('login')}
-                        className="text-sm font-semibold text-cyan-500 hover:text-cyan-600 transition-colors"
-                    >
-                        Kembali ke Login
-                    </Link>
-                    <button
-                        type="submit"
-                        disabled={processing}
-                        className="flex items-center gap-2 rounded-full bg-[#2e1065] px-6 py-3 text-sm font-bold text-white shadow-lg shadow-[#2e1065]/30 transition-all hover:bg-[#4c1d95] hover:shadow-xl active:scale-95 disabled:opacity-50"
-                    >
-                        {processing ? (
-                            <>
-                                <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
-                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                                </svg>
-                                Mengirim...
-                            </>
-                        ) : (
-                            'Kirim Tautan Reset'
-                        )}
-                    </button>
+                            <button
+                                type="submit"
+                                disabled={processing}
+                                className="w-full py-3.5 bg-violet-600 hover:bg-violet-700 text-white rounded-xl text-sm font-semibold shadow-lg shadow-violet-600/30 transition-all disabled:opacity-70"
+                            >
+                                {processing ? 'Mengirim...' : 'Kirim Kode OTP'}
+                            </button>
+                        </form>
+
+                        <div className="mt-7 text-center">
+                            <Link href={route('login')} className="text-sm font-semibold text-violet-600 hover:text-violet-700">
+                                Kembali ke Login
+                            </Link>
+                        </div>
+                    </div>
                 </div>
-            </form>
-        </GuestLayout>
+            </div>
+        </div>
     );
 }
+

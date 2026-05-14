@@ -1,0 +1,378 @@
+- generic [ref=e3]:
+  - generic [ref=e4]:
+    - button [ref=e5] [cursor=pointer]:
+      - img [ref=e6]
+    - generic [ref=e8]:
+      - generic [ref=e9]:
+        - img "Logo PETAYU" [ref=e11]
+        - generic [ref=e12]:
+          - heading "PETAYU" [level=1] [ref=e13]
+          - paragraph [ref=e14]: SMART STORAGE, SMOOTH FLOW
+      - navigation [ref=e15]:
+        - link "Dasbor" [ref=e16] [cursor=pointer]:
+          - /url: /dashboard
+          - img [ref=e17]
+          - generic [ref=e22]: Dasbor
+        - link "Bantuan AI" [ref=e23] [cursor=pointer]:
+          - /url: /petayu-ai
+          - img [ref=e24]
+          - generic [ref=e27]: Bantuan AI
+        - generic [ref=e28]:
+          - button "Operasional Gudang" [ref=e29] [cursor=pointer]:
+            - generic [ref=e30]:
+              - img [ref=e31]
+              - generic [ref=e34]: Operasional Gudang
+            - img [ref=e36]
+          - generic [ref=e39]:
+            - link "Layout Gudang" [ref=e40] [cursor=pointer]:
+              - /url: /warehouse
+              - generic [ref=e41]: Layout Gudang
+            - link "Pindah Rak" [ref=e42] [cursor=pointer]:
+              - /url: /rack-allocation
+              - generic [ref=e43]: Pindah Rak
+            - link "Cek Stok" [ref=e44] [cursor=pointer]:
+              - /url: /stock-opname
+              - generic [ref=e45]: Cek Stok
+        - link "Stok Barang" [ref=e46] [cursor=pointer]:
+          - /url: /inventory
+          - img [ref=e47]
+          - generic [ref=e57]: Stok Barang
+        - generic [ref=e58]:
+          - button "Pembelian" [ref=e59] [cursor=pointer]:
+            - generic [ref=e60]:
+              - img [ref=e61]
+              - generic [ref=e65]: Pembelian
+            - img [ref=e67]
+          - generic [ref=e70]:
+            - link "Order Beli" [ref=e71] [cursor=pointer]:
+              - /url: /purchase-orders
+              - generic [ref=e72]: Order Beli
+            - link "Pemasok" [ref=e73] [cursor=pointer]:
+              - /url: /supplier
+              - generic [ref=e74]: Pemasok
+            - link "Tagihan" [ref=e75] [cursor=pointer]:
+              - /url: /tagihan
+              - generic [ref=e76]: Tagihan
+        - generic [ref=e77]:
+          - button "Riwayat" [ref=e78] [cursor=pointer]:
+            - generic [ref=e79]:
+              - img [ref=e80]
+              - generic [ref=e83]: Riwayat
+            - img [ref=e85]
+          - generic [ref=e88]:
+            - link "Riwayat Stok" [ref=e89] [cursor=pointer]:
+              - /url: /transaction
+              - generic [ref=e90]: Riwayat Stok
+            - link "Dokumen" [ref=e91] [cursor=pointer]:
+              - /url: /wms-documents
+              - generic [ref=e92]: Dokumen
+        - generic [ref=e93]:
+          - button "Pengiriman" [ref=e94] [cursor=pointer]:
+            - generic [ref=e95]:
+              - img [ref=e96]
+              - generic [ref=e101]: Pengiriman
+            - img [ref=e103]
+          - generic [ref=e106]:
+            - link "Pengiriman" [ref=e107] [cursor=pointer]:
+              - /url: /shipments
+              - generic [ref=e108]: Pengiriman
+            - link "Driver" [ref=e109] [cursor=pointer]:
+              - /url: /drivers
+              - generic [ref=e110]: Driver
+        - generic [ref=e111]:
+          - button "Sistem" [ref=e112] [cursor=pointer]:
+            - generic [ref=e113]:
+              - img [ref=e114]
+              - generic [ref=e117]: Sistem
+            - img [ref=e119]
+          - generic [ref=e122]:
+            - link "Laporan" [ref=e123] [cursor=pointer]:
+              - /url: /reports
+              - generic [ref=e124]: Laporan
+            - link "Pengaturan" [ref=e125] [cursor=pointer]:
+              - /url: /settings
+              - generic [ref=e126]: Pengaturan
+        - generic [ref=e127]:
+          - button "Bantuan" [ref=e128] [cursor=pointer]:
+            - generic [ref=e129]:
+              - img [ref=e130]
+              - generic [ref=e133]: Bantuan
+            - img [ref=e134]
+          - generic [ref=e137]:
+            - link "Tanya Tim" [ref=e138] [cursor=pointer]:
+              - /url: /help/live-support
+            - link "Cara Pakai" [ref=e139] [cursor=pointer]:
+              - /url: /help/documentation
+  - generic [ref=e140]:
+    - banner [ref=e141]:
+      - generic [ref=e142]:
+        - heading "Dokumentasi Sistem" [level=2] [ref=e143]
+        - generic [ref=e144]:
+          - img [ref=e145]
+          - textbox "Cari..." [ref=e148]
+        - generic [ref=e153]: "Sistem Inti: Operasional"
+      - generic [ref=e154]:
+        - generic [ref=e155]:
+          - link "3" [ref=e156] [cursor=pointer]:
+            - /url: /notifications
+            - img [ref=e158]
+            - generic [ref=e163]: "3"
+          - link [ref=e164] [cursor=pointer]:
+            - /url: /help/live-support
+            - img [ref=e166]
+        - generic [ref=e172] [cursor=pointer]:
+          - generic [ref=e173]:
+            - generic [ref=e174]: Rizky Pratama
+            - generic [ref=e175]: Manager Gudang
+          - generic [ref=e176]: R
+    - navigation [ref=e177]:
+      - link "Beranda" [ref=e178] [cursor=pointer]:
+        - /url: /dashboard
+        - img [ref=e179]
+        - generic [ref=e184]: Beranda
+      - img [ref=e185]
+      - link "Dasbor" [ref=e187] [cursor=pointer]:
+        - /url: /dashboard
+      - img [ref=e188]
+      - link "Bantuan" [ref=e190] [cursor=pointer]:
+        - /url: /help
+      - img [ref=e191]
+      - generic [ref=e193]: Cara Pakai
+    - main [ref=e194]:
+      - generic [ref=e196]:
+        - generic [ref=e198]:
+          - generic [ref=e199]:
+            - paragraph [ref=e200]: Pusat Bantuan
+            - heading "Dokumentasi Inventori Pergudangan" [level=1] [ref=e201]
+            - paragraph [ref=e202]: Panduan ringkas untuk setiap menu di sistem WMS ini, termasuk fungsi utama, hak akses, dan langkah kerja yang dipakai dalam operasional gudang.
+          - link "Bantuan Langsung" [ref=e203] [cursor=pointer]:
+            - /url: /help/live-support
+            - text: Bantuan Langsung
+            - img [ref=e204]
+        - generic [ref=e207]:
+          - img [ref=e209]
+          - generic [ref=e214]:
+            - heading "Alur Kerja Utama" [level=2] [ref=e215]
+            - generic [ref=e216]:
+              - generic [ref=e217]:
+                - generic [ref=e218]: "1"
+                - paragraph [ref=e219]: Manager menyiapkan master gudang, kategori, satuan, produk, supplier, dan driver.
+              - generic [ref=e220]:
+                - generic [ref=e221]: "2"
+                - paragraph [ref=e222]: Supervisor atau Manager membuat PO, menerima barang, melakukan transfer rack, dan menjalankan stock opname.
+              - generic [ref=e223]:
+                - generic [ref=e224]: "3"
+                - paragraph [ref=e225]: Staff menjalankan transaksi keluar dan membantu pengiriman berdasarkan data stok per rak.
+              - generic [ref=e226]:
+                - generic [ref=e227]: "4"
+                - paragraph [ref=e228]: Supervisor memverifikasi transaksi, POD, opname, dan adjustment.
+              - generic [ref=e229]:
+                - generic [ref=e230]: "5"
+                - paragraph [ref=e231]: Manager membaca dasbor dan laporan untuk mengambil keputusan operasional.
+        - generic [ref=e232]:
+          - article [ref=e233]:
+            - generic [ref=e234]:
+              - img [ref=e236]
+              - generic [ref=e238]: Manager, Supervisor, Staff
+            - heading "Dasbor Operasional" [level=3] [ref=e239]
+            - paragraph [ref=e240]: Pantau total stok, laju barang keluar, utilisasi rak, alert sistem, tren inbound dan outbound.
+            - generic [ref=e241]:
+              - generic [ref=e244]: Gunakan kartu KPI untuk membaca kondisi gudang secara cepat.
+              - generic [ref=e247]: Cek visualisasi rak untuk melihat kapasitas, rak kosong, dan rak hampir penuh.
+              - generic [ref=e250]: Buka dokumen terbaru untuk menelusuri bukti transaksi yang membentuk angka dasbor.
+            - link "Buka Menu" [ref=e251] [cursor=pointer]:
+              - /url: /dashboard
+              - text: Buka Menu
+              - img [ref=e252]
+          - article [ref=e254]:
+            - generic [ref=e255]:
+              - img [ref=e257]
+              - generic [ref=e260]: Semua role terautentikasi
+            - heading "PETAYU AI" [level=3] [ref=e261]
+            - paragraph [ref=e262]: Asisten analitik untuk bertanya kondisi stok, ringkasan operasional, dan rekomendasi berbasis data sistem.
+            - generic [ref=e263]:
+              - generic [ref=e266]: Mulai percakapan baru dari halaman PETAYU AI.
+              - generic [ref=e269]: Tanyakan ringkasan stok, pergerakan barang, atau status operasional.
+              - generic [ref=e272]: Gunakan jawaban sebagai bahan analisis awal sebelum mengambil tindakan di modul terkait.
+            - link "Buka Menu" [ref=e273] [cursor=pointer]:
+              - /url: /petayu-ai
+              - text: Buka Menu
+              - img [ref=e274]
+          - article [ref=e276]:
+            - generic [ref=e277]:
+              - img [ref=e279]
+              - generic [ref=e282]: Manager, Supervisor
+            - heading "Manajemen Gudang" [level=3] [ref=e283]
+            - paragraph [ref=e284]: Kelola zona, rak, kapasitas, layout gudang, serta penempatan stok di lokasi gudang.
+            - generic [ref=e285]:
+              - generic [ref=e288]: Manager mengatur zona dan master rak.
+              - generic [ref=e291]: Gunakan editor layout untuk sketch, rotate, simpan draft, dan ekspor PDF layout.
+              - generic [ref=e294]: Manager atau Supervisor menempatkan stok ke rak yang sesuai.
+              - generic [ref=e297]: Staff memakai informasi rak untuk mencari lokasi barang saat transaksi.
+            - link "Buka Menu" [ref=e298] [cursor=pointer]:
+              - /url: /warehouse
+              - text: Buka Menu
+              - img [ref=e299]
+          - article [ref=e301]:
+            - generic [ref=e302]:
+              - img [ref=e304]
+              - generic [ref=e309]: Manager, Supervisor
+            - heading "Transfer Rack" [level=3] [ref=e310]
+            - paragraph [ref=e311]: Pindahkan stok antar rak dan simpan bukti perpindahan untuk audit internal.
+            - generic [ref=e312]:
+              - generic [ref=e315]: Pilih produk, rak asal, rak tujuan, dan jumlah yang dipindahkan.
+              - generic [ref=e318]: Pastikan kapasitas rak tujuan masih mencukupi.
+              - generic [ref=e321]: Cetak atau buka detail transfer sebagai bukti perpindahan.
+            - link "Buka Menu" [ref=e322] [cursor=pointer]:
+              - /url: /rack-allocation
+              - text: Buka Menu
+              - img [ref=e323]
+          - article [ref=e325]:
+            - generic [ref=e326]:
+              - img [ref=e328]
+              - generic [ref=e332]: Manager, Supervisor
+            - heading "Stock Opname" [level=3] [ref=e333]
+            - paragraph [ref=e334]: Cocokkan stok sistem dengan stok fisik, lalu hasilkan koreksi bila ada selisih.
+            - generic [ref=e335]:
+              - generic [ref=e338]: Buat sesi opname berdasarkan area atau kebutuhan audit.
+              - generic [ref=e341]: Masukkan stok fisik yang ditemukan di lapangan.
+              - generic [ref=e344]: Tinjau selisih dan gunakan dokumen detail sebagai dasar koreksi stok.
+            - link "Buka Menu" [ref=e345] [cursor=pointer]:
+              - /url: /stock-opname
+              - text: Buka Menu
+              - img [ref=e346]
+          - article [ref=e348]:
+            - generic [ref=e349]:
+              - img [ref=e351]
+              - generic [ref=e361]: Manager, Supervisor, Staff
+            - heading "Inventaris" [level=3] [ref=e362]
+            - paragraph [ref=e363]: Lihat daftar produk, stok tersedia, batas minimum, stok maksimum otomatis, kategori, satuan, dan detail pergerakan.
+            - generic [ref=e364]:
+              - generic [ref=e367]: Cari produk berdasarkan nama atau kode.
+              - generic [ref=e370]: Buka detail produk untuk melihat stok, histori pergerakan, dan distribusi rak.
+              - generic [ref=e373]: Stok maksimum dihitung otomatis dari total kapasitas rak yang terhubung ke produk.
+              - generic [ref=e376]: Manager Gudang dapat menambah, mengubah, dan hapus paksa produk (dengan validasi relasi transaksi).
+            - link "Buka Menu" [ref=e377] [cursor=pointer]:
+              - /url: /inventory
+              - text: Buka Menu
+              - img [ref=e378]
+          - article [ref=e380]:
+            - generic [ref=e381]:
+              - img [ref=e383]
+              - generic [ref=e387]: Manager, Supervisor, Staff
+            - heading "Pesanan Pembelian" [level=3] [ref=e388]
+            - paragraph [ref=e389]: Pantau PO, pemasok, status pemesanan, dan proses barang masuk dari pembelian.
+            - generic [ref=e390]:
+              - generic [ref=e393]: Manager atau Supervisor membuat PO baru saat stok perlu dipenuhi.
+              - generic [ref=e396]: Perbarui status PO sesuai progres pengadaan.
+              - generic [ref=e399]: Gunakan detail PO untuk menelusuri produk, pemasok, dan dokumen terkait.
+            - link "Buka Menu" [ref=e400] [cursor=pointer]:
+              - /url: /purchase-orders
+              - text: Buka Menu
+              - img [ref=e401]
+          - article [ref=e403]:
+            - generic [ref=e404]:
+              - img [ref=e406]
+              - generic [ref=e411]: Manager, Supervisor, Staff
+            - heading "Pemasok" [level=3] [ref=e412]
+            - paragraph [ref=e413]: Kelola data supplier dan catatan performa pemasok untuk evaluasi pembelian.
+            - generic [ref=e414]:
+              - generic [ref=e417]: Manager menambah data pemasok baru.
+              - generic [ref=e420]: Supervisor mencatat performa pemasok berdasarkan pengiriman dan kualitas.
+              - generic [ref=e423]: Gunakan detail supplier untuk membaca histori transaksi dan evaluasi.
+            - link "Buka Menu" [ref=e424] [cursor=pointer]:
+              - /url: /supplier
+              - text: Buka Menu
+              - img [ref=e425]
+          - article [ref=e427]:
+            - generic [ref=e428]:
+              - img [ref=e430]
+              - generic [ref=e433]: Manager, Supervisor, Staff
+            - heading "Transaksi" [level=3] [ref=e434]
+            - paragraph [ref=e435]: Lihat transaksi masuk, keluar, adjustment, opname, dan dokumen pergerakan stok.
+            - generic [ref=e436]:
+              - generic [ref=e439]: Filter transaksi berdasarkan tipe, tanggal, atau status.
+              - generic [ref=e442]: Buka detail untuk melihat nomor dokumen, pihak terkait, dan item.
+              - generic [ref=e445]: Manager atau Supervisor dapat melakukan verifikasi transaksi bila diperlukan.
+            - link "Buka Menu" [ref=e446] [cursor=pointer]:
+              - /url: /transaction
+              - text: Buka Menu
+              - img [ref=e447]
+          - article [ref=e449]:
+            - generic [ref=e450]:
+              - img [ref=e452]
+              - generic [ref=e455]: Manager, Supervisor
+            - heading "Dokumen WMS" [level=3] [ref=e456]
+            - paragraph [ref=e457]: Kumpulan dokumen operasional gudang untuk ekspor dan arsip.
+            - generic [ref=e458]:
+              - generic [ref=e461]: Gunakan halaman ini untuk melihat dokumen masuk, keluar, opname, dan adjustment.
+              - generic [ref=e464]: Ekspor data saat diperlukan untuk laporan operasional.
+              - generic [ref=e467]: Pastikan dokumen sudah terverifikasi sebelum dipakai sebagai arsip final.
+            - link "Buka Menu" [ref=e468] [cursor=pointer]:
+              - /url: /wms-documents
+              - text: Buka Menu
+              - img [ref=e469]
+          - article [ref=e471]:
+            - generic [ref=e472]:
+              - img [ref=e474]
+              - generic [ref=e479]: Manager, Supervisor, Staff
+            - heading "Pengiriman" [level=3] [ref=e480]
+            - paragraph [ref=e481]: Pantau pengiriman, status delivery, bukti POD, validasi stok rak, dan posisi operasional pengiriman.
+            - generic [ref=e482]:
+              - generic [ref=e485]: Buat pengiriman dari data pesanan atau kebutuhan distribusi.
+              - generic [ref=e488]: Sistem membaca ketersediaan stok per rak sebelum pengiriman diproses.
+              - generic [ref=e491]: Perbarui status sesuai proses pengiriman.
+              - generic [ref=e494]: Verifikasi proof of delivery sebelum pengiriman dinyatakan selesai.
+            - link "Buka Menu" [ref=e495] [cursor=pointer]:
+              - /url: /shipments
+              - text: Buka Menu
+              - img [ref=e496]
+          - article [ref=e498]:
+            - generic [ref=e499]:
+              - img [ref=e501]
+              - generic [ref=e506]: Manager
+            - heading "Manajemen Driver" [level=3] [ref=e507]
+            - paragraph [ref=e508]: Kelola driver, status aktif/nonaktif (tahan), serta koordinat GPS untuk kebutuhan tracking.
+            - generic [ref=e509]:
+              - generic [ref=e512]: Manager menambah atau mengubah data driver.
+              - generic [ref=e515]: Aktifkan driver yang siap menerima tugas pengiriman, atau nonaktifkan sementara bila diperlukan.
+              - generic [ref=e518]: Sebelum menonaktifkan driver, cek dulu apakah masih punya shipment aktif.
+              - generic [ref=e521]: Gunakan data lokasi untuk memantau driver yang sedang bertugas.
+            - link "Buka Menu" [ref=e522] [cursor=pointer]:
+              - /url: /drivers
+              - text: Buka Menu
+              - img [ref=e523]
+          - article [ref=e525]:
+            - generic [ref=e526]:
+              - img [ref=e528]
+              - generic [ref=e530]: Manager, Supervisor
+            - heading "Laporan" [level=3] [ref=e531]
+            - paragraph [ref=e532]: Buat laporan stok, transaksi, performa gudang, dan ekspor data analitik.
+            - generic [ref=e533]:
+              - generic [ref=e536]: Pilih sumber data laporan yang ingin dianalisis.
+              - generic [ref=e539]: Gunakan visualisasi untuk membaca tren dan komposisi.
+              - generic [ref=e542]: Generate atau unduh laporan saat data sudah sesuai kebutuhan.
+            - link "Buka Menu" [ref=e543] [cursor=pointer]:
+              - /url: /reports
+              - text: Buka Menu
+              - img [ref=e544]
+          - article [ref=e546]:
+            - generic [ref=e547]:
+              - img [ref=e549]
+              - generic [ref=e552]: Manager
+            - heading "Pengaturan" [level=3] [ref=e553]
+            - paragraph [ref=e554]: Atur profil gudang, kategori, satuan, serta akun operasional dengan layout panel konfigurasi terbaru.
+            - generic [ref=e555]:
+              - generic [ref=e558]: Lengkapi identitas dan lokasi gudang.
+              - generic [ref=e561]: Kelola kategori dan satuan agar master produk konsisten.
+              - generic [ref=e564]: Tambah dan kelola akun staff sesuai kebutuhan operasional.
+            - link "Buka Menu" [ref=e565] [cursor=pointer]:
+              - /url: /settings
+              - text: Buka Menu
+              - img [ref=e566]
+  - button "Buka PETAYU AI" [ref=e568] [cursor=pointer]:
+    - generic [ref=e569]:
+      - generic [ref=e572]:
+        - img [ref=e574]
+        - img [ref=e580]
+      - generic: ✦ PETAYU AI

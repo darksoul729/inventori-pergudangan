@@ -38,7 +38,7 @@ function ToastItem({ toast, onRemove }) {
         success: 'bg-emerald-50 border-emerald-200 text-emerald-700',
         error: 'bg-red-50 border-red-200 text-red-700',
         warning: 'bg-amber-50 border-amber-200 text-amber-700',
-        info: 'bg-[#eef2ff] border-[#c7d2fe] text-[#28106F]',
+        info: 'bg-[#eef2ff] border-[#c7d2fe] text-[#4722B3]',
     };
 
     return (

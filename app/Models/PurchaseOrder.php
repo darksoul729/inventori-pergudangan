@@ -2,14 +2,16 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToTenant;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class PurchaseOrder extends Model
 {
-    use HasFactory;
+    use HasFactory, BelongsToTenant;
 
     protected $fillable = [
+        'tenant_id',
         'po_number',
         'supplier_id',
         'warehouse_id',
@@ -64,5 +66,10 @@ class PurchaseOrder extends Model
     public function goodsReceipts()
     {
         return $this->hasMany(GoodsReceipt::class);
+    }
+
+    public function emailLogs()
+    {
+        return $this->hasMany(PurchaseOrderEmailLog::class);
     }
 }

@@ -1,72 +1,96 @@
 import DashboardLayout from '@/Layouts/DashboardLayout';
 import { Head, usePage } from '@inertiajs/react';
-import { BadgeCheck, Mail, Phone, ShieldCheck, UserRound } from 'lucide-react';
+import { BadgeCheck, Mail, Phone, ShieldCheck, UserRound, Sparkles } from 'lucide-react';
+import { useState } from 'react';
 import DeleteUserForm from './Partials/DeleteUserForm';
 import UpdatePasswordForm from './Partials/UpdatePasswordForm';
 import UpdateProfileInformationForm from './Partials/UpdateProfileInformationForm';
 
 export default function Edit({ mustVerifyEmail, status }) {
-    const user = usePage().props.auth.user;
+    const { auth, saas } = usePage().props;
+    const user = auth.user;
     const roleLabel = normalizeRole(user.role_name || user.role);
     const statusLabel = normalizeStatus(user.status);
     const initials = getInitials(user.name);
+    const planLabel = getPlanLabel(saas?.plan);
 
     return (
-        <DashboardLayout headerTitle="Profil Pengguna" contentClassName="max-w-none">
+        <DashboardLayout headerTitle="Profil Akun" contentClassName="max-w-none" hideMainScrollbar>
             <Head title="Profil" />
 
-            <div className="pb-12">
-                <section className="border-b border-slate-200 bg-white px-7 py-7 shadow-sm">
-                    <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-                        <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
-                            <ProfilePhoto user={user} initials={initials} size="large" />
-                            <div>
-                                <p className="text-[11px] font-black uppercase tracking-[0.22em] text-[#28106F]">
-                                    Pusat Akun
-                                </p>
-                                <h1 className="mt-2 text-[32px] font-black tracking-tight text-slate-950">
-                                    {user.name}
-                                </h1>
-                                <div className="mt-3 flex flex-wrap items-center gap-2">
-                                    <StatusBadge icon={ShieldCheck} text={roleLabel} />
-                                    <StatusBadge icon={BadgeCheck} text={statusLabel} tone="success" />
+            <div className="relative min-h-screen pb-20">
+                {/* Atmospheric Header Background */}
+                <div className="absolute top-0 left-0 right-0 h-[220px] bg-gradient-to-br from-[#4722B3]/5 via-white to-transparent -z-10" />
+                <div className="absolute top-0 left-0 right-0 h-[220px] opacity-[0.03] -z-10" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%234722B3' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")` }} />
+                <section className="px-10 pt-10">
+                    <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+                        <div className="flex flex-col gap-6 sm:flex-row sm:items-center">
+                            <div className="relative group">
+                                <div className="absolute -inset-1.5 bg-gradient-to-tr from-[#5B33CC] to-[#4722B3] rounded-[22px] blur opacity-20 group-hover:opacity-30 transition duration-500"></div>
+                                <ProfilePhoto user={user} initials={initials} size="large" />
+                            </div>
+                            <div className="pb-2">
+                                <div className="flex items-center gap-3">
+                                    <h1 className="text-[36px] font-black tracking-tight text-slate-900 leading-tight">
+                                        {user.name}
+                                    </h1>
+                                    {user.email_verified_at && <BadgeCheck className="w-7 h-7 text-[#5B33CC] fill-indigo-50" />}
+                                </div>
+                                <div className="mt-2 flex flex-wrap items-center gap-3">
+                                    <span className="flex items-center gap-1.5 text-[11px] font-bold text-slate-500 bg-white border border-slate-200 px-2.5 py-1 rounded-full shadow-sm">
+                                        <ShieldCheck className="w-3 h-3 text-[#5B33CC]" />
+                                        {roleLabel}
+                                    </span>
+                                    <span className="flex items-center gap-1.5 text-[11px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-100 px-2.5 py-1 rounded-full shadow-sm">
+                                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
+                                        {statusLabel}
+                                    </span>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="grid gap-3 sm:grid-cols-2">
-                            <InfoPill icon={Mail} label="Email" value={user.email} />
-                            <InfoPill icon={Phone} label="Telepon" value={user.phone || 'Belum diisi'} />
+                        <div className="flex flex-wrap gap-4 pb-2">
+                            <InfoPill icon={Mail} label="Email Terdaftar" value={user.email} />
+                            <InfoPill icon={Phone} label="Kontak WhatsApp" value={user.phone || 'Belum diisi'} />
                         </div>
                     </div>
                 </section>
 
-                <section className="grid gap-6 pt-7 lg:grid-cols-[340px_minmax(0,1fr)]">
-                    <aside className="space-y-6">
-                        <div className="rounded-[8px] border border-slate-200 bg-white p-5 shadow-sm">
-                            <p className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-400">
-                                Kartu Identitas
+                <section className="grid gap-8 px-10 pt-10 lg:grid-cols-[340px_minmax(0,1fr)]">
+                    <aside className="space-y-6 lg:sticky lg:top-10 lg:self-start">
+                        {/* ID Card Style Summary */}
+                        <div className="relative overflow-hidden rounded-3xl border border-slate-200 bg-white p-6 shadow-[0_10px_30px_rgba(0,0,0,0.04)] transition-all hover:shadow-xl">
+                            <div className="absolute -top-12 -right-12 h-32 w-32 rounded-full bg-[#5B33CC]/5 blur-3xl" />
+                            <div className="absolute -bottom-12 -left-12 h-32 w-32 rounded-full bg-emerald-500/5 blur-3xl" />
+                            
+                            <p className="relative text-[11px] font-black uppercase tracking-[0.18em] text-slate-400">
+                                ID Card Personel
                             </p>
-                            <div className="mt-4 rounded-[8px] border border-slate-200 bg-slate-50 p-5">
+                            
+                            <div className="relative mt-5 rounded-2xl border border-[#E5EAF3] bg-gradient-to-b from-white to-slate-50/50 p-5 shadow-inner">
                                 <div className="flex items-center gap-4">
                                     <ProfilePhoto user={user} initials={initials} />
                                     <div className="min-w-0">
                                         <p className="truncate text-[16px] font-black text-slate-950">{user.name}</p>
-                                        <p className="mt-1 text-[12px] font-bold uppercase tracking-wider text-slate-400">{roleLabel}</p>
+                                        <p className="mt-1 text-[11px] font-bold uppercase tracking-wider text-[#5B33CC]">{roleLabel}</p>
                                     </div>
                                 </div>
-                                <dl className="mt-5 space-y-4">
-                                    <IdentityRow label="Status Akses" value={statusLabel} />
-                                    <IdentityRow label="Verifikasi Email" value={user.email_verified_at ? 'Terverifikasi' : 'Belum Terverifikasi'} />
-                                    <IdentityRow label="Nomor Telepon" value={user.phone || '-'} />
-                                </dl>
+                                <div className="mt-6 space-y-4">
+                                    <IdentityRow label="ID User" value={`#USR-${user.id.toString().padStart(4, '0')}`} />
+                                    <IdentityRow label="Verifikasi" value={user.email_verified_at ? 'Sukses' : 'Pending'} />
+                                    <IdentityRow label="Tier Paket" value={planLabel} />
+                                </div>
                             </div>
+
                         </div>
 
-                        <div className="rounded-[8px] border border-indigo-100 bg-indigo-50 px-4 py-4">
-                            <p className="text-[13px] font-black text-[#28106F]">Akses operasional gudang</p>
-                            <p className="mt-2 text-[12px] font-semibold leading-6 text-indigo-900/70">
-                                Data profil dipakai untuk audit transaksi, eskalasi kendala, dan identitas pengguna pada workflow WMS.
+                        <div className="rounded-2xl border border-indigo-100 bg-[#f4f3ff] p-5">
+                            <div className="flex items-center gap-2 text-[#4722B3]">
+                                <ShieldCheck className="w-4 h-4" />
+                                <p className="text-[13px] font-black">Keamanan Data</p>
+                            </div>
+                            <p className="mt-3 text-[12px] font-semibold leading-relaxed text-indigo-900/60">
+                                Informasi ini bersifat pribadi dan hanya digunakan untuk keperluan otentikasi serta log audit sistem pergudangan.
                             </p>
                         </div>
                     </aside>
@@ -89,17 +113,23 @@ export default function Edit({ mustVerifyEmail, status }) {
 
 function ProfilePhoto({ user, initials, size = 'normal' }) {
     const large = size === 'large';
+    const [imageError, setImageError] = useState(false);
 
     return (
-        <div className={`${large ? 'h-24 w-24 rounded-[8px]' : 'h-16 w-16 rounded-[8px]'} flex flex-shrink-0 items-center justify-center overflow-hidden border border-indigo-100 bg-[#f4f3ff] text-[#28106F] shadow-sm`}>
-            {user.profile_photo_url ? (
+        <div className={`${large ? 'h-32 w-32 rounded-[22px]' : 'h-16 w-16 rounded-xl'} flex flex-shrink-0 items-center justify-center overflow-hidden border-4 border-white bg-[#f4f3ff] text-[#4722B3] shadow-md relative z-10`}>
+            {user.profile_photo_url && !imageError ? (
                 <img
                     src={user.profile_photo_url}
                     alt={`Foto profil ${user.name}`}
                     className="h-full w-full object-cover"
+                    onError={() => setImageError(true)}
                 />
             ) : (
-                <span className={`${large ? 'text-[30px]' : 'text-[20px]'} font-black tracking-tight`}>{initials}</span>
+                <img
+                    src="/images/image.png"
+                    alt="Foto profil default"
+                    className="h-full w-full object-cover opacity-85"
+                />
             )}
         </div>
     );
@@ -124,7 +154,7 @@ function InfoPill({ icon: Icon, label, value }) {
 function StatusBadge({ icon: Icon, text, tone = 'default' }) {
     const styles = tone === 'success'
         ? 'border-emerald-100 bg-emerald-50 text-emerald-700'
-        : 'border-indigo-100 bg-[#f4f3ff] text-[#28106F]';
+        : 'border-indigo-100 bg-[#f4f3ff] text-[#4722B3]';
 
     return (
         <span className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-[11px] font-black uppercase tracking-wider ${styles}`}>
@@ -182,4 +212,15 @@ function normalizeStatus(status) {
     }
 
     return 'Belum Diatur';
+}
+
+function getPlanLabel(planCode) {
+    const plans = {
+        'trial_3d': 'Free Trial',
+        'basic': 'Basic Plan',
+        'pro': 'Professional',
+        'enterprise': 'Enterprise'
+    };
+
+    return plans[planCode] || 'Standard';
 }

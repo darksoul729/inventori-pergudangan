@@ -314,7 +314,7 @@ export default function ShipmentMap({ shipments = [], mapOptions = {} }) {
                             )}
 
                             {options.showOriginMarkers && origin && (
-                                <Marker position={origin} icon={pointIcon({ color: '#5932C9', icon: 'warehouse' })}>
+                                <Marker position={origin} icon={pointIcon({ color: '#5B33CC', icon: 'warehouse' })}>
                                     <Popup>
                                         <div className="text-[11px] font-black uppercase tracking-wide text-indigo-600">Asal Pengiriman</div>
                                         <div className="text-[13px] font-bold text-slate-900">{shipment.origin_name}</div>
@@ -365,7 +365,7 @@ export default function ShipmentMap({ shipments = [], mapOptions = {} }) {
                                         {shipment.driver_id && (
                                             <button
                                                 onClick={() => router.get(route('drivers.index'), { tab: 'tracking', id: shipment.driver_id })}
-                                                className="mt-3 w-full flex items-center justify-center gap-2 bg-[#28106F] hover:bg-[#2a27a3] text-white text-[10px] font-black uppercase tracking-widest py-2 px-3 rounded-lg transition-all shadow-md active:scale-95"
+                                                className="mt-3 w-full flex items-center justify-center gap-2 bg-[#4722B3] hover:bg-[#2a27a3] text-white text-[10px] font-black uppercase tracking-widest py-2 px-3 rounded-lg transition-all shadow-md active:scale-95"
                                             >
                                                 <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />

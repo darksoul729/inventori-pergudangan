@@ -1,25 +1,96 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-    --brand-primary: #5b3fd3;
-    --brand-secondary: #6f56e8;
-    --brand-accent: #59bdd9;
-    --brand-soft: #f3f0ff;
+    --brand-primary: #5b33cc;
+    --brand-primary-strong: #4722b3;
+    --brand-primary-soft: #efe9ff;
+    --brand-accent: #1f9cc0;
+    --text-main: #182033;
+    --text-muted: #5a667a;
+    --surface-app: #f4f6fb;
+    --surface-card: #ffffff;
+    --border-soft: #e5eaf3;
 }
 
 @layer base {
     body {
-        background-color: #f8f9fc;
+        background-color: var(--surface-app);
+        color: var(--text-main);
+        font-family: 'Plus Jakarta Sans', ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+        letter-spacing: -0.01em;
     }
 
     ::selection {
         background: rgba(91, 63, 211, 0.2);
     }
+
+    input,
+    select,
+    textarea {
+        border-radius: 0.75rem;
+    }
 }
 
 @layer utilities {
+    .card-base {
+        @apply rounded-2xl border bg-white shadow-sm;
+        border-color: var(--border-soft);
+    }
+
+    .btn-primary {
+        @apply rounded-xl px-4 py-2.5 text-sm font-semibold text-white transition;
+        background-color: var(--brand-primary);
+    }
+
+    .btn-primary:hover {
+        background-color: var(--brand-primary-strong);
+    }
+
+    .btn-secondary {
+        @apply rounded-xl border px-4 py-2.5 text-sm font-semibold transition;
+        border-color: var(--border-soft);
+        color: var(--text-muted);
+        background: #fff;
+    }
+
+    .btn-secondary:hover {
+        background: #f8fafc;
+    }
+
+    .petayu-bg-app {
+        background: var(--surface-app);
+    }
+
+    .petayu-bg-card {
+        background: var(--surface-card);
+    }
+
+    .petayu-border {
+        border-color: var(--border-soft);
+    }
+
+    .petayu-text-main {
+        color: var(--text-main);
+    }
+
+    .petayu-text-muted {
+        color: var(--text-muted);
+    }
+
+    .petayu-brand {
+        color: var(--brand-primary);
+    }
+
+    .petayu-brand-soft {
+        background: var(--brand-primary-soft);
+    }
+
     .custom-scrollbar::-webkit-scrollbar {
         width: 4px;
     }
@@ -121,6 +192,22 @@
         50% {
             transform: translateY(-12px);
         }
+    }
+
+    /* Welcome page reveal animations */
+    .reveal-fade-up {
+        opacity: 0;
+        transform: translateY(20px);
+        transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+    }
+
+    .reveal-fade-up.revealed {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    .animate-float {
+        animation: float 6s ease-in-out infinite;
     }
 
 }

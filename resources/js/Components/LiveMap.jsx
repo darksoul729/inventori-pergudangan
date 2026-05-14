@@ -86,17 +86,17 @@ export default function LiveMap({ onDriversLoad = () => {}, focusedDriverId = nu
         .map(d => ({ lat: parseFloat(d.latitude), lng: parseFloat(d.longitude) }));
 
     return (
-        <div className="h-full w-full rounded-[8px] overflow-hidden border border-[#EDE8FC] shadow-sm relative bg-white">
+        <div className="h-full w-full rounded-[8px] overflow-hidden border border-[#E5EAF3] shadow-sm relative bg-white">
             {loading && (
                 <div className="absolute inset-0 z-[1000] bg-white/50 backdrop-blur-sm flex items-center justify-center">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#28106F]"></div>
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#4722B3]"></div>
                 </div>
             )}
             
             <MapContainer 
                 center={[-6.200000, 106.816666]} 
                 zoom={13} 
-                style={{ height: '100%', width: '100%', background: '#F8F7FF' }}
+                style={{ height: '100%', width: '100%', background: '#EFE9FF' }}
                 className="z-10"
             >
                 <TileLayer
@@ -120,7 +120,7 @@ export default function LiveMap({ onDriversLoad = () => {}, focusedDriverId = nu
                             icon={L.divIcon({
                                 className: 'custom-div-icon',
                                 html: `
-                                    <div class="truck-marker-container" style="--marker-color: ${driver.last_location_mock ? '#ef4444' : '#28106F'};">
+                                    <div class="truck-marker-container" style="--marker-color: ${driver.last_location_mock ? '#ef4444' : '#4722B3'};">
                                         <div class="truck-pulse"></div>
                                         <div class="truck-icon-bg">
                                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
@@ -137,7 +137,7 @@ export default function LiveMap({ onDriversLoad = () => {}, focusedDriverId = nu
                             <Popup className="custom-map-popup">
                                     <div className="p-2 min-w-[150px]">
                                     <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Driver Aktif</div>
-                                    <div className="font-black text-[#28106F] text-[15px] leading-tight mb-2">{driver.user?.name || 'Driver'}</div>
+                                    <div className="font-black text-[#4722B3] text-[15px] leading-tight mb-2">{driver.user?.name || 'Driver'}</div>
                                     
                                     {driver.active_shipment_id ? (
                                         <div className="mb-3 p-2 bg-emerald-50 rounded-xl border border-emerald-100/50">

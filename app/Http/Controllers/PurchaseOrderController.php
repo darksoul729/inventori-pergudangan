@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use Barryvdh\DomPDF\Facade\Pdf;
+use App\Mail\PetayuSystemMail;
+use App\Models\PurchaseOrderEmailLog;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\PurchaseOrder;
@@ -16,6 +18,8 @@ use App\Models\ProductStock;
 use App\Traits\HandlesStockSync;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
@@ -23,43 +27,80 @@ class PurchaseOrderController extends Controller
 {
     use HandlesStockSync;
 
-    public function index()
+    private function resolveOperationalWarehouse(Request $request): Warehouse
     {
-        $purchaseOrders = PurchaseOrder::with(['supplier', 'warehouse', 'creator', 'items'])
-            ->orderBy('created_at', 'desc')
-            ->get()
-            ->map(function ($po) {
-                // Calculate grand total from items subtotal
-                $po->total_amount = $po->items->sum('subtotal');
-                return $po;
+        $tenantId = (int) ($request->user()?->tenant_id ?? 0);
+        abort_unless($tenantId > 0, 403, 'Akun belum terhubung ke tenant.');
+
+        return Warehouse::where('tenant_id', $tenantId)
+            ->orderBy('id')
+            ->firstOrFail(['id', 'name', 'location']);
+    }
+
+    public function index(Request $request)
+    {
+        $query = PurchaseOrder::with(['supplier', 'warehouse', 'creator', 'items'])
+            ->orderBy('created_at', 'desc');
+
+        if ($status = $request->query('status')) {
+            $query->where('status', $status);
+        }
+        if ($search = $request->query('search')) {
+            $query->where(function ($q) use ($search) {
+                $q->where('po_number', 'like', "%{$search}%")
+                  ->orWhereHas('supplier', fn ($s) => $s->where('name', 'like', "%{$search}%"));
             });
+        }
+
+        $paginated = $query->paginate($request->query('per_page', 15))->withQueryString();
+
+        $paginated->getCollection()->transform(function ($po) {
+            $po->total_amount = $po->items->sum('subtotal');
+            return $po;
+        });
+
+        // Stats from all POs (unfiltered)
+        $allPOs = PurchaseOrder::with('items')->get();
+        $stats = [
+            'total' => $allPOs->count(),
+            'pending' => $allPOs->where('status', 'pending')->count(),
+            'approved' => $allPOs->where('status', 'approved')->count(),
+            'received' => $allPOs->where('status', 'received')->count(),
+            'totalAmount' => $allPOs->sum(fn ($po) => $po->items->sum('subtotal')),
+        ];
 
         return Inertia::render('PurchaseOrders/Index', [
-            'purchaseOrders' => $purchaseOrders,
+            'purchaseOrders' => $paginated,
+            'stats' => $stats,
+            'filters' => $request->only(['status', 'search', 'per_page']),
         ]);
     }
 
-    public function create()
+    public function create(Request $request)
     {
         $suppliers = Supplier::where('status', 'active')->get(['id', 'name', 'code']);
-        $operationalWarehouse = Warehouse::orderBy('id')->firstOrFail(['id', 'name', 'location']);
-        $products = Product::all(['id', 'sku', 'name', 'unit_id']);
-        
+        $operationalWarehouse = $this->resolveOperationalWarehouse($request);
+        $products = Product::all(['id', 'sku', 'name', 'unit_id', 'image']);
+        $hasSuppliers = $suppliers->isNotEmpty();
+
         // Auto generate string PO
-        $autoPoNumber = 'PO-' . now()->format('Ymd') . '-' . strtoupper(Str::random(4));
+        $tenantCode = strtoupper((string) ($request->user()?->tenant?->code ?? 'TEN'));
+        $tenantCode = preg_replace('/[^A-Z0-9]/', '', $tenantCode) ?: 'TEN';
+        $autoPoNumber = 'PO-' . $tenantCode . '-' . now()->format('Ym') . '-' . strtoupper(Str::random(4));
 
         return Inertia::render('PurchaseOrders/Create', [
             'suppliers' => $suppliers,
             'products' => $products,
             'autoPoNumber' => $autoPoNumber,
             'operationalWarehouse' => $operationalWarehouse,
+            'has_suppliers' => $hasSuppliers,
         ]);
     }
 
     public function store(Request $request)
     {
         Gate::authorize('create-purchaseOrder');
-        $operationalWarehouse = Warehouse::orderBy('id')->firstOrFail();
+        $operationalWarehouse = $this->resolveOperationalWarehouse($request);
 
         $validated = $request->validate([
             'po_number' => 'required|string|unique:purchase_orders,po_number',
@@ -78,7 +119,13 @@ class PurchaseOrderController extends Controller
 
         $validated['warehouse_id'] = $validated['warehouse_id'] ?? $operationalWarehouse->id;
 
-        DB::transaction(function () use ($validated, $request) {
+        if ((int) $validated['warehouse_id'] !== (int) $operationalWarehouse->id) {
+            throw ValidationException::withMessages([
+                'warehouse_id' => 'Gudang tidak valid untuk tenant Anda.',
+            ]);
+        }
+
+        $po = DB::transaction(function () use ($validated, $request) {
             $po = PurchaseOrder::create([
                 'po_number' => $validated['po_number'],
                 'supplier_id' => $validated['supplier_id'],
@@ -102,14 +149,35 @@ class PurchaseOrderController extends Controller
                     'expired_date' => $itemData['expired_date'] ?? null,
                 ]);
             }
+            return $po;
         });
 
-        return redirect()->route('purchase-orders.index')->with('success', 'Purchase Order berhasil dibuat.');
+        $po->loadMissing([
+            'supplier:id,name,code,contact_person,email,phone,address,city',
+            'warehouse:id,name,location',
+            'creator:id,name,email',
+            'items.product:id,sku,name',
+        ]);
+
+        $sentEmail = $this->sendPurchaseOrderEmailOnce($request, $po);
+        $message = $sentEmail
+            ? 'Purchase Order berhasil dibuat dan otomatis dikirim ke email pemasok.'
+            : 'Purchase Order berhasil dibuat. Email pemasok kosong, jadi PO belum dikirim.';
+
+        return redirect()->route('purchase-orders.index')->with('success', $message);
     }
 
     public function show(PurchaseOrder $purchaseOrder)
     {
-        $purchaseOrder->load(['supplier', 'warehouse', 'creator', 'approver', 'items.product', 'goodsReceipts.items']);
+        $purchaseOrder->load([
+            'supplier',
+            'warehouse',
+            'creator',
+            'approver',
+            'items.product',
+            'goodsReceipts.items',
+            'emailLogs.sender:id,name',
+        ]);
         $purchaseOrder->total_amount = $purchaseOrder->items->sum('subtotal');
 
         return Inertia::render('PurchaseOrders/Show', [
@@ -143,7 +211,14 @@ class PurchaseOrderController extends Controller
         ]);
 
         if (in_array($validated['status'], ['approved', 'rejected', 'cancelled'], true)) {
-            abort_unless($this->isManager($request), 403, 'Hanya Manager Gudang yang dapat menyetujui, menolak, atau membatalkan PO.');
+            abort_unless($this->isManager($request) || $this->isSupervisor($request), 403, 'Hanya Supervisor atau Manager yang dapat menyetujui, menolak, atau membatalkan PO.');
+        }
+
+        if ($validated['status'] === 'received') {
+            abort_unless(
+                $this->isManager($request) || $this->isSupervisor($request) || $this->isStaff($request),
+                403, 'Hanya Staff, Supervisor, atau Manager yang dapat mengkonfirmasi penerimaan barang.'
+            );
         }
 
         DB::transaction(function () use ($validated, $request, $purchaseOrder) {
@@ -242,6 +317,125 @@ class PurchaseOrderController extends Controller
         return redirect()->back()->with('success', 'Status Purchase Order berhasil diperbarui menjadi ' . $validated['status'] . '.');
     }
 
+    private function sendPurchaseOrderEmailOnce(Request $request, PurchaseOrder $purchaseOrder): bool
+    {
+        $recipientEmail = trim((string) ($purchaseOrder->supplier?->email ?? ''));
+        if ($recipientEmail === '') {
+            return false;
+        }
+
+        $subject = 'Purchase Order ' . $purchaseOrder->po_number . ' dari ' . ($purchaseOrder->warehouse?->name ?? 'Gudang Operasional');
+        $document = $this->documentPayload($purchaseOrder);
+        $pdfFileName = 'Purchase_Order_' . $purchaseOrder->po_number . '.pdf';
+        $pdfBinary = Pdf::loadView('wms_documents.document_pdf', [
+            'document' => $document,
+            'generatedAt' => now(),
+        ])->setPaper('a4', 'portrait')->output();
+
+        $topItems = $purchaseOrder->items
+            ->take(5)
+            ->map(function (PurchaseOrderItem $item) {
+                $name = trim((string) ($item->product?->name ?? 'Produk'));
+                return '- ' . $name . ' x' . number_format((float) $item->quantity, 0, ',', '.');
+            })
+            ->all();
+
+        $creatorName = trim((string) ($purchaseOrder->creator?->name ?? 'Tim Gudang'));
+        $creatorEmail = trim((string) ($request->user()?->email ?? ''));
+        $warehouseName = trim((string) ($purchaseOrder->warehouse?->name ?? 'Gudang Operasional'));
+        $ctaLabel = null;
+        $ctaUrl = null;
+        if ($creatorEmail !== '') {
+            $subjectMail = rawurlencode('Konfirmasi PO ' . $purchaseOrder->po_number);
+            $bodyMail = rawurlencode(
+                "Halo {$creatorName},\n\nKami dari pemasok ingin konfirmasi PO {$purchaseOrder->po_number} ({$warehouseName}).\n\nTerima kasih."
+            );
+            $ctaLabel = 'Hubungi PIC Gudang';
+            $ctaUrl = "mailto:{$creatorEmail}?subject={$subjectMail}&body={$bodyMail}";
+        }
+
+        $lines = array_merge([
+            'Berikut kami lampirkan dokumen Purchase Order resmi untuk kebutuhan pengadaan barang.',
+            'Mohon konfirmasi ketersediaan dan estimasi pengiriman barang.',
+            'Ringkasan item utama:',
+        ], $topItems, [
+            'Detail lengkap spesifikasi, qty, harga, dan catatan ada di lampiran PDF.',
+        ]);
+
+        try {
+            $this->sendMailWithRetry($recipientEmail, new PetayuSystemMail(
+            subjectLine: $subject,
+            heading: 'Purchase Order Baru',
+            lines: $lines,
+            ctaLabel: $ctaLabel,
+            ctaUrl: $ctaUrl,
+            meta: [
+                'Nomor PO' => $purchaseOrder->po_number,
+                'Nama Pemasok' => $purchaseOrder->supplier?->name ?? '-',
+                'Gudang Pengirim' => $purchaseOrder->warehouse?->name ?? 'Gudang Operasional',
+                'Lokasi Gudang' => $purchaseOrder->warehouse?->location ?: 'Belum diatur',
+                'Tanggal PO' => optional($purchaseOrder->order_date)->format('d M Y') ?? '-',
+                'Target Datang' => optional($purchaseOrder->expected_date)->format('d M Y') ?? '-',
+                'Total PO' => 'Rp ' . number_format((float) $purchaseOrder->items->sum('subtotal'), 0, ',', '.'),
+            ],
+            attachmentsData: [[
+                'name' => $pdfFileName,
+                'mime' => 'application/pdf',
+                'data' => base64_encode($pdfBinary),
+                'is_base64' => true,
+            ]],
+            showSecurityWarning: false,
+            templateStyle: 'clean',
+        ));
+        } catch (\Throwable $e) {
+            Log::warning('PO email skipped after retry failure', [
+                'purchase_order_id' => $purchaseOrder->id,
+                'recipient' => $recipientEmail,
+                'message' => $e->getMessage(),
+            ]);
+            return false;
+        }
+
+        PurchaseOrderEmailLog::create([
+            'tenant_id' => (int) ($purchaseOrder->tenant_id ?? $request->user()?->tenant_id ?? 0),
+            'purchase_order_id' => (int) $purchaseOrder->id,
+            'supplier_id' => (int) $purchaseOrder->supplier_id,
+            'sent_by' => (int) ($request->user()?->id ?? 0),
+            'recipient_email' => $recipientEmail,
+            'subject' => $subject,
+            'attachment_name' => $pdfFileName,
+            'sent_at' => now(),
+        ]);
+
+        return true;
+    }
+
+    private function sendMailWithRetry(string|array $recipient, PetayuSystemMail $mail): void
+    {
+        $attempts = 0;
+        $maxAttempts = 3;
+        $lastException = null;
+
+        while ($attempts < $maxAttempts) {
+            $attempts++;
+            try {
+                Mail::to($recipient)->send($mail);
+                return;
+            } catch (\Throwable $e) {
+                $lastException = $e;
+                usleep($attempts * 200000);
+            }
+        }
+
+        Log::warning('PO email failed after retries', [
+            'recipient' => $recipient,
+            'attempts' => $attempts,
+            'message' => $lastException?->getMessage(),
+        ]);
+
+        throw $lastException ?? new \RuntimeException('Unknown mail delivery error.');
+    }
+
     private function isManager(Request $request): bool
     {
         $roleName = strtolower((string) ($request->user()?->role?->name ?? ''));
@@ -249,6 +443,18 @@ class PurchaseOrderController extends Controller
         return str_contains($roleName, 'manager')
             || str_contains($roleName, 'manajer')
             || str_contains($roleName, 'admin gudang');
+    }
+
+    private function isSupervisor(Request $request): bool
+    {
+        $roleName = strtolower((string) ($request->user()?->role?->name ?? ''));
+        return str_contains($roleName, 'supervisor') || str_contains($roleName, 'spv');
+    }
+
+    private function isStaff(Request $request): bool
+    {
+        $roleName = strtolower((string) ($request->user()?->role?->name ?? ''));
+        return str_contains($roleName, 'staff') || str_contains($roleName, 'staf');
     }
 
     private function putAwayReceivedItem(
@@ -381,6 +587,7 @@ class PurchaseOrderController extends Controller
             'details' => [
                 ['label' => 'Pemasok', 'value' => $purchaseOrder->supplier?->name],
                 ['label' => 'Kode Pemasok', 'value' => $purchaseOrder->supplier?->code],
+                ['label' => 'Email Pemasok', 'value' => $purchaseOrder->supplier?->email],
                 ['label' => 'Gudang Tujuan', 'value' => $purchaseOrder->warehouse?->name],
                 ['label' => 'Lokasi Gudang', 'value' => $purchaseOrder->warehouse?->location],
                 ['label' => 'Dibuat Oleh', 'value' => $purchaseOrder->creator?->name],

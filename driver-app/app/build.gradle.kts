@@ -17,6 +17,7 @@ val driverApiBaseUrl = (
         ?: System.getenv("DRIVER_API_BASE_URL")
         ?: "https://petayu.my.id/"
 ).trim()
+val releaseDriverApiBaseUrl = "https://petayu.my.id/"
 
 android {
     namespace = "com.aether.driver"
@@ -50,6 +51,7 @@ android {
                 "proguard-rules.pro"
             )
             buildConfigField("Boolean", "ENABLE_LOGGING", "false")
+            buildConfigField("String", "DRIVER_API_BASE_URL", "\"$releaseDriverApiBaseUrl\"")
         }
     }
     compileOptions {

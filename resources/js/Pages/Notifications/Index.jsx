@@ -1,6 +1,6 @@
 import DashboardLayout from '@/Layouts/DashboardLayout';
 import { Head, Link, usePage } from '@inertiajs/react';
-import { ArrowRight, CheckCheck, MailOpen, Search, SlidersHorizontal } from 'lucide-react';
+import { AlertCircle, ArrowRight, BellRing, CheckCheck, MailOpen, Search, SlidersHorizontal } from 'lucide-react';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { filters, getNotificationMeta, typeStyle } from './notificationConfig';
 
@@ -71,10 +71,12 @@ export default function NotificationsIndex() {
             <Head title="Notifikasi Sistem" />
 
             <div className="w-full px-5 pb-10 pt-1 md:px-8">
-                <section className="mb-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm md:p-6">
+                <section className="mb-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_10px_24px_rgba(15,23,42,0.04)] md:p-6">
                     <div className="mb-5 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
                         <div>
-                            <p className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-400">Pusat Notifikasi</p>
+                            <p className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-slate-500">
+                                <BellRing className="h-3.5 w-3.5" /> Pusat Notifikasi
+                            </p>
                             <h1 className="mt-2 text-[30px] font-black tracking-tight text-slate-900">Inbox Notifikasi</h1>
                             <p className="mt-2 max-w-3xl text-[14px] font-semibold text-slate-500">
                                 Pantau alert operasional harian, tandai baca, dan buka modul terkait dari satu halaman.
@@ -92,21 +94,27 @@ export default function NotificationsIndex() {
 
                     <div className="grid gap-3 md:grid-cols-3">
                         <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
-                            <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">Total</p>
+                            <p className="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">
+                                <BellRing className="h-3.5 w-3.5" /> Total
+                            </p>
                             <p className="mt-1 text-[24px] font-black tracking-tight text-slate-900">{notifications.length}</p>
                         </div>
                         <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
-                            <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">Belum Dibaca</p>
+                            <p className="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">
+                                <MailOpen className="h-3.5 w-3.5" /> Belum Dibaca
+                            </p>
                             <p className="mt-1 text-[24px] font-black tracking-tight text-indigo-700">{unreadCount}</p>
                         </div>
                         <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
-                            <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">Prioritas</p>
+                            <p className="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">
+                                <AlertCircle className="h-3.5 w-3.5" /> Prioritas
+                            </p>
                             <p className="mt-1 text-[24px] font-black tracking-tight text-amber-600">{priorityCount}</p>
                         </div>
                     </div>
                 </section>
 
-                <section ref={listSectionRef} className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+                <section ref={listSectionRef} className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_10px_24px_rgba(15,23,42,0.04)]">
                     <div className="border-b border-slate-100 px-5 py-4 md:px-6">
                         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                             <div className="inline-flex items-center gap-2 rounded-lg bg-slate-50 px-3 py-2 text-[11px] font-black uppercase tracking-[0.12em] text-slate-500">
@@ -141,7 +149,7 @@ export default function NotificationsIndex() {
                         </div>
                     </div>
 
-                    <div className="divide-y divide-slate-100">
+                    <div className="space-y-3 bg-slate-50/40 p-3 md:p-4">
                         {visibleNotifications.length > 0 ? (
                             visibleNotifications.map((notification) => {
                                 const meta = getNotificationMeta(notification);
@@ -154,7 +162,11 @@ export default function NotificationsIndex() {
                                         key={notification.id}
                                         href={`/notifications/${notification.id}`}
                                         onClick={() => markAsRead(notification.id)}
-                                        className={`group flex items-start gap-4 px-5 py-5 transition md:px-6 ${isRead ? 'bg-white hover:bg-slate-50' : 'bg-indigo-50/30 hover:bg-indigo-50/50'}`}
+                                        className={`group flex items-start gap-4 rounded-xl border px-5 py-5 transition md:px-6 ${
+                                            isRead
+                                                ? 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50'
+                                                : 'border-indigo-200 bg-indigo-50/30 hover:border-indigo-300 hover:bg-indigo-50/50'
+                                        }`}
                                     >
                                         <div className={`mt-0.5 flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-lg ${style.icon}`}>
                                             <Icon className="h-5 w-5" />
@@ -176,14 +188,14 @@ export default function NotificationsIndex() {
                                                 {notification.message}
                                             </p>
                                         </div>
-                                        <div className="hidden flex-shrink-0 items-center text-slate-300 transition group-hover:text-indigo-600 sm:flex">
+                                        <div className="hidden flex-shrink-0 items-center text-slate-300 transition group-hover:translate-x-0.5 group-hover:text-indigo-600 sm:flex">
                                             <ArrowRight className="h-5 w-5" />
                                         </div>
                                     </Link>
                                 );
                             })
                         ) : (
-                            <div className="flex min-h-[340px] flex-col items-center justify-center px-8 text-center">
+                            <div className="flex min-h-[340px] flex-col items-center justify-center rounded-xl border border-dashed border-slate-200 bg-white px-8 text-center">
                                 <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-lg bg-slate-50 text-slate-400">
                                     <MailOpen className="h-7 w-7" />
                                 </div>

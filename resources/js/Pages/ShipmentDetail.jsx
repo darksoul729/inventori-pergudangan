@@ -117,12 +117,12 @@ export default function ShipmentDetail({ auth, shipment }) {
         printWindow.document.write(`
             <html>
                 <head>
-                    <title>Proof of Delivery ${printable(shipment.id)}</title>
+                    <title>Bukti Serah Terima ${printable(shipment.id)}</title>
                     <style>
                         body { font-family: Arial, sans-serif; margin: 32px; color: #111827; }
                         .header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:24px; }
                         .header-logo { width:48px; height:48px; object-fit:contain; margin-right:14px; flex-shrink:0; }
-                        .badge { display:inline-block; padding:6px 12px; border-radius:999px; background:#eef2ff; color:#28106F; font-size:12px; font-weight:700; }
+                        .badge { display:inline-block; padding:6px 12px; border-radius:999px; background:#eef2ff; color:#4722B3; font-size:12px; font-weight:700; }
                         .grid { display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:24px; }
                         .card { border:1px solid #e5e7eb; border-radius:20px; padding:20px; }
                         .label { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.12em; color:#64748b; margin-bottom:8px; }
@@ -138,8 +138,8 @@ export default function ShipmentDetail({ auth, shipment }) {
                         <div style="display:flex;align-items:flex-start;">
                             <img src="/images/logo 1.png" class="header-logo" alt="Logo" />
                             <div>
-                                <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.16em;color:#5932C9;">Proof of Delivery</div>
-                                <h1 style="margin:8px 0 4px;font-size:32px;">Shipment ${printable(shipment.id)}</h1>
+                                <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.16em;color:#5B33CC;">Bukti Serah Terima</div>
+                                <h1 style="margin:8px 0 4px;font-size:32px;">Pengiriman ${printable(shipment.id)}</h1>
                                 <div style="color:#6b7280;font-weight:600;">${printable(shipment.origin_name)} (${printable(shipment.origin)}) -> ${printable(shipment.destination_name)} (${printable(shipment.destination)})</div>
                             </div>
                         </div>

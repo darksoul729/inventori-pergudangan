@@ -1,5 +1,5 @@
 import DashboardLayout from '@/Layouts/DashboardLayout';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, usePage } from '@inertiajs/react';
 import React from 'react';
 
 const TruckIcon = ({ className }) => (
@@ -21,6 +21,9 @@ const PackageIcon = ({ className }) => (
 );
 
 export default function Outbound() {
+    const { props } = usePage();
+    const roleName = String(props.auth?.user?.role_name || props.auth?.user?.role || '').toLowerCase();
+    const canCreateShipment = roleName.includes('manager') || roleName.includes('manajer') || roleName.includes('supervisor') || roleName.includes('spv');
     return (
         <DashboardLayout>
             <Head title="Barang Keluar - Pengiriman" />
@@ -70,14 +73,29 @@ export default function Outbound() {
                         </div>
                     </div>
 
-                    <Link
-                        href={route('shipments.create')}
-                        className="inline-flex items-center gap-3 px-8 py-4 bg-indigo-600 text-white font-black rounded-2xl shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-all text-[14px]"
-                    >
-                        <TruckIcon className="w-5 h-5" />
-                        Buat Pengiriman Baru
-                        <ArrowRightIcon className="w-5 h-5" />
-                    </Link>
+                    {canCreateShipment ? (
+                        <Link
+                            href={route('shipments.create')}
+                            className="inline-flex items-center gap-3 px-8 py-4 bg-indigo-600 text-white font-black rounded-2xl shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-all text-[14px]"
+                        >
+                            <TruckIcon className="w-5 h-5" />
+                            Buat Pengiriman Baru
+                            <ArrowRightIcon className="w-5 h-5" />
+                        </Link>
+                    ) : (
+                        <div className="flex flex-col gap-3 w-full">
+                            <Link href={route('purchase-orders.index')} className="inline-flex items-center gap-3 px-8 py-4 bg-emerald-600 text-white font-black rounded-2xl shadow-lg shadow-emerald-200 hover:bg-emerald-700 transition-all text-[14px]">
+                                <PackageIcon className="w-5 h-5" />
+                                Konfirmasi Barang Masuk (PO)
+                                <ArrowRightIcon className="w-5 h-5" />
+                            </Link>
+                            <Link href={route('stock-opname.index')} className="inline-flex items-center gap-3 px-8 py-4 bg-indigo-600 text-white font-black rounded-2xl shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-all text-[14px]">
+                                <TruckIcon className="w-5 h-5" />
+                                Input Stock Opname
+                                <ArrowRightIcon className="w-5 h-5" />
+                            </Link>
+                        </div>
+                    )}
 
                     <div className="mt-4">
                         <Link

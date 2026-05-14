@@ -1,0 +1,50 @@
+- generic [ref=e4]:
+  - generic [ref=e5]:
+    - generic [ref=e6]:
+      - img "Petayu Logo" [ref=e7]
+      - generic [ref=e8]: Petayu.
+    - generic [ref=e9]:
+      - generic [ref=e10]:
+        - img [ref=e12]
+        - generic [ref=e14]:
+          - generic [ref=e15]: Manajemen Inventori
+          - generic [ref=e16]: Pelacakan stok real-time
+      - generic [ref=e17]:
+        - img [ref=e19]
+        - generic [ref=e21]:
+          - generic [ref=e22]: Alokasi Rak Cerdas
+          - generic [ref=e23]: Optimasi ruang gudang
+      - generic [ref=e24]:
+        - img [ref=e26]
+        - generic [ref=e28]:
+          - generic [ref=e29]: Keamanan RBAC
+          - generic [ref=e30]: 4 level akses terjamin
+  - generic [ref=e31]:
+    - link "Kembali" [ref=e33] [cursor=pointer]:
+      - /url: /
+      - img [ref=e34]
+      - text: Kembali
+    - generic [ref=e36]:
+      - generic [ref=e37]:
+        - heading "Login Petayu" [level=2] [ref=e38]
+        - paragraph [ref=e39]: Masukkan detail akun untuk masuk sistem
+      - generic [ref=e40]:
+        - generic [ref=e41]:
+          - generic [ref=e42]: Email atau Username
+          - textbox "Email atau Username" [active] [ref=e43]:
+            - /placeholder: admin@petayu.com
+        - generic [ref=e44]:
+          - generic [ref=e45]:
+            - generic [ref=e46]: Password
+            - link "Lupa sandi?" [ref=e47] [cursor=pointer]:
+              - /url: http://127.0.0.1:8000/forgot-password
+          - generic [ref=e48]:
+            - textbox "Password" [ref=e49]:
+              - /placeholder: ••••••••
+            - button [ref=e50] [cursor=pointer]:
+              - img [ref=e51]
+        - generic [ref=e55] [cursor=pointer]:
+          - checkbox "Ingat saya" [ref=e56]
+          - generic [ref=e57]: Ingat saya
+        - button "Masuk Sistem" [ref=e59] [cursor=pointer]
+    - generic [ref=e60]: © 2026 Petayu.
