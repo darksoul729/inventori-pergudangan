@@ -308,7 +308,7 @@ export default function Welcome({ auth }) {
                                             href={route('login')}
                                             className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-8 py-4 text-base font-semibold text-slate-700 transition-colors hover:bg-slate-50 hover:border-slate-300 shadow-sm"
                                         >
-                                            Masuk / Minta Demo <ArrowRight className="h-5 w-5" />
+                                            Masuk <ArrowRight className="h-5 w-5" />
                                         </Link>
                                     </div>
                                 </Reveal>
